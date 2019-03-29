@@ -26,24 +26,24 @@ export class ContextMenu {
         this.pdfViewer = pdfViewer;
         this.pdfViewerBase = pdfViewerBase;
         this.copyContextMenu = [{ text: this.pdfViewer.localeObj.getConstant('Copy'), iconCss: 'e-pv-copy-icon' },
-        { text: this.pdfViewer.localeObj.getConstant('highlight'), iconCss: 'e-pv-highlight-icon' },
-        { text: this.pdfViewer.localeObj.getConstant('underline'), iconCss: 'e-pv-underline-icon' },
-        { text: this.pdfViewer.localeObj.getConstant('strikethrough'), iconCss: 'e-pv-strikethrough-icon' }];
+        { text: this.pdfViewer.localeObj.getConstant('Highlight context'), iconCss: 'e-pv-highlight-icon' },
+        { text: this.pdfViewer.localeObj.getConstant('Underline context'), iconCss: 'e-pv-underline-icon' },
+        { text: this.pdfViewer.localeObj.getConstant('Strikethrough context'), iconCss: 'e-pv-strikethrough-icon' }];
     }
     /**
      * @private
      */
     public createContextMenu(): void {
         this.contextMenuElement = createElement('ul', { id: this.pdfViewer.element.id + '_context_menu' });
-        if (this.pdfViewer.enableRtl) {
-            this.contextMenuElement.style.direction = 'rtl';
-        }
         this.pdfViewer.element.appendChild(this.contextMenuElement);
         this.contextMenuObj = new Context({
             target: '#' + this.pdfViewerBase.viewerContainer.id, items: this.copyContextMenu,
             beforeOpen: this.contextMenuOnBeforeOpen.bind(this), select: this.onMenuItemSelect.bind(this),
             created: this.contextMenuOnCreated.bind(this)
         });
+        if (this.pdfViewer.enableRtl) {
+            this.contextMenuObj.enableRtl = true;
+        }
         this.contextMenuObj.appendTo(this.contextMenuElement);
         if (Browser.isDevice) {
             this.contextMenuObj.animationSettings.effect = 'ZoomIn';
@@ -53,8 +53,9 @@ export class ContextMenu {
     }
 
     private contextMenuOnCreated(args: Event): void {
-        let items: string[] = [this.pdfViewer.localeObj.getConstant('highlight'), this.pdfViewer.localeObj.getConstant('underline'),
-        this.pdfViewer.localeObj.getConstant('strikethrough')];
+        // tslint:disable-next-line:max-line-length
+        let items: string[] = [this.pdfViewer.localeObj.getConstant('Highlight context'), this.pdfViewer.localeObj.getConstant('Underline context'),
+        this.pdfViewer.localeObj.getConstant('Strikethrough context')];
         if (this.pdfViewer.annotationModule) {
             if (!this.pdfViewer.annotationModule.textMarkupAnnotationModule) {
                 this.contextMenuObj.enableItems(items, false);
@@ -136,19 +137,19 @@ export class ContextMenu {
                     this.contextMenuObj.close();
                 }
                 break;
-            case this.pdfViewer.localeObj.getConstant('highlight'):
+            case this.pdfViewer.localeObj.getConstant('Highlight context'):
                 if (this.pdfViewer.annotation.textMarkupAnnotationModule) {
                     this.pdfViewer.annotation.textMarkupAnnotationModule.drawTextMarkupAnnotations('Highlight');
                     this.pdfViewer.annotation.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;
                 }
                 break;
-            case this.pdfViewer.localeObj.getConstant('underline'):
+            case this.pdfViewer.localeObj.getConstant('Underline context'):
                 if (this.pdfViewer.annotation.textMarkupAnnotationModule) {
                     this.pdfViewer.annotation.textMarkupAnnotationModule.drawTextMarkupAnnotations('Underline');
                     this.pdfViewer.annotation.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;
                 }
                 break;
-            case this.pdfViewer.localeObj.getConstant('strikethrough'):
+            case this.pdfViewer.localeObj.getConstant('Strikethrough context'):
                 if (this.pdfViewer.annotation.textMarkupAnnotationModule) {
                     this.pdfViewer.annotation.textMarkupAnnotationModule.drawTextMarkupAnnotations('Strikethrough');
                     this.pdfViewer.annotation.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;

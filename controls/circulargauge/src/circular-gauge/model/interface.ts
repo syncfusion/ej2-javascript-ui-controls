@@ -273,4 +273,15 @@ export interface IThemeStyle {
     needleTailColor: string;
 
     capColor: string;
+
+    fontFamily?: string;
+
+    fontSize?: string;
+
+    labelFontFamily?: string;
+
+    tooltipFillOpacity?: number;
+
+    tooltipTextOpacity?: number;
+
 }

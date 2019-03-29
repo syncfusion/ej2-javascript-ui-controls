@@ -626,9 +626,9 @@ export interface SeriesBaseModel {
 
     /**
      * This property used to improve chart performance via data mapping for series dataSource.
-     * @default true
+     * @default false
      */
-    improveChartPerformance?: boolean;
+    enableComplexProperty?: boolean;
 
 }
 

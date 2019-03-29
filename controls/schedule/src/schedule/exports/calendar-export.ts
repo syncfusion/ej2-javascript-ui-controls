@@ -48,14 +48,23 @@ export class ICalendarExport {
             let endZone: string = (eventObj[fields.endTimezone] || timeZone) as string;
             let calendarEvent: string[] = [
                 'BEGIN:VEVENT',
-                'DTEND;TZID="' + endZone + '":' + this.convertDateToString(eventObj[fields.endTime] as Date),
-                'DTSTART;TZID="' + startZone + '":' + this.convertDateToString(eventObj[fields.startTime] as Date),
                 'LOCATION:' + (eventObj[fields.location] || ''),
                 'SUMMARY:' + (eventObj[fields.subject] || ''),
                 'UID:' + uId,
                 'DESCRIPTION:' + (eventObj[fields.description] || ''),
                 'END:VEVENT'
             ];
+            if (eventObj[fields.isAllDay]) {
+                calendarEvent.splice(4, 0, 'DTEND;VALUE=DATE:' + this.convertDateToString(eventObj[fields.endTime] as Date, true));
+                calendarEvent.splice(4, 0, 'DTSTART;VALUE=DATE:' + this.convertDateToString(eventObj[fields.startTime] as Date, true));
+            } else if (!eventObj[fields.isAllDay] && !eventObj[fields.recurrenceRule]) {
+                calendarEvent.splice(4, 0, 'DTEND:' + this.convertDateToString(eventObj[fields.endTime] as Date));
+                calendarEvent.splice(4, 0, 'DTSTART:' + this.convertDateToString(eventObj[fields.startTime] as Date));
+            } else {
+                calendarEvent.splice(4, 0, 'DTEND;TZID="' + endZone + '":' + this.convertDateToString(eventObj[fields.endTime] as Date));
+                calendarEvent.splice(4, 0, 'DTSTART;TZID="' + startZone + '":'
+                    + this.convertDateToString(eventObj[fields.startTime] as Date));
+            }
             if (eventObj[fields.recurrenceRule]) {
                 calendarEvent.splice(4, 0, 'RRULE:' + eventObj[fields.recurrenceRule]);
             }
@@ -63,12 +72,12 @@ export class ICalendarExport {
                 let exDate: string[] = (eventObj[fields.recurrenceException] as string).split(',');
                 for (let i: number = 0; i < exDate.length - 1; i++) {
                     calendarEvent.splice(5, 0, 'EXDATE:' +
-                        this.convertDateToString(getDateFromRecurrenceDateString(exDate[i])));
+                        this.convertDateToString(getDateFromRecurrenceDateString(exDate[i]), eventObj[fields.isAllDay] as boolean));
                 }
             }
             if (eventObj[fields.recurrenceID]) {
                 calendarEvent.splice(4, 0, 'RECURRENCE-ID;TZID="' + startZone + '":'
-                    + this.convertDateToString(eventObj[fields.startTime] as Date));
+                    + this.convertDateToString(eventObj[fields.startTime] as Date, eventObj[fields.isAllDay] as boolean));
             }
             let customFields: string[] = this.customFieldFilter(eventObj, fields);
             if (customFields.length > 0) {
@@ -100,14 +109,14 @@ export class ICalendarExport {
         return eventFields.filter((value: string) => (defaultFields.indexOf(value) === -1) && (value !== 'Guid'));
     }
 
-    private convertDateToString(eventDate: Date): string {
+    private convertDateToString(eventDate: Date, allDay?: boolean): string {
         let year: string = ('0000' + (eventDate.getFullYear().toString())).slice(-4);
         let month: string = ('00' + ((eventDate.getMonth() + 1).toString())).slice(-2);
         let date: string = ('00' + ((eventDate.getDate()).toString())).slice(-2);
         let hours: string = ('00' + (eventDate.getHours().toString())).slice(-2);
         let minutes: string = ('00' + (eventDate.getMinutes().toString())).slice(-2);
         let seconds: string = ('00' + (eventDate.getSeconds().toString())).slice(-2);
-        let timeString: string = year + month + date + 'T' + hours + minutes + seconds;
+        let timeString: string = (allDay) ? year + month + date : year + month + date + 'T' + hours + minutes + seconds;
         return timeString;
     }
 

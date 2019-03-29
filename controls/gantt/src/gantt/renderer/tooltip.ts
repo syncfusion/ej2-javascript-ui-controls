@@ -285,7 +285,7 @@ export class Tooltip {
             linkText: this.parent.getPredecessorTextValue(predecessor[0].type),
             offset: predecessor[0].offset,
             offsetUnit: predecessor[0].offsetUnit,
-            offsetString: this.parent.getDurationString(fromTask.ganttProperties.duration, fromTask.ganttProperties.durationUnit)
+            offsetString: this.parent.getDurationString(predecessor[0].offset, fromTask.ganttProperties.durationUnit)
         };
         return predecessorTooltipData;
     }

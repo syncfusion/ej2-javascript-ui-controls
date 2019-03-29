@@ -662,6 +662,7 @@ private updateRAxisLine(smithchart: Smithchart): void {
 private drawHAxisLabels(smithchart: Smithchart): void {
 
     let hAxis: SmithchartAxisModel = smithchart.horizontalAxis;
+    smithchart.radialAxis.labelStyle.fontFamily = smithchart.themeStyle.fontFamily || smithchart.radialAxis.labelStyle.fontFamily;
     let font: SmithchartFontModel = smithchart.horizontalAxis.labelStyle;
     let circleAxis: HorizontalLabelCollection;
     let label: string;
@@ -720,6 +721,7 @@ private drawHAxisLabels(smithchart: Smithchart): void {
                                 'none', axisLabelRenderEventArgs.text
             );
             let color: string = font.color ? font.color : smithchart.themeStyle.axisLabel;
+            font.fontFamily = font.fontFamily || smithchart.themeStyle.labelFontFamily;
             let element: Element = renderTextElement(options, font, color, groupEle);
             groupEle.appendChild(element);
                 }
@@ -730,6 +732,7 @@ private drawHAxisLabels(smithchart: Smithchart): void {
 private drawRAxisLabels(smithchart: Smithchart): void {
 
        let paddingRadius: number = 2;
+       smithchart.radialAxis.labelStyle.fontFamily = smithchart.themeStyle.fontFamily || smithchart.radialAxis.labelStyle.fontFamily;
        let font: SmithchartFontModel = smithchart.radialAxis.labelStyle;
        let interSectPoint: RadialLabelCollections = new RadialLabelCollections();
        let label: string;
@@ -794,6 +797,7 @@ private drawRAxisLabels(smithchart: Smithchart): void {
                                                           'none', axisLabelRenderEventArgs.text
             );
                  let color: string = font.color ? font.color : smithchart.themeStyle.axisLabel;
+                 font.fontFamily = smithchart.themeStyle.labelFontFamily ? smithchart.themeStyle.labelFontFamily : font.fontFamily;
                  let element: Element = renderTextElement(options, font, color, groupEle);
                  groupEle.appendChild(element);
             }

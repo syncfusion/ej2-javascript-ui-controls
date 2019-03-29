@@ -233,6 +233,6 @@ timeScale.appendTo('#timescale');
 
 document.getElementById('autofit').onchange = () => {
     let ddl: HTMLInputElement = document.getElementById('autofit') as HTMLInputElement;
-    scheduleObj.enableAdaptiveRows = ddl.checked;
+    scheduleObj.rowAutoHeight = ddl.checked;
     scheduleObj.dataBind();
 };

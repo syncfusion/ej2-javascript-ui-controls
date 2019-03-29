@@ -116,7 +116,7 @@ export class ParagraphDialog {
         let rightIndentionDiv: HTMLDivElement = createElement('div', { className: 'e-de-para-dlg-right-sub-container', styles: 'float:right;position:relative;' }) as HTMLDivElement;
         indentionDiv.appendChild(rightIndentionDiv);
         // tslint:disable-next-line:max-line-length
-        let spacingDiv: HTMLDivElement = createElement('div', { id: 'spacing_div', styles: 'width: 400px;height: 150px;', className: 'e-de-para-dlg-sub-container' }) as HTMLDivElement;
+        let spacingDiv: HTMLDivElement = createElement('div', { id: 'spacing_div', styles: 'width: 400px;height: 150px;float:left;', className: 'e-de-para-dlg-sub-container' }) as HTMLDivElement;
         let leftSpacingDiv: HTMLDivElement = createElement('div', { id: 'left_spacing', styles: 'float:left;position:relative;' }) as HTMLDivElement;
         spacingDiv.appendChild(leftSpacingDiv);
         // tslint:disable-next-line:max-line-length

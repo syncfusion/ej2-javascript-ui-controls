@@ -33,7 +33,7 @@ export abstract class Component<ElementType extends HTMLElement> extends Base<El
     public enableRtl: boolean;
     /**
      * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
-     * @default undefined
+     * @default ''
      */
     @Property()
     public locale: string;

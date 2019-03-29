@@ -124,6 +124,14 @@ describe('Linear gauge control', () => {
             gauge.axes[0].pointers[0].animationDuration = 4000;
             gauge.refresh();
         });
+        it('checking with marker pointer with databind', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisIndex_0_BarPointer_0');
+                expect(svg != null).toBe(true);
+            };
+            gauge.axes[0].pointers[0].value = 50;
+            gauge.dataBind();
+        });
 
 
         it('checking with marker pointer fill', (): void => {
@@ -134,6 +142,7 @@ describe('Linear gauge control', () => {
             gauge.axes[0].pointers[0].type = 'Marker';
             gauge.axes[0].pointers[0].markerType = 'Circle';
             gauge.axes[0].pointers[0].color = 'red';
+            gauge.axes[0].pointers[0].value = 70;
             gauge.refresh();
         });
 

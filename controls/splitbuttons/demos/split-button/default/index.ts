@@ -96,3 +96,8 @@ document.getElementById('bootstrap-dark').onclick = (e: Event) => {
     document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap-dark.css');
     document.body.style.backgroundColor = 'black';
 };
+document.getElementById('bootstrap4').onclick = (e: Event) => {
+    enableRipple(false);
+    document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap4.css');
+    document.body.style.backgroundColor = 'white';
+};

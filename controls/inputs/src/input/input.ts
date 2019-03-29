@@ -86,8 +86,8 @@ export namespace Input {
 
     function _blurFn (): void {
       let parent: HTMLElement = getParentNode(this);
-      if ((parent.getElementsByTagName('input')[0]) ? parent.getElementsByTagName('input')[0].value === '' :
-        parent.getElementsByTagName('textarea')[0].value === '') {
+      if ((parent.getElementsByTagName('textarea')[0]) ? parent.getElementsByTagName('textarea')[0].value === '' :
+        parent.getElementsByTagName('input')[0].value === '') {
         let label: HTMLElement = <HTMLElement> parent.getElementsByClassName('e-float-text')[0];
         if (label.classList.contains(CLASSNAMES.LABELTOP)) { removeClass([label], CLASSNAMES.LABELTOP); }
         addClass([label], CLASSNAMES.LABELBOTTOM); }
@@ -493,8 +493,8 @@ export namespace Input {
     export function removeFloating(input: InputObject): void {
       let container: HTMLElement = input.container;
       if (!isNullOrUndefined(container) && container.classList.contains(CLASSNAMES.FLOATINPUT)) {
-        let inputEle: HTMLElement = container.querySelector('input') ? <HTMLElement>container.querySelector('input') :
-        <HTMLElement>container.querySelector('textarea');
+        let inputEle: HTMLElement = container.querySelector('textarea') ? <HTMLElement>container.querySelector('textarea') :
+        <HTMLElement>container.querySelector('input');
         let placeholder: string = container.querySelector('.' + CLASSNAMES.FLOATTEXT).textContent;
         let clearButton: boolean = container.querySelector('.e-clear-icon') !== null;
         detach(container.querySelector('.' + CLASSNAMES.FLOATLINE));

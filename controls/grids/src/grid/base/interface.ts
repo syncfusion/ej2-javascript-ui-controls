@@ -1,7 +1,7 @@
 import { Component, NumberFormatOptions, DateFormatOptions, EmitType, KeyboardEventArgs, L10n } from '@syncfusion/ej2-base';
 import { Query, DataManager, Group } from '@syncfusion/ej2-data';
 import { ItemModel, MenuItemModel, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { ButtonModel } from '@syncfusion/ej2-buttons';
+import { ButtonModel, CheckBoxModel } from '@syncfusion/ej2-buttons';
 import { Column, ColumnModel } from '../models/column';
 import {
     SortSettingsModel, TextWrapSettingsModel, SelectionSettingsModel,
@@ -216,12 +216,12 @@ export interface IGrid extends Component<HTMLElement> {
 
     /**
      * Specifies scrollable height of the grid content.
-     * @default auto
+     * @default 'auto'
      */
     height?: string | number;
     /**
      * Specifies scrollable width of the grid content.
-     * @default auto
+     * @default 'auto'
      */
     width?: string | number;
 
@@ -615,7 +615,7 @@ export interface IEditCell {
     create?: Element | Function | string;
     read?: Object | Function | string;
     write?: void | Function | string;
-    params?: DatePickerModel | NumericTextBoxModel | DropDownListModel;
+    params?: DatePickerModel | NumericTextBoxModel | DropDownListModel | CheckBoxModel;
     destroy?: Function | string;
 }
 /**
@@ -905,6 +905,8 @@ export interface RowDeselectEventArgs {
     cancel?: boolean;
     /** Defines the target element for row deselect. */
     target?: Element;
+    /** Defines whether event is triggered by interaction or not. */
+    isInteracted?: boolean;
 }
 
 export interface RowSelectEventArgs extends RowDeselectEventArgs {

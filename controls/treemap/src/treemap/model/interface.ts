@@ -291,6 +291,12 @@ export interface IThemeStyle {
     subTitleFontColor: string;
     tooltipFillColor: string;
     tooltipFontColor: string;
+    tooltipFillOpacity?: number;
+    tooltipTextOpacity?: number;
     legendTitleColor: string;
     legendTextColor: string;
+    fontFamily?: string;
+    fontSize?: string;
+    legendFontSize?: string;
+    labelFontFamily?: string;
 }

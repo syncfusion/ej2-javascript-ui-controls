@@ -5513,13 +5513,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         && text.indexOf('~') === -1 && node.id.indexOf('_umlClass_header') === -1) {
                         text = ' + ' + text;
                     }
-                    if ((node as Node).isLane) {
+                    if ((node as Node).isLane || (node as Node).isPhase) {
                         this.protectPropertyChange(true);
                     }
                     annotation.content = text;
                     this.dataBind();
                     this.updateSelector();
-                    if ((node as Node).isLane) {
+                    if ((node as Node).isLane || (node as Node).isPhase) {
                         this.protectPropertyChange(false);
                     }
                 }
@@ -7008,7 +7008,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                         } else {
                             value = this.add(clonedObject, true);
                         }
-                        if (value && canSingleSelect(this)) {
+                        if ((clonedObject || value) && canSingleSelect(this)) {
                             this.select([this.nameTable[clonedObject[id]]]);
                         }
                     }

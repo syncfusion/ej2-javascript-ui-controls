@@ -54,6 +54,10 @@ describe('Sorting module => ', () => {
                 expect(gridObj.getHeaderContent().querySelectorAll('.e-columnheader')[0].querySelectorAll('.e-sortnumber').length).toBe(0);
                 done();
             };
+            actionBegin = (args: any): any => {
+                expect(args.target).not.toBeNull();
+            };
+			gridObj.actionBegin = actionBegin;
             gridObj.actionComplete = actionComplete;
             sortSettings = gridObj.sortSettings;
             cols = gridObj.getHeaderContent().querySelectorAll('.e-headercell');

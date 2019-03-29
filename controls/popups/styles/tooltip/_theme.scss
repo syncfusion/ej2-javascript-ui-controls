@@ -70,7 +70,7 @@
       border-color: $tooltip-icon-border-color;
       border-radius: 8px;
       color: $tooltip-default-icon-color;
-      @if $skin-name == 'highcontrast' {
+      @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
         border-style: solid;
         border-width: 1px;
         height: 16px;

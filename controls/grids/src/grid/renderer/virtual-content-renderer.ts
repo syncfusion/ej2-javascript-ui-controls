@@ -77,6 +77,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                 return;
             } else {
                 viewInfo.event = 'refresh-virtual-block';
+                if (!isNullOrUndefined(viewInfo.offsets)) {
+                    viewInfo.offsets.top = this.content.scrollTop;
+                }
                 this.parent.notify(
                     viewInfo.event,
                     { requestType: 'virtualscroll', virtualInfo: viewInfo, focusElement: scrollArgs.focusElement });
@@ -158,7 +161,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             this.refreshOffsets();
         }
         let vHeight: string | number = this.parent.height.toString().indexOf('%') < 0 ? this.content.getBoundingClientRect().height :
-        this.parent.element.getBoundingClientRect().height;
+            this.parent.element.getBoundingClientRect().height;
         let translate: number = this.getTranslateY(this.content.scrollTop, <number>vHeight, info);
         this.virtualEle.adjustTable(cOffset, translate);
 
@@ -172,8 +175,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             this.header.virtualEle.setWrapperWidth(width);
         }
         this.virtualEle.setWrapperWidth(width, <boolean>Browser.isIE || Browser.info.name === 'edge');
-
-        remove(target);
+        if (!isNullOrUndefined(target.parentNode)) {
+            remove(target);
+        }
         target = this.parent.createElement('tbody');
         target.appendChild(newChild);
         this.getTable().appendChild(target);
@@ -198,9 +202,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             this.count = e.count;
             this.maxPage = Math.ceil(e.count / this.parent.pageSettings.pageSize);
         }
-        this.vgenerator.checkAndResetCache( e.requestType);
-        if (['refresh', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder',  undefined]
-        .some((value: string) => { return e.requestType === value; })) {
+        this.vgenerator.checkAndResetCache(e.requestType);
+        if (['refresh', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder', undefined]
+            .some((value: string) => { return e.requestType === value; })) {
             this.refreshOffsets();
         }
         this.setVirtualHeight();

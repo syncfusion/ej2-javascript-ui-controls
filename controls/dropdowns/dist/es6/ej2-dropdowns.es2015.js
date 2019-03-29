@@ -1,9 +1,9 @@
-import { Animation, Browser, ChildProperty, Complex, Component, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getUniqueID, getValue, isNullOrUndefined, isUndefined, prepend, remove, removeClass, rippleEffect, select, setStyleAttribute, setValue } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Complex, Component, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isNullOrUndefined, isUndefined, prepend, remove, removeClass, rippleEffect, select, setStyleAttribute, setValue } from '@syncfusion/ej2-base';
 import { DataManager, DataUtil, Predicate, Query } from '@syncfusion/ej2-data';
-import { ListBase, cssClass } from '@syncfusion/ej2-lists';
+import { ListBase, Sortable, cssClass, moveTo } from '@syncfusion/ej2-lists';
 import { Popup, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Input } from '@syncfusion/ej2-inputs';
-import { createCheckBox } from '@syncfusion/ej2-buttons';
+import { Button, createCheckBox } from '@syncfusion/ej2-buttons';
 
 /**
  * IncrementalSearch module file
@@ -395,7 +395,8 @@ let DropDownBase = class DropDownBase extends Component {
         let invalidAttr = ['class', 'style', 'id', 'type'];
         let attr = {};
         for (let a = 0; a < this.element.attributes.length; a++) {
-            if (invalidAttr.indexOf(this.element.attributes[a].name) === -1) {
+            if (invalidAttr.indexOf(this.element.attributes[a].name) === -1 &&
+                !(this.getModuleName() === 'dropdownlist' && this.element.attributes[a].name === 'readonly')) {
                 attr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
             }
         }
@@ -1292,7 +1293,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                     this.enabled = false;
                     this.setEnable();
                 }
-                else if (htmlAttr === 'readonly' && this.htmlAttributes[htmlAttr] === 'readonly') {
+                else if (htmlAttr === 'readonly' && !isNullOrUndefined(this.htmlAttributes[htmlAttr])) {
                     this.readonly = true;
                     this.dataBind();
                 }
@@ -1300,7 +1301,8 @@ let DropDownList = class DropDownList extends DropDownBase {
                     this.inputWrapper.container.setAttribute('style', this.htmlAttributes[htmlAttr]);
                 }
                 else {
-                    let defaultAttr = ['title', 'id', 'placeholder'];
+                    let defaultAttr = ['title', 'id', 'placeholder', 'aria-placeholder',
+                        'role', 'autocorrect', 'autocomplete', 'autocapitalize', 'spellcheck'];
                     let validateAttr = ['name', 'required'];
                     if (htmlAttr.indexOf('data') === 0 || validateAttr.indexOf(htmlAttr) > -1) {
                         this.hiddenElement.setAttribute(htmlAttr, this.htmlAttributes[htmlAttr]);
@@ -2761,9 +2763,15 @@ let DropDownList = class DropDownList extends DropDownBase {
     render() {
         if (this.element.tagName === 'INPUT') {
             this.inputElement = this.element;
+            if (isNullOrUndefined(this.inputElement.getAttribute('role'))) {
+                this.inputElement.setAttribute('role', 'textbox');
+            }
+            if (isNullOrUndefined(this.inputElement.getAttribute('type'))) {
+                this.inputElement.setAttribute('type', 'text');
+            }
         }
         else {
-            this.inputElement = this.createElement('input');
+            this.inputElement = this.createElement('input', { attrs: { role: 'textbox', type: 'text' } });
             if (this.element.tagName !== this.getNgDirective()) {
                 this.element.style.display = 'none';
             }
@@ -4609,6 +4617,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         }
         let animModel = { name: 'FadeIn', duration: 100 };
         let eventArgs = { popup: this.popupObj, cancel: false, animation: animModel };
+        this.popupObj.wireScrollEvents();
         this.trigger('open', eventArgs);
         if (eventArgs.cancel) {
             return;
@@ -4682,7 +4691,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         let ariaAttributes = {
             'aria-disabled': 'false',
             'aria-owns': this.element.id + '_options',
-            'role': 'listbox',
+            'role': 'textbox',
             'aria-multiselectable': 'true',
             'aria-activedescendant': 'null',
             'aria-haspopup': 'true',
@@ -5192,17 +5201,19 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         this.checkPlaceholderSize();
     }
     checkPlaceholderSize() {
-        if ((!this.value || !this.value.length) && this.showDropDownIcon &&
-            (this.componentWrapper.offsetWidth <= this.inputElement.offsetWidth)) {
+        if ((!this.value || !this.value.length) && this.showDropDownIcon && this.inputElement &&
+            (this.componentWrapper.offsetWidth <= this.inputElement.offsetWidth) &&
+            this.inputElement.size > 1) {
             let downIconWidth = this.dropIcon.offsetWidth +
                 parseInt(window.getComputedStyle(this.dropIcon).marginRight, 10);
             do {
                 this.inputElement.size -= 1;
-            } while ((downIconWidth + this.inputElement.offsetWidth) >= this.componentWrapper.offsetWidth);
+            } while ((downIconWidth + this.inputElement.offsetWidth) >= this.componentWrapper.offsetWidth &&
+                this.inputElement.size > 1);
         }
     }
     refreshInputHight() {
-        if ((!this.value || !this.value.length) && isNullOrUndefined(this.text)) {
+        if ((!this.value || !this.value.length) && (isNullOrUndefined(this.text) || this.text === '')) {
             this.searchWrapper.classList.remove(ZERO_SIZE);
         }
         else {
@@ -5776,7 +5787,12 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                 this.onActionComplete(list, this.mainData);
             }
             this.updateDelimeter(this.delimiterChar);
-            this.makeTextBoxEmpty();
+            if (this.placeholder && this.floatLabelType === 'Never') {
+                this.makeTextBoxEmpty();
+            }
+            else {
+                this.inputElement.value = '';
+            }
             e.preventDefault();
         }
     }
@@ -5786,7 +5802,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     }
     refreshPlaceHolder() {
         if (this.placeholder && this.floatLabelType === 'Never') {
-            if ((this.value && this.value.length) || !isNullOrUndefined(this.text)) {
+            if ((this.value && this.value.length) || (!isNullOrUndefined(this.text) && this.text !== '')) {
                 this.inputElement.placeholder = '';
             }
             else {
@@ -6269,7 +6285,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     }
     windowResize() {
         this.refreshPopup();
-        if (!this.inputFocus && this.viewWrapper && this.viewWrapper.parentElement) {
+        if ((!this.inputFocus || this.mode === 'CheckBox') && this.viewWrapper && this.viewWrapper.parentElement) {
             this.updateDelimView();
         }
     }
@@ -6788,12 +6804,20 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             if (remaining > 0) {
                 let totalWidth = overAllContainer - downIconWidth;
                 this.viewWrapper.appendChild(this.updateRemainTemplate(raminElement, this.viewWrapper, remaining, compiledString, totalCompiledString, totalWidth));
+                this.updateRemainWidth(this.viewWrapper, totalWidth);
                 this.updateRemainingText(raminElement, downIconWidth, remaining, compiledString, totalCompiledString);
             }
         }
         else {
             this.viewWrapper.innerHTML = '';
             this.viewWrapper.style.display = 'none';
+        }
+    }
+    updateRemainWidth(viewWrapper, totalWidth) {
+        if (viewWrapper.classList.contains(TOTAL_COUNT_WRAPPER) && totalWidth < (viewWrapper.offsetWidth +
+            parseInt(window.getComputedStyle(viewWrapper).paddingLeft, 10)
+            + parseInt(window.getComputedStyle(viewWrapper).paddingLeft, 10))) {
+            viewWrapper.style.width = totalWidth + 'px';
         }
     }
     updateRemainTemplate(raminElement, viewWrapper, remaining, compiledString, totalCompiledString, totalWidth) {
@@ -6809,9 +6833,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         }
         else {
             viewWrapper.classList.add(TOTAL_COUNT_WRAPPER);
-            if (totalWidth) {
-                viewWrapper.style.width = totalWidth + 'px';
-            }
+            this.updateRemainWidth(viewWrapper, totalWidth);
         }
         return raminElement;
     }
@@ -7130,6 +7152,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             this.popupObj.hide();
             removeClass([document.body, this.popupObj.element], 'e-popup-full-page');
             EventHandler.remove(this.list, 'keydown', this.onKeyDown);
+            this.popupObj.unwireScrollEvents();
         }
     }
     /**
@@ -7244,7 +7267,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         let id = this.element.getAttribute('id') ? this.element.getAttribute('id') : getUniqueID('ej2_dropdownlist');
         this.element.id = id;
         this.hiddenElement = this.createElement('select', {
-            attrs: { 'aria-hidden': 'true', 'class': HIDDEN_ELEMENT, 'tabindex': '-1', 'multiple': 'true' }
+            attrs: { 'aria-hidden': 'true', 'class': HIDDEN_ELEMENT, 'tabindex': '-1', 'multiple': '' }
         });
         this.componentWrapper.appendChild(this.hiddenElement);
         this.validationAttribute(this.element, this.hiddenElement);
@@ -7976,9 +7999,921 @@ class CheckBoxSelection {
  * export all modules from current location
  */
 
+var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/// <reference path='../drop-down-base/drop-down-base-model.d.ts'/>
+class SelectionSettings extends ChildProperty {
+}
+__decorate$5([
+    Property('Multiple')
+], SelectionSettings.prototype, "mode", void 0);
+__decorate$5([
+    Property(false)
+], SelectionSettings.prototype, "showCheckbox", void 0);
+__decorate$5([
+    Property(false)
+], SelectionSettings.prototype, "showSelectAll", void 0);
+class ToolbarSettings extends ChildProperty {
+}
+__decorate$5([
+    Property([])
+], ToolbarSettings.prototype, "items", void 0);
+__decorate$5([
+    Property('Right')
+], ToolbarSettings.prototype, "position", void 0);
+/**
+ * The ListBox is a graphical user interface component used to display a list of items.
+ * Users can select one or more items in the list using a checkbox or by keyboard selection.
+ * It supports sorting, grouping, reordering, and drag and drop of items.
+ * ```html
+ * <select id="listbox">
+ *      <option value='1'>Badminton</option>
+ *      <option value='2'>Basketball</option>
+ *      <option value='3'>Cricket</option>
+ *      <option value='4'>Football</option>
+ *      <option value='5'>Tennis</option>
+ * </select>
+ * ```
+ * ```typescript
+ * <script>
+ *   var listObj = new ListBox();
+ *   listObj.appendTo("#listbox");
+ * </script>
+ * ```
+ */
+let ListBox = class ListBox extends DropDownBase {
+    /**
+     * Constructor for creating the ListBox component.
+     */
+    constructor(options, element) {
+        super(options, element);
+    }
+    ;
+    /**
+     * Build and render the component
+     * @private
+     */
+    render() {
+        this.initLoad = true;
+        this.initialSelectedOptions = this.value;
+        super.render();
+    }
+    initWrapper() {
+        let hiddenSelect = this.createElement('select', { className: 'e-hidden-select', attrs: { 'multiple': '' } });
+        this.list.classList.add('e-listbox-wrapper');
+        if (this.element.tagName === 'EJS-LISTBOX') {
+            this.element.setAttribute('tabindex', '0');
+            if (this.initLoad) {
+                this.element.appendChild(this.list);
+            }
+        }
+        else {
+            if (this.initLoad) {
+                this.element.parentElement.insertBefore(this.list, this.element);
+            }
+            this.list.insertBefore(this.element, this.list.firstChild);
+            this.element.style.display = 'none';
+        }
+        this.list.appendChild(hiddenSelect);
+        if (this.list.getElementsByClassName(cssClass.li)[0]) {
+            this.list.getElementsByClassName(cssClass.li)[0].classList.remove(dropDownBaseClasses.focus);
+        }
+        removeClass([this.list], [dropDownBaseClasses.content, dropDownBaseClasses.root]);
+        this.validationAttribute(this.element, hiddenSelect);
+        this.list.setAttribute('role', 'listbox');
+        attributes(this.list, { 'role': 'listbox', 'aria-multiselectable': this.selectionSettings.mode === 'Multiple' ? 'true' : 'false' });
+        if (this.selectionSettings.showCheckbox && this.selectionSettings.showSelectAll) {
+            this.showSelectAll = true;
+            this.selectAllText = 'Select All';
+            this.unSelectAllText = 'Unselect All';
+            this.popupWrapper = this.list;
+            this.notify('selectAll', {});
+        }
+    }
+    initDraggable() {
+        if (this.allowDragAndDrop) {
+            new Sortable(this.ulElement, {
+                scope: this.scope,
+                dragStart: this.triggerDragStart.bind(this),
+                drag: this.triggerDrag.bind(this),
+                drop: this.dragEnd.bind(this),
+                placeHolder: () => { return this.createElement('span', { className: 'e-placeholder' }); },
+                helper: (e) => {
+                    let ele = e.sender.cloneNode(true);
+                    ele.style.width = this.getItems()[0].offsetWidth + 'px';
+                    if (this.value.length > 1 && ele.classList.contains('e-selected')) {
+                        ele.appendChild(this.createElement('span', {
+                            className: 'e-list-badge', innerHTML: this.value.length + ''
+                        }));
+                    }
+                    return ele;
+                }
+            });
+        }
+    }
+    initToolbar() {
+        let scope;
+        let pos = this.toolbarSettings.position;
+        if (this.toolbarSettings.items.length) {
+            let toolElem = this.createElement('div', { className: 'e-listbox-tool', attrs: { 'role': 'toolbar' } });
+            let wrapper = this.createElement('div', {
+                className: 'e-listboxtool-wrapper e-' + pos.toLowerCase()
+            });
+            this.list.parentElement.insertBefore(wrapper, this.list);
+            wrapper.appendChild(pos === 'Right' ? this.list : toolElem);
+            wrapper.appendChild(pos === 'Right' ? toolElem : this.list);
+            this.createButtons(toolElem);
+            if (!this.element.id) {
+                this.element.id = getUniqueID('e-' + this.getModuleName());
+            }
+            document.querySelector(this.scope).setAttribute('data-value', this.element.id);
+        }
+        scope = this.element.getAttribute('data-value');
+        if (scope) {
+            this.tBListBox = getComponent(document.getElementById(scope), this.getModuleName());
+            this.tBListBox.updateToolBarState();
+        }
+    }
+    createButtons(toolElem) {
+        let btn;
+        let ele;
+        let title;
+        this.toolbarSettings.items.forEach((value) => {
+            title = (value.charAt(0).toUpperCase() + value.slice(1)).match(/[A-Z][a-z]+/g).join(' ');
+            ele = this.createElement('button', {
+                attrs: {
+                    'data-value': value,
+                    'title': title,
+                    'aria-label': title
+                }
+            });
+            toolElem.appendChild(ele);
+            btn = new Button({ iconCss: 'e-icons e-' + value.toLowerCase() }, ele);
+            btn.createElement = this.createElement;
+        });
+    }
+    setHeight() {
+        let ele = this.toolbarSettings.items.length ? this.list.parentElement : this.list;
+        ele.style.height = formatUnit(this.height);
+    }
+    setCssClass() {
+        let wrap = this.toolbarSettings.items.length ? this.list.parentElement : this.list;
+        if (this.cssClass) {
+            addClass([wrap], this.cssClass.split(' '));
+        }
+        if (this.enableRtl) {
+            addClass([wrap], 'e-rtl');
+        }
+    }
+    setEnable() {
+        let ele = this.toolbarSettings.items.length ? this.list.parentElement : this.list;
+        if (this.enabled) {
+            removeClass([ele], cssClass.disabled);
+        }
+        else {
+            addClass([ele], cssClass.disabled);
+        }
+    }
+    showSpinner() {
+        if (!this.spinner) {
+            this.spinner = this.createElement('div', { className: 'e-listbox-wrapper', styles: 'height:' + formatUnit(this.height) });
+        }
+        this.element.parentElement.insertBefore(this.spinner, this.element.nextSibling);
+        createSpinner({ target: this.spinner }, this.createElement);
+        showSpinner(this.spinner);
+    }
+    hideSpinner() {
+        if (this.spinner.querySelector('.e-spinner-pane')) {
+            hideSpinner(this.spinner);
+        }
+        if (this.spinner.parentElement) {
+            detach(this.spinner);
+        }
+    }
+    onActionComplete(ulElement, list, e) {
+        super.onActionComplete(ulElement, list, e);
+        this.initWrapper();
+        this.setSelection();
+        this.initDraggable();
+        if (this.initLoad) {
+            this.initToolbar();
+            this.setCssClass();
+            this.setEnable();
+            this.setHeight();
+            this.wireEvents();
+        }
+        this.initLoad = false;
+    }
+    triggerDragStart(args) {
+        if (Browser.isIos) {
+            this.list.style.overflow = 'hidden';
+        }
+        this.trigger('dragStart', this.getDragArgs(args));
+    }
+    triggerDrag(args) {
+        this.trigger('drag', this.getDragArgs(args));
+    }
+    dragEnd(args) {
+        let listData;
+        let dropValue = args.droppedElement.getAttribute('data-value');
+        let droppedData = this.getDataByValue(dropValue);
+        let listObj = this.getComponent(args.droppedElement);
+        let dragArgs = extend({}, this.getDragArgs({ target: args.droppedElement }, true), { target: args.target });
+        dropValue = this.getTextByValue(dropValue);
+        if (Browser.isIos) {
+            this.list.style.overflow = '';
+        }
+        if (listObj === this) {
+            let ul = this.ulElement;
+            let selectedOptions = this.value.indexOf(dropValue) > -1 ? this.value : [dropValue];
+            listData = [].slice.call(this.listData);
+            let fromIdx = args.previousIndex;
+            let toIdx = args.currentIndex;
+            listData.splice(toIdx, 0, listData.splice(fromIdx, 1)[0]);
+            if (fromIdx > toIdx) {
+                toIdx += 1;
+            }
+            selectedOptions.forEach((value) => {
+                if (value !== dropValue) {
+                    listData.splice(toIdx, 0, listData.splice(this.getIndexByValue(value), 1)[0]);
+                    ul.insertBefore(this.getItems()[this.getIndexByValue(value)], ul.getElementsByClassName('e-placeholder')[0]);
+                    if (fromIdx > toIdx) {
+                        toIdx++;
+                    }
+                }
+            });
+            this.listData = listData;
+            this.setProperties({ dataSource: listData }, true);
+        }
+        else {
+            let li;
+            let prevIdx = args.previousIndex;
+            let currIdx = args.currentIndex;
+            let ul = listObj.ulElement;
+            listData = [].slice.call(listObj.listData);
+            let selectedOptions = this.value.indexOf(dropValue) > -1 ? this.value : [dropValue];
+            selectedOptions.forEach((value) => {
+                droppedData = this.getDataByValue(value);
+                this.listData.splice(value === dropValue ? prevIdx : this.getIndexByValue(value), 1);
+                listData.splice(value === dropValue ? args.currentIndex : currIdx, 0, droppedData);
+                li = this.getItems()[this.getIndexByValue(value)];
+                removeClass([value === dropValue ? args.droppedElement : li], cssClass.selected);
+                ul.insertBefore(li, ul.getElementsByClassName('e-placeholder')[0]);
+                currIdx++;
+                prevIdx--;
+            });
+            this.setProperties({ dataSource: this.listData }, true);
+            listObj.listData = listData;
+            listObj.setProperties({ dataSource: listObj.listData }, true);
+            this.updateSelectedOptions();
+            if (this.selectionSettings.showCheckbox) {
+                listObj.updateSelectedOptions();
+            }
+        }
+        this.trigger('drop', dragArgs);
+    }
+    getComponent(li) {
+        return getComponent((this.element.tagName === 'EJS-LISTBOX' ? closest(li, '.e-listbox')
+            : closest(li, '.e-listbox-wrapper').querySelector('.e-listbox')), this.getModuleName());
+    }
+    listOption(dataSource, fields) {
+        this.listCurrentOptions = super.listOption(dataSource, fields);
+        this.listCurrentOptions = extend({}, this.listCurrentOptions, { itemCreated: this.triggerBeforeItemRender.bind(this) }, true);
+        this.notify('listoption', { module: 'CheckBoxSelection' });
+        return this.listCurrentOptions;
+    }
+    triggerBeforeItemRender(e) {
+        e.item.setAttribute('tabindex', '-1');
+        this.trigger('beforeItemRender', { element: e.item, item: e.curData });
+    }
+    requiredModules() {
+        let modules = [];
+        if (this.selectionSettings.showCheckbox) {
+            modules.push({
+                member: 'CheckBoxSelection',
+                args: [this]
+            });
+        }
+        return modules;
+    }
+    /**
+     * This method is used to enable or disable the items in the ListBox based on the items and enable argument.
+     * @param items Text items that needs to be enabled/disabled.
+     * @param enable Set `true`/`false` to enable/disable the list items.
+     * @returns void
+     */
+    enableItems(items, enable = true) {
+        let li;
+        items.forEach((item) => {
+            li = this.findListElement(this.list, 'li', 'data-value', this.getValueByText(item));
+            if (enable) {
+                removeClass([li], cssClass.disabled);
+                li.removeAttribute('aria-disabled');
+            }
+            else {
+                addClass([li], cssClass.disabled);
+                li.setAttribute('aria-disabled', 'true');
+            }
+        });
+    }
+    /**
+     * Based on the state parameter, specified list item will be selected/deselected.
+     * @param items Array of text value of the item.
+     * @param state Set `true`/`false` to select/un select the list items.
+     * @returns void
+     */
+    selectItems(items, state = true) {
+        this.setSelection(items, state);
+        this.updateSelectedOptions();
+    }
+    /**
+     * Based on the state parameter, entire list item will be selected/deselected.
+     * @param state Set `true`/`false` to select/un select the entire list items.
+     * @returns void
+     */
+    selectAll(state = true) {
+        this.selectAllItems(state);
+    }
+    /**
+     * Adds a new item to the list. By default, new item appends to the list as the last item,
+     * but you can insert based on the index parameter.
+     * @param  { Object[] } items - Specifies an array of JSON data or a JSON data.
+     * @param { number } itemIndex - Specifies the index to place the newly added item in the list.
+     * @return {void}.
+     */
+    addItems(items, itemIndex) {
+        super.addItem(items, itemIndex);
+    }
+    selectAllItems(state) {
+        [].slice.call(this.getItems()).forEach((li) => {
+            if (!li.classList.contains(cssClass.disabled)) {
+                if (this.selectionSettings.showCheckbox) {
+                    let ele = li.getElementsByClassName('e-check')[0];
+                    if ((!ele && state) || (ele && !state)) {
+                        this.notify('updatelist', { li: li });
+                    }
+                }
+                else {
+                    if (state) {
+                        li.classList.add(cssClass.selected);
+                    }
+                    else {
+                        li.classList.remove(cssClass.selected);
+                    }
+                }
+            }
+        });
+        this.updateSelectedOptions();
+    }
+    wireEvents() {
+        let form = closest(this.element, 'form');
+        let wrapper = this.element.tagName === 'EJS-LISTBOX' ? this.element : this.list;
+        EventHandler.add(this.list, 'click', this.clickHandler, this);
+        EventHandler.add(wrapper, 'keydown', this.keyDownHandler, this);
+        EventHandler.add(wrapper, 'focusout', this.focusOutHandler, this);
+        if (this.toolbarSettings.items.length) {
+            EventHandler.add(this.getToolElem(), 'click', this.toolbarClickHandler, this);
+        }
+        if (this.selectionSettings.showCheckbox) {
+            EventHandler.remove(document, 'mousedown', this.checkBoxSelectionModule.onDocumentClick);
+        }
+        if (this.fields.groupBy || this.element.querySelector('select>optgroup')) {
+            EventHandler.remove(this.list, 'scroll', this.setFloatingHeader);
+        }
+        if (form) {
+            EventHandler.add(form, 'reset', this.formResetHandler, this);
+        }
+    }
+    unwireEvents() {
+        let form = closest(this.element, 'form');
+        let wrapper = this.element.tagName === 'EJS-LISTBOX' ? this.element : this.list;
+        EventHandler.remove(this.list, 'click', this.clickHandler);
+        EventHandler.remove(wrapper, 'keydown', this.keyDownHandler);
+        EventHandler.remove(wrapper, 'focusout', this.focusOutHandler);
+        if (this.toolbarSettings.items.length) {
+            EventHandler.remove(this.getToolElem(), 'click', this.toolbarClickHandler);
+        }
+        if (form) {
+            EventHandler.remove(form, 'reset', this.formResetHandler);
+        }
+    }
+    clickHandler(e) {
+        this.selectHandler(e);
+    }
+    selectHandler(e, isKey) {
+        let isSelect = true;
+        let currSelIdx;
+        let li = closest(e.target, '.' + cssClass.li);
+        let selectedLi = [li];
+        if (li) {
+            currSelIdx = [].slice.call(li.parentElement.children).indexOf(li);
+            if (!this.selectionSettings.showCheckbox) {
+                if ((e.ctrlKey || Browser.isDevice) && li.classList.contains(cssClass.selected)) {
+                    li.classList.remove(cssClass.selected);
+                    li.removeAttribute('aria-selected');
+                    isSelect = false;
+                }
+                else if (!(this.selectionSettings.mode === 'Multiple' && (e.ctrlKey || Browser.isDevice))) {
+                    this.getSelectedItems().forEach((ele) => {
+                        ele.removeAttribute('aria-selected');
+                    });
+                    removeClass(this.getSelectedItems(), cssClass.selected);
+                }
+            }
+            if (e.shiftKey && !this.selectionSettings.showCheckbox && this.selectionSettings.mode !== 'Single') {
+                selectedLi = [].slice.call(li.parentElement.children)
+                    .slice(Math.min(currSelIdx, this.prevSelIdx), Math.max(currSelIdx, this.prevSelIdx) + 1)
+                    .filter((ele) => { return ele.classList.contains(cssClass.li); });
+            }
+            else {
+                this.prevSelIdx = [].slice.call(li.parentElement.children).indexOf(li);
+            }
+            if (isSelect) {
+                if (!this.selectionSettings.showCheckbox) {
+                    addClass(selectedLi, cssClass.selected);
+                }
+                selectedLi.forEach((ele) => {
+                    ele.setAttribute('aria-selected', 'true');
+                });
+                this.list.setAttribute('aria-activedescendant', li.id);
+            }
+            if (!isKey) {
+                this.notify('updatelist', { li: li, e: e });
+            }
+            this.updateSelectedOptions();
+            if (isSelect) {
+                this.trigger('select', { element: li, item: this.getDataByValue(li.getAttribute('data-value')) });
+            }
+            this.trigger('change', { value: this.value });
+        }
+    }
+    toolbarClickHandler(e) {
+        let btn = closest(e.target, 'button');
+        if (btn) {
+            switch (btn.getAttribute('data-value')) {
+                case 'moveUp':
+                    this.moveUpDown(true);
+                    break;
+                case 'moveDown':
+                    this.moveUpDown();
+                    break;
+                case 'moveTo':
+                    this.moveTo();
+                    break;
+                case 'moveFrom':
+                    this.moveFrom();
+                    break;
+                case 'moveAllTo':
+                    this.moveAllTo();
+                    break;
+                case 'moveAllFrom':
+                    this.moveAllFrom();
+                    break;
+            }
+        }
+    }
+    moveUpDown(isUp, isKey) {
+        let elems = [].slice.call(this.list.getElementsByClassName(cssClass.selected));
+        if ((isUp && this.ulElement.firstElementChild.classList.contains(cssClass.selected))
+            || (!isUp && this.ulElement.lastElementChild.classList.contains(cssClass.selected))) {
+            return;
+        }
+        (isUp ? elems : elems.reverse()).forEach((ele) => {
+            let idx = Array.prototype.indexOf.call(this.ulElement.children, ele);
+            moveTo(this.ulElement, this.ulElement, [idx], isUp ? idx - 1 : idx + 2);
+            this.changeData(idx, isUp ? idx - 1 : idx + 1);
+        });
+        if (isKey) {
+            this.list.focus();
+        }
+        this.updateToolBarState();
+    }
+    moveTo() {
+        this.moveData(this, this.getScopedListBox());
+    }
+    moveFrom() {
+        this.moveData(this.getScopedListBox(), this);
+    }
+    moveData(fListBox, tListBox, isKey) {
+        let idx = [];
+        let listData = [].slice.call(fListBox.listData);
+        let tListData = [].slice.call(tListBox.listData);
+        let data = [];
+        let elems = fListBox.getSelectedItems();
+        if (elems.length) {
+            if (!this.selectionSettings.showCheckbox) {
+                removeClass(elems, cssClass.selected);
+            }
+            elems.forEach((ele) => {
+                idx.push(Array.prototype.indexOf.call(fListBox.ulElement.children, ele));
+            });
+            moveTo(fListBox.ulElement, tListBox.ulElement, idx);
+            let childCnt = fListBox.ulElement.childElementCount;
+            if (elems.length === 1 && childCnt) {
+                fListBox.ulElement.children[childCnt === idx[0] ? idx[0] - 1 : idx[0]].classList.add(cssClass.selected);
+            }
+            if (isKey) {
+                this.list.focus();
+            }
+            for (let i = idx.length - 1; i >= 0; i--) {
+                data.push(listData.splice(idx[i], 1)[0]);
+            }
+            fListBox.listData = listData;
+            fListBox.setProperties({ dataSource: listData }, true);
+            data.reverse().forEach((datum) => {
+                tListData.push(datum);
+            });
+            tListBox.listData = tListData;
+            tListBox.setProperties({ dataSource: tListData }, true);
+            fListBox.updateSelectedOptions();
+            if (this.selectionSettings.showCheckbox) {
+                tListBox.updateSelectedOptions();
+            }
+        }
+    }
+    moveAllTo() {
+        this.moveAllData(this, this.getScopedListBox());
+    }
+    moveAllFrom() {
+        this.moveAllData(this.getScopedListBox(), this);
+    }
+    moveAllData(fListBox, tListBox, isKey) {
+        let listData = [].slice.call(tListBox.listData);
+        if (!this.selectionSettings.showCheckbox) {
+            removeClass(this.getSelectedItems(), cssClass.selected);
+        }
+        moveTo(fListBox.ulElement, tListBox.ulElement, Array.apply(null, { length: fListBox.ulElement.childElementCount }).map(Number.call, Number));
+        if (isKey) {
+            this.list.focus();
+        }
+        [].slice.call(fListBox.listData).forEach((data) => {
+            listData.push(data);
+        });
+        tListBox.listData = listData;
+        fListBox.listData = [];
+        tListBox.setProperties({ dataSource: listData }, true);
+        fListBox.setProperties({ dataSource: [] }, true);
+        fListBox.updateSelectedOptions();
+        if (this.selectionSettings.showCheckbox) {
+            tListBox.updateSelectedOptions();
+        }
+    }
+    changeData(fromIdx, toIdx) {
+        let listData = [].slice.call(this.listData);
+        listData.splice(toIdx, 0, listData.splice(fromIdx, 1)[0]);
+        this.listData = listData;
+        this.setProperties({ dataSource: listData }, true);
+    }
+    getSelectedItems() {
+        let ele = [];
+        if (this.selectionSettings.showCheckbox) {
+            [].slice.call(this.ulElement.getElementsByClassName('e-check')).forEach((cbox) => {
+                ele.push(closest(cbox, '.' + cssClass.li));
+            });
+        }
+        else {
+            ele = [].slice.call(this.ulElement.getElementsByClassName(cssClass.selected));
+        }
+        return ele;
+    }
+    getScopedListBox() {
+        let listObj;
+        [].slice.call(document.querySelectorAll(this.scope)).forEach((ele) => {
+            if (getComponent(ele, this.getModuleName())) {
+                listObj = getComponent(ele, this.getModuleName());
+            }
+        });
+        return listObj;
+    }
+    getDragArgs(args, isDragEnd) {
+        let data = [];
+        let elems = this.getSelectedItems();
+        if (elems.length) {
+            elems.pop();
+            if (isDragEnd) {
+                elems.push(args.target);
+            }
+        }
+        else {
+            elems = [args.target];
+        }
+        elems.forEach((ele) => {
+            data.push(this.getDataByValue(ele.getAttribute('data-value')));
+        });
+        return { elements: elems, items: data };
+    }
+    keyDownHandler(e) {
+        if ([32, 35, 36, 37, 38, 39, 40, 65].indexOf(e.keyCode) > -1) {
+            e.preventDefault();
+            if (e.keyCode === 32) {
+                this.selectHandler({
+                    target: this.ulElement.getElementsByClassName('e-focused')[0],
+                    ctrlKey: e.ctrlKey, shiftKey: e.shiftKey
+                });
+            }
+            else if (e.keyCode === 65 && e.ctrlKey) {
+                this.selectAll();
+            }
+            else if ((e.keyCode === 38 || e.keyCode === 40) && e.ctrlKey && e.shiftKey) {
+                this.moveUpDown(e.keyCode === 38 ? true : false, true);
+            }
+            else if ((this.toolbarSettings.items.length || this.tBListBox) && (e.keyCode === 39 || e.keyCode === 37) && e.ctrlKey) {
+                let listObj = this.tBListBox || this.getScopedListBox();
+                if (e.keyCode === 39) {
+                    e.shiftKey ? this.moveAllData(this, listObj, true) : this.moveData(this, listObj, true);
+                }
+                else {
+                    e.shiftKey ? this.moveAllData(listObj, this, true) : this.moveData(listObj, this, true);
+                }
+            }
+            else if (e.keyCode !== 37 && e.keyCode !== 39) {
+                this.upDownKeyHandler(e);
+            }
+        }
+    }
+    upDownKeyHandler(e) {
+        let ul = this.ulElement;
+        let defaultIdx = (e.keyCode === 40 || e.keyCode === 36) ? 0 : ul.childElementCount - 1;
+        let fliIdx = defaultIdx;
+        let fli = ul.getElementsByClassName('e-focused')[0] || ul.getElementsByClassName('e-selected')[0];
+        if (fli) {
+            if (e.keyCode !== 35 && e.keyCode !== 36) {
+                fliIdx = Array.prototype.indexOf.call(ul.children, fli);
+                e.keyCode === 40 ? fliIdx++ : fliIdx--;
+                if (fliIdx < 0 || fliIdx > ul.childElementCount - 1) {
+                    return;
+                }
+            }
+            removeClass([fli], 'e-focused');
+        }
+        let cli = ul.children[fliIdx];
+        fliIdx = this.getValidIndex(cli, fliIdx, e.keyCode);
+        if (fliIdx === -1) {
+            addClass([fli], 'e-focused');
+            return;
+        }
+        ul.children[fliIdx].focus();
+        ul.children[fliIdx].classList.add('e-focused');
+        if (!e.ctrlKey) {
+            this.selectHandler({ target: ul.children[fliIdx], ctrlKey: e.ctrlKey, shiftKey: e.shiftKey }, true);
+        }
+    }
+    focusOutHandler() {
+        let ele = this.list.getElementsByClassName('e-focused')[0];
+        if (ele) {
+            ele.classList.remove('e-focused');
+        }
+    }
+    getValidIndex(cli, index, keyCode) {
+        let cul = this.ulElement;
+        if (cli.classList.contains('e-disabled') || cli.classList.contains(cssClass.group)) {
+            (keyCode === 40 || keyCode === 36) ? index++ : index--;
+        }
+        if (index < 0 || index === cul.childElementCount) {
+            return -1;
+        }
+        cli = cul.children[index];
+        if (cli.classList.contains('e-disabled') || cli.classList.contains(cssClass.group)) {
+            index = this.getValidIndex(cli, index, keyCode);
+        }
+        return index;
+    }
+    updateSelectedOptions() {
+        let selectedOptions = [];
+        if (this.selectionSettings.showCheckbox) {
+            [].slice.call(this.ulElement.getElementsByClassName('e-check')).forEach((ele) => {
+                selectedOptions.push(this.getTextByValue(closest(ele, 'li').getAttribute('data-value')));
+            });
+        }
+        else {
+            [].slice.call(this.list.getElementsByClassName(cssClass.selected)).forEach((ele) => {
+                if (!ele.classList.contains('e-grabbed')) {
+                    selectedOptions.push(this.getTextByValue(ele.getAttribute('data-value')));
+                }
+            });
+        }
+        this.setProperties({ value: selectedOptions }, true);
+        this.updateSelectTag();
+        this.updateToolBarState();
+        if (this.tBListBox) {
+            this.tBListBox.updateToolBarState();
+        }
+    }
+    setSelection(values = this.value, isSelect = true) {
+        let li;
+        values.forEach((value) => {
+            li = this.list.querySelector('[data-value="' + this.getTextByValue(value) + '"]');
+            if (li) {
+                if (this.selectionSettings.showCheckbox) {
+                    this.notify('updatelist', { li: li });
+                }
+                else {
+                    isSelect ? li.classList.add(cssClass.selected) : li.classList.remove(cssClass.selected);
+                }
+            }
+        });
+        this.updateSelectTag();
+    }
+    updateSelectTag() {
+        let ele = this.getSelectTag();
+        ele.innerHTML = '';
+        this.value.forEach((value) => {
+            ele.innerHTML += '<option selected value="' + value + '"></option>';
+        });
+    }
+    updateToolBarState() {
+        if (this.toolbarSettings.items.length) {
+            let listObj = this.getScopedListBox();
+            let wrap = this.list.parentElement.getElementsByClassName('e-listbox-tool')[0];
+            this.toolbarSettings.items.forEach((value) => {
+                let btn = wrap.querySelector('[data-value="' + value + '"]');
+                switch (value) {
+                    case 'moveAllTo':
+                        btn.disabled = this.ulElement.childElementCount ? false : true;
+                        break;
+                    case 'moveAllFrom':
+                        btn.disabled = listObj.ulElement.childElementCount ? false : true;
+                        break;
+                    case 'moveFrom':
+                        btn.disabled = listObj.value.length ? false : true;
+                        break;
+                    case 'moveUp':
+                        btn.disabled = this.value.length
+                            && !this.ulElement.children[0].classList.contains(cssClass.selected) ? false : true;
+                        break;
+                    case 'moveDown':
+                        btn.disabled = this.value.length
+                            && !this.ulElement.children[this.ulElement.childElementCount - 1]
+                                .classList.contains(cssClass.selected) ? false : true;
+                        break;
+                    default:
+                        btn.disabled = this.value.length ? false : true;
+                        break;
+                }
+            });
+        }
+    }
+    getSelectTag() {
+        return this.list.getElementsByClassName('e-hidden-select')[0];
+    }
+    getToolElem() {
+        return this.list.parentElement.getElementsByClassName('e-listbox-tool')[0];
+    }
+    formResetHandler() {
+        this.value = this.initialSelectedOptions;
+    }
+    /**
+     * Return the module name.
+     * @private
+     */
+    getModuleName() {
+        return 'listbox';
+    }
+    /**
+     * Get the properties to be maintained in the persisted state.
+     */
+    getPersistData() {
+        return this.addOnPersist(['value']);
+    }
+    destroy() {
+        if (this.element.tagName === 'EJS-LISTBOX') {
+            this.element.innerHTML = '';
+        }
+        else {
+            this.element.style.display = 'inline-block';
+            this.list.parentElement.insertBefore(this.element, this.list);
+        }
+        this.unwireEvents();
+        super.destroy();
+    }
+    /**
+     * Called internally if any of the property value changed.
+     * @returns void
+     * @private
+     */
+    onPropertyChanged(newProp, oldProp) {
+        let wrap = this.toolbarSettings.items.length ? this.list.parentElement : this.list;
+        super.onPropertyChanged(newProp, oldProp);
+        this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp);
+        for (let prop of Object.keys(newProp)) {
+            switch (prop) {
+                case 'cssClass':
+                    if (oldProp.cssClass) {
+                        removeClass([wrap], oldProp.cssClass.split(' '));
+                    }
+                    if (newProp.cssClass) {
+                        addClass([wrap], newProp.cssClass.split(' '));
+                    }
+                    break;
+                case 'enableRtl':
+                    if (newProp.enableRtl) {
+                        wrap.classList.add('e-rtl');
+                    }
+                    else {
+                        wrap.classList.remove('e-rtl');
+                    }
+                    break;
+                case 'value':
+                    removeClass(this.list.querySelectorAll('.' + cssClass.selected), cssClass.selected);
+                    this.setSelection();
+                    break;
+                case 'height':
+                    this.setHeight();
+                    break;
+                case 'enabled':
+                    this.setEnable();
+                    break;
+                case 'toolbarSettings':
+                    let pos = newProp.toolbarSettings.position;
+                    let toolElem = this.getToolElem();
+                    if (pos) {
+                        removeClass([wrap], ['e-right', 'e-left']);
+                        wrap.classList.add('e-' + pos.toLowerCase());
+                        if (pos === 'Left') {
+                            wrap.insertBefore(toolElem, this.list);
+                        }
+                        else {
+                            wrap.appendChild(toolElem);
+                        }
+                    }
+                    if (newProp.toolbarSettings.items) {
+                        toolElem.innerHTML = '';
+                        this.createButtons(toolElem);
+                    }
+                    break;
+            }
+        }
+    }
+};
+__decorate$5([
+    Property('')
+], ListBox.prototype, "cssClass", void 0);
+__decorate$5([
+    Property([])
+], ListBox.prototype, "value", void 0);
+__decorate$5([
+    Property('')
+], ListBox.prototype, "height", void 0);
+__decorate$5([
+    Property(false)
+], ListBox.prototype, "allowDragAndDrop", void 0);
+__decorate$5([
+    Property('')
+], ListBox.prototype, "scope", void 0);
+__decorate$5([
+    Event()
+], ListBox.prototype, "beforeItemRender", void 0);
+__decorate$5([
+    Event()
+], ListBox.prototype, "select", void 0);
+__decorate$5([
+    Event()
+], ListBox.prototype, "dragStart", void 0);
+__decorate$5([
+    Event()
+], ListBox.prototype, "drag", void 0);
+__decorate$5([
+    Event()
+], ListBox.prototype, "drop", void 0);
+__decorate$5([
+    Event()
+], ListBox.prototype, "dataBound", void 0);
+__decorate$5([
+    Property(null)
+], ListBox.prototype, "groupTemplate", void 0);
+__decorate$5([
+    Property('No Records Found')
+], ListBox.prototype, "noRecordsTemplate", void 0);
+__decorate$5([
+    Property('The Request Failed')
+], ListBox.prototype, "actionFailureTemplate", void 0);
+__decorate$5([
+    Property(1000)
+], ListBox.prototype, "zIndex", void 0);
+__decorate$5([
+    Property(false)
+], ListBox.prototype, "ignoreAccent", void 0);
+__decorate$5([
+    Complex({}, ToolbarSettings)
+], ListBox.prototype, "toolbarSettings", void 0);
+__decorate$5([
+    Complex({}, SelectionSettings)
+], ListBox.prototype, "selectionSettings", void 0);
+ListBox = __decorate$5([
+    NotifyPropertyChanges
+], ListBox);
+
 /**
  * export all modules from current location
  */
 
-export { incrementalSearch, Search, highlightSearch, revertHighlightSearch, FieldSettings, dropDownBaseClasses, DropDownBase, dropDownListClasses, DropDownList, ComboBox, AutoComplete, MultiSelect, CheckBoxSelection };
+/**
+ * export all modules from current location
+ */
+
+export { incrementalSearch, Search, highlightSearch, revertHighlightSearch, FieldSettings, dropDownBaseClasses, DropDownBase, dropDownListClasses, DropDownList, ComboBox, AutoComplete, MultiSelect, CheckBoxSelection, SelectionSettings, ToolbarSettings, ListBox };
 //# sourceMappingURL=ej2-dropdowns.es2015.js.map

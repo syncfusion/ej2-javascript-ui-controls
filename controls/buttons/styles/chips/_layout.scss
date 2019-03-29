@@ -219,6 +219,12 @@
       height: $chip-touch-delete-icon-size;
       margin: $chip-touch-delete-icon-margin;
       width: $chip-touch-delete-icon-size;
+
+      @if $skin-name == 'bootstrap4' {
+        &.e-dlt-btn::before {
+          font-size: small;
+        }
+      }
     }
 
     &.e-multi-selection .e-chip {

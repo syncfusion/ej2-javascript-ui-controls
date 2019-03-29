@@ -34,6 +34,7 @@ export class Sort implements IAction {
     private lastCols: string[];
     //Module declarations   
     private parent: IGrid;
+    private currentTarget: Element = null;
 
     /**
      * Constructor for Grid sorting module
@@ -179,8 +180,12 @@ export class Sort implements IAction {
         }
         if (this.contentRefresh) {
             let args: Object = this.sortSettings.columns.length ? {
-                columnName: this.columnName, direction: this.direction, requestType: 'sorting', type: events.actionBegin
-            } : { requestType: 'sorting', type: events.actionBegin, cancel: false };
+                columnName: this.columnName, direction: this.direction, requestType: 'sorting',
+                type: events.actionBegin, target: this.currentTarget
+            } : {
+                requestType: 'sorting', type: events.actionBegin, cancel: false,
+                    target: this.currentTarget
+                };
             this.parent.notify(events.modelChanged, args);
         }
         this.refreshSortSettings();
@@ -242,7 +247,7 @@ export class Sort implements IAction {
                 this.isRemove = true;
                 if (this.isModelChanged) {
                     this.parent.notify(events.modelChanged, {
-                        requestType: 'sorting', type: events.actionBegin
+                        requestType: 'sorting', type: events.actionBegin, target: this.currentTarget
                     });
                 }
                 break;
@@ -339,6 +344,7 @@ export class Sort implements IAction {
     }
 
     private clickHandler(e: MouseEvent): void {
+        this.currentTarget = null;
         this.popUpClickHandler(e);
         let target: Element = closest(e.target as Element, '.e-headercell');
         if (target && !(e.target as Element).classList.contains('e-grptogglebtn') &&
@@ -380,6 +386,7 @@ export class Sort implements IAction {
     private initiateSort(target: Element, e: MouseEvent | KeyboardEventArgs, column: Column): void {
         let gObj: IGrid = this.parent;
         let field: string = column.field;
+        this.currentTarget = e.target as Element;
         let direction: SortDirection = !target.querySelectorAll('.e-ascending').length ? 'Ascending' :
             'Descending';
         if (e.shiftKey || (this.sortSettings.allowUnsort && target.querySelectorAll('.e-descending').length)

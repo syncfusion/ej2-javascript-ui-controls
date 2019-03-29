@@ -554,14 +554,14 @@ describe('Chart Control', () => {
         });
         it('checking before the legend name chage', () => {
             element = document.getElementById('seriesData_chart_legend_element');
-            expect(element.getAttribute('x') === '832' || element.getAttribute('x') === '833').toBe(true);
+            expect(element.getAttribute('x') === '831' || element.getAttribute('x') === '833').toBe(true);
             element = document.getElementById('seriesData_chart_legend_text_0');
             expect(element.textContent).toEqual('Gold');
         });
         it('checking with changing name', (done: Function) => {
             loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('seriesData_chart_legend_element');
-                expect(element.getAttribute('x') === '743' || element.getAttribute('x') === '752').toBe(true);
+                expect(element.getAttribute('x') === '744' || element.getAttribute('x') === '752').toBe(true);
                 element = document.getElementById('seriesData_chart_legend_text_0');
                 expect(element.textContent).toEqual('Olymbic gold medal');
                 done();
@@ -578,6 +578,36 @@ describe('Chart Control', () => {
             };
             chart.loaded = loaded;
             chart.series[0].query = new Query().take(2);
+            chart.refresh();
+        });
+        it('checking materialDark', (done: Function) => {
+            loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('seriesDataSeriesGroup0');
+                expect(element.childElementCount).toEqual(3);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.theme = 'MaterialDark';
+            chart.refresh();
+        });
+        it('checking fabricDark', (done: Function) => {
+            loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('seriesDataSeriesGroup0');
+                expect(element.childElementCount).toEqual(3);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.theme = 'FabricDark';
+            chart.refresh();
+        });
+        it('checking bootstrapDark', (done: Function) => {
+            loaded = (args: ILoadedEventArgs) => {
+                element = document.getElementById('seriesDataSeriesGroup0');
+                expect(element.childElementCount).toEqual(3);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.theme = 'BootstrapDark';
             chart.refresh();
         });
     });

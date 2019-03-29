@@ -58,7 +58,7 @@ describe('Context Menu Testing - 1', () => {
         expect(menu.contextMenuInstance.element.style.display).toBe('none');
     });
     it('Context Menu Opening Texting without selection', () => {
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         let event: MouseEvent = document.createEvent('MouseEvent');
         event.initEvent('contextmenu', true, true);
         editor.viewer.viewerContainer.dispatchEvent(event);
@@ -74,7 +74,7 @@ describe('Context Menu Testing - 1', () => {
         imageResizer.isImageResizing = false;
     });
     it('Context Menu Opening Texting with selection', () => {
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.selection.selectAll();
         let event: MouseEvent = document.createEvent('MouseEvent');
         event.initEvent('contextmenu', true, true);
@@ -119,7 +119,7 @@ describe('Context Menu Testing - 2', () => {
         }, 1000);
     });
     it('Open Context Menu in read only mode', () => {
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.isReadOnly = true;
         let event: MouseEvent = document.createEvent('MouseEvent');
         event.initEvent('contextmenu', true, true);
@@ -262,7 +262,7 @@ describe('handle Context menu item validation-1 for editing', () => {
         }, 1000);
     });
     it('cut,copy and paste', () => {
-        editor.editorModule.insertText('Adventure Works cycles', false);
+        editor.editorModule.insertText('Adventure Works cycles');
         let event: any = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, altKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
         menu.handleContextMenuItem('container_contextmenu_cut');
@@ -295,7 +295,7 @@ describe('handle Context menu item validation-1 for editing', () => {
     });
     it('paragraph dialog and hyperlink dilaog open using context menu', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion software', false);
+        editor.editorModule.insertText('Syncfusion software');
         let event: MouseEvent = document.createEvent('MouseEvent');
         event.initEvent('contextmenu', true, true);
         editor.viewer.viewerContainer.dispatchEvent(event);
@@ -349,7 +349,7 @@ describe('handle Context menu item validation-2 for editing', () => {
     });
     it('open and copy hyperlink', () => {
         editor.openBlank()
-        editor.editorModule.insertText('www.google.com', false);
+        editor.editorModule.insertText('www.google.com');
         editor.editorModule.onEnter();
         editor.selection.handleUpKey();
         editor.selection.handleRightKey();

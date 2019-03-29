@@ -125,6 +125,12 @@
           .e-member-editor-container ul {
             margin-left: $pivotgrid-member-filter-list-padding-size;
             overflow: hidden;
+
+            li {
+              .e-list-text {
+                font-family: $field-list-font-family;
+              }
+            }
           }
 
           .e-disable {
@@ -260,13 +266,13 @@
       border-bottom: 0;
       border-style: solid;
 
+      .e-toolbar-item .e-tbar-btn.e-btn .e-icons.e-btn-icon {
+        font-size: 16px;
+      }
+
       .e-menu-wrapper {
         background-color: transparent;
         border: none;
-
-        ul.e-menu:not(.e-vertical) {
-          padding: 0 5px !important;
-        }
 
         ul .e-menu-item {
           height: $pivotgrid-menubar-height;
@@ -281,10 +287,6 @@
 
       .e-toolbar-item.e-template {
           padding: 0 !important;
-      }
-
-      .e-toolbar-items .e-toolbar-item .e-tbar-btn.e-btn {
-        padding: 0 5px;
       }
 
       .e-reportlist-label {
@@ -308,6 +310,10 @@
       }
     }
     // sass-lint:enable-all
+  }
+
+  .e-pivotview-disable-icon {
+    visibility: hidden;
   }
 
   .e-pivotview-report-inner {

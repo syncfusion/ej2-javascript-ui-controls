@@ -134,7 +134,7 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
      * The symbol used to show input positions in the MaskedTextBox.
      * For more information on prompt-character, refer to
      * [prompt-character](../maskedtextbox/mask-configuration#prompt-character/).
-     * @default _
+     * @default '_'
      */
     @Property('_')
     public promptChar: string;

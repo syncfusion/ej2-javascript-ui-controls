@@ -61,12 +61,12 @@ export class TaskProcessor extends DateProcessor {
     }
     private constructDataSource(dataSource: Object[]): void {
         let mappingData: Object[] = new DataManager(dataSource).executeLocal(new Query()
-            .group(this.parent.taskFields.parentId));
+            .group(this.parent.taskFields.parentID));
         let rootData: Object[] = [];
         for (let i: number = 0; i < mappingData.length; i++) {
             let groupData: Group = mappingData[i];
             if (!isNullOrUndefined(groupData.key)) {
-                let index: number = this.taskIds.indexOf(groupData.key);
+                let index: number = this.taskIds.indexOf(groupData.key.toString());
                 if (index > -1) {
                     if (!isNullOrUndefined(groupData.key)) {
                         dataSource[index][this.parent.taskFields.child] = groupData.items;
@@ -80,7 +80,7 @@ export class TaskProcessor extends DateProcessor {
     }
     private cloneDataSource(): void {
         let taskIdMapping: string = this.parent.taskFields.id;
-        let parentIdMapping: string = this.parent.taskFields.parentId;
+        let parentIdMapping: string = this.parent.taskFields.parentID;
         if (!isNullOrUndefined(taskIdMapping) && !isNullOrUndefined(parentIdMapping)) {
             let data: object[] = [];
             for (let i: number = 0; i < this.dataArray.length; i++) {
@@ -239,9 +239,9 @@ export class TaskProcessor extends DateProcessor {
         let taskSettings: TaskFieldsModel = this.parent.taskFields;
         let dataManager: Object[] | DataManager = this.parent.dataSource;
         if (isLoad) {
-            if (taskSettings.parentId || (dataManager instanceof DataManager &&
+            if (taskSettings.parentID || (dataManager instanceof DataManager &&
                 dataManager.dataSource.json && dataManager.dataSource.offline)) {
-                if (taskSettings.parentId) {
+                if (taskSettings.parentID) {
                     let id: string = data[taskSettings.id];
                     let index: number = this.taskIds.indexOf(id);
                     let tempData: object = (index > -1) ? this.dataArray[index] : {};
@@ -535,8 +535,8 @@ export class TaskProcessor extends DateProcessor {
             let resourceData: Object[] = ganttProp.resourceInfo;
             let resourcesId: number[] = []; let resourcesName: string[] = [];
             for (let i: number = 0; i < resourceData.length; i++) {
-                resourcesId.push(resourceData[i][this.parent.resourceIDMapping].toString());
-                resourcesName.push(resourceData[i][this.parent.resourceNameMapping].toString());
+                resourcesId.push(resourceData[i][this.parent.resourceIDMapping]);
+                resourcesName.push(resourceData[i][this.parent.resourceNameMapping]);
             }
             this.parent.setRecordValue('resourceNames', resourcesName.join(','), ganttProp, true);
             this.parent.setRecordValue('taskData.' + columnMapping[fieldName], resourcesId, ganttData);

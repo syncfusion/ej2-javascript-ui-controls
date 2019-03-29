@@ -126,7 +126,7 @@ describe('InPlace-Editor Control', () => {
     describe('Value element testing', () => {
         let ele: HTMLElement;
         let valueEle: HTMLElement;
-        let editorObj: InPlaceEditor;
+        let editorObj: any;
         let valueWrapper: HTMLElement;
         beforeAll((done: Function): void => {
             editorObj = renderEditor({});
@@ -154,6 +154,20 @@ describe('InPlace-Editor Control', () => {
             expect(valueEle.classList.contains(classes.HIDE)).toEqual(false);
         });
         it('Initial load with open class availability testing', () => {
+            expect(valueEle.classList.contains(classes.OPEN)).toEqual(false);
+        });
+        it('Without component rendering setValue method testing', () => {
+            editorObj.setValue();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.classList.contains(classes.OPEN)).toEqual(false);
+        });
+        it('Without component rendering getDropDownsValue method testing', () => {
+            editorObj.getDropDownsValue();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.classList.contains(classes.OPEN)).toEqual(false);
+        });
+        it('Without form element - toggleErrorClass method testing', () => {
+            editorObj.toggleErrorClass(false);
             expect(valueEle.classList.contains(classes.OPEN)).toEqual(false);
         });
     });
@@ -829,6 +843,12 @@ describe('InPlace-Editor Control', () => {
             editorObj.dataBind();
             expect(ele.getAttribute('title')).toEqual('Double click to edit');
             valueWrapper.dispatchEvent(new MouseEvent("dblclick"));
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(editorObj.enableEditMode).toEqual(true);
+            editorObj.editableOn = 'EditIconClick';
+            editorObj.dataBind();
+            let iconEle: HTMLElement = <HTMLElement>select('.' + classes.OVERLAY_ICON, valueWrapper);
+            iconEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(editorObj.enableEditMode).toEqual(true);
         });
@@ -1917,6 +1937,9 @@ describe('InPlace-Editor Control', () => {
         it('Loading element availability testing', () => {
             expect(selectAll('.' + classes.LOADING, ele).length === 1).toEqual(true);
         });
+        it('Editable component inside loading element availability testing', () => {
+            expect(selectAll('.' + classes.INPUT + ' .' + classes.LOADING, ele).length === 1).toEqual(true);
+        });
         it('Form element and it classes availability testing', () => {
             let formEle: HTMLElement = <HTMLElement>select('form', ele);
             expect(isNOU(formEle)).toEqual(false);
@@ -2051,9 +2074,9 @@ describe('InPlace-Editor Control', () => {
                 expect(select('.' + classes.ROOT + ' .' + classes.VALUE_WRAPPER, document.body).classList.contains(classes.OPEN)).toEqual(true);
                 expect(selectAll('.' + classes.ROOT_TIP, document.body).length === 1).toEqual(true);
                 document.body.style.minHeight = '';
+                Browser.userAgent = currentUA;
                 done();
             }, 500);
-            Browser.userAgent = currentUA;
         });
         it('Resize with testing', (done: Function) => {
             destroy(editorObj);
@@ -2187,6 +2210,50 @@ describe('InPlace-Editor Control', () => {
                 expect(failArgs['value']).toEqual('Syncfusion');
                 done();
             }, 4000);
+        });
+        it('WebApi adaptor with failure testing', (done: Function) => {
+            editorObj = renderEditor({
+                primaryKey: 'text',
+                name: 'Game',
+                mode: 'Inline',
+                value: 'Syncfusion',
+                adaptor: 'WebApiAdaptor',
+                url: 'https://ej2services.syncfusion.com/development/web-services/api/Editor/Updates',
+                actionBegin: begin,
+                actionFailure: fail
+            });
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            editorObj.save();
+            setTimeout(() => {
+                expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 'text', value: 'Syncfusion' }, name: "actionBegin" });
+                expect(failArgs['name']).toEqual('actionFailure');
+                expect(failArgs['value']).toEqual('Syncfusion');
+                done();
+            }, 2000);
+        });
+        it('OData adaptor with failure testing', (done: Function) => {
+            editorObj = renderEditor({
+                primaryKey: 'text',
+                name: 'Game',
+                mode: 'Inline',
+                value: 'Syncfusion',
+                adaptor: 'ODataV4Adaptor',
+                url: 'https://ej2services.syncfusion.com/development/web-services/odata/EditDatas',
+                actionBegin: begin,
+                actionFailure: fail
+            });
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            editorObj.save();
+            setTimeout(() => {
+                expect(beginArgs).toEqual({ data: { name: 'Game', primaryKey: 'text', value: 'Syncfusion' }, name: "actionBegin" });
+                expect(failArgs['name']).toEqual('actionFailure');
+                expect(failArgs['value']).toEqual('Syncfusion');
+                done();
+            }, 2000);
         });
         it('Json adaptor with custom data testing', (done: Function) => {
             editorObj = renderEditor({

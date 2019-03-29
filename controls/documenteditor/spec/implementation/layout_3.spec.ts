@@ -3286,12 +3286,12 @@ describe('Page Break Layout Validation', () => {
         expect(editor.viewer.pages.length).toBe(2);
     });
     it('Insert Text Before Page Break', () => {
-        editor.editorModule.insertText('Syncfusion', false);
+        editor.editorModule.insertText('Syncfusion');
         expect(editor.selection.start.paragraph.bodyWidget.page.index).toBe(0);
     });
     it('Insert Text after page break', () => {
         editor.selection.moveToLineEnd();
-        editor.editorModule.insertText('Syncfusion', false);
+        editor.editorModule.insertText('Syncfusion');
         expect(editor.selection.start.paragraph.bodyWidget.page.index).toBe(1);
     });
     it('Handle Shifting after page break validation', () => {
@@ -3343,7 +3343,7 @@ describe('Insert Page break API validation', () => {
         expect(editor.viewer.pages.length).toBe(2);
     });
     it('Insert Text Before Page Break', () => {
-        editor.editorModule.insertText('Syncfusion', false);
+        editor.editorModule.insertText('Syncfusion');
         expect(editor.selection.start.paragraph.bodyWidget.page.index).toBe(1);
     });
 });
@@ -3372,7 +3372,7 @@ describe('Insert page break history preservation', () => {
         }, 750);
     });
     it('Insert Page break at paragraph start', () => {
-        editor.editor.insertText('Syncfusion Software', false);
+        editor.editor.insertText('Syncfusion Software');
         editor.selection.moveToLineStart();
         let event: any = {
             preventDefault: function () { return false },
@@ -3416,7 +3416,7 @@ describe('Insert page break history preservation', () => {
         }, 750);
     });
     it('Insert Page break at paragraph end', () => {
-        editor.editor.insertText('Syncfusion Software', false);
+        editor.editor.insertText('Syncfusion Software');
         let event: any = {
             preventDefault: function () { return false },
             which: 13
@@ -3459,7 +3459,7 @@ describe('Insert page break history preservation', () => {
         }, 750);
     });
     it('Insert Page break at paragraph middle', () => {
-        editor.editor.insertText('Syncfusion Software', false);
+        editor.editor.insertText('Syncfusion Software');
         editor.selection.movePreviousPosition();
         editor.selection.movePreviousPosition();
         let event: any = {
@@ -3536,9 +3536,9 @@ describe('Insert page break history preservation', () => {
         }, 750);
     });
     it('Insert Page break at paragraph middle', () => {
-        editor.editor.insertText('Syncfusion Software', false);
+        editor.editor.insertText('Syncfusion Software');
         editor.editor.onEnter();
-        editor.editor.insertText('Syncfusion Software', false);
+        editor.editor.insertText('Syncfusion Software');
         editor.selection.selectPosition(editor.documentStart, editor.documentStart);
         editor.editor.insertPageBreak();
         editor.editorHistory.undo();
@@ -3548,11 +3548,11 @@ describe('Insert page break history preservation', () => {
     });
     it('Insert Page Break on non empty selection', () => {
         editor.openBlank();
-        editor.editor.insertText('Syncfusion Software', false);
+        editor.editor.insertText('Syncfusion Software');
         editor.editor.onEnter();
-        editor.editor.insertText('Syncfusion Software', false);
+        editor.editor.insertText('Syncfusion Software');
         editor.editor.onEnter();
-        editor.editor.insertText('Syncfusion Software', false);
+        editor.editor.insertText('Syncfusion Software');
         editor.selection.selectPosition(editor.documentStart, editor.documentStart);
         editor.selection.moveNextPosition();
         editor.selection.moveNextPosition();
@@ -3645,7 +3645,7 @@ describe('Empty Header footer validation', () => {
     });
     it('insert text in Empty Header', () => {
         editor.selection.goToHeader();
-        editor.editor.insertText("Syncfusion", false);
+        editor.editor.insertText("Syncfusion");
         let page: Page = editor.viewer.pages[0];
         expect(page.headerWidget.isEmpty).toBe(false);
         expect((page.bodyWidgets[0].firstChild as ParagraphWidget).y).toBe(page.headerWidget.y + page.headerWidget.height);

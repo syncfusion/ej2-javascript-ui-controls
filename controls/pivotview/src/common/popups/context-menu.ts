@@ -43,11 +43,12 @@ export class PivotContextMenu {
             beforeOpen: this.onBeforeMenuOpen.bind(this),
             select: this.onSelectContextMenu.bind(this)
         };
-        this.parent.element.appendChild(createElement('ul', {
+        let cMenu: HTMLElement = createElement('ul', {
             id: this.parent.element.id + '_PivotContextMenu'
-        }));
+        });
+        this.parent.element.appendChild(cMenu);
         this.menuObj = new ContextMenu(menuOptions);
-        this.menuObj.appendTo('#' + this.parent.element.id + '_PivotContextMenu');
+        this.menuObj.appendTo(cMenu);
     }
     private onBeforeMenuOpen(args: MenuEventArgs): void {
         let items: HTMLLIElement[] = [].slice.call(args.element.querySelectorAll('li'));

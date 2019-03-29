@@ -85,6 +85,12 @@ export const chartResized: string = 'chartResized';
 export const chartAxisLabelRender: string = 'chartAxisLabelRender';
 /** @hidden */
 export const chartSeriesCreated: string = 'chartSeriesCreated';
+/** @hidden */
+export const aggregateCellInfo: string = 'aggregateCellInfo';
+/** @hidden */
+export const contextMenuClick: string = 'contextMenuClick';
+/** @hidden */
+export const contextMenuOpen: string = 'contextMenuOpen';
 
 /** 
  * Specifies pivot internal events

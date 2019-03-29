@@ -40,7 +40,7 @@ describe('Auto fit command ', () => {
         expect(table.tableHolder.getTotalWidth(0)).toBeGreaterThan(20);
     });
     it('Insert text in table', () => {
-        editor.editor.insertText('Syncfusion', false);
+        editor.editor.insertText('Syncfusion');
         let table: TableWidget = editor.selection.start.paragraph.associatedCell.ownerTable;
         expect(table.tableHolder.getTotalWidth(0)).toBeGreaterThan(25);
     });
@@ -90,7 +90,7 @@ describe('Auto fit command ', () => {
         let table: TableWidget = editor.selection.start.paragraph.associatedCell.ownerTable;
         let previousTableWidth: number = table.tableHolder.getTotalWidth(0);
         editor.editor.autoFitTable('FixedColumnWidth');
-        editor.editor.insertText('Syncfusion', false);
+        editor.editor.insertText('Syncfusion');
         table = editor.selection.start.paragraph.associatedCell.ownerTable;
         expect(table.tableHolder.getTotalWidth(0)).toBe(previousTableWidth);
     });

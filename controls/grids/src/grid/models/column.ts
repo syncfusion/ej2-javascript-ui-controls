@@ -16,14 +16,14 @@ export class Column {
      * The bounded columns can be sort, filter and group etc., 
      * The `field` name must be a valid JavaScript identifier, 
      * the first character must be an alphabet and should not contain spaces and special characters.
-     * @default undefined    
+     * @default ''    
      */
 
     public field: string;
 
     /**    
      * Gets the unique identifier value of the column. It is used to get the column object.   
-     * @default undefined    
+     * @default ''    
      */
 
     public uid: string;
@@ -31,27 +31,27 @@ export class Column {
     /**    
      * Defines the header text of column which is used to display in column header.    
      * If `headerText` is not defined, then field name value will be assigned to header text.   
-     * @default undefined    
+     * @default ''  
      */
 
     public headerText: string;
 
     /**    
      * Defines the width of the column in pixels or percentage.    
-     * @default undefined    
+     * @default ''   
      */
 
     public width: string | number;
 
     /**    
      * Defines the minimum Width of the column in pixels or percentage.    
-     * @default undefined    
+     * @default ''    
      */
     public minWidth: string | number;
 
     /**    
      * Defines the maximum width of the column in pixel or percentage, which will restrict resizing beyond this pixel or percentage.   
-     * @default undefined    
+     * @default ''    
      */
     public maxWidth: string | number;
 
@@ -284,7 +284,7 @@ export class Column {
     /**
      * Column visibility can change based on [`Media Queries`](http://cssmediaqueries.com/what-are-css-media-queries.html).
      * `hideAtMedia` accepts only valid Media Queries.
-     * @default undefined
+     * @default ''
      */
     public hideAtMedia?: string;
 
@@ -298,7 +298,7 @@ export class Column {
 
     /**    
      * Defines the type of component for editable.
-     * @default stringedit         
+     * @default 'stringedit'         
      */
     public editType: string;
 
@@ -578,37 +578,37 @@ export interface ColumnModel {
      * If the `field` name contains “dot”, then it is considered as complex binding. 
      * The `field` name must be a valid JavaScript identifier, 
      * the first character must be an alphabet and should not contain spaces and special characters.
-     * @default undefined    
+     * @default ''    
      */
     field?: string;
 
     /**    
      * Gets the unique identifier value of the column. It is used to get the object.   
-     * @default undefined    
+     * @default ''    
      */
     uid?: string;
 
     /**    
      * Defines the header text of column which is used to display in column header.    
      * If `headerText` is not defined, then field name value will be assigned to header text.   
-     * @default undefined    
+     * @default ''    
      */
     headerText?: string;
 
     /**    
      * Defines the width of the column in pixels or percentage.    
-     * @default undefined    
+     * @default ''    
      */
     width?: string | number;
 
     /**    
      * Defines the minimum width of the column in pixels or percentage.    
-     * @default undefined    
+     * @default ''    
      */
     minWidth?: string | number;
     /**    
      * Defines the maximum width of the column in pixel or percentage, which will restrict resizing beyond this pixel or percentage.  
-     * @default undefined    
+     * @default ''    
      */
     maxWidth?: string | number;
     /**   
@@ -892,7 +892,7 @@ export interface ColumnModel {
 
     /**    
      * Defines the type of component for editing.
-     * @default stringedit         
+     * @default 'stringedit'         
      */
     editType?: string;
 
@@ -936,7 +936,7 @@ export interface ColumnModel {
     /**
      * column visibility can change based on its [`Media Queries`](http://cssmediaqueries.com/what-are-css-media-queries.html). 
      * `hideAtMedia` accepts only valid Media Queries.
-     * @default undefined
+     * @default ''
      */
     hideAtMedia?: string;
 

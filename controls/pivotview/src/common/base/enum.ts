@@ -110,3 +110,27 @@ export declare type ChartSelectionMode =
     'DragY' |
     /** To select points, by dragging with respect to horizontal axis. */
     'DragX';
+/** 
+ * Defines the default items of context menu.
+ */
+export type PivotContextMenuItem =
+    /**  Enables drill through for the cell */
+    'Drillthrough' |
+    /**  expands the cell */
+    'Expand' |
+    /**  collapse the cell */
+    'Collapse' |
+    /**  Enables calculated field for the pivot grid */
+    'CalculatedField' |
+    /**  Export the grid as Pdf format */
+    'Pdf Export' |
+    /**  Export the grid as Excel format */
+    'Excel Export' |
+    /**  Export the grid as CSV format */
+    'Csv Export' |
+    /**  Sort the current column in ascending order */
+    'Sort Ascending' |
+    /**  Sort the current column in descending order */
+    'Sort Descending'|
+    /**  Sets aggregate type to sum */
+    'Aggregate';

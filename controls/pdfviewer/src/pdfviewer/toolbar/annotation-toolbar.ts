@@ -31,6 +31,7 @@ export class AnnotationToolbar {
     private toolbar: Tool;
     private colorPalette: ColorPicker;
     private opacitySlider: Slider;
+    private toolbarBorderHeight: number = 1;
     /**
      * @private
      */
@@ -215,6 +216,7 @@ export class AnnotationToolbar {
                 this.setCurrentColorInPicker();
             }
         }
+        this.colorPalette.refresh();
         this.updateColorInIcon(this.colorDropDownElement, this.colorPalette.value);
     }
 
@@ -225,13 +227,16 @@ export class AnnotationToolbar {
         if (this.pdfViewer.annotationModule.textMarkupAnnotationModule) {
             switch (this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAddMode) {
                 case 'Highlight':
-                    this.colorPalette.value = this.pdfViewer.annotationModule.textMarkupAnnotationModule.highlightColor;
+                    // tslint:disable-next-line:max-line-length
+                    this.colorPalette.setProperties({ 'value': this.pdfViewer.annotationModule.textMarkupAnnotationModule.highlightColor }, true);
                     break;
                 case 'Underline':
-                    this.colorPalette.value = this.pdfViewer.annotationModule.textMarkupAnnotationModule.underlineColor;
+                    // tslint:disable-next-line:max-line-length
+                    this.colorPalette.setProperties({ 'value': this.pdfViewer.annotationModule.textMarkupAnnotationModule.underlineColor }, true);
                     break;
                 case 'Strikethrough':
-                    this.colorPalette.value = this.pdfViewer.annotationModule.textMarkupAnnotationModule.strikethroughColor;
+                    // tslint:disable-next-line:max-line-length
+                    this.colorPalette.setProperties({ 'value': this.pdfViewer.annotationModule.textMarkupAnnotationModule.strikethroughColor }, true);
                     break;
             }
         }
@@ -239,6 +244,10 @@ export class AnnotationToolbar {
     }
 
     private colorDropDownOpen(): void {
+        if (Browser.isDevice) {
+            // tslint:disable-next-line:max-line-length
+           this.pdfViewerBase.getElement('_annotation_color-popup').style.left = '0px';
+        }
         this.colorPalette.refresh();
     }
 
@@ -306,7 +315,7 @@ export class AnnotationToolbar {
         document.body.appendChild(inputElement);
         let colorPicker: ColorPicker = new ColorPicker({
             inline: true, mode: 'Palette', cssClass: 'e-show-value', enableOpacity: false,
-            change: this.onColorPickerChange.bind(this), value: '#000000'
+            change: this.onColorPickerChange.bind(this), value: '#000000', showButtons: false,
         });
         if (this.pdfViewer.enableRtl) {
             colorPicker.enableRtl = true;
@@ -404,7 +413,6 @@ export class AnnotationToolbar {
             case this.pdfViewer.element.id + '_annotation_delete':
             case this.pdfViewer.element.id + '_annotation_deleteIcon':
                 this.pdfViewer.annotationModule.deleteAnnotation();
-                this.selectAnnotationDeleteItem(false);
                 break;
             case this.pdfViewer.element.id + '_annotation_close':
             case this.pdfViewer.element.id + '_annotation_closeIcon':
@@ -418,21 +426,34 @@ export class AnnotationToolbar {
      */
     public showAnnotationToolbar(element: HTMLElement): void {
         if (!this.isToolbarHidden) {
+            // tslint:disable-next-line
+            let annotationModule: any = this.pdfViewer.annotationModule;
             if (element) {
                 this.adjustViewer(false);
                 this.primaryToolbar.deSelectItem(element);
             }
-            this.deselectAllItems();
+            // tslint:disable-next-line:max-line-length           
+            if (annotationModule && annotationModule.textMarkupAnnotationModule && annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
+                this.enablePropertiesTool(annotationModule);
+            } else {
+                this.deselectAllItems();
+            }
             this.toolbarElement.style.display = 'none';
+            this.primaryToolbar.updateInteractionTools(true);
         } else {
             let toolBarInitialStatus: string = this.toolbarElement.style.display;
             this.toolbarElement.style.display = 'block';
             if (element) {
                 this.primaryToolbar.selectItem(element);
                 if (toolBarInitialStatus === 'none') {
+                    this.primaryToolbar.DisableInteractionTools();
                     this.adjustViewer(true);
                 }
             }
+        }
+        // tslint:disable-next-line:max-line-length           
+        if (this.pdfViewer.magnification && this.pdfViewer.magnification.fitType === 'fitToPage') {
+            this.pdfViewer.magnification.fitToPage();
         }
         if (this.pdfViewerBase.isPanMode) {
             this.enableAnnotationAddTools(false);
@@ -441,7 +462,22 @@ export class AnnotationToolbar {
         }
         this.isToolbarHidden = !this.isToolbarHidden;
     }
-
+    // tslint:disable-next-line
+    private enablePropertiesTool(annotationModule: any): void {
+        this.isHighlightEnabled = false;
+        this.isUnderlineEnabled = false;
+        this.isStrikethroughEnabled = false;
+        if (this.pdfViewerBase.isTextMarkupAnnotationModule()) {
+            annotationModule.textMarkupAnnotationModule.isTextMarkupAnnotationMode = false;
+        }
+        this.primaryToolbar.deSelectItem(this.highlightItem);
+        this.primaryToolbar.deSelectItem(this.underlineItem);
+        this.primaryToolbar.deSelectItem(this.strikethroughItem);
+        this.enableAnnotationPropertiesTools(true);
+        // tslint:disable-next-line:max-line-length  
+        this.updateColorInIcon(this.colorDropDownElement, annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation.color);
+        this.selectAnnotationDeleteItem(true);
+    }
     private applyAnnotationToolbarSettings(): void {
         if (this.pdfViewer.annotationToolbarSettings.annotationToolbarItem.indexOf('HighlightTool') !== -1) {
             this.showHighlightTool(true);
@@ -527,8 +563,8 @@ export class AnnotationToolbar {
     private adjustViewer(isAdjust: boolean): void {
         let splitterElement: HTMLElement = this.pdfViewerBase.getElement('_sideBarToolbarSplitter');
         let toolbarContainer: HTMLElement = this.pdfViewerBase.getElement('_toolbarContainer');
-        let toolbarHeight: number = toolbarContainer.getBoundingClientRect().height;
-        let annotationToolbarHeight: number = this.toolbarElement.getBoundingClientRect().height;
+        let toolbarHeight: number = this.getToolbarHeight(toolbarContainer);
+        let annotationToolbarHeight: number = this.getToolbarHeight(this.toolbarElement);
         let sideBarToolbar: HTMLElement = this.pdfViewerBase.navigationPane.sideBarToolbar;
         let sideBarContentContainer: HTMLElement = this.pdfViewerBase.navigationPane.sideBarContentContainer;
         if (isAdjust) {
@@ -547,9 +583,39 @@ export class AnnotationToolbar {
             splitterElement.style.top = toolbarHeight + 'px';
             // tslint:disable-next-line:max-line-length
             this.pdfViewerBase.viewerContainer.style.height = this.resetViewerHeight(this.getElementHeight(this.pdfViewerBase.viewerContainer), annotationToolbarHeight) + 'px';
-            sideBarToolbar.style.height = sideBarToolbar.getBoundingClientRect().height + annotationToolbarHeight + 'px';
-            splitterElement.style.height = splitterElement.getBoundingClientRect().height + annotationToolbarHeight + 'px';
+            sideBarToolbar.style.height = this.getHeight(sideBarToolbar, annotationToolbarHeight);
+            splitterElement.style.height = this.getHeight(splitterElement, annotationToolbarHeight);
         }
+        this.updateContentContainerHeight(isAdjust);
+    }
+
+    private updateContentContainerHeight(isAdjust: boolean): void {
+        let annotationToolbarHeight: number = this.getToolbarHeight(this.toolbarElement);
+        let sideBarClientRect: ClientRect = this.pdfViewerBase.navigationPane.sideBarContentContainer.getBoundingClientRect();
+        if (sideBarClientRect.height !== 0) {
+            if (isAdjust) {
+                // tslint:disable-next-line:max-line-length
+                this.pdfViewerBase.navigationPane.sideBarContentContainer.style.height = sideBarClientRect.height - annotationToolbarHeight + 'px';
+            } else {
+                // tslint:disable-next-line:max-line-length
+                this.pdfViewerBase.navigationPane.sideBarContentContainer.style.height = sideBarClientRect.height + annotationToolbarHeight + 'px';
+            }
+        }
+    }
+
+    private getToolbarHeight(element: HTMLElement): number {
+        let toolbarHeight: number = element.getBoundingClientRect().height;
+        if (toolbarHeight === 0 && element === this.pdfViewerBase.getElement('_toolbarContainer')) {
+            // getComputedStyle gets the value from style and toolbar border height is added to it.
+            // tslint:disable-next-line
+            toolbarHeight = parseFloat(window.getComputedStyle(element)['height']) + this.toolbarBorderHeight;
+        }
+        return toolbarHeight;
+    }
+
+    private getHeight(element: HTMLElement, toolbarHeight: number): string {
+        let height: number = element.getBoundingClientRect().height;
+        return (height !== 0) ? height + toolbarHeight + 'px' : '';
     }
 
     private handleHighlight(): void {

@@ -34,6 +34,21 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
         case 'MaterialDark':
         case 'FabricDark':
         case 'BootstrapDark':
+            style = {
+                backgroundColor: '#333232',
+                titleFontColor: '#ffffff',
+                tooltipFillColor: '#FFFFFF',
+                tooltipFontColor: '#000000',
+                labelColor: '#DADADA',
+                lineColor: '#C8C8C8',
+                majorTickColor: '#C8C8C8',
+                minorTickColor: '#9A9A9A',
+                pointerColor: '#9A9A9A',
+                capColor: '#9A9A9A',
+                needleColor: '#9A9A9A',
+                needleTailColor: '#9A9A9A'
+            };
+            break;
         case 'Highcontrast':
         case 'HighContrast':
             style = {
@@ -53,7 +68,7 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
             break;
         case 'Bootstrap4':
             style = {
-                backgroundColor: '#F8F9FA',
+                backgroundColor: '#FFFFFF',
                 titleFontColor: '#212529',
                 tooltipFillColor: '#000000',
                 tooltipFontColor: '#FFFFFF',
@@ -64,7 +79,12 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
                 pointerColor: '#6C757D',
                 capColor: '#6C757D',
                 needleColor: '#6C757D',
-                needleTailColor: '#6C757D'
+                needleTailColor: '#6C757D',
+                fontFamily: 'HelveticaNeue-Medium',
+                fontSize: '16px',
+                labelFontFamily: 'HelveticaNeue',
+                tooltipFillOpacity: 1,
+                tooltipTextOpacity: 0.9
             };
             break;
         default:
@@ -74,9 +94,9 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
                 tooltipFillColor: '#363F4C',
                 tooltipFontColor: '#ffffff',
                 labelColor: '#212121',
-                lineColor: '#757575',
-                majorTickColor: '#757575',
-                minorTickColor: '#757575',
+                lineColor: '#E0E0E0',
+                majorTickColor: '#9E9E9E',
+                minorTickColor: '#9E9E9E',
                 pointerColor: '#757575',
                 capColor: '#757575',
                 needleColor: '#757575',

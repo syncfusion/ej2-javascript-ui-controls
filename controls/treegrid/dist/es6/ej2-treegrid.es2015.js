@@ -187,6 +187,12 @@ const keyPressed = 'key-pressed';
 const updateData = 'update-data';
 /** @hidden */
 const doubleTap = 'double-tap';
+/** @hidden */
+const beforeStartEdit = 'edit-form';
+/** @hidden */
+const beforeBatchCancel = 'before-batch-cancel';
+/** @hidden */
+const batchEditFormRendered = 'batcheditform-rendered';
 
 function isRemoteData(parent) {
     if (parent.dataSource instanceof DataManager) {
@@ -406,7 +412,6 @@ class Selection {
             let rowChkBox = this.parent.createElement('input', { className: 'e-treeselectall', attrs: { 'type': 'checkbox' } });
             checkWrap = createCheckBox(this.parent.createElement, false, { checked: value, label: ' ' });
             checkWrap.classList.add('e-hierarchycheckbox');
-            checkWrap.querySelector('.e-frame').style.width = '18px';
             checkWrap.insertBefore(rowChkBox.cloneNode(), checkWrap.firstChild);
             if (!isNullOrUndefined(headerElement)) {
                 headerElement.insertBefore(checkWrap, headerElement.firstChild);
@@ -423,7 +428,6 @@ class Selection {
         let value = (isNullOrUndefined(data.checkboxState) || data.checkboxState === 'uncheck') ? false : true;
         checkWrap = createCheckBox(this.parent.createElement, false, { checked: value, label: ' ' });
         checkWrap.classList.add('e-hierarchycheckbox');
-        checkWrap.querySelector('.e-frame').style.width = '18px';
         if (data.checkboxState === 'indeterminate') {
             let checkbox = checkWrap.querySelectorAll('.e-frame')[0];
             removeClass([checkbox], ['e-check', 'e-stop', 'e-uncheck']);
@@ -897,6 +901,9 @@ class Render {
             }
             let iconRequired = !isNullOrUndefined(data.hasFilteredChildRecords)
                 ? data.hasFilteredChildRecords : data.hasChildRecords;
+            if (iconRequired && !isNullOrUndefined(data.childRecords)) {
+                iconRequired = !(data.childRecords.length === 0);
+            }
             if (iconRequired) {
                 addClass([args.cell], 'e-treerowcell');
                 let expandIcon = createElement('span', {
@@ -1131,7 +1138,7 @@ class DataManipulation {
      * @hidden
      */
     convertToFlatData(data) {
-        this.parent.flatData = [];
+        this.parent.flatData = (Object.keys(data).length === 0 ? this.parent.dataSource : []);
         if ((isRemoteData(this.parent) && !isOffline(this.parent)) && data instanceof DataManager) {
             let dm = this.parent.dataSource;
             if (this.parent.parentIdMapping) {
@@ -1167,7 +1174,7 @@ class DataManipulation {
             this.taskIds = [];
             for (let i = 0; i < Object.keys(data).length; i++) {
                 let tempData = data[i];
-                this.hierarchyData.push(extend({}, tempData, true));
+                this.hierarchyData.push(extend({}, tempData));
                 if (!isNullOrUndefined(tempData[this.parent.idMapping])) {
                     this.taskIds.push(tempData[this.parent.idMapping]);
                 }
@@ -1175,7 +1182,6 @@ class DataManipulation {
             if (this.isSelfReference) {
                 let selfData = [];
                 let mappingData = new DataManager(this.hierarchyData).executeLocal(new Query()
-                    .where(this.parent.parentIdMapping, 'notequal', null)
                     .group(this.parent.parentIdMapping));
                 for (let i = 0; i < mappingData.length; i++) {
                     let groupData = mappingData[i];
@@ -1192,7 +1198,7 @@ class DataManipulation {
                 this.hierarchyData = this.selfReferenceUpdate(selfData);
             }
             if (!Object.keys(this.hierarchyData).length) {
-                this.parent.flatData = [];
+                this.parent.flatData = (this.parent.dataSource);
             }
             else {
                 this.createRecords(this.hierarchyData);
@@ -1951,6 +1957,10 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         if (this.isDestroyed) {
             return modules;
         }
+        modules.push({
+            member: 'filter',
+            args: [this, this.filterSettings]
+        });
         if (!isNullOrUndefined(this.toolbar)) {
             modules.push({
                 member: 'toolbar',
@@ -1991,12 +2001,6 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             modules.push({
                 member: 'resize',
                 args: [this]
-            });
-        }
-        if (this.allowFiltering || (this.toolbar && this.toolbar.indexOf('Search') !== -1)) {
-            modules.push({
-                member: 'filter',
-                args: [this, this.filterSettings]
             });
         }
         if (this.allowExcelExport) {
@@ -2108,6 +2112,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     bindGridProperties() {
         this.grid.dataSource = isRemoteData(this) ? this.dataSource : this.flatData;
         this.grid.enableRtl = this.enableRtl;
+        this.grid.allowKeyboard = this.allowKeyboard;
         this.grid.columns = this.getGridColumns(this.columns);
         this.grid.allowExcelExport = this.allowExcelExport;
         this.grid.allowPdfExport = this.allowPdfExport;
@@ -2286,6 +2291,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         };
         this.grid.actionBegin = (args) => {
             let requestType = getObject('requestType', args);
+            let target = getObject('target', args);
             if (requestType === 'reorder') {
                 this.notify('getColumnIndex', {});
             }
@@ -2293,6 +2299,10 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                 && (this.grid.filterSettings.columns.length === 0 || this.grid.searchSettings.key.length === 0)) {
                 this.notify('clearFilters', { flatData: this.grid.dataSource });
                 this.grid.dataSource = this.dataResults.result;
+            }
+            if (!isNullOrUndefined(target) && requestType === 'sorting' && target.parentElement.classList.contains('e-hierarchycheckbox')) {
+                setValue('cancel', true, args);
+                return;
             }
             this.trigger(actionBegin, args);
             this.notify(beginEdit, args);
@@ -5017,7 +5027,20 @@ class Edit$1 {
         // this.parent.on(events.beforeBatchAdd, this.beforeBatchAdd, this);
         // this.parent.on(events.beforeBatchSave, this.beforeBatchSave, this);
         // this.parent.on(events.batchSave, this.batchSave, this);
+        this.parent.grid.on(beforeStartEdit, this.beforeStartEdit, this);
+        this.parent.grid.on(beforeBatchCancel, this.beforeBatchCancel, this);
+        //this.parent.grid.on(events.batchEditFormRendered, this.batchEditFormRendered, this);
     }
+    beforeStartEdit(args) {
+        this.parent.trigger(actionBegin, args);
+    }
+    beforeBatchCancel(args) {
+        args.type = 'cancel';
+        this.parent.trigger(actionComplete, args);
+    }
+    /*private batchEditFormRendered(args: Object):void {
+      this.parent.trigger(events.actionComplete, args);
+    }*/
     /**
      * @hidden
      */
@@ -5035,6 +5058,9 @@ class Edit$1 {
         this.parent.off(cellEdit, this.cellEdit);
         this.parent.grid.off(doubleTap, this.recordDoubleClick);
         this.parent.off('savePreviousRowPosition', this.savePreviousRowPosition);
+        this.parent.grid.off(beforeStartEdit, this.beforeStartEdit);
+        this.parent.grid.off(beforeBatchCancel, this.beforeBatchCancel);
+        //this.parent.grid.off(events.batchEditFormRendered, this.batchEditFormRendered);
     }
     /**
      * To destroy the editModule
@@ -5071,6 +5097,9 @@ class Edit$1 {
     keyPressed(args) {
         if (this.isOnBatch) {
             this.keyPress = args.action;
+        }
+        if (args.action === 'f2') {
+            this.recordDoubleClick(args);
         }
     }
     deleteUniqueID(value) {
@@ -5138,7 +5167,7 @@ class Edit$1 {
         // }
     }
     cellSave(args) {
-        if (this.parent.editSettings.mode === 'Cell') {
+        if (this.parent.editSettings.mode === 'Cell' && this.parent.element.querySelector('form')) {
             args.cancel = true;
             setValue('isEdit', false, this.parent.grid);
             args.rowData[args.columnName] = args.value;
@@ -5156,25 +5185,35 @@ class Edit$1 {
             else {
                 rowIndex = row.rowIndex;
             }
+            let arg = {};
+            extend(arg, args);
+            arg.cancel = false;
+            arg.type = 'save';
             row = this.parent.grid.getRows()[rowIndex];
-            this.parent.grid.editModule.updateRow(rowIndex, args.rowData);
-            if (this.parent.grid.aggregateModule) {
-                this.parent.grid.aggregateModule.refresh(args.rowData);
+            this.parent.trigger(actionBegin, arg);
+            if (!arg.cancel) {
+                this.parent.grid.editModule.updateRow(rowIndex, args.rowData);
+                if (this.parent.grid.aggregateModule) {
+                    this.parent.grid.aggregateModule.refresh(args.rowData);
+                }
+                this.parent.grid.editModule.formObj.destroy();
+                if (this.keyPress !== 'tab' && this.keyPress !== 'shiftTab') {
+                    this.updateGridEditMode('Normal');
+                    this.isOnBatch = false;
+                }
+                this.enableToolbarItems('save');
+                removeClass([row], ['e-editedrow', 'e-batchrow']);
+                removeClass(row.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
+                editAction({ value: args.rowData, action: 'edit' }, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, args.columnName);
+                let saveArgs = {
+                    type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
+                    previousData: args.previousValue, row: row, target: args.cell
+                };
+                this.parent.trigger(actionComplete, saveArgs);
             }
-            this.parent.grid.editModule.formObj.destroy();
-            if (this.keyPress !== 'tab' && this.keyPress !== 'shiftTab') {
-                this.updateGridEditMode('Normal');
-                this.isOnBatch = false;
+            else {
+                this.parent.grid.isEdit = true;
             }
-            this.enableToolbarItems('save');
-            removeClass([row], ['e-editedrow', 'e-batchrow']);
-            removeClass(row.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
-            editAction({ value: args.rowData, action: 'edit' }, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, args.columnName);
-            let saveArgs = {
-                type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
-                previousData: args.previousValue, row: row, target: args.cell
-            };
-            this.parent.trigger(actionComplete, saveArgs);
         }
     }
     crudAction(details, columnName) {
@@ -5420,5 +5459,5 @@ class CommandColumn$1 {
  * Export TreeGrid component
  */
 
-export { TreeGrid, load, rowDataBound, dataBound, queryCellInfo, beforeDataBound, actionBegin, actionComplete, rowSelecting, rowSelected, checkboxChange, rowDeselected, toolbarClick, beforeExcelExport, beforePdfExport, resizeStop, expanded, expanding, collapsed, collapsing, remoteExpand, localPagedExpandCollapse, pagingActions, printGridInit, contextMenuOpen, contextMenuClick, savePreviousRowPosition, crudAction, beginEdit, beginAdd, recordDoubleClick, cellSave, cellSaved, cellEdit, batchDelete, batchCancel, batchAdd, beforeBatchAdd, beforeBatchSave, batchSave, keyPressed, updateData, doubleTap, DataManipulation, Reorder$1 as Reorder, Resize$1 as Resize, Column, EditSettings, FilterSettings, PageSettings, SearchSettings, SelectionSettings, AggregateColumn, AggregateRow, Render, isRemoteData, findParentRecords, getExpandStatus, findChildrenRecords, isOffline, extendArray, getPlainData, getParentData, ToolbarItem, ContextMenuItems, Filter$1 as Filter, ExcelExport$1 as ExcelExport, PdfExport$1 as PdfExport, Page$1 as Page, Toolbar$1 as Toolbar, Aggregate$1 as Aggregate, Sort$1 as Sort, ColumnMenu$1 as ColumnMenu, ContextMenu$1 as ContextMenu, Edit$1 as Edit, CommandColumn$1 as CommandColumn, Selection };
+export { TreeGrid, load, rowDataBound, dataBound, queryCellInfo, beforeDataBound, actionBegin, actionComplete, rowSelecting, rowSelected, checkboxChange, rowDeselected, toolbarClick, beforeExcelExport, beforePdfExport, resizeStop, expanded, expanding, collapsed, collapsing, remoteExpand, localPagedExpandCollapse, pagingActions, printGridInit, contextMenuOpen, contextMenuClick, savePreviousRowPosition, crudAction, beginEdit, beginAdd, recordDoubleClick, cellSave, cellSaved, cellEdit, batchDelete, batchCancel, batchAdd, beforeBatchAdd, beforeBatchSave, batchSave, keyPressed, updateData, doubleTap, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, DataManipulation, Reorder$1 as Reorder, Resize$1 as Resize, Column, EditSettings, FilterSettings, PageSettings, SearchSettings, SelectionSettings, AggregateColumn, AggregateRow, Render, isRemoteData, findParentRecords, getExpandStatus, findChildrenRecords, isOffline, extendArray, getPlainData, getParentData, ToolbarItem, ContextMenuItems, Filter$1 as Filter, ExcelExport$1 as ExcelExport, PdfExport$1 as PdfExport, Page$1 as Page, Toolbar$1 as Toolbar, Aggregate$1 as Aggregate, Sort$1 as Sort, ColumnMenu$1 as ColumnMenu, ContextMenu$1 as ContextMenu, Edit$1 as Edit, CommandColumn$1 as CommandColumn, Selection };
 //# sourceMappingURL=ej2-treegrid.es2015.js.map

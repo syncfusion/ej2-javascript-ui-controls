@@ -435,6 +435,8 @@ export interface IFormatter {
     getUndoRedoStack?: Function;
     onSuccess?: Function;
     saveData?: Function;
+    undoRedoRefresh?: Function;
+    disableToolbarItem?(items: string | string[]): void;
     enableUndo?: Function;
     setDocument?: Function;
     getDocument?: Function;

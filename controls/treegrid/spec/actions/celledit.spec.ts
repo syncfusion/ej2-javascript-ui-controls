@@ -214,10 +214,114 @@ describe('Cell Edit module', () => {
         done();
       }
   });
-    afterAll(() => {
-      destroy(gridObj);
-    });
+  
+  afterAll(() => {
+    destroy(gridObj);
   });
+
+});
+
+
+describe('EJ2-22751: Events not triggered', () => {
+  let gridObj: TreeGrid;
+  let rows: Element[];
+  let actionBegin: () => void;
+  let actionComplete: () => void;
+
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+          editSettings: {
+              allowAdding: true,
+              allowEditing: true,
+              allowDeleting: true,
+              mode: 'Cell'
+
+          },
+          toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+          columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+          { field: 'taskName', headerText: 'Task Name' },
+          { field: 'startDate', headerText: 'Start Date'},
+          { field: 'duration', headerText: 'duration' },
+          ]
+      },
+      done
+    );
+  });
+  it('Check editing events', (done: Function) => {
+    
+    let event: MouseEvent = new MouseEvent('dblclick', {
+      'view': window,
+      'bubbles': true,
+      'cancelable': true
+    });
+    
+    gridObj.actionBegin = (args?: Object) : void => {
+      expect(args['columnName'] === 'taskName').toBe(true);
+      expect(args['type'] === 'edit').toBe(true);
+      done();
+    }
+    /*gridObj.actionComplete = (args?: Object): void => {
+      expect(args['type'] === 'edit').toBe(true);
+      done();
+    }*/
+    gridObj.getCellFromIndex(2, 1).dispatchEvent(event);
+});
+
+it('Check saving events', (done: Function) => {
+  let event: MouseEvent = new MouseEvent('dblclick', {
+    'view': window,
+    'bubbles': true,
+    'cancelable': true
+  });
+  gridObj.actionBegin = (args?: Object) : void => {
+    expect(args['type'] === 'save').toBe(true);
+  }
+  gridObj.actionComplete = (args?: Object) : void => {
+    expect(args['type'] === 'save').toBe(true);
+    expect(args['target'].cellIndex === 1).toBe(true);
+    done();
+  }
+  (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+    
+});
+
+it('Check editing events again', (done: Function) => {
+    
+  let event: MouseEvent = new MouseEvent('dblclick', {
+    'view': window,
+    'bubbles': true,
+    'cancelable': true
+  });
+  
+  gridObj.actionBegin = (args?: Object) : void => {
+    expect(args['columnName'] === 'taskName').toBe(true);
+    expect(args['type'] === 'edit').toBe(true);
+    done();
+  }
+  /*gridObj.actionComplete = (args?: Object): void => {
+    expect(args['type'] === 'edit').toBe(true);
+    done();
+  }*/
+  gridObj.getCellFromIndex(3, 1).dispatchEvent(event);
+});
+
+it('Check cancelling events', (done: Function) => {
+  gridObj.actionComplete = (args?: Object) : void => {
+    expect(args['name'] === 'actionComplete').toBe(true);
+    expect(args['type'] === 'cancel').toBe(true);
+    done();
+  }
+  (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_cancel' } });
+});
+
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
 
   it('memory leak', () => {
     profile.sample();

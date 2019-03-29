@@ -42,7 +42,7 @@ describe('FileManager control Grid view', () => {
             expect(feObj.getModuleName()).toBe('filemanager');
         });
         it('for getPersistData', () => {
-            expect(feObj.getPersistData()).toBe('{"view":"Details"}');
+            expect(feObj.getPersistData()).toBe('{"view":"Details","path":"/","selectedItems":[]}');
         });
         it('for disableToolbarItems', () => {
             feObj.disableToolbarItems(['NewFolder']);
@@ -75,12 +75,12 @@ describe('FileManager control Grid view', () => {
             expect(feObj.element.querySelectorAll(".e-toolbar-item")[1].classList.contains('e-overlay')).toEqual(false);
             // expect(feObj.element.querySelectorAll(".e-toolbar-item")[13].classList.contains('e-overlay')).toEqual(false);
         });
-        it('for refreshContent', (done: Function) => {
+        it('for refreshFiles', (done: Function) => {
             setTimeout(function () {
                 let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
                 expect(li.length).toEqual(5);
                 expect(document.getElementById('file_grid').querySelectorAll('.e-row').length).toEqual(5);
-                feObj.refreshContent();
+                feObj.refreshFiles();
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
                     status: 200,

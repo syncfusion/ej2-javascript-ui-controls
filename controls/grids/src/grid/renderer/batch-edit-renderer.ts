@@ -22,6 +22,7 @@ export class BatchEditRender {
     public update(elements: Element[], args: { columnObject?: Column, cell?: Element, row?: Element }): void {
         args.cell.innerHTML = '';
         args.cell.appendChild(this.getEditElement(elements, args));
+        args.cell.classList.remove('e-ellipsistooltip');
         args.cell.classList.add('e-editedbatchcell');
         classList(args.row, ['e-editedrow', 'e-batchrow'], []);
     }

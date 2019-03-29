@@ -6,6 +6,7 @@ $range-font-color: $selection-font !default;
 $range-active-icon-color: $content-font !default;
 $range-active-state-icon-color: $selection-font !default;
 $range-hover-color: $selection-bg !default;
+$range-hover-content-color: darken($range-hover-color, 15%) !default;
 $range-today-color: $selection-bg !default;
 $range-selection-bg: darken($selection-bg, 15%) !default;
 $range-other-hover-color: $bg-base-0 !default;
@@ -127,6 +128,10 @@ $range-icon-hover-color: $hover-bg !default;
 $range-icon-border-radius: 0 !default;
 $range-icon-container-min-height: 30px !default;
 $range-icon-container-min-width: 30px !default;
+$range-icon-bottom-right-radius: 0 !default;
+$range-icon-top-right-radius: 0 !default;
+$range-bigger-icon-container-min-height: 30px !default;
+$range-bigger-icon-container-min-width: 30px !default;
 $range-icon-margin: 0 !default;
 $range-sart-end-btn-padding: 1px 6px !default;
 // highcontrast theme variable

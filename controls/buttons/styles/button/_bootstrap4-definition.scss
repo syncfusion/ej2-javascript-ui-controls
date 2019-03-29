@@ -1,5 +1,4 @@
 //normal
-$skin-name: 'bootstrap4' !default;
 $btn-color: $white !default;
 $btn-font-size: 14px !default;
 $btn-border: 1px solid !default;
@@ -16,8 +15,8 @@ $btn-active-bgcolor: darken($gray-600, 10%) !default;
 $btn-active-color: $white !default;
 $btn-disabled-color: $white !default;
 $btn-disabled-bgcolor: rgba($btn-bgcolor, .65) !default;
-$btn-disabled-border-color: rgba($gray-600, .65) !default;
-$btn-active-box-shadow: none !default;
+$btn-disabled-border-color: transparent !default;
+$btn-active-box-shadow: 0 0 0 .2rem rgba(mix(lighten($btn-active-bgcolor, 50%), $btn-active-border-color, .15), .5) !default;
 $btn-icon-margin-top: -2px !default;
 $btn-icon-btn-width: 1em !default;
 $btn-icon-top-bottom-padding: 6px !default;
@@ -37,7 +36,7 @@ $btn-ripple-bgcolor: transparent !default;
 $btn-link-bgcolor: transparent !default;
 $btn-link-border-color: transparent !default;
 $btn-link-color: $primary !default;
-$btn-link-hover-color: #0a3576 !default;
+$btn-link-hover-color: darken($primary, 15%) !default;
 $btn-link-disabled-bgcolor: transparent !default;
 //endnormal
 //primary
@@ -58,29 +57,29 @@ $btn-primary-active-border-color: darken($primary, 12.5%) !default;
 $btn-primary-focus-bgcolor: $primary !default;
 $btn-primary-disabled-bgcolor: rgba($btn-primary-bgcolor, .65) !default;
 $btn-primary-disabled-color: $white !default;
-$btn-primary-disabled-border-color: rgba($btn-primary-bgcolor, .65) !default;
+$btn-primary-disabled-border-color: transparent !default;
 //endprimary
 //outline
 $btn-outline-color: $gray-600 !default;
 $btn-outline-bgcolor: transparent  !default;
-$btn-outline-hover-bgcolor: $btn-hover-bgcolor !default;
+$btn-outline-hover-bgcolor: $btn-bgcolor !default;
 $btn-outline-hover-color: $btn-hover-color !default;
-$btn-outline-focus-bgcolor: $btn-outline-bgcolor !default;
-$btn-outline-focus-color: $btn-outline-color !default;
+$btn-outline-focus-bgcolor: $btn-outline-color !default;
+$btn-outline-focus-color: $white !default;
 $btn-outline-active-color: $btn-active-color !default;
 $btn-outline-active-bgcolor: $btn-active-bgcolor !default;
 $btn-outline-border-color: $btn-border-color !default;
 $btn-outline-hover-border-color: $btn-hover-border-color !default;
 $btn-outline-focus-border-color: $btn-focus-border-color !default;
-$btn-outline-default-focus-border-color: transparent !default;
+$btn-outline-default-focus-border-color: $btn-outline-color !default;
 $btn-outline-active-border-color: $btn-active-border-color !default;
 $btn-outline-active-box-shadow: $btn-active-box-shadow !default;
 $btn-outline-disabled-bgcolor: $btn-disabled-bgcolor !default;
-$btn-outline-disabled-border-color: $btn-disabled-border-color !default;
-$btn-outline-disabled-color: $btn-disabled-color !default;
+$btn-outline-disabled-border-color: rgba($gray-600, .65) !default;
+$btn-outline-disabled-color: rgba($gray-600, .65) !default;
 $btn-outline-primary-color: $btn-primary-bgcolor !default;
-$btn-outline-primary-focus-bgcolor: $btn-outline-focus-bgcolor !default;
-$btn-outline-primary-focus-color: $primary !default;
+$btn-outline-primary-focus-bgcolor: $btn-primary-bgcolor !default;
+$btn-outline-primary-focus-color: $white !default;
 
 //endoutline
 //flat
@@ -90,7 +89,7 @@ $btn-flat-border-color: $btn-border-color !default;
 $btn-flat-hover-color: $btn-hover-color !default;
 $btn-flat-focus-color: $btn-focus-color !default;
 $btn-flat-active-color: $btn-active-color !default;
-$btn-flat-box-shadow: transparent !default;
+$btn-flat-box-shadow: none !default;
 $btn-flat-active-bgcolor: $btn-active-bgcolor !default;
 $btn-flat-bgcolor: $btn-bgcolor !default;
 $btn-flat-hover-bgcolor: $btn-hover-bgcolor !default;
@@ -120,8 +119,8 @@ $btn-success-hover-border-color: darken($success, 10%) !default;
 $btn-success-focus-border-color: $success !default;
 $btn-success-active-border-color: darken($success, 12.5%) !default;
 $btn-success-disabled-bgcolor: rgba($btn-success-bgcolor, .65) !default;
-$btn-success-disabled-color: rgba($gray-600, .65) !default;
-$btn-success-disabled-border-color: $btn-disabled-border-color !default;
+$btn-success-disabled-color: $white !default;
+$btn-success-disabled-border-color: transparent !default;
 $btn-success-hover-color: $white !default;
 $btn-success-focus-color: $white !default;
 $btn-ripple-success-bgcolor: transparent !default;
@@ -142,8 +141,8 @@ $btn-warning-focus-color: $gray-900 !default;
 $btn-warning-active-color: $gray-900 !default;
 $btn-warning-active-border-color: darken($warning, 12.5%) !default;
 $btn-warning-disabled-bgcolor: rgba($btn-warning-bgcolor, .65) !default;
-$btn-warning-disabled-color: rgba($gray-600, .65) !default;
-$btn-warning-disabled-border-color: $btn-disabled-border-color !default;
+$btn-warning-disabled-color: $gray-900 !default;
+$btn-warning-disabled-border-color: transparent !default;
 $btn-ripple-warning-bgcolor: transparent !default;
 //endwarning
 //danger
@@ -158,8 +157,8 @@ $btn-danger-hover-border-color: darken($danger, 10%) !default;
 $btn-danger-focus-border-color: $danger !default;
 $btn-danger-active-border-color: darken($danger, 12.5%) !default;
 $btn-danger-disabled-bgcolor: rgba($btn-danger-bgcolor, .65) !default;
-$btn-danger-disabled-color: rgba($gray-600, .65) !default;
-$btn-danger-disabled-border-color: $btn-disabled-border-color !default;
+$btn-danger-disabled-color: $white !default;
+$btn-danger-disabled-border-color: transparent !default;
 $btn-danger-hover-color: $white !default;
 $btn-ripple-danger-bgcolor: transparent !default;
 //enddanger
@@ -174,8 +173,8 @@ $btn-info-hover-border-color: darken($info, 10%) !default;
 $btn-info-focus-border-color: $info !default;
 $btn-info-active-border-color: darken($info, 12.5%) !default;
 $btn-info-disabled-bgcolor: rgba($btn-info-bgcolor, .65) !default;
-$btn-info-disabled-color: rgba($gray-600, .65) !default;
-$btn-info-disabled-border-color: $btn-disabled-border-color !default;
+$btn-info-disabled-color: $white !default;
+$btn-info-disabled-border-color: transparent !default;
 $btn-info-active-color: $white !default;
 $btn-info-hover-color: $white !default;
 $btn-ripple-info-bgcolor: transparent !default;
@@ -196,7 +195,7 @@ $btn-flat-primary-border-color: $btn-primary-border-color !default;
 $btn-flat-primary-hover-border-color: $btn-primary-hover-border-color !default;
 $btn-flat-primary-active-border-color: $btn-primary-active-border-color !default;
 $btn-flat-primary-focus-border-color: $btn-primary-focus-border-color !default;
-$btn-flat-primary-disabled-border-color: $btn-disabled-border-color !default;
+$btn-flat-primary-disabled-border-color: transparent !default;
 $btn-flat-primary-focus-bgcolor: $btn-flat-primary-hover-bgcolor !default;
 $btn-flat-disabled-color: rgba($btn-flat-color, .65) !default;
 $btn-flat-primary-disabled-color: rgba($btn-flat-color, .65) !default;
@@ -272,26 +271,28 @@ $btn-flat-danger-active-bgcolor: $btn-danger-active-bgcolor !default;
 $btn-flat-danger-disabled-color: rgba($btn-flat-danger-color, .65) !default;
 //endflatdanger
 //outlineprimary
-$btn-outline-primary-disabled-color: rgba($btn-outline-color, .65) !default;
-$btn-outline-primary-disabled-border-color: rgba($btn-outline-border-color, .65) !default;
+$btn-outline-primary-disabled-color: rgba($primary, .65) !default;
+$btn-outline-primary-disabled-border-color: rgba($primary, .65) !default;
 $btn-outline-primary-hover-border-color: $primary !default;
+$btn-outline-primary-hover-bgcolor: $btn-primary-bgcolor !default;
 $btn-outline-primary-focus-border-color: $btn-primary-focus-border-color !default;
 $btn-outline-primary-active-border-color: $primary !default;
 //endoutlineprimay
 //outlinesuccess
-$btn-outline-success-disabled-color: rgba($btn-success-bgcolor, .65) !default;
+$btn-outline-success-disabled-color: rgba($success, .65) !default;
 $btn-outline-success-disabled-border-color: rgba($btn-success-bgcolor, .65) !default;
+$btn-outline-success-hover-bgcolor: $btn-success-bgcolor !default;
 //endoutlinesuccess
 //outlineinfo
-$btn-outline-info-disabled-color: rgba($btn-info-bgcolor, .4) !default;
+$btn-outline-info-disabled-color: rgba($info, .65) !default;
 $btn-outline-info-disabled-border-color: rgba($btn-info-bgcolor, .65) !default;
 //endoutlineinfo
 //outlinewarning
-$btn-outline-warning-disabled-color: rgba($btn-warning-bgcolor, .65) !default;
+$btn-outline-warning-disabled-color: rgba($warning, .65) !default;
 $btn-outline-warning-disabled-border-color: rgba($btn-warning-bgcolor, .65) !default;
 //endoutlinewarning
 //outlinedanger
-$btn-outline-danger-disabled-color: rgba($btn-danger-bgcolor, .65) !default;
+$btn-outline-danger-disabled-color: rgba($danger, .65) !default;
 $btn-outline-danger-disabled-border-color: rgba($btn-danger-bgcolor, .65) !default;
 //endoutlinedanger
 //size
@@ -299,7 +300,7 @@ $btn-font-weight: 400 !default;
 $btn-font-size: 14px !default;
 $btn-small-font-size: 12px !default;
 $btn-bigger-font-size: 16px !default;
-$btn-bigger-small-font-size: 15px !default;
+$btn-bigger-small-font-size: 14px !default;
 $btn-border-radius: 4px !default;
 $btn-text-transform: none !default;
 $btn-box-shadow: none !default;
@@ -307,43 +308,43 @@ $btn-hover-focus-box-shadow: none !default;
 $btn-icon-font-size: 14px !default;
 $btn-small-icon-font-size: 12px !default;
 $btn-bigger-icon-font-size: 16px !default;
-$btn-bigger-small-icon-font-size: 15px !default;
+$btn-bigger-small-icon-font-size: 14px !default;
 $btn-round-small-height: 24px !default;
 $btn-round-small-width: 24px !default;
 $btn-round-height: 32px !default;
 $btn-round-width: 32px !default;
-$btn-round-bigger-small-height: 2.4em !default;
-$btn-round-bigger-small-width: 2.4em !default;
+$btn-round-bigger-small-height: 32px !default;
+$btn-round-bigger-small-width: 32px !default;
 $btn-round-bigger-height: 38px !default;
 $btn-round-bigger-width: 38px !default;
 $btn-round-font-size: 14px !default;
 $btn-small-round-font-size: 12px !default;
 $btn-bigger-round-font-size: 16px !default;
-$btn-bigger-small-round-font-size: 15px !default;
+$btn-bigger-small-round-font-size: 14px !default;
 $btn-icon-margin: -.5em !default;
 $btn-small-icon-margin: -.57143em !default;
 $btn-bigger-icon-margin: -.6111em !default;
 $btn-bigger-small-icon-margin: -.5em !default;
-$btn-icon-width: 1.688em !default;
-$btn-small-icon-width: 1.7143em !default;
+$btn-icon-width: 2em !default;
+$btn-small-icon-width: 2em !default;
 $btn-bigger-icon-width: 2em !default;
 $btn-bigger-small-icon-width: 2em !default;
-$btn-round-icon-line-height: 1.5 !default;
+$btn-round-icon-line-height: 1.6 !default;
 $btn-small-round-icon-line-height: 1.5 !default;
 $btn-bigger-round-icon-line-height: 1.5 !default;
-$btn-bigger-small-round-icon-line-height: 1.5 !default;
-$btn-text-line-height: 1.5 !default;
-$btn-bigger-text-line-height: 1.5 !default;
-$btn-small-text-line-height: 1.5 !default;
-$btn-bigger-small-text-line-height: 1.5 !default;
-$btn-padding: 4px 8px 4px !default;
+$btn-bigger-small-round-icon-line-height: 1.6 !default;
+$btn-text-line-height: 1.6 !default;
+$btn-bigger-text-line-height: 1.6 !default;
+$btn-small-text-line-height: 1.6 !default;
+$btn-bigger-small-text-line-height: 1.6 !default;
+$btn-padding: 4px 8px !default;
 $btn-small-padding: 2px 8px 2px !default;
-$btn-bigger-padding: 6px 12px !default;
-$btn-bigger-small-padding: 5px 10px !default;
-$btn-icon-padding: 0 8px !default;
-$btn-small-icon-padding: 0 8px !default;
-$btn-bigger-icon-padding: 0 12px !default;
-$btn-bigger-small-icon-padding: 0 10px !default;
+$btn-bigger-padding: 6px 12px 5px 12px !default;
+$btn-bigger-small-padding: 4px 8px !default;
+$btn-icon-padding: 4px 8px !default;
+$btn-small-icon-padding: 2px 5px !default;
+$btn-bigger-icon-padding: 4px 9px 5px 9px !default;
+$btn-bigger-small-icon-padding: 4px 8px !default;
 $btn-flat-primary-disabled-bgcolor: $btn-primary-disabled-bgcolor !default;
 $btn-flat-success-disabled-bgcolor: $btn-success-disabled-bgcolor !default;
 $btn-flat-info-disabled-bgcolor: $btn-info-disabled-bgcolor !default;

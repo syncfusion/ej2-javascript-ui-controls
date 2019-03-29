@@ -44,6 +44,7 @@ $schedule-appointment-details-padding: 0 4px !default;
 $schedule-appointment-bg-color: $brand-primary !default;
 $schedule-appointment-font-color: $brand-primary-font !default;
 $schedule-appointment-border-color: lighten($schedule-appointment-bg-color, 40%) !default;
+$schedule-appointment-border-radius: 2px !default;
 $schedule-appointment-active-border-color: $grey-base !default;
 $schedule-month-agenda-app-indicator-color: $grey-light-font !default;
 $schedule-month-appointment-height: 22px !default;
@@ -116,6 +117,8 @@ $schedule-tbar-btn-bgr-padding: 0 1.5px !default;
 $schedule-tbar-btn-icn-bgr-padding: 0 !default;
 $schedule-tbar-btn-icn-right-bgr-padding: 0 !default;
 
+$schedule-timezone-enable-nrml-height: 60px !default;
+$schedule-timezone-enable-bgr-height: 70px !default;
 $schedule-content-nrml-font-text-transform: initial !default;
 $schedule-header-hover-border-radius: 0% !default;
 $schedule-box-shadow: 0 1px 0 rgba(0, 0, 0, .15) !default;

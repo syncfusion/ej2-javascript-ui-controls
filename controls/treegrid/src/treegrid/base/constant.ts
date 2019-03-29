@@ -84,4 +84,9 @@ export const keyPressed: string = 'key-pressed';
 export const updateData: string = 'update-data';
 /** @hidden */
 export const doubleTap: string = 'double-tap';
-
+/** @hidden */
+export const beforeStartEdit: string = 'edit-form';
+/** @hidden */
+export const beforeBatchCancel: string = 'before-batch-cancel';
+/** @hidden */
+export const batchEditFormRendered: string = 'batcheditform-rendered';

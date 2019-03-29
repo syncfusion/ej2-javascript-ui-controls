@@ -1,11 +1,10 @@
 /**
  * Maps default sample
  */
-import { Maps, Legend, Marker, MapsTooltip, ILoadEventArgs, MapsTheme, MapAjax } from '../src/index';
+import { Maps, Legend, Marker, MapsTooltip, MapsTheme, DataLabel } from '../src/index';
 import { dafaultData } from './MapData/salesCountry';
-import { Alignment } from '../src/maps/utils/enum';
 import { world_Map } from './MapData/worldMap';
-Maps.Inject(Legend, Marker, MapsTooltip);
+Maps.Inject(Legend, Marker, MapsTooltip, DataLabel);
 //tslint:disable:max-func-body-length
     let maps: Maps = new Maps({
         titleSettings: {
@@ -17,14 +16,17 @@ Maps.Inject(Legend, Marker, MapsTooltip);
                 text:'-2017'
             }
         },
-       // theme:'Highcontrast',
+        legendSettings: { visible: true, title: { text: 'legend' } },
         zoomSettings: {
-            enable: false
+            enable: true
         },
         layers: [
             {
                 shapeData: world_Map,
                 shapePropertyPath: 'continent',
+                shapeDataPath: 'continent',
+                dataSource: dafaultData,
+                // dataLabelSettings: { visible: true },
                 shapeSettings: {
                     colorValuePath: 'color',
                 },

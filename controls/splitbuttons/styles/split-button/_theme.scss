@@ -5,9 +5,6 @@
       border-right-color: $split-btn-seperator-border-color;
 
       &:focus {
-        @if $skin-name == 'bootstrap4' {
-          background-color: darken($gray-600, 15%);
-        }
         border-right-color: $split-btn-focus-border-color;
       }
 
@@ -16,7 +13,7 @@
       }
 
       &:disabled {
-        border-right-color: $btn-disabled-border-color;
+        border-right-color: $btn-disabled-bgcolor;
       }
     }
 
@@ -32,17 +29,32 @@
 
     &.e-rtl {
       .e-split-btn {
-        border-left-color: $split-btn-seperator-border-color;
-        border-right-color: $split-btn-seperator-default-border-color;
+        @if $skin-name != 'bootstrap4' {
+          border-color: transparent;
+        }
+        @else {
+          border-left-color: $split-btn-seperator-border-color;
+          border-right-color: $split-btn-seperator-default-border-color;
+        }
 
         &:focus {
-          border-left-color: $split-btn-focus-border-color;
-          border-right-color: $split-btn-focus-vertical-border-color;
+          @if $skin-name != 'bootstrap4' {
+            border-color: transparent;
+          }
+          @else {
+            border-left-color: $split-btn-focus-border-color;
+            border-right-color: $split-btn-focus-vertical-border-color;
+          }
         }
 
         &:active {
-          border-left-color: $split-btn-active-border-color;
-          border-right-color: $split-btn-active-vertical-border-color;
+          @if $skin-name != 'bootstrap4' {
+            border-color: transparent;
+          }
+          @else {
+            border-left-color: $split-btn-active-border-color;
+            border-right-color: $split-btn-active-vertical-border-color;
+          }
         }
 
         &:disabled {

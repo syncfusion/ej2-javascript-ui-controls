@@ -1,9 +1,9 @@
-import { Animation, Browser, ChildProperty, Complex, Component, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getUniqueID, getValue, isNullOrUndefined, isUndefined, prepend, remove, removeClass, rippleEffect, select, setStyleAttribute, setValue } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Complex, Component, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, classList, closest, compile, createElement, detach, extend, formatUnit, getComponent, getUniqueID, getValue, isNullOrUndefined, isUndefined, prepend, remove, removeClass, rippleEffect, select, setStyleAttribute, setValue } from '@syncfusion/ej2-base';
 import { DataManager, DataUtil, Predicate, Query } from '@syncfusion/ej2-data';
-import { ListBase, cssClass } from '@syncfusion/ej2-lists';
+import { ListBase, Sortable, cssClass, moveTo } from '@syncfusion/ej2-lists';
 import { Popup, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Input } from '@syncfusion/ej2-inputs';
-import { createCheckBox } from '@syncfusion/ej2-buttons';
+import { Button, createCheckBox } from '@syncfusion/ej2-buttons';
 
 /**
  * IncrementalSearch module file
@@ -417,7 +417,8 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
         var invalidAttr = ['class', 'style', 'id', 'type'];
         var attr = {};
         for (var a = 0; a < this.element.attributes.length; a++) {
-            if (invalidAttr.indexOf(this.element.attributes[a].name) === -1) {
+            if (invalidAttr.indexOf(this.element.attributes[a].name) === -1 &&
+                !(this.getModuleName() === 'dropdownlist' && this.element.attributes[a].name === 'readonly')) {
                 attr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
             }
         }
@@ -1337,7 +1338,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                     this.enabled = false;
                     this.setEnable();
                 }
-                else if (htmlAttr === 'readonly' && this.htmlAttributes[htmlAttr] === 'readonly') {
+                else if (htmlAttr === 'readonly' && !isNullOrUndefined(this.htmlAttributes[htmlAttr])) {
                     this.readonly = true;
                     this.dataBind();
                 }
@@ -1345,7 +1346,8 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                     this.inputWrapper.container.setAttribute('style', this.htmlAttributes[htmlAttr]);
                 }
                 else {
-                    var defaultAttr = ['title', 'id', 'placeholder'];
+                    var defaultAttr = ['title', 'id', 'placeholder', 'aria-placeholder',
+                        'role', 'autocorrect', 'autocomplete', 'autocapitalize', 'spellcheck'];
                     var validateAttr = ['name', 'required'];
                     if (htmlAttr.indexOf('data') === 0 || validateAttr.indexOf(htmlAttr) > -1) {
                         this.hiddenElement.setAttribute(htmlAttr, this.htmlAttributes[htmlAttr]);
@@ -2814,9 +2816,15 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
     DropDownList.prototype.render = function () {
         if (this.element.tagName === 'INPUT') {
             this.inputElement = this.element;
+            if (isNullOrUndefined(this.inputElement.getAttribute('role'))) {
+                this.inputElement.setAttribute('role', 'textbox');
+            }
+            if (isNullOrUndefined(this.inputElement.getAttribute('type'))) {
+                this.inputElement.setAttribute('type', 'text');
+            }
         }
         else {
-            this.inputElement = this.createElement('input');
+            this.inputElement = this.createElement('input', { attrs: { role: 'textbox', type: 'text' } });
             if (this.element.tagName !== this.getNgDirective()) {
                 this.element.style.display = 'none';
             }
@@ -4719,6 +4727,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         }
         var animModel = { name: 'FadeIn', duration: 100 };
         var eventArgs = { popup: this.popupObj, cancel: false, animation: animModel };
+        this.popupObj.wireScrollEvents();
         this.trigger('open', eventArgs);
         if (eventArgs.cancel) {
             return;
@@ -4792,7 +4801,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         var ariaAttributes = {
             'aria-disabled': 'false',
             'aria-owns': this.element.id + '_options',
-            'role': 'listbox',
+            'role': 'textbox',
             'aria-multiselectable': 'true',
             'aria-activedescendant': 'null',
             'aria-haspopup': 'true',
@@ -5303,17 +5312,19 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         this.checkPlaceholderSize();
     };
     MultiSelect.prototype.checkPlaceholderSize = function () {
-        if ((!this.value || !this.value.length) && this.showDropDownIcon &&
-            (this.componentWrapper.offsetWidth <= this.inputElement.offsetWidth)) {
+        if ((!this.value || !this.value.length) && this.showDropDownIcon && this.inputElement &&
+            (this.componentWrapper.offsetWidth <= this.inputElement.offsetWidth) &&
+            this.inputElement.size > 1) {
             var downIconWidth = this.dropIcon.offsetWidth +
                 parseInt(window.getComputedStyle(this.dropIcon).marginRight, 10);
             do {
                 this.inputElement.size -= 1;
-            } while ((downIconWidth + this.inputElement.offsetWidth) >= this.componentWrapper.offsetWidth);
+            } while ((downIconWidth + this.inputElement.offsetWidth) >= this.componentWrapper.offsetWidth &&
+                this.inputElement.size > 1);
         }
     };
     MultiSelect.prototype.refreshInputHight = function () {
-        if ((!this.value || !this.value.length) && isNullOrUndefined(this.text)) {
+        if ((!this.value || !this.value.length) && (isNullOrUndefined(this.text) || this.text === '')) {
             this.searchWrapper.classList.remove(ZERO_SIZE);
         }
         else {
@@ -5887,7 +5898,12 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                 this.onActionComplete(list, this.mainData);
             }
             this.updateDelimeter(this.delimiterChar);
-            this.makeTextBoxEmpty();
+            if (this.placeholder && this.floatLabelType === 'Never') {
+                this.makeTextBoxEmpty();
+            }
+            else {
+                this.inputElement.value = '';
+            }
             e.preventDefault();
         }
     };
@@ -5897,7 +5913,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     };
     MultiSelect.prototype.refreshPlaceHolder = function () {
         if (this.placeholder && this.floatLabelType === 'Never') {
-            if ((this.value && this.value.length) || !isNullOrUndefined(this.text)) {
+            if ((this.value && this.value.length) || (!isNullOrUndefined(this.text) && this.text !== '')) {
                 this.inputElement.placeholder = '';
             }
             else {
@@ -6382,7 +6398,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     };
     MultiSelect.prototype.windowResize = function () {
         this.refreshPopup();
-        if (!this.inputFocus && this.viewWrapper && this.viewWrapper.parentElement) {
+        if ((!this.inputFocus || this.mode === 'CheckBox') && this.viewWrapper && this.viewWrapper.parentElement) {
             this.updateDelimView();
         }
     };
@@ -6901,12 +6917,20 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             if (remaining > 0) {
                 var totalWidth = overAllContainer - downIconWidth;
                 this.viewWrapper.appendChild(this.updateRemainTemplate(raminElement, this.viewWrapper, remaining, compiledString, totalCompiledString, totalWidth));
+                this.updateRemainWidth(this.viewWrapper, totalWidth);
                 this.updateRemainingText(raminElement, downIconWidth, remaining, compiledString, totalCompiledString);
             }
         }
         else {
             this.viewWrapper.innerHTML = '';
             this.viewWrapper.style.display = 'none';
+        }
+    };
+    MultiSelect.prototype.updateRemainWidth = function (viewWrapper, totalWidth) {
+        if (viewWrapper.classList.contains(TOTAL_COUNT_WRAPPER) && totalWidth < (viewWrapper.offsetWidth +
+            parseInt(window.getComputedStyle(viewWrapper).paddingLeft, 10)
+            + parseInt(window.getComputedStyle(viewWrapper).paddingLeft, 10))) {
+            viewWrapper.style.width = totalWidth + 'px';
         }
     };
     MultiSelect.prototype.updateRemainTemplate = function (raminElement, viewWrapper, remaining, compiledString, totalCompiledString, totalWidth) {
@@ -6922,9 +6946,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             viewWrapper.classList.add(TOTAL_COUNT_WRAPPER);
-            if (totalWidth) {
-                viewWrapper.style.width = totalWidth + 'px';
-            }
+            this.updateRemainWidth(viewWrapper, totalWidth);
         }
         return raminElement;
     };
@@ -7246,6 +7268,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             this.popupObj.hide();
             removeClass([document.body, this.popupObj.element], 'e-popup-full-page');
             EventHandler.remove(this.list, 'keydown', this.onKeyDown);
+            this.popupObj.unwireScrollEvents();
         }
     };
     /**
@@ -7360,7 +7383,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         var id = this.element.getAttribute('id') ? this.element.getAttribute('id') : getUniqueID('ej2_dropdownlist');
         this.element.id = id;
         this.hiddenElement = this.createElement('select', {
-            attrs: { 'aria-hidden': 'true', 'class': HIDDEN_ELEMENT, 'tabindex': '-1', 'multiple': 'true' }
+            attrs: { 'aria-hidden': 'true', 'class': HIDDEN_ELEMENT, 'tabindex': '-1', 'multiple': '' }
         });
         this.componentWrapper.appendChild(this.hiddenElement);
         this.validationAttribute(this.element, this.hiddenElement);
@@ -8097,9 +8120,963 @@ var CheckBoxSelection = /** @__PURE__ @class */ (function () {
  * export all modules from current location
  */
 
+var __extends$5 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/// <reference path='../drop-down-base/drop-down-base-model.d.ts'/>
+var SelectionSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$5(SelectionSettings, _super);
+    function SelectionSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$5([
+        Property('Multiple')
+    ], SelectionSettings.prototype, "mode", void 0);
+    __decorate$5([
+        Property(false)
+    ], SelectionSettings.prototype, "showCheckbox", void 0);
+    __decorate$5([
+        Property(false)
+    ], SelectionSettings.prototype, "showSelectAll", void 0);
+    return SelectionSettings;
+}(ChildProperty));
+var ToolbarSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$5(ToolbarSettings, _super);
+    function ToolbarSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$5([
+        Property([])
+    ], ToolbarSettings.prototype, "items", void 0);
+    __decorate$5([
+        Property('Right')
+    ], ToolbarSettings.prototype, "position", void 0);
+    return ToolbarSettings;
+}(ChildProperty));
+/**
+ * The ListBox is a graphical user interface component used to display a list of items.
+ * Users can select one or more items in the list using a checkbox or by keyboard selection.
+ * It supports sorting, grouping, reordering, and drag and drop of items.
+ * ```html
+ * <select id="listbox">
+ *      <option value='1'>Badminton</option>
+ *      <option value='2'>Basketball</option>
+ *      <option value='3'>Cricket</option>
+ *      <option value='4'>Football</option>
+ *      <option value='5'>Tennis</option>
+ * </select>
+ * ```
+ * ```typescript
+ * <script>
+ *   var listObj = new ListBox();
+ *   listObj.appendTo("#listbox");
+ * </script>
+ * ```
+ */
+var ListBox = /** @__PURE__ @class */ (function (_super) {
+    __extends$5(ListBox, _super);
+    /**
+     * Constructor for creating the ListBox component.
+     */
+    function ListBox(options, element) {
+        return _super.call(this, options, element) || this;
+    }
+    
+    /**
+     * Build and render the component
+     * @private
+     */
+    ListBox.prototype.render = function () {
+        this.initLoad = true;
+        this.initialSelectedOptions = this.value;
+        _super.prototype.render.call(this);
+    };
+    ListBox.prototype.initWrapper = function () {
+        var hiddenSelect = this.createElement('select', { className: 'e-hidden-select', attrs: { 'multiple': '' } });
+        this.list.classList.add('e-listbox-wrapper');
+        if (this.element.tagName === 'EJS-LISTBOX') {
+            this.element.setAttribute('tabindex', '0');
+            if (this.initLoad) {
+                this.element.appendChild(this.list);
+            }
+        }
+        else {
+            if (this.initLoad) {
+                this.element.parentElement.insertBefore(this.list, this.element);
+            }
+            this.list.insertBefore(this.element, this.list.firstChild);
+            this.element.style.display = 'none';
+        }
+        this.list.appendChild(hiddenSelect);
+        if (this.list.getElementsByClassName(cssClass.li)[0]) {
+            this.list.getElementsByClassName(cssClass.li)[0].classList.remove(dropDownBaseClasses.focus);
+        }
+        removeClass([this.list], [dropDownBaseClasses.content, dropDownBaseClasses.root]);
+        this.validationAttribute(this.element, hiddenSelect);
+        this.list.setAttribute('role', 'listbox');
+        attributes(this.list, { 'role': 'listbox', 'aria-multiselectable': this.selectionSettings.mode === 'Multiple' ? 'true' : 'false' });
+        if (this.selectionSettings.showCheckbox && this.selectionSettings.showSelectAll) {
+            this.showSelectAll = true;
+            this.selectAllText = 'Select All';
+            this.unSelectAllText = 'Unselect All';
+            this.popupWrapper = this.list;
+            this.notify('selectAll', {});
+        }
+    };
+    ListBox.prototype.initDraggable = function () {
+        var _this = this;
+        if (this.allowDragAndDrop) {
+            new Sortable(this.ulElement, {
+                scope: this.scope,
+                dragStart: this.triggerDragStart.bind(this),
+                drag: this.triggerDrag.bind(this),
+                drop: this.dragEnd.bind(this),
+                placeHolder: function () { return _this.createElement('span', { className: 'e-placeholder' }); },
+                helper: function (e) {
+                    var ele = e.sender.cloneNode(true);
+                    ele.style.width = _this.getItems()[0].offsetWidth + 'px';
+                    if (_this.value.length > 1 && ele.classList.contains('e-selected')) {
+                        ele.appendChild(_this.createElement('span', {
+                            className: 'e-list-badge', innerHTML: _this.value.length + ''
+                        }));
+                    }
+                    return ele;
+                }
+            });
+        }
+    };
+    ListBox.prototype.initToolbar = function () {
+        var scope;
+        var pos = this.toolbarSettings.position;
+        if (this.toolbarSettings.items.length) {
+            var toolElem = this.createElement('div', { className: 'e-listbox-tool', attrs: { 'role': 'toolbar' } });
+            var wrapper = this.createElement('div', {
+                className: 'e-listboxtool-wrapper e-' + pos.toLowerCase()
+            });
+            this.list.parentElement.insertBefore(wrapper, this.list);
+            wrapper.appendChild(pos === 'Right' ? this.list : toolElem);
+            wrapper.appendChild(pos === 'Right' ? toolElem : this.list);
+            this.createButtons(toolElem);
+            if (!this.element.id) {
+                this.element.id = getUniqueID('e-' + this.getModuleName());
+            }
+            document.querySelector(this.scope).setAttribute('data-value', this.element.id);
+        }
+        scope = this.element.getAttribute('data-value');
+        if (scope) {
+            this.tBListBox = getComponent(document.getElementById(scope), this.getModuleName());
+            this.tBListBox.updateToolBarState();
+        }
+    };
+    ListBox.prototype.createButtons = function (toolElem) {
+        var _this = this;
+        var btn;
+        var ele;
+        var title;
+        this.toolbarSettings.items.forEach(function (value) {
+            title = (value.charAt(0).toUpperCase() + value.slice(1)).match(/[A-Z][a-z]+/g).join(' ');
+            ele = _this.createElement('button', {
+                attrs: {
+                    'data-value': value,
+                    'title': title,
+                    'aria-label': title
+                }
+            });
+            toolElem.appendChild(ele);
+            btn = new Button({ iconCss: 'e-icons e-' + value.toLowerCase() }, ele);
+            btn.createElement = _this.createElement;
+        });
+    };
+    ListBox.prototype.setHeight = function () {
+        var ele = this.toolbarSettings.items.length ? this.list.parentElement : this.list;
+        ele.style.height = formatUnit(this.height);
+    };
+    ListBox.prototype.setCssClass = function () {
+        var wrap = this.toolbarSettings.items.length ? this.list.parentElement : this.list;
+        if (this.cssClass) {
+            addClass([wrap], this.cssClass.split(' '));
+        }
+        if (this.enableRtl) {
+            addClass([wrap], 'e-rtl');
+        }
+    };
+    ListBox.prototype.setEnable = function () {
+        var ele = this.toolbarSettings.items.length ? this.list.parentElement : this.list;
+        if (this.enabled) {
+            removeClass([ele], cssClass.disabled);
+        }
+        else {
+            addClass([ele], cssClass.disabled);
+        }
+    };
+    ListBox.prototype.showSpinner = function () {
+        if (!this.spinner) {
+            this.spinner = this.createElement('div', { className: 'e-listbox-wrapper', styles: 'height:' + formatUnit(this.height) });
+        }
+        this.element.parentElement.insertBefore(this.spinner, this.element.nextSibling);
+        createSpinner({ target: this.spinner }, this.createElement);
+        showSpinner(this.spinner);
+    };
+    ListBox.prototype.hideSpinner = function () {
+        if (this.spinner.querySelector('.e-spinner-pane')) {
+            hideSpinner(this.spinner);
+        }
+        if (this.spinner.parentElement) {
+            detach(this.spinner);
+        }
+    };
+    ListBox.prototype.onActionComplete = function (ulElement, list, e) {
+        _super.prototype.onActionComplete.call(this, ulElement, list, e);
+        this.initWrapper();
+        this.setSelection();
+        this.initDraggable();
+        if (this.initLoad) {
+            this.initToolbar();
+            this.setCssClass();
+            this.setEnable();
+            this.setHeight();
+            this.wireEvents();
+        }
+        this.initLoad = false;
+    };
+    ListBox.prototype.triggerDragStart = function (args) {
+        if (Browser.isIos) {
+            this.list.style.overflow = 'hidden';
+        }
+        this.trigger('dragStart', this.getDragArgs(args));
+    };
+    ListBox.prototype.triggerDrag = function (args) {
+        this.trigger('drag', this.getDragArgs(args));
+    };
+    ListBox.prototype.dragEnd = function (args) {
+        var _this = this;
+        var listData;
+        var dropValue = args.droppedElement.getAttribute('data-value');
+        var droppedData = this.getDataByValue(dropValue);
+        var listObj = this.getComponent(args.droppedElement);
+        var dragArgs = extend({}, this.getDragArgs({ target: args.droppedElement }, true), { target: args.target });
+        dropValue = this.getTextByValue(dropValue);
+        if (Browser.isIos) {
+            this.list.style.overflow = '';
+        }
+        if (listObj === this) {
+            var ul_1 = this.ulElement;
+            var selectedOptions = this.value.indexOf(dropValue) > -1 ? this.value : [dropValue];
+            listData = [].slice.call(this.listData);
+            var fromIdx_1 = args.previousIndex;
+            var toIdx_1 = args.currentIndex;
+            listData.splice(toIdx_1, 0, listData.splice(fromIdx_1, 1)[0]);
+            if (fromIdx_1 > toIdx_1) {
+                toIdx_1 += 1;
+            }
+            selectedOptions.forEach(function (value) {
+                if (value !== dropValue) {
+                    listData.splice(toIdx_1, 0, listData.splice(_this.getIndexByValue(value), 1)[0]);
+                    ul_1.insertBefore(_this.getItems()[_this.getIndexByValue(value)], ul_1.getElementsByClassName('e-placeholder')[0]);
+                    if (fromIdx_1 > toIdx_1) {
+                        toIdx_1++;
+                    }
+                }
+            });
+            this.listData = listData;
+            this.setProperties({ dataSource: listData }, true);
+        }
+        else {
+            var li_1;
+            var prevIdx_1 = args.previousIndex;
+            var currIdx_1 = args.currentIndex;
+            var ul_2 = listObj.ulElement;
+            listData = [].slice.call(listObj.listData);
+            var selectedOptions = this.value.indexOf(dropValue) > -1 ? this.value : [dropValue];
+            selectedOptions.forEach(function (value) {
+                droppedData = _this.getDataByValue(value);
+                _this.listData.splice(value === dropValue ? prevIdx_1 : _this.getIndexByValue(value), 1);
+                listData.splice(value === dropValue ? args.currentIndex : currIdx_1, 0, droppedData);
+                li_1 = _this.getItems()[_this.getIndexByValue(value)];
+                removeClass([value === dropValue ? args.droppedElement : li_1], cssClass.selected);
+                ul_2.insertBefore(li_1, ul_2.getElementsByClassName('e-placeholder')[0]);
+                currIdx_1++;
+                prevIdx_1--;
+            });
+            this.setProperties({ dataSource: this.listData }, true);
+            listObj.listData = listData;
+            listObj.setProperties({ dataSource: listObj.listData }, true);
+            this.updateSelectedOptions();
+            if (this.selectionSettings.showCheckbox) {
+                listObj.updateSelectedOptions();
+            }
+        }
+        this.trigger('drop', dragArgs);
+    };
+    ListBox.prototype.getComponent = function (li) {
+        return getComponent((this.element.tagName === 'EJS-LISTBOX' ? closest(li, '.e-listbox')
+            : closest(li, '.e-listbox-wrapper').querySelector('.e-listbox')), this.getModuleName());
+    };
+    ListBox.prototype.listOption = function (dataSource, fields) {
+        this.listCurrentOptions = _super.prototype.listOption.call(this, dataSource, fields);
+        this.listCurrentOptions = extend({}, this.listCurrentOptions, { itemCreated: this.triggerBeforeItemRender.bind(this) }, true);
+        this.notify('listoption', { module: 'CheckBoxSelection' });
+        return this.listCurrentOptions;
+    };
+    ListBox.prototype.triggerBeforeItemRender = function (e) {
+        e.item.setAttribute('tabindex', '-1');
+        this.trigger('beforeItemRender', { element: e.item, item: e.curData });
+    };
+    ListBox.prototype.requiredModules = function () {
+        var modules = [];
+        if (this.selectionSettings.showCheckbox) {
+            modules.push({
+                member: 'CheckBoxSelection',
+                args: [this]
+            });
+        }
+        return modules;
+    };
+    /**
+     * This method is used to enable or disable the items in the ListBox based on the items and enable argument.
+     * @param items Text items that needs to be enabled/disabled.
+     * @param enable Set `true`/`false` to enable/disable the list items.
+     * @returns void
+     */
+    ListBox.prototype.enableItems = function (items, enable) {
+        var _this = this;
+        if (enable === void 0) { enable = true; }
+        var li;
+        items.forEach(function (item) {
+            li = _this.findListElement(_this.list, 'li', 'data-value', _this.getValueByText(item));
+            if (enable) {
+                removeClass([li], cssClass.disabled);
+                li.removeAttribute('aria-disabled');
+            }
+            else {
+                addClass([li], cssClass.disabled);
+                li.setAttribute('aria-disabled', 'true');
+            }
+        });
+    };
+    /**
+     * Based on the state parameter, specified list item will be selected/deselected.
+     * @param items Array of text value of the item.
+     * @param state Set `true`/`false` to select/un select the list items.
+     * @returns void
+     */
+    ListBox.prototype.selectItems = function (items, state) {
+        if (state === void 0) { state = true; }
+        this.setSelection(items, state);
+        this.updateSelectedOptions();
+    };
+    /**
+     * Based on the state parameter, entire list item will be selected/deselected.
+     * @param state Set `true`/`false` to select/un select the entire list items.
+     * @returns void
+     */
+    ListBox.prototype.selectAll = function (state) {
+        if (state === void 0) { state = true; }
+        this.selectAllItems(state);
+    };
+    /**
+     * Adds a new item to the list. By default, new item appends to the list as the last item,
+     * but you can insert based on the index parameter.
+     * @param  { Object[] } items - Specifies an array of JSON data or a JSON data.
+     * @param { number } itemIndex - Specifies the index to place the newly added item in the list.
+     * @return {void}.
+     */
+    ListBox.prototype.addItems = function (items, itemIndex) {
+        _super.prototype.addItem.call(this, items, itemIndex);
+    };
+    ListBox.prototype.selectAllItems = function (state) {
+        var _this = this;
+        [].slice.call(this.getItems()).forEach(function (li) {
+            if (!li.classList.contains(cssClass.disabled)) {
+                if (_this.selectionSettings.showCheckbox) {
+                    var ele = li.getElementsByClassName('e-check')[0];
+                    if ((!ele && state) || (ele && !state)) {
+                        _this.notify('updatelist', { li: li });
+                    }
+                }
+                else {
+                    if (state) {
+                        li.classList.add(cssClass.selected);
+                    }
+                    else {
+                        li.classList.remove(cssClass.selected);
+                    }
+                }
+            }
+        });
+        this.updateSelectedOptions();
+    };
+    ListBox.prototype.wireEvents = function () {
+        var form = closest(this.element, 'form');
+        var wrapper = this.element.tagName === 'EJS-LISTBOX' ? this.element : this.list;
+        EventHandler.add(this.list, 'click', this.clickHandler, this);
+        EventHandler.add(wrapper, 'keydown', this.keyDownHandler, this);
+        EventHandler.add(wrapper, 'focusout', this.focusOutHandler, this);
+        if (this.toolbarSettings.items.length) {
+            EventHandler.add(this.getToolElem(), 'click', this.toolbarClickHandler, this);
+        }
+        if (this.selectionSettings.showCheckbox) {
+            EventHandler.remove(document, 'mousedown', this.checkBoxSelectionModule.onDocumentClick);
+        }
+        if (this.fields.groupBy || this.element.querySelector('select>optgroup')) {
+            EventHandler.remove(this.list, 'scroll', this.setFloatingHeader);
+        }
+        if (form) {
+            EventHandler.add(form, 'reset', this.formResetHandler, this);
+        }
+    };
+    ListBox.prototype.unwireEvents = function () {
+        var form = closest(this.element, 'form');
+        var wrapper = this.element.tagName === 'EJS-LISTBOX' ? this.element : this.list;
+        EventHandler.remove(this.list, 'click', this.clickHandler);
+        EventHandler.remove(wrapper, 'keydown', this.keyDownHandler);
+        EventHandler.remove(wrapper, 'focusout', this.focusOutHandler);
+        if (this.toolbarSettings.items.length) {
+            EventHandler.remove(this.getToolElem(), 'click', this.toolbarClickHandler);
+        }
+        if (form) {
+            EventHandler.remove(form, 'reset', this.formResetHandler);
+        }
+    };
+    ListBox.prototype.clickHandler = function (e) {
+        this.selectHandler(e);
+    };
+    ListBox.prototype.selectHandler = function (e, isKey) {
+        var isSelect = true;
+        var currSelIdx;
+        var li = closest(e.target, '.' + cssClass.li);
+        var selectedLi = [li];
+        if (li) {
+            currSelIdx = [].slice.call(li.parentElement.children).indexOf(li);
+            if (!this.selectionSettings.showCheckbox) {
+                if ((e.ctrlKey || Browser.isDevice) && li.classList.contains(cssClass.selected)) {
+                    li.classList.remove(cssClass.selected);
+                    li.removeAttribute('aria-selected');
+                    isSelect = false;
+                }
+                else if (!(this.selectionSettings.mode === 'Multiple' && (e.ctrlKey || Browser.isDevice))) {
+                    this.getSelectedItems().forEach(function (ele) {
+                        ele.removeAttribute('aria-selected');
+                    });
+                    removeClass(this.getSelectedItems(), cssClass.selected);
+                }
+            }
+            if (e.shiftKey && !this.selectionSettings.showCheckbox && this.selectionSettings.mode !== 'Single') {
+                selectedLi = [].slice.call(li.parentElement.children)
+                    .slice(Math.min(currSelIdx, this.prevSelIdx), Math.max(currSelIdx, this.prevSelIdx) + 1)
+                    .filter(function (ele) { return ele.classList.contains(cssClass.li); });
+            }
+            else {
+                this.prevSelIdx = [].slice.call(li.parentElement.children).indexOf(li);
+            }
+            if (isSelect) {
+                if (!this.selectionSettings.showCheckbox) {
+                    addClass(selectedLi, cssClass.selected);
+                }
+                selectedLi.forEach(function (ele) {
+                    ele.setAttribute('aria-selected', 'true');
+                });
+                this.list.setAttribute('aria-activedescendant', li.id);
+            }
+            if (!isKey) {
+                this.notify('updatelist', { li: li, e: e });
+            }
+            this.updateSelectedOptions();
+            if (isSelect) {
+                this.trigger('select', { element: li, item: this.getDataByValue(li.getAttribute('data-value')) });
+            }
+            this.trigger('change', { value: this.value });
+        }
+    };
+    ListBox.prototype.toolbarClickHandler = function (e) {
+        var btn = closest(e.target, 'button');
+        if (btn) {
+            switch (btn.getAttribute('data-value')) {
+                case 'moveUp':
+                    this.moveUpDown(true);
+                    break;
+                case 'moveDown':
+                    this.moveUpDown();
+                    break;
+                case 'moveTo':
+                    this.moveTo();
+                    break;
+                case 'moveFrom':
+                    this.moveFrom();
+                    break;
+                case 'moveAllTo':
+                    this.moveAllTo();
+                    break;
+                case 'moveAllFrom':
+                    this.moveAllFrom();
+                    break;
+            }
+        }
+    };
+    ListBox.prototype.moveUpDown = function (isUp, isKey) {
+        var _this = this;
+        var elems = [].slice.call(this.list.getElementsByClassName(cssClass.selected));
+        if ((isUp && this.ulElement.firstElementChild.classList.contains(cssClass.selected))
+            || (!isUp && this.ulElement.lastElementChild.classList.contains(cssClass.selected))) {
+            return;
+        }
+        (isUp ? elems : elems.reverse()).forEach(function (ele) {
+            var idx = Array.prototype.indexOf.call(_this.ulElement.children, ele);
+            moveTo(_this.ulElement, _this.ulElement, [idx], isUp ? idx - 1 : idx + 2);
+            _this.changeData(idx, isUp ? idx - 1 : idx + 1);
+        });
+        if (isKey) {
+            this.list.focus();
+        }
+        this.updateToolBarState();
+    };
+    ListBox.prototype.moveTo = function () {
+        this.moveData(this, this.getScopedListBox());
+    };
+    ListBox.prototype.moveFrom = function () {
+        this.moveData(this.getScopedListBox(), this);
+    };
+    ListBox.prototype.moveData = function (fListBox, tListBox, isKey) {
+        var idx = [];
+        var listData = [].slice.call(fListBox.listData);
+        var tListData = [].slice.call(tListBox.listData);
+        var data = [];
+        var elems = fListBox.getSelectedItems();
+        if (elems.length) {
+            if (!this.selectionSettings.showCheckbox) {
+                removeClass(elems, cssClass.selected);
+            }
+            elems.forEach(function (ele) {
+                idx.push(Array.prototype.indexOf.call(fListBox.ulElement.children, ele));
+            });
+            moveTo(fListBox.ulElement, tListBox.ulElement, idx);
+            var childCnt = fListBox.ulElement.childElementCount;
+            if (elems.length === 1 && childCnt) {
+                fListBox.ulElement.children[childCnt === idx[0] ? idx[0] - 1 : idx[0]].classList.add(cssClass.selected);
+            }
+            if (isKey) {
+                this.list.focus();
+            }
+            for (var i = idx.length - 1; i >= 0; i--) {
+                data.push(listData.splice(idx[i], 1)[0]);
+            }
+            fListBox.listData = listData;
+            fListBox.setProperties({ dataSource: listData }, true);
+            data.reverse().forEach(function (datum) {
+                tListData.push(datum);
+            });
+            tListBox.listData = tListData;
+            tListBox.setProperties({ dataSource: tListData }, true);
+            fListBox.updateSelectedOptions();
+            if (this.selectionSettings.showCheckbox) {
+                tListBox.updateSelectedOptions();
+            }
+        }
+    };
+    ListBox.prototype.moveAllTo = function () {
+        this.moveAllData(this, this.getScopedListBox());
+    };
+    ListBox.prototype.moveAllFrom = function () {
+        this.moveAllData(this.getScopedListBox(), this);
+    };
+    ListBox.prototype.moveAllData = function (fListBox, tListBox, isKey) {
+        var listData = [].slice.call(tListBox.listData);
+        if (!this.selectionSettings.showCheckbox) {
+            removeClass(this.getSelectedItems(), cssClass.selected);
+        }
+        moveTo(fListBox.ulElement, tListBox.ulElement, Array.apply(null, { length: fListBox.ulElement.childElementCount }).map(Number.call, Number));
+        if (isKey) {
+            this.list.focus();
+        }
+        [].slice.call(fListBox.listData).forEach(function (data) {
+            listData.push(data);
+        });
+        tListBox.listData = listData;
+        fListBox.listData = [];
+        tListBox.setProperties({ dataSource: listData }, true);
+        fListBox.setProperties({ dataSource: [] }, true);
+        fListBox.updateSelectedOptions();
+        if (this.selectionSettings.showCheckbox) {
+            tListBox.updateSelectedOptions();
+        }
+    };
+    ListBox.prototype.changeData = function (fromIdx, toIdx) {
+        var listData = [].slice.call(this.listData);
+        listData.splice(toIdx, 0, listData.splice(fromIdx, 1)[0]);
+        this.listData = listData;
+        this.setProperties({ dataSource: listData }, true);
+    };
+    ListBox.prototype.getSelectedItems = function () {
+        var ele = [];
+        if (this.selectionSettings.showCheckbox) {
+            [].slice.call(this.ulElement.getElementsByClassName('e-check')).forEach(function (cbox) {
+                ele.push(closest(cbox, '.' + cssClass.li));
+            });
+        }
+        else {
+            ele = [].slice.call(this.ulElement.getElementsByClassName(cssClass.selected));
+        }
+        return ele;
+    };
+    ListBox.prototype.getScopedListBox = function () {
+        var _this = this;
+        var listObj;
+        [].slice.call(document.querySelectorAll(this.scope)).forEach(function (ele) {
+            if (getComponent(ele, _this.getModuleName())) {
+                listObj = getComponent(ele, _this.getModuleName());
+            }
+        });
+        return listObj;
+    };
+    ListBox.prototype.getDragArgs = function (args, isDragEnd) {
+        var _this = this;
+        var data = [];
+        var elems = this.getSelectedItems();
+        if (elems.length) {
+            elems.pop();
+            if (isDragEnd) {
+                elems.push(args.target);
+            }
+        }
+        else {
+            elems = [args.target];
+        }
+        elems.forEach(function (ele) {
+            data.push(_this.getDataByValue(ele.getAttribute('data-value')));
+        });
+        return { elements: elems, items: data };
+    };
+    ListBox.prototype.keyDownHandler = function (e) {
+        if ([32, 35, 36, 37, 38, 39, 40, 65].indexOf(e.keyCode) > -1) {
+            e.preventDefault();
+            if (e.keyCode === 32) {
+                this.selectHandler({
+                    target: this.ulElement.getElementsByClassName('e-focused')[0],
+                    ctrlKey: e.ctrlKey, shiftKey: e.shiftKey
+                });
+            }
+            else if (e.keyCode === 65 && e.ctrlKey) {
+                this.selectAll();
+            }
+            else if ((e.keyCode === 38 || e.keyCode === 40) && e.ctrlKey && e.shiftKey) {
+                this.moveUpDown(e.keyCode === 38 ? true : false, true);
+            }
+            else if ((this.toolbarSettings.items.length || this.tBListBox) && (e.keyCode === 39 || e.keyCode === 37) && e.ctrlKey) {
+                var listObj = this.tBListBox || this.getScopedListBox();
+                if (e.keyCode === 39) {
+                    e.shiftKey ? this.moveAllData(this, listObj, true) : this.moveData(this, listObj, true);
+                }
+                else {
+                    e.shiftKey ? this.moveAllData(listObj, this, true) : this.moveData(listObj, this, true);
+                }
+            }
+            else if (e.keyCode !== 37 && e.keyCode !== 39) {
+                this.upDownKeyHandler(e);
+            }
+        }
+    };
+    ListBox.prototype.upDownKeyHandler = function (e) {
+        var ul = this.ulElement;
+        var defaultIdx = (e.keyCode === 40 || e.keyCode === 36) ? 0 : ul.childElementCount - 1;
+        var fliIdx = defaultIdx;
+        var fli = ul.getElementsByClassName('e-focused')[0] || ul.getElementsByClassName('e-selected')[0];
+        if (fli) {
+            if (e.keyCode !== 35 && e.keyCode !== 36) {
+                fliIdx = Array.prototype.indexOf.call(ul.children, fli);
+                e.keyCode === 40 ? fliIdx++ : fliIdx--;
+                if (fliIdx < 0 || fliIdx > ul.childElementCount - 1) {
+                    return;
+                }
+            }
+            removeClass([fli], 'e-focused');
+        }
+        var cli = ul.children[fliIdx];
+        fliIdx = this.getValidIndex(cli, fliIdx, e.keyCode);
+        if (fliIdx === -1) {
+            addClass([fli], 'e-focused');
+            return;
+        }
+        ul.children[fliIdx].focus();
+        ul.children[fliIdx].classList.add('e-focused');
+        if (!e.ctrlKey) {
+            this.selectHandler({ target: ul.children[fliIdx], ctrlKey: e.ctrlKey, shiftKey: e.shiftKey }, true);
+        }
+    };
+    ListBox.prototype.focusOutHandler = function () {
+        var ele = this.list.getElementsByClassName('e-focused')[0];
+        if (ele) {
+            ele.classList.remove('e-focused');
+        }
+    };
+    ListBox.prototype.getValidIndex = function (cli, index, keyCode) {
+        var cul = this.ulElement;
+        if (cli.classList.contains('e-disabled') || cli.classList.contains(cssClass.group)) {
+            (keyCode === 40 || keyCode === 36) ? index++ : index--;
+        }
+        if (index < 0 || index === cul.childElementCount) {
+            return -1;
+        }
+        cli = cul.children[index];
+        if (cli.classList.contains('e-disabled') || cli.classList.contains(cssClass.group)) {
+            index = this.getValidIndex(cli, index, keyCode);
+        }
+        return index;
+    };
+    ListBox.prototype.updateSelectedOptions = function () {
+        var _this = this;
+        var selectedOptions = [];
+        if (this.selectionSettings.showCheckbox) {
+            [].slice.call(this.ulElement.getElementsByClassName('e-check')).forEach(function (ele) {
+                selectedOptions.push(_this.getTextByValue(closest(ele, 'li').getAttribute('data-value')));
+            });
+        }
+        else {
+            [].slice.call(this.list.getElementsByClassName(cssClass.selected)).forEach(function (ele) {
+                if (!ele.classList.contains('e-grabbed')) {
+                    selectedOptions.push(_this.getTextByValue(ele.getAttribute('data-value')));
+                }
+            });
+        }
+        this.setProperties({ value: selectedOptions }, true);
+        this.updateSelectTag();
+        this.updateToolBarState();
+        if (this.tBListBox) {
+            this.tBListBox.updateToolBarState();
+        }
+    };
+    ListBox.prototype.setSelection = function (values, isSelect) {
+        var _this = this;
+        if (values === void 0) { values = this.value; }
+        if (isSelect === void 0) { isSelect = true; }
+        var li;
+        values.forEach(function (value) {
+            li = _this.list.querySelector('[data-value="' + _this.getTextByValue(value) + '"]');
+            if (li) {
+                if (_this.selectionSettings.showCheckbox) {
+                    _this.notify('updatelist', { li: li });
+                }
+                else {
+                    isSelect ? li.classList.add(cssClass.selected) : li.classList.remove(cssClass.selected);
+                }
+            }
+        });
+        this.updateSelectTag();
+    };
+    ListBox.prototype.updateSelectTag = function () {
+        var ele = this.getSelectTag();
+        ele.innerHTML = '';
+        this.value.forEach(function (value) {
+            ele.innerHTML += '<option selected value="' + value + '"></option>';
+        });
+    };
+    ListBox.prototype.updateToolBarState = function () {
+        var _this = this;
+        if (this.toolbarSettings.items.length) {
+            var listObj_1 = this.getScopedListBox();
+            var wrap_1 = this.list.parentElement.getElementsByClassName('e-listbox-tool')[0];
+            this.toolbarSettings.items.forEach(function (value) {
+                var btn = wrap_1.querySelector('[data-value="' + value + '"]');
+                switch (value) {
+                    case 'moveAllTo':
+                        btn.disabled = _this.ulElement.childElementCount ? false : true;
+                        break;
+                    case 'moveAllFrom':
+                        btn.disabled = listObj_1.ulElement.childElementCount ? false : true;
+                        break;
+                    case 'moveFrom':
+                        btn.disabled = listObj_1.value.length ? false : true;
+                        break;
+                    case 'moveUp':
+                        btn.disabled = _this.value.length
+                            && !_this.ulElement.children[0].classList.contains(cssClass.selected) ? false : true;
+                        break;
+                    case 'moveDown':
+                        btn.disabled = _this.value.length
+                            && !_this.ulElement.children[_this.ulElement.childElementCount - 1]
+                                .classList.contains(cssClass.selected) ? false : true;
+                        break;
+                    default:
+                        btn.disabled = _this.value.length ? false : true;
+                        break;
+                }
+            });
+        }
+    };
+    ListBox.prototype.getSelectTag = function () {
+        return this.list.getElementsByClassName('e-hidden-select')[0];
+    };
+    ListBox.prototype.getToolElem = function () {
+        return this.list.parentElement.getElementsByClassName('e-listbox-tool')[0];
+    };
+    ListBox.prototype.formResetHandler = function () {
+        this.value = this.initialSelectedOptions;
+    };
+    /**
+     * Return the module name.
+     * @private
+     */
+    ListBox.prototype.getModuleName = function () {
+        return 'listbox';
+    };
+    /**
+     * Get the properties to be maintained in the persisted state.
+     */
+    ListBox.prototype.getPersistData = function () {
+        return this.addOnPersist(['value']);
+    };
+    ListBox.prototype.destroy = function () {
+        if (this.element.tagName === 'EJS-LISTBOX') {
+            this.element.innerHTML = '';
+        }
+        else {
+            this.element.style.display = 'inline-block';
+            this.list.parentElement.insertBefore(this.element, this.list);
+        }
+        this.unwireEvents();
+        _super.prototype.destroy.call(this);
+    };
+    /**
+     * Called internally if any of the property value changed.
+     * @returns void
+     * @private
+     */
+    ListBox.prototype.onPropertyChanged = function (newProp, oldProp) {
+        var wrap = this.toolbarSettings.items.length ? this.list.parentElement : this.list;
+        _super.prototype.onPropertyChanged.call(this, newProp, oldProp);
+        this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp);
+        for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
+            var prop = _a[_i];
+            switch (prop) {
+                case 'cssClass':
+                    if (oldProp.cssClass) {
+                        removeClass([wrap], oldProp.cssClass.split(' '));
+                    }
+                    if (newProp.cssClass) {
+                        addClass([wrap], newProp.cssClass.split(' '));
+                    }
+                    break;
+                case 'enableRtl':
+                    if (newProp.enableRtl) {
+                        wrap.classList.add('e-rtl');
+                    }
+                    else {
+                        wrap.classList.remove('e-rtl');
+                    }
+                    break;
+                case 'value':
+                    removeClass(this.list.querySelectorAll('.' + cssClass.selected), cssClass.selected);
+                    this.setSelection();
+                    break;
+                case 'height':
+                    this.setHeight();
+                    break;
+                case 'enabled':
+                    this.setEnable();
+                    break;
+                case 'toolbarSettings':
+                    var pos = newProp.toolbarSettings.position;
+                    var toolElem = this.getToolElem();
+                    if (pos) {
+                        removeClass([wrap], ['e-right', 'e-left']);
+                        wrap.classList.add('e-' + pos.toLowerCase());
+                        if (pos === 'Left') {
+                            wrap.insertBefore(toolElem, this.list);
+                        }
+                        else {
+                            wrap.appendChild(toolElem);
+                        }
+                    }
+                    if (newProp.toolbarSettings.items) {
+                        toolElem.innerHTML = '';
+                        this.createButtons(toolElem);
+                    }
+                    break;
+            }
+        }
+    };
+    __decorate$5([
+        Property('')
+    ], ListBox.prototype, "cssClass", void 0);
+    __decorate$5([
+        Property([])
+    ], ListBox.prototype, "value", void 0);
+    __decorate$5([
+        Property('')
+    ], ListBox.prototype, "height", void 0);
+    __decorate$5([
+        Property(false)
+    ], ListBox.prototype, "allowDragAndDrop", void 0);
+    __decorate$5([
+        Property('')
+    ], ListBox.prototype, "scope", void 0);
+    __decorate$5([
+        Event()
+    ], ListBox.prototype, "beforeItemRender", void 0);
+    __decorate$5([
+        Event()
+    ], ListBox.prototype, "select", void 0);
+    __decorate$5([
+        Event()
+    ], ListBox.prototype, "dragStart", void 0);
+    __decorate$5([
+        Event()
+    ], ListBox.prototype, "drag", void 0);
+    __decorate$5([
+        Event()
+    ], ListBox.prototype, "drop", void 0);
+    __decorate$5([
+        Event()
+    ], ListBox.prototype, "dataBound", void 0);
+    __decorate$5([
+        Property(null)
+    ], ListBox.prototype, "groupTemplate", void 0);
+    __decorate$5([
+        Property('No Records Found')
+    ], ListBox.prototype, "noRecordsTemplate", void 0);
+    __decorate$5([
+        Property('The Request Failed')
+    ], ListBox.prototype, "actionFailureTemplate", void 0);
+    __decorate$5([
+        Property(1000)
+    ], ListBox.prototype, "zIndex", void 0);
+    __decorate$5([
+        Property(false)
+    ], ListBox.prototype, "ignoreAccent", void 0);
+    __decorate$5([
+        Complex({}, ToolbarSettings)
+    ], ListBox.prototype, "toolbarSettings", void 0);
+    __decorate$5([
+        Complex({}, SelectionSettings)
+    ], ListBox.prototype, "selectionSettings", void 0);
+    ListBox = __decorate$5([
+        NotifyPropertyChanges
+    ], ListBox);
+    return ListBox;
+}(DropDownBase));
+
 /**
  * export all modules from current location
  */
 
-export { incrementalSearch, Search, highlightSearch, revertHighlightSearch, FieldSettings, dropDownBaseClasses, DropDownBase, dropDownListClasses, DropDownList, ComboBox, AutoComplete, MultiSelect, CheckBoxSelection };
+/**
+ * export all modules from current location
+ */
+
+export { incrementalSearch, Search, highlightSearch, revertHighlightSearch, FieldSettings, dropDownBaseClasses, DropDownBase, dropDownListClasses, DropDownList, ComboBox, AutoComplete, MultiSelect, CheckBoxSelection, SelectionSettings, ToolbarSettings, ListBox };
 //# sourceMappingURL=ej2-dropdowns.es5.js.map

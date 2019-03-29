@@ -296,6 +296,19 @@ export class BpmnDiagrams {
         taskShapes.style.fill = 'transparent';
         taskShapes.style.strokeColor = 'transparent'; taskShapes.style.strokeWidth = 0;
         taskShapes.children = [taskNode, taskTypeNode];
+
+        //childnode for service
+        if (task.type === 'Service') {
+            let taskTypeNodeService: PathElement = new PathElement();
+            taskTypeNodeService.id = node.id + '_1_taskTypeService';
+            taskTypeNodeService.data = taskTypeNodeData;
+            taskTypeNodeService.margin.left =  taskTypeNode.margin.left + 9;
+            taskTypeNodeService.margin.top = taskTypeNode.margin.top + 9;
+            taskTypeNodeService.style.fill = 'white';
+            taskTypeNodeService.style.opacity = node.style.opacity;
+            taskShapes.children.push(taskTypeNodeService);
+        }
+
         // if task as loop
         let loopType: string = task.loop;
         let taskLoopNode: PathElement = new PathElement(); let childNode2data: string;

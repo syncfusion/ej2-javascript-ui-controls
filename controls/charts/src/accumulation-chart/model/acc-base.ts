@@ -162,7 +162,7 @@ export class AccumulationDataLabelSettings extends ChildProperty<AccumulationDat
      * Option for customizing the data label text.
      */
 
-    @Complex<FontModel>({ size: '11px', color: null }, Font)
+    @Complex<FontModel>({ size: '11px', color: '', fontStyle: 'Normal', fontWeight: 'Normal', fontFamily: 'Segoe UI' }, Font)
     public font: FontModel;
 
     /**

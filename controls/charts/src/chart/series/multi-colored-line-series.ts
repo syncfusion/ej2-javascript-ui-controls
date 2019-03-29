@@ -19,7 +19,7 @@ export class MultiColoredLineSeries extends MultiColoredSeries {
     public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
         let previous: Points = null;
         let startPoint: string = 'M';
-        let visiblePoints: Points[] = this.improveChartPerformance(series);
+        let visiblePoints: Points[] = this.enableComplexProperty(series);
         let options: PathOption[] = [];
         let direction: string = '';
         let segments : ChartSegmentModel[] = this.sortSegments(series, series.segments);

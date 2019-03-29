@@ -169,6 +169,9 @@
           text-align: left;
           text-overflow: ellipsis;
           word-break: break-all;
+          @if ($field-list-skin == 'bootstrap4') {
+            padding-left: 12px;
+          }
         }
 
         .e-field-list {
@@ -206,6 +209,10 @@
 
               .e-selected-node {
                 font-weight: $field-list-treeview-font-weight;
+              }
+
+              .e-list-text {
+                font-family: $field-list-font-family;
               }
             }
           }
@@ -266,6 +273,9 @@
             margin-top: 2px;
             padding: 0 8px;
             width: 100%;
+            @if ($field-list-skin == 'bootstrap4') {
+              margin-top: 3px;
+            }
           }
 
           .e-axis-content {
@@ -313,6 +323,10 @@
                 padding: $field-list-button-padding;
                 text-transform: none;
                 width: 100%;
+                @if ($field-list-skin == 'bootstrap4') {
+                  background-color: $field-list-button-color;
+                  color: $field-list-button-font-color;
+                }
 
                 &.e-list-selected {
                   color: $field-list-button-font-color;
@@ -448,17 +462,22 @@
       }
     }
 
+    // sass-lint:disable-all
     .e-calculated-field {
       color: $field-list-default-font-color;
       font-size: $field-list-button-font-size;
       font-weight: $field-list-button-font-weight;
       max-width: 160px;
       min-width: 145px;
+      @if ($field-list-skin == 'bootstrap4') {
+        color: #f8f9fa;
+      }
 
       &.e-disable {
         display: none;
       }
     }
+    // sass-lint:enable-all
 
     &.e-rtl {
       .e-field-table {
@@ -471,11 +490,14 @@
             margin-right: $field-list-treeview-padding-size;
 
             // sass-lint:disable-all
+            .e-list-text {
+              font-family: $field-list-font-family;
+            }
+
             .e-drag {
               margin-left: 6px !important;
               margin-right: 0 !important;
             }
-
             // sass-lint:enable-all
           }
         }
@@ -483,6 +505,9 @@
         .e-field-header {
           padding-right: $field-list-header-padding-size;
           text-align: right;
+          @if ($field-list-skin == 'bootstrap4') {
+            padding-right: 12px;
+          }
         }
       }
 
@@ -985,6 +1010,11 @@
         height: $field-list-bigger-header-height;
         overflow: hidden;
         padding: $field-list-tree-header-padding 0 0 $field-list-bigger-header-padding;
+        @if ($field-list-skin == 'bootstrap4') {
+          height: 40px;
+          padding-left: 16px;
+          padding-top: $field-list-bigger-tree-header-padding;
+        }
       }
 
       .e-field-list {
@@ -1038,11 +1068,18 @@
             font-size: $field-list-bigger-header-font-size;
             line-height: $field-list-bigger-header-content-line-height;
             margin-top: 4px;
-            padding: 0 10px;
+            padding: 0 12px;
+            @if ($field-list-skin == 'bootstrap4') {
+              margin-top: 7px;
+            }
           }
         }
 
         .e-axis-content {
+          @if ($field-list-skin == 'bootstrap4') {
+            height: 126px;
+          }
+
           .e-pvt-btn-div {
             .e-pivot-button {
               font-size: $field-list-bigger-button-font-size;

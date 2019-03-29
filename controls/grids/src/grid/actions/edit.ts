@@ -807,7 +807,7 @@ export class Edit implements IAction {
         let input: HTMLElement = closest(element, 'td') as HTMLElement;
         let inputClient: ClientRect = input ? input.getBoundingClientRect() : element.parentElement.getBoundingClientRect();
         let div: HTMLElement = this.parent.createElement('div', {
-            className: 'e-tooltip-wrap e-control e-popup e-griderror',
+            className: 'e-tooltip-wrap e-lib e-control e-popup e-griderror',
             id: name + '_Error',
             styles: 'display:' + display + ';top:' +
                 ((isFHdr ? inputClient.top + inputClient.height : inputClient.bottom - client.top

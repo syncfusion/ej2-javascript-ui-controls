@@ -1,4 +1,4 @@
-﻿import { Component, EmitType, ModuleDeclaration, isNullOrUndefined, L10n, extend } from '@syncfusion/ej2-base';import { Property, INotifyPropertyChanged, NotifyPropertyChanges, Complex, select } from '@syncfusion/ej2-base';import { createElement, addClass, removeClass, setStyleAttribute as setAttr } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, formatUnit, Browser, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { Event, EventHandler } from '@syncfusion/ej2-base';import { Splitter } from '@syncfusion/ej2-layouts';import { Dialog, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';import { createDialog } from '../pop-up/dialog';import { ToolbarSettings, ToolbarSettingsModel, AjaxSettings, NavigationPaneSettings, DetailsViewSettings } from '../models/index';import { NavigationPaneSettingsModel, DetailsViewSettingsModel } from '../models/index';import { AjaxSettingsModel, SearchSettings, SearchSettingsModel } from '../models/index';import { Toolbar } from '../actions/toolbar';import { DetailsView } from '../layout/details-view';import { LargeIconsView } from '../layout/large-icons-view';import { Uploader, UploadingEventArgs, RemovingEventArgs, UploaderModel } from '@syncfusion/ej2-inputs';import * as events from './constant';import * as CLS from './classes';import { read, paste, Delete, GetDetails } from '../common/operations';import { IFileManager, ITreeView, IContextMenu, viewType, SortOrder } from './interface';import { FileBeforeSendEventArgs, FileOnSuccessEventArgs, FileOnErrorEventArgs, FileBeforeLoadEventArgs } from './interface';import { FileOpenEventArgs, FileSelectEventArgs, FileMenuClickEventArgs, FileMenuOpenEventArgs } from './interface';import { FileToolbarClickEventArgs } from './interface';import { activeElement, removeBlur, refresh, getPathObject, getLocaleText } from '../common/utility';import { TreeView as BaseTreeView } from '@syncfusion/ej2-navigations';import { ContextMenuSettingsModel } from '../models/contextMenu-settings-model';import { ContextMenuSettings } from '../models/contextMenu-settings';import { BreadCrumbBar } from '../actions/breadcrumb-bar';import { ContextMenu } from '../pop-up/context-menu';import { defaultLocale } from '../models/default-locale';
+﻿import { Component, EmitType, ModuleDeclaration, isNullOrUndefined, L10n, closest } from '@syncfusion/ej2-base';import { Property, INotifyPropertyChanged, NotifyPropertyChanges, Complex, select } from '@syncfusion/ej2-base';import { createElement, addClass, removeClass, setStyleAttribute as setAttr } from '@syncfusion/ej2-base';import { isNullOrUndefined as isNOU, formatUnit, Browser, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { Event, EventHandler } from '@syncfusion/ej2-base';import { Splitter } from '@syncfusion/ej2-layouts';import { Dialog, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';import { createDialog } from '../pop-up/dialog';import { ToolbarSettings, ToolbarSettingsModel, AjaxSettings, NavigationPaneSettings, DetailsViewSettings } from '../models/index';import { NavigationPaneSettingsModel, DetailsViewSettingsModel } from '../models/index';import { AjaxSettingsModel, SearchSettings, SearchSettingsModel } from '../models/index';import { Toolbar } from '../actions/toolbar';import { DetailsView } from '../layout/details-view';import { LargeIconsView } from '../layout/large-icons-view';import { Uploader, UploadingEventArgs, RemovingEventArgs } from '@syncfusion/ej2-inputs';import { UploadSettingsModel } from '../models/upload-settings-model';import { UploadSettings } from '../models/upload-settings';import * as events from './constant';import * as CLS from './classes';import { read, paste, Delete, GetDetails } from '../common/operations';import { IFileManager, ITreeView, IContextMenu, viewType, SortOrder } from './interface';import { FileBeforeSendEventArgs, FileOnSuccessEventArgs, FileOnErrorEventArgs, FileBeforeLoadEventArgs } from './interface';import { FileOpenEventArgs, FileSelectEventArgs, FileMenuClickEventArgs, FileMenuOpenEventArgs } from './interface';import { FileToolbarClickEventArgs } from './interface';import { activeElement, removeBlur, refresh, getPathObject, getLocaleText, setNextPath } from '../common/utility';import { TreeView as BaseTreeView } from '@syncfusion/ej2-navigations';import { ContextMenuSettingsModel } from '../models/contextMenu-settings-model';import { ContextMenuSettings } from '../models/contextMenu-settings';import { BreadCrumbBar } from '../actions/breadcrumb-bar';import { ContextMenu } from '../pop-up/context-menu';import { defaultLocale } from '../models/default-locale';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -7,16 +7,18 @@ import {ComponentModel} from '@syncfusion/ej2-base';
 export interface FileManagerModel extends ComponentModel{
 
     /**
-     * Specifies the Ajax settings of the FileManager component.
+     * Specifies the AJAX settings of the file manager.
      * @default {
      *  getImageUrl: null;
-     *  url: null,
+     *  url: null;
+     *  uploadUrl: null;
+     *  downloadUrl: null;
      * }
      */
     ajaxSettings?: AjaxSettingsModel;
 
     /**
-     * Enables or disables the multiple files selection
+     * Enables or disables the multiple files selection of the file manager.
      * @default true
      */
     allowMultiSelection?: boolean;
@@ -43,7 +45,7 @@ export interface FileManagerModel extends ComponentModel{
      * @default {     
      * Columns: [{
      * field: 'name', headerText: 'Name', minWidth: 120, width: 'auto', customAttributes: { class: 'e-fe-grid-name' },
-     * template: '<span class="e-fe-text">${name}</span>'},{field: 'size', headerText: 'Size', 
+     * template: '<span class="e-fe-text" title="${name}">${name}</span>'},{field: 'size', headerText: 'Size', 
      * minWidth: 50, width: '110', template: '<span class="e-fe-size">${size}</span>'},
      * { field: 'dateModified', headerText: 'DateModified',
      * minWidth: 50, width: '190'}
@@ -54,7 +56,7 @@ export interface FileManagerModel extends ComponentModel{
 
     /**
      * Enables or disables persisting component's state between page reloads. If enabled, following APIs will persist.
-     * 1. `view` - Represents the previous view of the FileManager component.
+     * 1. `view` - Represents the previous view of the file manager.
      * @default false
      */
     enablePersistence?: boolean;
@@ -66,13 +68,13 @@ export interface FileManagerModel extends ComponentModel{
     enableRtl?: boolean;
 
     /**
-     * Specifies the height of the FileManager component.
+     * Specifies the height of the file manager.
      * @default '400px'
      */
     height?: string | number;
 
     /**
-     * Specifies the initial view of the FileManager component. 
+     * Specifies the initial view of the file manager. 
      * With the help of this property, initial view can be changed to details or largeicons view.
      * @default 'LargeIcons'
      */
@@ -89,7 +91,7 @@ export interface FileManagerModel extends ComponentModel{
     navigationPaneSettings?: NavigationPaneSettingsModel;
 
     /**
-     * Specifies the current path of the FileManager component.
+     * Specifies the current path of the file manager.
      * @default '/'
      */
     path?: string;
@@ -111,7 +113,7 @@ export interface FileManagerModel extends ComponentModel{
     selectedItems?: string[];
 
     /**
-     * Show or hide the file extension in FileManager component.
+     * Show or hide the file extension in file manager.
      * @default true
      */
     showFileExtension?: boolean;
@@ -138,13 +140,13 @@ export interface FileManagerModel extends ComponentModel{
     toolbarSettings?: ToolbarSettingsModel;
 
     /**
-     * Specifies the upload settings for the FileManager component.
+     * Specifies the upload settings for the file manager.
      * @default null
      */
-    uploadSettings?: UploaderModel;
+    uploadSettings?: UploadSettingsModel;
 
     /**
-     * Specifies the width of the FileManager component.
+     * Specifies the width of the file manager.
      * @default '100%'
      */
     width?: string | number;
@@ -162,19 +164,19 @@ export interface FileManagerModel extends ComponentModel{
     beforeFileOpen?: EmitType<FileOpenEventArgs>;
 
     /**
-     * Triggers before the Ajax request send to the server.
+     * Triggers before the AJAX request send to the server.
      * @event
      */
     beforeSend?: EmitType<FileBeforeSendEventArgs>;
 
     /**
-     * Triggers when the FileManager control is created.
+     * Triggers when the file manager component is created.
      * @event
      */
     created?: EmitType<Object>;
 
     /**
-     * Triggers when the FileManager control is destroyed.
+     * Triggers when the file manager component is destroyed.
      * @event
      */
     destroyed?: EmitType<Object>;
@@ -198,13 +200,13 @@ export interface FileManagerModel extends ComponentModel{
     menuOpen?: EmitType<FileMenuOpenEventArgs>;
 
     /**
-     * Triggers when the Ajax request is failed.
+     * Triggers when the AJAX request is failed.
      * @event
      */
     onError?: EmitType<FileOnErrorEventArgs>;
 
     /**
-     * Triggers when the Ajax request is success.
+     * Triggers when the AJAX request is success.
      * @event
      */
     onSuccess?: EmitType<FileOnSuccessEventArgs>;

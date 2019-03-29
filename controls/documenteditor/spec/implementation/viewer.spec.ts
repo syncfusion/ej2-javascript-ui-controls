@@ -62,7 +62,7 @@ describe('double tap and trible tap testing', () => {
         }, 1000);
     });
     it('Double tap validation', () => {
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         let event: any = getEventObject('MouseEvent', 'dblclick');
         event = setMouseCoordinates(event, 345, 130);
         editor.selection.moveToLineStart();
@@ -116,7 +116,7 @@ describe('Double tap touch testing', () => {
     });
     it('Double tap validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         let event: any = getEventObject('MouseEvent', 'dblclick');
         event = setMouseCoordinates(event, 345, 160);
         editor.selection.moveToLineStart();
@@ -216,7 +216,7 @@ describe('Branch validation', () => {
         }, 1000);
     });
     it('Hide Context menu on window resize', () => {
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.selection.selectAll();
         viewer.onDoubleTap({ offsetX: 10000, offsetY: 10000 } as any);
         expect(editor.selection.text).toBe('Syncfusion Software\r');
@@ -412,7 +412,7 @@ describe('Tab key validation list level', () => {
     it('Page Down  and page Up validation', () => {
         editor.openBlank();
         editor.editor.insertTable(2, 2);
-        editor.editorModule.insertText('Adventure Work Cycles', false);
+        editor.editorModule.insertText('Adventure Work Cycles');
         let prevLocation = editor.selection.start.location.x;
         event = { keyCode: 33, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
@@ -492,7 +492,7 @@ describe('Viewer API validation', () => {
         expect(viewer.zoomFactor).toBe(1);
     });
     it('Delete API validation', () => {
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.selection.moveToLineStart();
         editor.editorModule.handleDelete();
         editor.editorModule.handleDelete();
@@ -500,14 +500,14 @@ describe('Viewer API validation', () => {
         expect(editor.selection.text).toBe('ncfusion Software\r')
     });
     it('Ctrl + Up Arrow validation', () => {
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.selection.handleControlUpKey();
         expect(editor.selection.start.offset).toBe(0);
         editor.selection.handleControlDownKey();
         //expect(editor.selection.start.offset).toBe(editor.selection.getLength(editor.selection.start.paragraph) - 1);
     });
     it('Shift + Ctrl down key validation', () => {
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.selection.moveToLineStart();
         editor.selection.handleControlShiftDownKey();
         expect(editor.selection.text).toBe('Syncfusion Software\r');
@@ -589,11 +589,11 @@ describe('Header footer maximum height validation', () => {
     });
     it('Double Table on header footer region', () => {
         editor.openBlank();
-        editor.editor.insertText('Synfusion', false);
+        editor.editor.insertText('Synfusion');
         editor.editor.onEnter();
-        editor.editor.insertText('Synfusion', false);
+        editor.editor.insertText('Synfusion');
         editor.editor.onEnter();
-        editor.editor.insertText('Synfusion', false);
+        editor.editor.insertText('Synfusion');
         editor.editor.onEnter();
         let event: any = getEventObject('MouseEvent', 'dblclick');
         event = setMouseCoordinates(event, 345, 80);

@@ -19,7 +19,6 @@ export class AutoComplete implements IComponent {
     }
 
     public render(e: NotifyParams): void {
-        (this.parent.model as AutoCompleteModel).showClearButton = true;
         this.compObj = new EJ2AutoComplete(this.parent.model as AutoCompleteModel, e.target);
     }
 
@@ -30,6 +29,7 @@ export class AutoComplete implements IComponent {
     public updateValue(e: NotifyParams): void {
         if (this.compObj && e.type === 'AutoComplete') {
             this.parent.setProperties({ value: this.compObj.value }, true);
+            this.parent.extendModelValue(this.compObj.value);
         }
     }
 

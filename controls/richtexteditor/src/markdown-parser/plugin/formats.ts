@@ -48,7 +48,9 @@ export class MDFormats {
             this.restore(textArea, textArea.selectionStart, textArea.selectionEnd, e);
             return;
         } else {
-            this.cleanFormat(textArea, e.subCommand);
+            if ((e.subCommand === 'pre' && parents.length !== 1) || e.subCommand !== 'pre') {
+                this.cleanFormat(textArea, e.subCommand);
+            }
         }
         let start: number = textArea.selectionStart;
         let end: number = textArea.selectionEnd;

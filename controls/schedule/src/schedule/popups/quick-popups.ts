@@ -350,7 +350,8 @@ export class QuickPopups {
         tempObj[this.parent.eventFields.isAllDay] = this.parent.activeCellsData.isAllDay;
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             let targetCell: HTMLElement = args.element instanceof Array ? args.element[0] : args.element;
-            this.parent.resourceBase.setResourceValues(tempObj, true, parseInt(targetCell.getAttribute('data-group-index'), 10));
+            let groupIndex: number = parseInt(targetCell.getAttribute('data-group-index'), 10);
+            this.parent.resourceBase.setResourceValues(tempObj, true, isNaN(groupIndex) ? null : groupIndex);
         }
         return this.parent.eventBase.isBlockRange(tempObj);
     }

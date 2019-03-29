@@ -18,7 +18,6 @@ export class TimePicker implements IComponent {
     }
 
     public render(e: NotifyParams): void {
-        (this.parent.model as TimePickerModel).showClearButton = true;
         this.compObj = new EJ2TimePicker(this.parent.model as TimePickerModel, e.target as HTMLInputElement);
     }
 
@@ -29,6 +28,7 @@ export class TimePicker implements IComponent {
     public updateValue(e: NotifyParams): void {
         if (this.compObj && e.type === 'Time') {
             this.parent.setProperties({ value: this.compObj.value }, true);
+            this.parent.extendModelValue(this.compObj.value);
         }
     }
 

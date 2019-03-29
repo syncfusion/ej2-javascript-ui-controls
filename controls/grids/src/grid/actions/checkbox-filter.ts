@@ -19,6 +19,7 @@ import { Input } from '@syncfusion/ej2-inputs';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { getFilterMenuPostion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, getColumnByForeignKeyValue } from '../base/util';
 import { InputArgs } from '@syncfusion/ej2-inputs';
+import { SearchSettingsModel} from '../base/grid-model';
 /**
  * @hidden
  * `CheckBoxFilter` module is used to handle filtering action.
@@ -633,6 +634,12 @@ export class CheckBoxFilter {
     private dataSuccess(e: Object[]): void {
         this.fullData = e;
         let query: Query = new Query();
+        if (this.parent.searchSettings.key.length) {
+            let sSettings: SearchSettingsModel = this.parent.searchSettings;
+            let fields: string[] = sSettings.fields.length ? sSettings.fields : this.parent.getColumns().map((f: Column) => f.field);
+            query.search(sSettings.key, fields,
+                         sSettings.operator, sSettings.ignoreCase, sSettings.ignoreAccent);
+        }
         if ((this.options.filteredColumns.length)) {
             let cols: Object[] = [];
             for (let i: number = 0; i < this.options.filteredColumns.length; i++) {

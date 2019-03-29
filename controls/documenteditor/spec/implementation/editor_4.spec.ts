@@ -44,7 +44,7 @@ describe('insert hyperlink validation', () => {
     });
     it('In backward selection edit hyperlink validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('sample', false);
+        editor.editorModule.insertText('sample');
         editor.selection.handleLeftKey();
         editor.selection.handleLeftKey();
         editor.selection.handleLeftKey();
@@ -84,11 +84,11 @@ describe('Edit hyperlink validation', () => {
     });
     it('In backward selection insert hyperlink validation in Multiple paragraph', () => {
         editor.openBlank();
-        editor.editorModule.insertText('sample', false);
+        editor.editorModule.insertText('sample');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('sample', false);
+        editor.editorModule.insertText('sample');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('sample', false);
+        editor.editorModule.insertText('sample');
         editor.selection.handleLeftKey();
         editor.selection.handleLeftKey();
         editor.selection.handleLeftKey();
@@ -150,7 +150,7 @@ describe('Remove Hyperlink valdiation', () => {
     });
     it('Hyerplink using enter', () => {
         editor.openBlank();
-        editor.editorModule.insertText('www.google.com', false);
+        editor.editorModule.insertText('www.google.com');
         editor.editorModule.onEnter();
         editor.selection.handleUpKey();
         editor.selection.handleRightKey();

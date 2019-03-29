@@ -90,6 +90,33 @@ describe('Linear gauge control', () => {
             ];
             gauge.refresh();
         });
+        it('checking with ranges start and end with databind', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisIndex_0_Range_0');
+                expect(svg != null).toBe(true);
+                svg = document.getElementById('container_AxisIndex_0_Range_1');
+                expect(svg != null).toBe(true);
+            };
+            gauge.axes[0].ranges = [
+                {
+                    start: 10,
+                    end: 40,
+                    startWidth: 10,
+                    endWidth: 20,
+                    color: 'red',
+                    position: 'Inside'
+                },
+                {
+                    start: 50,
+                    end: 100,
+                    startWidth: 10,
+                    endWidth: 20,
+                    color: 'red',
+                    position: 'Outside'
+                }
+            ];
+            gauge.dataBind();
+        });
 
         it('checking with ranges in horizontal orientation', (): void => {
             gauge.loaded = (args: ILoadedEventArgs): void => {

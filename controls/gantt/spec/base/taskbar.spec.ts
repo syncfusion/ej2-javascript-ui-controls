@@ -99,16 +99,16 @@ describe('Gantt taskbar rendering', () => {
                 }
                 if (args.taskbarType === 'ParentTask') {
                     args.taskbarBgColor = "green";
-                    //args.taskbarBorderColor = "gray";
+                    args.taskbarBorderColor = "gray";
                     args.progressBarBgColor = "orange";
-                    args.progressBarBorderColor = "Red";
+                    //args.progressBarBorderColor = "Red";
                     args.baselineColor = "Green";
                 }
                 if (args.taskbarType === 'ChildTask') {
                     args.taskbarBgColor = "black";
-                    //args.taskbarBorderColor = "yellow";
+                    args.taskbarBorderColor = "yellow";
                     args.progressBarBgColor = "brown";
-                    args.progressBarBorderColor = "gray";
+                    //args.progressBarBorderColor = "gray";
                     args.leftLabelColor = "yellow";
                     args.rightLabelColor = "brown";
                     args.progressLabelColor = "white";

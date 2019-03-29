@@ -42,9 +42,8 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
 
     private getGroupedRecords(index: number, data: GroupedData, raw?: Object, parentid?: number, childId?: number, tIndex?: number): void {
         let level: number = <number>raw;
-        let parentExpand: boolean = true;
         if (isNullOrUndefined(data.items)) {
-            if (isNullOrUndefined(data.GroupGuid) && (this.parent.columns.length !== this.parent.groupSettings.columns.length)) {
+            if (isNullOrUndefined(data.GroupGuid)) {
                 this.rows = this.rows.concat(this.generateDataRows((data as Object[]), index, parentid, this.rows.length));
             } else {
                 for (let j: number = 0, len: number = (data as Object[]).length; j < len; j++) {

@@ -96,8 +96,8 @@ export class GanttTreeGrid {
         this.parent.treeGrid.queryCellInfo = this.queryCellInfo.bind(this);
         this.parent.treeGrid.headerCellInfo = this.headerCellInfo.bind(this);
         this.parent.treeGrid.rowDataBound = this.rowDataBound.bind(this);
-        this.parent.treeGrid.grid.columnMenuOpen = this.columnMenuOpen.bind(this);
-        this.parent.treeGrid.grid.columnMenuClick = this.columnMenuClick.bind(this);
+        this.parent.treeGrid.columnMenuOpen = this.columnMenuOpen.bind(this);
+        this.parent.treeGrid.columnMenuClick = this.columnMenuClick.bind(this);
     }
 
     private dataBound(args: object): void {
@@ -180,6 +180,7 @@ export class GanttTreeGrid {
 
     private updateKeyConfigSettings(): void {
         delete this.parent.treeGrid.grid.keyboardModule.keyConfigs.delete;
+        delete this.parent.treeGrid.grid.keyboardModule.keyConfigs.insert;
     }
 
     /**
@@ -306,7 +307,7 @@ export class GanttTreeGrid {
         } else if (taskSettings.resourceInfo === column.field) {
             this.composeResourceColumn(column);
         } else if (taskSettings.notes === column.field) {
-            column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('resourceID');
+            column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('notes');
             column.width = column.width ? column.width : 150;
             column.editType = column.editType ? column.editType : 'stringedit';
             if (!this.parent.showInlineNotes) {

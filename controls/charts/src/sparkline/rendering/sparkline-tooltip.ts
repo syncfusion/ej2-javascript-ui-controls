@@ -104,7 +104,7 @@ export class SparklineTooltip {
     private renderTrackerLine(points: SparkValues): void {
         let spark: Sparkline = this.sparkline; let theme: string = spark.theme.toLowerCase();
         let tracker: TrackLineSettingsModel = spark.tooltipSettings.trackLineSettings;
-        let color: string = tracker.color || spark.sparkTheme.trackerLineColor;
+        let color: string = spark.sparkTheme.trackerLineColor ? spark.sparkTheme.trackerLineColor : tracker.color;
         if (!tracker.visible || spark.type === 'Pie') {
             return;
         }
@@ -163,10 +163,10 @@ export class SparklineTooltip {
             name: 'tooltipInitialize', cancel: false, text: text,
             textStyle: {
                 size: tooltip.textStyle.size,
-                opacity: tooltip.textStyle.opacity,
+                opacity: spark.sparkTheme.tooltipTextOpacity || tooltip.textStyle.opacity,
                 fontWeight: tooltip.textStyle.fontWeight,
                 fontStyle: tooltip.textStyle.fontStyle,
-                fontFamily: tooltip.textStyle.fontFamily,
+                fontFamily: spark.sparkTheme.fontFamily || tooltip.textStyle.fontFamily,
                 color: textColor
             }
         };
@@ -187,6 +187,7 @@ export class SparklineTooltip {
             areaBounds: new Rect(0, 0, spark.availableSize.width, spark.availableSize.height),
             theme: spark.theme
         });
+        element.opacity = spark.sparkTheme.tooltipFillOpacity || element.opacity;
         element.appendTo(div as HTMLElement);
     }
     /**

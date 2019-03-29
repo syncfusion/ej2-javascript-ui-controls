@@ -69,7 +69,7 @@ export class Edit {
             let rowIndex: number = getValue('rowIndex', args.row);
             ganttData = this.parent.currentViewData[rowIndex];
         }
-        if (!isNullOrUndefined(ganttData)) {
+        if (!isNullOrUndefined(ganttData) && this.parent.editSettings.allowEditing) {
             this.dialogModule.openEditDialog(ganttData);
         }
     }
@@ -100,13 +100,23 @@ export class Edit {
     public updateRecordByID(data: Object): void {
         let tasks: TaskFieldsModel = this.parent.taskFields;
         let ganttData: IGanttData = this.parent.getRecordByID(data[tasks.id]);
-        if (ganttData) {
+        if (!isNullOrUndefined(this.parent.editModule) && ganttData) {
+            this.parent.isOnEdit = true;
             this.validateUpdateValues(data, ganttData, true);
+            let keys: string[] = Object.keys(data);
+            if (keys.indexOf(tasks.startDate) !== -1 || keys.indexOf(tasks.endDate) !== -1 ||
+                keys.indexOf(tasks.duration) !== -1) {
+                this.parent.dataOperation.calculateScheduledValues(ganttData, ganttData.taskData, false);
+            }
             this.parent.dataOperation.updateWidthLeft(ganttData);
             if (!isUndefined(data[this.parent.taskFields.dependency]) &&
                 data[this.parent.taskFields.dependency] !== ganttData.ganttProperties.predecessorsName) {
                 this.parent.connectorLineEditModule.updatePredecessor(
                     ganttData, data[this.parent.taskFields.dependency]);
+            } else {
+                let args: ITaskbarEditedEventArgs = {} as ITaskbarEditedEventArgs;
+                args.data = ganttData;
+                this.parent.editModule.initiateUpdateAction(args);
             }
         }
     }
@@ -205,26 +215,26 @@ export class Edit {
         let ganttObj: Gantt = this.parent; let startDate: Date; let endDate: Date; let duration: string;
         let tasks: TaskFieldsModel = ganttObj.taskFields; let ganttProp: ITaskData = ganttData.ganttProperties;
         let isUnscheduledTask: boolean = ganttObj.allowUnscheduledTasks;
-        if (fieldNames.indexOf(tasks.startDate)) {
+        if (fieldNames.indexOf(tasks.startDate) !== -1) {
             startDate = data[tasks.startDate];
         }
-        if (fieldNames.indexOf(tasks.endDate)) {
+        if (fieldNames.indexOf(tasks.endDate) !== -1) {
             endDate = data[tasks.endDate];
         }
-        if (fieldNames.indexOf(tasks.duration)) {
+        if (fieldNames.indexOf(tasks.duration) !== -1) {
             duration = data[tasks.duration];
         }
-        if (startDate && endDate || (isUnscheduledTask && fieldNames.indexOf(tasks.startDate) &&
-            fieldNames.indexOf(tasks.endDate))) {
+        if (startDate && endDate || (isUnscheduledTask && (fieldNames.indexOf(tasks.startDate) !== -1) &&
+            (fieldNames.indexOf(tasks.endDate) !== -1))) {
             ganttObj.setRecordValue('startDate', ganttObj.dataOperation.getDateFromFormat(startDate), ganttProp, true);
             ganttObj.setRecordValue('endDate', ganttObj.dataOperation.getDateFromFormat(endDate), ganttProp, true);
             ganttObj.dataOperation.calculateDuration(ganttData);
         } else if (endDate && duration || (isUnscheduledTask &&
-            fieldNames.indexOf(tasks.endDate) && fieldNames.indexOf(tasks.duration))) {
+            (fieldNames.indexOf(tasks.endDate) !== -1) && (fieldNames.indexOf(tasks.duration) !== -1))) {
             ganttObj.setRecordValue('endDate', ganttObj.dataOperation.getDateFromFormat(endDate), ganttProp, true);
             ganttObj.dataOperation.updateDurationValue(duration, ganttProp);
-        } else if (startDate && duration || (isUnscheduledTask && fieldNames.indexOf(tasks.startDate)
-            && fieldNames.indexOf(tasks.duration))) {
+        } else if (startDate && duration || (isUnscheduledTask && (fieldNames.indexOf(tasks.startDate) !== -1)
+            && (fieldNames.indexOf(tasks.duration) !== -1))) {
             ganttObj.setRecordValue('startDate', ganttObj.dataOperation.getDateFromFormat(startDate), ganttProp, true);
             ganttObj.dataOperation.updateDurationValue(duration, ganttProp);
         }
@@ -279,7 +289,7 @@ export class Edit {
         let isValidatePredecessor: boolean = false;
         let prevData: IGanttData = this.parent.previousRecords[data.uniqueID];
 
-        if (prevData && this.parent.taskFields.dependency && this.parent.enablePredecessorValidation &&
+        if (prevData && this.parent.taskFields.dependency && this.parent.isInPredecessorValidation &&
             this.parent.predecessorModule.getValidPredecessor(data).length > 0) {
 
             if (this.isTaskbarMoved(data)) {
@@ -389,7 +399,7 @@ export class Edit {
      */
     public updateParentChildRecord(data: IGanttData): void {
         let ganttRecord: IGanttData = data;
-        if (ganttRecord.hasChildRecords) {
+        if (ganttRecord.hasChildRecords && this.taskbarMoved) {
             this.updateChildItems(ganttRecord);
         }
     }
@@ -943,20 +953,33 @@ export class Edit {
         }
     }
 
-    private removeFromDataSource(record: IGanttData): void {
-        let dataSource: Object[] = this.parent.dataSource as Object[];
-        this.removeData(dataSource, record);
+    private removeFromDataSource(deleteRecordIDs: string[]): void {
+        let dataSource: Object[];
+        let taskFields: TaskFieldsModel = this.parent.taskFields;
+        if (this.parent.dataSource instanceof DataManager) {
+            dataSource = this.parent.dataSource.dataSource.json as Object[];
+        } else {
+            dataSource = this.parent.dataSource as Object[];
+        }
+        this.removeData(dataSource, deleteRecordIDs);
         this.isBreakLoop = false;
     }
-    private removeData(dataCollection: Object[], record: IGanttData): boolean | void {
+    private removeData(dataCollection: Object[], record: string[]): boolean | void {
         for (let i: number = 0; i < dataCollection.length; i++) {
             if (this.isBreakLoop) {
                 break;
             }
-            if (getValue(this.parent.taskFields.id, dataCollection[i]).toString() === record.ganttProperties.taskId.toString()) {
+            if (record.indexOf(getValue(this.parent.taskFields.id, dataCollection[i]).toString()) !== -1) {
+                if (dataCollection[i][this.parent.taskFields.child]) {
+                    let childRecords: ITaskData[] = dataCollection[i][this.parent.taskFields.child];
+                    this.removeData(childRecords, record);
+                }
+                record.splice(record.indexOf(getValue(this.parent.taskFields.id, dataCollection[i]).toString()), 1);
                 dataCollection.splice(i, 1);
-                this.isBreakLoop = true;
-                break;
+                if (record.length === 0) {
+                    this.isBreakLoop = true;
+                    break;
+                }
             } else if (dataCollection[i][this.parent.taskFields.child]) {
                 let childRecords: ITaskData[] = dataCollection[i][this.parent.taskFields.child];
                 this.removeData(childRecords, record);
@@ -1001,6 +1024,7 @@ export class Edit {
         let flatData: IGanttData[] = this.parent.flatData;
         let currentData: IGanttData[] = this.parent.currentViewData;
         let deletedRecords: IGanttData[] = args.deletedRecordCollection;
+        let deleteRecordIDs: string[] = [];
         for (let i: number = 0; i < deletedRecords.length; i++) {
             let deleteRecord: IGanttData = deletedRecords[i];
             let currentIndex: number = currentData.indexOf(deleteRecord);
@@ -1008,7 +1032,7 @@ export class Edit {
             let childIndex: number;
             if (currentIndex !== -1) { currentData.splice(currentIndex, 1); }
             if (flatIndex !== -1) { flatData.splice(flatIndex, 1); }
-            this.removeFromDataSource(deleteRecord);
+            deleteRecordIDs.push(deleteRecord.ganttProperties.taskId.toString());
             if (flatIndex !== -1) { this.parent.ids.splice(flatIndex, 1); }
             if (deleteRecord.parentItem) {
                 let parentItem: IGanttData = this.parent.getParentTask(deleteRecord.parentItem);
@@ -1021,6 +1045,9 @@ export class Edit {
                     }
                 }
             }
+        }
+        if (deleteRecordIDs.length > 0) {
+            this.removeFromDataSource(deleteRecordIDs);
         }
         let eventArgs: IActionBeginEventArgs = {};
         this.parent.updatedConnectorLineCollection = [];
@@ -1076,7 +1103,7 @@ export class Edit {
             obj[taskModel.id] = id;
         }
         if (taskModel.name && !obj[taskModel.name]) {
-            obj[taskModel.name] = 'newTaskName' + ' ' + obj[taskModel.id];
+            obj[taskModel.name] = 'New Task' + ' ' + obj[taskModel.id];
         }
         if (!this.parent.allowUnscheduledTasks && !obj[taskModel.startDate]) {
             obj[taskModel.startDate] = this.parent.projectStartDate;
@@ -1112,6 +1139,12 @@ export class Edit {
             this.parent.setRecordValue('parentItem', this.parent.dataOperation.getCloneParent(parentItem), cAddedRecord);
             let pIndex: number = cAddedRecord.parentItem ? cAddedRecord.parentItem.index : null;
             this.parent.setRecordValue('parentIndex', pIndex, cAddedRecord);
+            let parentUniqId: string = cAddedRecord.parentItem ? cAddedRecord.parentItem.uniqueID : null;
+            this.parent.setRecordValue('parentUniqueID', parentUniqId, cAddedRecord);
+            if (!isNullOrUndefined(this.parent.taskFields.id) &&
+                !isNullOrUndefined(this.parent.taskFields.parentID) && cAddedRecord.parentItem) {
+                this.parent.setRecordValue(this.parent.taskFields.parentID, cAddedRecord.parentItem.taskId, cAddedRecord.taskData, true);
+            }
         }
         this.backUpAndPushNewlyAddedRecord(cAddedRecord, rowPosition, parentItem);
         // need to push in dataSource also.
@@ -1191,11 +1224,11 @@ export class Edit {
         for (let count: number = 0; count < len; count++) {
             if (predecessorCollection[count].to === parentRecordTaskData.taskId.toString()) {
                 childRecord = this.parent.getRecordByID(predecessorCollection[count].from);
-                predecessorIndex = childRecord.ganttProperties.predecessor.indexOf(predecessorCollection[count]);
-                let temppredecessorCollection: IPredecessor[];
-                temppredecessorCollection = (extend([], childRecord.ganttProperties.predecessor, [], true)) as IPredecessor[];
-                temppredecessorCollection.splice(predecessorIndex, 1);
-                this.parent.setRecordValue('predecessor', temppredecessorCollection, childRecord.ganttProperties, true);
+                predecessorIndex = getIndex(predecessorCollection[count], 'from', childRecord.ganttProperties.predecessor, 'to');
+                let predecessorCollections: IPredecessor[];
+                predecessorCollections = (extend([], childRecord.ganttProperties.predecessor, [], true)) as IPredecessor[];
+                predecessorCollections.splice(predecessorIndex, 1);
+                this.parent.setRecordValue('predecessor', predecessorCollections, childRecord.ganttProperties, true);
             } else if (predecessorCollection[count].from === parentRecordTaskData.taskId.toString()) {
                 childRecord = this.parent.getRecordByID(predecessorCollection[count].to);
                 let stringPredecessor: string = this.predecessorToString(childRecord.ganttProperties.predecessor, parentRecord);
@@ -1372,13 +1405,23 @@ export class Edit {
      * @private
      */
     private updateRealDataSource(addedRecord: IGanttData, rowPosition: RowPosition): void {
-        let dataSource: Object[] = this.parent.dataSource as Object[];
+        let dataSource: Object[];
+        let taskFields: TaskFieldsModel = this.parent.taskFields;
+        if (this.parent.dataSource instanceof DataManager) {
+            dataSource = this.parent.dataSource.dataSource.json as Object[];
+        } else {
+            dataSource = this.parent.dataSource as Object[];
+        }
         if (rowPosition === 'Top') {
             dataSource.splice(0, 0, addedRecord.taskData);
         } else if (rowPosition === 'Bottom') {
             dataSource.push(addedRecord);
         } else {
-            this.addDataInRealDataSource(dataSource, addedRecord.taskData, rowPosition);
+            if (!isNullOrUndefined(taskFields.id) && !isNullOrUndefined(taskFields.parentID)) {
+                dataSource.push(addedRecord.taskData);
+            } else {
+                this.addDataInRealDataSource(dataSource, addedRecord.taskData, rowPosition);
+            }
         }
         this.isBreakLoop = false;
     }
@@ -1490,6 +1533,9 @@ export class Edit {
                         this.parent.setRecordValue(
                             this.parent.taskFields.id, e.addedRecords[0][this.parent.taskFields.id], args.data);
                     }
+                    if (cAddedRecord.level === 0) {
+                        this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord);
+                    }
                     this.RefreshNewlyAddedRecord(args, cAddedRecord);
                 }).catch((e: { result: Object[] }) => {
                     this.removeAddedRecord();
@@ -1497,6 +1543,9 @@ export class Edit {
                 });
             } else {
                 this.updateRealDataSource(args.data, rowPosition);
+                if (cAddedRecord.level === 0) {
+                    this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord);
+                }
                 this.RefreshNewlyAddedRecord(args, cAddedRecord);
             }
         } else {
@@ -1519,9 +1568,10 @@ export class Edit {
             this.parent.staticSelectedRowIndex = this.parent.currentViewData.indexOf(args.data);
         }
         if (this.parent.timelineSettings.updateTimescaleView) {
-            let tempArray: IGanttData[];
+            let tempArray: IGanttData[] = [];
             if (args.modifiedRecords.length > 0) {
-                tempArray.push.apply(args.data, args.modifiedRecords);
+                tempArray.push(args.data);
+                tempArray.push.apply(tempArray, args.modifiedRecords);
             } else {
                 tempArray = [args.data];
             }

@@ -57,6 +57,13 @@
   .e-bigger #{&}.e-treeview,
   #{&}.e-treeview.e-bigger {
 
+    @if $treeview-skin-name == 'bootstrap4' {
+      .e-ul,
+      .e-list-item .e-ul {
+        padding-left: 16px;
+      }
+    }
+
     .e-fullrow {
       height: $treeview-big-item-height;
     }
@@ -84,6 +91,11 @@
 
     .e-checkbox-wrapper {
       margin: $treeview-big-check-margin;
+      @if $treeview-skin-name == 'bootstrap4' {
+        & + .e-list-text {
+          padding: $treeview-big-check-text-padding;
+        }
+      }
 
       & + .e-list-icon,
       & + .e-list-img {
@@ -190,7 +202,12 @@
 
     .e-list-item {
       list-style: none;
-      padding: 2px 0;
+      @if $treeview-skin-name == 'bootstrap4' {
+        padding: 4px 0;
+      }
+      @else {
+        padding: 2px 0;
+      }
 
       .e-ul {
         margin: 2px 0 -2px;
@@ -430,7 +447,6 @@
         box-sizing: content-box;
         font-size: $treeview-drop-count-font-size;
         @if $treeview-skin-name == 'bootstrap4' {
-          font-family: 'Helvetica Neue';
           line-height: 1.5;
           min-width: 10px;
           padding: 0 5px;

@@ -2834,6 +2834,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
     Toolbar$$1.prototype.onRefresh = function () {
         this.refreshToolbarOverflow();
         this.parent.setContentHeight();
+        this.parent.formatter.undoRedoRefresh(this.parent);
     };
     /**
      * Called internally if any of the property value changed.
@@ -4037,7 +4038,7 @@ var Count = /** @__PURE__ @class */ (function () {
     Count.prototype.restrict = function (e) {
         if (this.parent.showCharCount) {
             var element = e.args.currentTarget.textContent.trim();
-            var array = [8, 16, 17, 37, 38, 39, 40, 65];
+            var array = [8, 16, 17, 37, 38, 39, 40, 46, 65];
             var arrayKey = void 0;
             for (var i = 0; i <= array.length - 1; i++) {
                 if (e.args.which === array[i]) {
@@ -4459,7 +4460,9 @@ var Formatter = /** @__PURE__ @class */ (function () {
                 this.editorManager.execCommand(args.item.command, args.item.subCommand, event, this.onSuccess.bind(this, self), args.item.value, value);
             }
         }
-        this.enableUndo(self);
+        if (isNullOrUndefined(event) || event && event.action !== 'copy') {
+            this.enableUndo(self);
+        }
     };
     Formatter.prototype.getAncestorNode = function (node) {
         node = node.nodeType === 3 ? node.parentNode : node;
@@ -4474,8 +4477,10 @@ var Formatter = /** @__PURE__ @class */ (function () {
         });
     };
     Formatter.prototype.onSuccess = function (self, events) {
-        this.enableUndo(self);
-        self.notify(execCommandCallBack, events);
+        if (isNullOrUndefined(events.event) || (events && events.event.action !== 'copy')) {
+            this.enableUndo(self);
+            self.notify(execCommandCallBack, events);
+        }
         self.trigger(actionComplete, events);
         if (events.requestType === 'Images' || events.requestType === 'Links' && self.editorMode === 'HTML') {
             var args = events;
@@ -4512,6 +4517,13 @@ var Formatter = /** @__PURE__ @class */ (function () {
             if (self.toolbarModule) {
                 updateUndoRedoStatus(self.toolbarModule.baseToolbar, status);
             }
+        }
+    };
+    Formatter.prototype.undoRedoRefresh = function (iRichTextEditor) {
+        if (this.editorManager.undoRedoManager.undoRedoStack.length) {
+            this.editorManager.undoRedoManager.undoRedoStack = [];
+            this.editorManager.undoRedoManager.steps = 0;
+            iRichTextEditor.disableToolbarItem(['Undo', 'Redo']);
         }
     };
     return Formatter;
@@ -4826,7 +4838,9 @@ var MDFormats = /** @__PURE__ @class */ (function () {
             return;
         }
         else {
-            this.cleanFormat(textArea, e.subCommand);
+            if ((e.subCommand === 'pre' && parents.length !== 1) || e.subCommand !== 'pre') {
+                this.cleanFormat(textArea, e.subCommand);
+            }
         }
         var start = textArea.selectionStart;
         var end = textArea.selectionEnd;
@@ -5077,11 +5091,17 @@ var MDSelectionFormats = /** @__PURE__ @class */ (function () {
         var splitText = splitAt(start)(textArea.value);
         var cmdB = this.syntax.Bold.substr(0, 1);
         var cmdI = this.syntax.Italic;
-        var beforeText = textArea.value.substr(splitText[0].length - 1, 1);
-        var afterText = splitText[1].substr(0, 1);
-        if ((beforeText !== '' && afterText !== '' && beforeText.match(/[a-z]/i)) &&
-            beforeText === beforeText.toUpperCase() && afterText === afterText.toUpperCase() && cmd === 'UpperCase') {
+        var selectedText = this.parent.markdownSelection.getSelectedText(textArea);
+        if (selectedText !== '' && selectedText === selectedText.toLocaleUpperCase() && cmd === 'UpperCase') {
             return true;
+        }
+        else if (selectedText === '') {
+            var beforeText = textArea.value.substr(splitText[0].length - 1, 1);
+            var afterText = splitText[1].substr(0, 1);
+            if ((beforeText !== '' && afterText !== '' && beforeText.match(/[a-z]/i)) &&
+                beforeText === beforeText.toLocaleUpperCase() && afterText === afterText.toLocaleUpperCase() && cmd === 'UpperCase') {
+                return true;
+            }
         }
         if (!(this.isBold(splitText[0], cmdB)) && !(this.isItalic(splitText[0], cmdI)) && !(this.isBold(splitText[1], cmdB)) &&
             !(this.isItalic(splitText[1], cmdI))) {
@@ -5157,7 +5177,7 @@ var MDSelectionFormats = /** @__PURE__ @class */ (function () {
                 e.subCommand === 'SuperScript' ? '</sup>' : this.syntax[e.subCommand];
             var startLength = (e.subCommand === 'UpperCase' || e.subCommand === 'LowerCase') ? 0 : startCmd.length;
             var startNo = textArea.value.substr(0, selection.start).lastIndexOf(startCmd);
-            var endNo = textArea.value.substr(selection.end, selection.end).indexOf(endCmd);
+            var endNo = textArea.value.substr(selection.end, textArea.value.length).indexOf(endCmd);
             endNo = endNo + selection.end;
             var repStartText = this.replaceAt(textArea.value.substr(0, selection.start), startCmd, '', startNo, selection.start);
             var repEndText = this.replaceAt(textArea.value.substr(selection.end, textArea.value.length), endCmd, '', 0, endNo);
@@ -5426,6 +5446,14 @@ var listConversionFilters = {
     'middle': 'MsoListParagraphCxSpMiddle',
     'last': 'MsoListParagraphCxSpLast'
 };
+/**
+ * Dom-Node Grouping of self closing tags
+ * @hidden
+ */
+var selfClosingTags = [
+    'BR',
+    'IMG'
+];
 
 /**
  * `Undo` module is used to handle undo actions.
@@ -6888,7 +6916,9 @@ var DOMNode = /** @__PURE__ @class */ (function () {
                 this.replaceWith(start, this.marker(markerClassName.startSelection, this.encode(start.textContent)));
             }
             else {
-                start = start.tagName === 'BR' ? start.parentNode : start;
+                for (var i = 0; i < selfClosingTags.length; i++) {
+                    start = start.tagName === selfClosingTags[i] ? start.parentNode : start;
+                }
                 var marker = this.marker(markerClassName.startSelection, '');
                 append([this.parseHTMLFragment(marker)], start);
             }
@@ -9244,6 +9274,11 @@ var ClearFormat$1 = /** @__PURE__ @class */ (function () {
                     if (this.NONVALID_TAGS.indexOf(childNodes[index2].nodeName.toLowerCase()) > -1) {
                         this.unWrap(docElement, [childNodes[index2]], nodeCutter, nodeSelection);
                     }
+                    else if (this.BLOCK_TAGS.indexOf(childNodes[index2].nodeName.toLocaleLowerCase()) > -1 &&
+                        childNodes[index2].nodeName.toLocaleLowerCase() !== 'p') {
+                        var blockNodes = this.removeParent([childNodes[index2]]);
+                        this.unWrap(docElement, blockNodes, nodeCutter, nodeSelection);
+                    }
                 }
             }
             else {
@@ -9278,7 +9313,7 @@ var ClearFormat$1 = /** @__PURE__ @class */ (function () {
         'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hgroup', 'li', 'main', 'nav',
         'noscript', 'ol', 'p', 'pre', 'section', 'table', 'tbody', 'td', 'tfoot', 'th',
         'thead', 'tr', 'ul'];
-    ClearFormat.NONVALID_PARENT_TAGS = ['thead', 'tbody', 'ul', 'ol', 'table', 'tfoot'];
+    ClearFormat.NONVALID_PARENT_TAGS = ['thead', 'tbody', 'ul', 'ol', 'table', 'tfoot', 'tr'];
     ClearFormat.NONVALID_TAGS = ['thead', 'tbody', 'figcaption', 'td', 'tr',
         'th', 'tfoot', 'figcaption', 'li'];
     return ClearFormat;
@@ -10479,8 +10514,43 @@ var HtmlEditor = /** @__PURE__ @class */ (function () {
             e.args.preventDefault();
             var range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
             var saveSelection = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
-            var args = { url: e.text, text: '', selection: saveSelection, action: 'Paste' };
-            this.parent.formatter.editorManager.execCommand('Links', 'CreateLink', null, null, args, args);
+            var firstElement = this.parent.createElement('span');
+            var httpRegex = new RegExp(/([^\S]|^)(((https?\:\/\/)))/gi);
+            var wwwRegex = new RegExp(/([^\S]|^)(((www\.))(\S+))/gi);
+            var httpText = '';
+            if (e.text.match(httpRegex)) {
+                firstElement.innerHTML = e.text.split('http')[0];
+                httpText = 'http' + e.text.split('http')[1];
+            }
+            else if (e.text.match(wwwRegex)) {
+                firstElement.innerHTML = e.text.split('www')[0];
+                httpText = 'www' + e.text.split('www')[1];
+            }
+            var httpSplitText = httpText.split(' ');
+            var splittedText = '';
+            for (var i = 1; i < httpSplitText.length; i++) {
+                splittedText = splittedText + ' ' + httpSplitText[i];
+            }
+            var lastElement = this.parent.createElement('span');
+            lastElement.innerHTML = splittedText;
+            var anchor = this.parent.createElement('a', {
+                className: 'e-rte-anchor', attrs: {
+                    href: httpSplitText[0],
+                    title: httpSplitText[0]
+                }
+            });
+            anchor.innerHTML = httpSplitText[0];
+            var resultElement = this.parent.createElement('span');
+            if (firstElement.innerHTML !== '') {
+                resultElement.appendChild(firstElement);
+            }
+            if (anchor.innerHTML !== '') {
+                resultElement.appendChild(anchor);
+            }
+            if (lastElement.innerHTML !== '') {
+                resultElement.appendChild(lastElement);
+            }
+            this.parent.executeCommand('insertHTML', resultElement);
         }
     };
     HtmlEditor.prototype.spaceLink = function (e) {
@@ -14667,7 +14737,7 @@ var FullScreen = /** @__PURE__ @class */ (function () {
     FullScreen.prototype.hideFullScreen = function (event) {
         if (this.parent.element.classList.contains(CLS_FULL_SCREEN)) {
             this.parent.element.classList.remove(CLS_FULL_SCREEN);
-            var elem = document.querySelectorAll('.e-overflow');
+            var elem = document.querySelectorAll('.e-rte-overflow');
             for (var i = 0; i < elem.length; i++) {
                 removeClass([elem[i]], ['e-rte-overflow']);
             }
@@ -14849,6 +14919,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
      */
     RichTextEditor.prototype.preRender = function () {
         this.clickPoints = { clientX: 0, clientY: 0 };
+        this.initialValue = this.value;
         this.serviceLocator = new ServiceLocator;
         this.initializeServices();
         this.setContainer();
@@ -14859,8 +14930,8 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         this.originalElement = this.element.cloneNode(true);
         if (this.value === null || this.valueTemplate !== null) {
             this.setValue();
-            this.element.innerHTML = '';
         }
+        this.element.innerHTML = '';
         var invalidAttr = ['class', 'style', 'id', 'ejs-for'];
         var htmlAttr = {};
         for (var a = 0; a < this.element.attributes.length; a++) {
@@ -15143,6 +15214,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             detach(this.element);
             if (this.originalElement.innerHTML.trim() !== '') {
                 this.valueContainer.value = this.originalElement.innerHTML.trim();
+                this.setProperties({ value: (!isNullOrUndefined(this.initialValue) ? this.initialValue : null) }, true);
             }
             else {
                 this.valueContainer.value = '';
@@ -15152,6 +15224,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         else {
             if (this.originalElement.innerHTML.trim() !== '') {
                 this.element.innerHTML = this.originalElement.innerHTML.trim();
+                this.setProperties({ value: (!isNullOrUndefined(this.initialValue) ? this.initialValue : null) }, true);
             }
             else {
                 this.element.innerHTML = '';
@@ -16157,5 +16230,5 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
  * RichTextEditor component exported items
  */
 
-export { Toolbar$1 as Toolbar, KeyboardEvents$1 as KeyboardEvents, BaseToolbar, BaseQuickToolbar, QuickToolbar, Count, ColorPickerInput, MarkdownToolbarStatus, ExecCommandCallBack, ToolbarAction, MarkdownEditor, HtmlEditor, PasteCleanup, HTMLFormatter, Formatter, MarkdownFormatter, ContentRender, Render, ToolbarRenderer, Link, Image, ViewSource, Table, RichTextEditor, RenderType, ToolbarType, executeGroup, created, destroyed, load, initialLoad, initialEnd, iframeMouseDown, destroy, toolbarClick, toolbarRefresh, refreshBegin, toolbarUpdated, bindOnEnd, renderColorPicker, htmlToolbarClick, markdownToolbarClick, destroyColorPicker, modelChanged, keyUp, keyDown, mouseUp, toolbarCreated, toolbarRenderComplete, enableFullScreen, disableFullScreen, dropDownSelect, beforeDropDownItemRender, execCommandCallBack, imageToolbarAction, linkToolbarAction, resizeStart, onResize, resizeStop, undo, redo, insertLink, unLink, editLink, openLink, actionBegin, actionComplete, actionSuccess, popupOpen, updateToolbarItem, insertImage, insertCompleted, imageLeft, imageRight, imageCenter, imageBreak, imageInline, imageLink, imageAlt, imageDelete, imageCaption, imageSize, sourceCode, updateSource, toolbarOpen, beforeDropDownOpen, selectionSave, selectionRestore, expandPopupClick, count, contentFocus, contentBlur, mouseDown, sourceCodeMouseDown, editAreaClick, scroll, colorPickerChanged, tableColorPickerChanged, focusChange, selectAll$1 as selectAll, selectRange, getSelectedHtml, renderInlineToolbar, paste, imgModule, rtlMode, createTable, docClick, tableToolbarAction, checkUndo, readOnlyMode, pasteClean, ServiceLocator, RendererFactory, EditorManager, IMAGE, TABLE, LINK, INSERT_ROW, INSERT_COLUMN, DELETEROW, DELETECOLUMN, REMOVETABLE, TABLEHEADER, TABLE_VERTICAL_ALIGN, ALIGNMENT_TYPE, INDENT_TYPE, DEFAULT_TAG, BLOCK_TAGS, IGNORE_BLOCK_TAGS, TABLE_BLOCK_TAGS, SELECTION_TYPE, INSERTHTML_TYPE, INSERT_TEXT_TYPE, CLEAR_TYPE, Lists, markerClassName, DOMNode, Alignments, Indents, Formats, LinkCommand, InsertMethods, InsertHtml, IsFormatted, NodeCutter, ImageCommand, SelectionCommands, SelectionBasedExec, ClearFormat$1 as ClearFormat, ClearFormatExec, UndoRedoManager, TableCommand, NodeSelection, MarkdownParser, LISTS_COMMAND, selectionCommand, LINK_COMMAND, CLEAR_COMMAND, MD_TABLE, MDLists, MDFormats, MarkdownSelection, UndoRedoCommands, MDSelectionFormats, MDLink, markdownFormatTags, markdownSelectionTags, markdownListsTags, htmlKeyConfig, markdownKeyConfig, pasteCleanupGroupingTags, listConversionFilters, KEY_DOWN, ACTION, FORMAT_TYPE, KEY_DOWN_HANDLER, LIST_TYPE, KEY_UP_HANDLER, KEY_UP, MODEL_CHANGED_PLUGIN, MODEL_CHANGED, MS_WORD_CLEANUP_PLUGIN, MS_WORD_CLEANUP };
+export { Toolbar$1 as Toolbar, KeyboardEvents$1 as KeyboardEvents, BaseToolbar, BaseQuickToolbar, QuickToolbar, Count, ColorPickerInput, MarkdownToolbarStatus, ExecCommandCallBack, ToolbarAction, MarkdownEditor, HtmlEditor, PasteCleanup, HTMLFormatter, Formatter, MarkdownFormatter, ContentRender, Render, ToolbarRenderer, Link, Image, ViewSource, Table, RichTextEditor, RenderType, ToolbarType, executeGroup, created, destroyed, load, initialLoad, initialEnd, iframeMouseDown, destroy, toolbarClick, toolbarRefresh, refreshBegin, toolbarUpdated, bindOnEnd, renderColorPicker, htmlToolbarClick, markdownToolbarClick, destroyColorPicker, modelChanged, keyUp, keyDown, mouseUp, toolbarCreated, toolbarRenderComplete, enableFullScreen, disableFullScreen, dropDownSelect, beforeDropDownItemRender, execCommandCallBack, imageToolbarAction, linkToolbarAction, resizeStart, onResize, resizeStop, undo, redo, insertLink, unLink, editLink, openLink, actionBegin, actionComplete, actionSuccess, popupOpen, updateToolbarItem, insertImage, insertCompleted, imageLeft, imageRight, imageCenter, imageBreak, imageInline, imageLink, imageAlt, imageDelete, imageCaption, imageSize, sourceCode, updateSource, toolbarOpen, beforeDropDownOpen, selectionSave, selectionRestore, expandPopupClick, count, contentFocus, contentBlur, mouseDown, sourceCodeMouseDown, editAreaClick, scroll, colorPickerChanged, tableColorPickerChanged, focusChange, selectAll$1 as selectAll, selectRange, getSelectedHtml, renderInlineToolbar, paste, imgModule, rtlMode, createTable, docClick, tableToolbarAction, checkUndo, readOnlyMode, pasteClean, ServiceLocator, RendererFactory, EditorManager, IMAGE, TABLE, LINK, INSERT_ROW, INSERT_COLUMN, DELETEROW, DELETECOLUMN, REMOVETABLE, TABLEHEADER, TABLE_VERTICAL_ALIGN, ALIGNMENT_TYPE, INDENT_TYPE, DEFAULT_TAG, BLOCK_TAGS, IGNORE_BLOCK_TAGS, TABLE_BLOCK_TAGS, SELECTION_TYPE, INSERTHTML_TYPE, INSERT_TEXT_TYPE, CLEAR_TYPE, Lists, markerClassName, DOMNode, Alignments, Indents, Formats, LinkCommand, InsertMethods, InsertHtml, IsFormatted, NodeCutter, ImageCommand, SelectionCommands, SelectionBasedExec, ClearFormat$1 as ClearFormat, ClearFormatExec, UndoRedoManager, TableCommand, NodeSelection, MarkdownParser, LISTS_COMMAND, selectionCommand, LINK_COMMAND, CLEAR_COMMAND, MD_TABLE, MDLists, MDFormats, MarkdownSelection, UndoRedoCommands, MDSelectionFormats, MDLink, markdownFormatTags, markdownSelectionTags, markdownListsTags, htmlKeyConfig, markdownKeyConfig, pasteCleanupGroupingTags, listConversionFilters, selfClosingTags, KEY_DOWN, ACTION, FORMAT_TYPE, KEY_DOWN_HANDLER, LIST_TYPE, KEY_UP_HANDLER, KEY_UP, MODEL_CHANGED_PLUGIN, MODEL_CHANGED, MS_WORD_CLEANUP_PLUGIN, MS_WORD_CLEANUP };
 //# sourceMappingURL=ej2-richtexteditor.es5.js.map

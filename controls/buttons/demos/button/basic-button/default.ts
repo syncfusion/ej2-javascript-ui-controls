@@ -174,6 +174,9 @@ btnObj.appendTo('#fabricdark');
 btnObj = new Button();
 btnObj.appendTo('#bootstrapdark');
 
+btnObj = new Button();
+btnObj.appendTo('#bootstrap4');
+
 // btnObj = new Button();
 // btnObj.appendTo('#highcontrastlight');
 
@@ -214,6 +217,12 @@ document.getElementById('bootstrapdark').onclick = (e : Event) => {
     enableRipple(false);
     document.body.classList.add('darkBG');
     document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap-dark.css');
+};
+
+document.getElementById('bootstrap4').onclick = (e : Event) => {
+    enableRipple(false);
+    document.body.classList.remove('darkBG');
+    document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap4.css');
 };
 
 // document.getElementById('highcontrastlight').onclick = (e : Event) => {

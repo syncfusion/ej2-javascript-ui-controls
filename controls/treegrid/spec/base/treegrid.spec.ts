@@ -1,6 +1,6 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from './treegridutil.spec';
-import { sampleData, projectData, treeMappedData, multiLevelSelfRef1, emptyChildData, allysonData } from './datasource.spec';
+import { sampleData, projectData, treeMappedData, multiLevelSelfRef1, emptyChildData, allysonData, selfReferenceData } from './datasource.spec';
 import { PageEventArgs, extend, Page, doesImplementInterface } from '@syncfusion/ej2-grids';
 import { RowExpandingEventArgs, RowCollapsingEventArgs } from '../../src';
 import { ColumnMenu } from '../../src/treegrid/actions/column-menu';
@@ -526,7 +526,9 @@ describe('TreeGrid base module', () => {
       );
     });
     it('Checking dataSource when Children property is empty', () => {
-      expect(gridObj.getRows().length != 0).toBe(true);
+      expect(gridObj.getRows().length == 7).toBe(true);
+      expect(gridObj.getRows()[6].classList.contains('e-treegridexpand')).toBe(false);
+      expect(gridObj.getRows()[6].classList.contains('e-treegridcollapse')).toBe(false);
     });
     afterAll(() => {
       destroy(gridObj);
@@ -619,6 +621,32 @@ describe('TreeGrid base module', () => {
           });
       expect(h === 3).toBe(true);
     })
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('Self Reference Data Basic Rendering with ParentIDMapping value as Null', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: selfReferenceData,
+          idMapping: 'TaskID',
+          parentIdMapping: 'parentID',
+          treeColumnIndex: 1,
+          columns: ['TaskID', 'TaskName', 'StartDate', 'EndDate']
+        },
+        done
+      );
+    });
+
+    it('expand testing', () => {
+      rows = gridObj.getRows();
+      (rows[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+      expect((rows[1] as HTMLTableRowElement).style.display).toBe('none');
+    });
     afterAll(() => {
       destroy(gridObj);
     });

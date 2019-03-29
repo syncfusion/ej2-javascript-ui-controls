@@ -1,7 +1,7 @@
 import { Component, Property, Event, EmitType, EventHandler, classList, L10n, compile, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, detach, append, Animation } from '@syncfusion/ej2-base';
 import { addClass, removeClass, KeyboardEvents, KeyboardEventArgs, setValue, getValue, ChildProperty } from '@syncfusion/ej2-base';
-import { Collection, Complex, Browser, Ajax, BeforeSendEventArgs, getUniqueID } from '@syncfusion/ej2-base';
+import { Collection, Complex, Browser, Ajax, BeforeSendEventArgs, getUniqueID, closest } from '@syncfusion/ej2-base';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { UploaderModel, AsyncSettingsModel, ButtonsPropsModel, FilesPropModel } from './uploader-model';
 
@@ -421,6 +421,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private actionCompleteCount: number = 0;
     private flag: boolean = true;
     private selectedFiles: FileInfo[] = [];
+    private browserName: string;
     /**
      * Configures the save and remove URL to perform the upload operations in the server asynchronously.
      * @default { saveUrl: '', removeUrl: '' }
@@ -979,7 +980,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         this.l10n = new L10n('uploader', this.localeText, this.locale);
         this.preLocaleObj = getValue('currentLocale', this.l10n);
         this.checkHTMLAttributes();
-        let parentEle: HTMLElement = this.element.parentElement;
+        let parentEle: HTMLElement = closest(this.element, 'form') as HTMLElement;
         if (!isNullOrUndefined(parentEle)) {
             for (; parentEle && parentEle !== document.documentElement; parentEle = parentEle.parentElement) {
                 if (parentEle.tagName === 'FORM') {
@@ -1030,6 +1031,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         if (this.element.hasAttribute('tabindex')) {
             this.tabIndex = this.element.getAttribute('tabindex');
         }
+        this.browserName = Browser.info.name;
     }
 
     protected getPersistData(): string {
@@ -1165,7 +1167,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         let fileDropArea: HTMLElement = this.createElement('span', { className: DROP_AREA});
         fileDropArea.innerHTML = this.localizedTexts('dropFilesHint');
         this.dropAreaWrapper.appendChild(fileDropArea);
-        this.uploadWrapper = this.createElement('div', { className: CONTROL_WRAPPER, attrs: {'aria-activedescendant': 'li-focused'}});
+        this.uploadWrapper = this.createElement('div', { className: CONTROL_WRAPPER });
         this.dropAreaWrapper.parentElement.insertBefore(this.uploadWrapper, this.dropAreaWrapper);
         this.uploadWrapper.appendChild(this.dropAreaWrapper);
         this.setDropArea();
@@ -1242,6 +1244,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private setMultipleSelection(): void {
         if (this.multiple && !this.element.hasAttribute('multiple')) {
             let newAttr: Attr = document.createAttribute('multiple');
+            newAttr.value = 'multiple';
             this.element.setAttributeNode(newAttr);
         } else if (!this.multiple) {
             this.element.removeAttribute('multiple');
@@ -1429,11 +1432,10 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     /* istanbul ignore next */
     private dropElement(e: DragEvent): void {
         this.dropZoneElement.classList.remove(DRAG_HOVER);
-        if (Browser.info.name === 'chrome') {
+        if (this.browserName === 'chrome') {
             this.element.files = e.dataTransfer.files;
-        } else {
-            this.onSelectFiles(e);
         }
+        this.onSelectFiles(e);
         e.preventDefault();
         e.stopPropagation();
     }
@@ -1768,7 +1770,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             detach(this.listParent);
             this.listParent = null;
         }
-        if (Browser.info.name !== 'msie' && !singleUpload) {  this.element.value = '';  }
+        if (this.browserName !== 'msie' && !singleUpload) {  this.element.value = '';  }
         this.fileList = [];
         this.filesData = [];
         this.removeActionButtons();
@@ -1918,7 +1920,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 liElement.appendChild(textContainer);
                 let iconElement: HTMLElement = this.createElement('span', {className: ' e-icons', attrs: { 'tabindex': this.btnTabIndex}});
                 /* istanbul ignore next */
-                if (Browser.info.name === 'msie') { iconElement.classList.add('e-msie'); }
+                if (this.browserName === 'msie') { iconElement.classList.add('e-msie'); }
                 iconElement.setAttribute('title', this.localizedTexts('remove'));
                 liElement.appendChild(iconElement);
                 EventHandler.add(iconElement, 'click', this.removeFiles, this);
@@ -1958,12 +1960,18 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         }
     }
 
+    private getSlicedName(nameElement: HTMLElement): void {
+        let text: string;
+        text = nameElement.textContent;
+        nameElement.dataset.tail = text.slice(text.length - 10);
+    }
     private truncateName(name: HTMLElement): void {
         let nameElement: HTMLElement = name;
-        let text: string;
-        if (nameElement.offsetWidth < nameElement.scrollWidth) {
-            text = nameElement.textContent;
-            nameElement.dataset.tail = text.slice(text.length - 10);
+        if (this.browserName !== 'edge' && nameElement.offsetWidth < nameElement.scrollWidth) {
+            this.getSlicedName(nameElement);
+            /* istanbul ignore next */
+        } else if (nameElement.offsetWidth + 1 < nameElement.scrollWidth) {
+            this.getSlicedName(nameElement);
         }
     }
 
@@ -2326,7 +2334,11 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private setExtensions(extensions : string): void {
-        this.element.setAttribute('accept', extensions);
+        if (extensions !== '' && !isNullOrUndefined(extensions)) {
+            this.element.setAttribute('accept', extensions);
+        } else {
+            this.element.removeAttribute('accept');
+        }
     }
 
     private templateComplier(uploadTemplate: string): Function {
@@ -2810,7 +2822,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         }
         if (isNullOrUndefined(liElement.querySelector('.' + PAUSE_UPLOAD)) && isNullOrUndefined(this.template) ) {
             this.pauseButton = this.createElement('span', {className: 'e-icons e-file-pause-btn', attrs: { 'tabindex': this.btnTabIndex }});
-            if (Browser.info.name === 'msie') { this.pauseButton.classList.add('e-msie'); }
+            if (this.browserName === 'msie') { this.pauseButton.classList.add('e-msie'); }
             liElement.insertBefore(this.pauseButton, liElement.querySelector('.' + ABORT_ICON));
             this.pauseButton.setAttribute('title', this.localizedTexts('pause'));
             this.pauseButton.addEventListener('click', (e: Event) => { this.checkPausePlayAction(e); }, false);
@@ -3031,7 +3043,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
      */
     public clearAll(): void {
         if (isNullOrUndefined(this.listParent)) {
-            if (Browser.info.name !== 'msie') { this.element.value = ''; }
+            if (this.browserName !== 'msie') { this.element.value = ''; }
             this.filesData = [];
             return;
         }

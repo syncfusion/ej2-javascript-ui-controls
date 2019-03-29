@@ -6,7 +6,7 @@ import { FilterEventArgs, filterAfterOpen, GroupEventArgs, getFilterMenuPostion,
 import { getActualProperties } from '@syncfusion/ej2-grids';
 import { Gantt } from '../base/gantt';
 import { FilterSettingsModel } from '../models/models';
-import { getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { getValue, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 
 export class Filter {
@@ -40,7 +40,8 @@ export class Filter {
      */
     private columnMenuOpen(args: ColumnMenuOpenEventArgs): void {
         if (this.filterMenuElement) {
-            this.filterMenuElement.remove();
+            remove(this.filterMenuElement);
+            this.filterMenuElement = null;
         }
     }
     private actionBegin(args: FilterEventArgs): void {

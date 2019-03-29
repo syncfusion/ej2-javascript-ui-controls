@@ -3376,13 +3376,15 @@ var Sortable = /** @__PURE__ @class */ (function (_super) {
                 (newInst.placeHolderElement ? newInst.placeHolderElement !== e.target : true)) {
                 _this.curTarget = target;
                 var oldIdx = _this.getIndex(newInst.placeHolderElement, newInst);
-                oldIdx = isNullOrUndefined(oldIdx) ? _this.getIndex(_this.target) :
+                var isPlaceHolder = isNullOrUndefined(oldIdx);
+                oldIdx = isPlaceHolder ? _this.getIndex(_this.target) :
                     _this.getIndex(target, newInst) < oldIdx || !oldIdx ? oldIdx : oldIdx - 1;
                 newInst.placeHolderElement = _this.getPlaceHolder(target, newInst);
                 var newIdx = _this.getIndex(target, newInst);
-                var idx = newInst.element !== _this.element ? newIdx : oldIdx < newIdx ? newIdx + 1 : newIdx;
+                var idx = newInst.element !== _this.element && isPlaceHolder ? newIdx : oldIdx < newIdx ? newIdx + 1 : newIdx;
                 if (newInst.placeHolderElement) {
-                    if (newInst.element !== _this.element && idx === newInst.element.childElementCount - 1) {
+                    var len = newInst.element.childElementCount;
+                    if (newInst.element !== _this.element && (idx === len - 1 || idx === len) && (isPlaceHolder || idx === len)) {
                         newInst.element.appendChild(newInst.placeHolderElement);
                     }
                     else {
@@ -3399,8 +3401,16 @@ var Sortable = /** @__PURE__ @class */ (function (_super) {
                         target: e.target, helper: newInst.element.lastChild, droppedElement: _this.target, scope: _this.scope });
                 }
             }
+            if (newInst.element === e.target) {
+                if (!_this.isPlaceHolderPresent(newInst)) {
+                    newInst.placeHolderElement = _this.getPlaceHolder(target, newInst);
+                }
+                if (newInst.placeHolderElement) {
+                    newInst.element.appendChild(newInst.placeHolderElement);
+                }
+            }
             newInst = _this.getSortableInstance(_this.curTarget);
-            if (isNullOrUndefined(target) && e.target !== newInst.placeHolderElement) {
+            if (isNullOrUndefined(target) && newInst.element !== e.target && e.target !== newInst.placeHolderElement) {
                 if (_this.isPlaceHolderPresent(newInst)) {
                     _this.removePlaceHolder(newInst);
                 }
@@ -3417,6 +3427,7 @@ var Sortable = /** @__PURE__ @class */ (function (_super) {
             }
         };
         _this.onDragStart = function (e) {
+            _this.element.style.touchAction = 'none';
             _this.target = _this.getSortableElement(e.target);
             _this.target.classList.add('e-grabbed');
             _this.curTarget = _this.target;
@@ -3435,14 +3446,17 @@ var Sortable = /** @__PURE__ @class */ (function (_super) {
                     target: e.target, helper: e.helper, droppedElement: _this.target, scopeName: _this.scope });
                 remove(dropInst.placeHolderElement);
             }
-            dropInst = _this.getSortableInstance(e.target);
-            if (dropInst.element === e.target && !dropInst.element.childElementCount) {
+            var newInst = _this.getSortableInstance(e.target);
+            if (newInst.element === e.target && newInst !== dropInst && _this.isPlaceHolderPresent(newInst)) {
                 prevIdx = _this.getIndex(_this.target);
-                _this.updateItemClass(dropInst);
-                dropInst.element.appendChild(_this.target);
-                _this.trigger('drop', { event: e.event, element: dropInst.element, previousIndex: prevIdx, currentIndex: 0,
-                    target: e.target, helper: e.helper, droppedElement: _this.target, scopeName: _this.scope });
+                _this.updateItemClass(newInst);
+                newInst.element.appendChild(_this.target);
+                remove(newInst.placeHolderElement);
+                _this.trigger('drop', { event: e.event, element: newInst.element, previousIndex: prevIdx,
+                    currentIndex: newInst.element.childElementCount, target: e.target, helper: e.helper,
+                    droppedElement: _this.target, scopeName: _this.scope });
             }
+            _this.element.style.touchAction = '';
             _this.target.classList.remove('e-grabbed');
             _this.target = null;
             _this.curTarget = null;

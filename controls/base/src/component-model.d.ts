@@ -19,7 +19,7 @@ export interface ComponentModel {
 
     /**
      * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
-     * @default undefined
+     * @default ''
      */
     locale?: string;
 

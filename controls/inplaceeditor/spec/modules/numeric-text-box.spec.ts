@@ -44,8 +44,20 @@ describe('NumericTextBox Control', () => {
             expect(document.activeElement.tagName === 'INPUT').toEqual(true);
         });
         it('Clear icon availability testing', () => {
-            expect(editorObj.componentObj.showClearButton === true).toEqual(true);
-            expect(selectAll('.e-clear-icon', ele).length === 1).toEqual(true);
+            expect(editorObj.componentObj.showClearButton).toBe(true);
+            expect(selectAll('.e-clear-icon', ele).length).toBe(1);
+        });
+        it('Clear icon availability testing for false', () => {
+            editorObj.componentObj.showClearButton = false;
+            editorObj.componentObj.dataBind();
+            expect(editorObj.componentObj.showClearButton).toBe(false);
+            expect(selectAll('.e-clear-icon', ele).length).toBe(0);
+        });
+        it('Clear icon availability testing for true', () => {
+            editorObj.componentObj.showClearButton = true;
+            editorObj.componentObj.dataBind();
+            expect(editorObj.componentObj.showClearButton).toBe(true);
+            expect(selectAll('.e-clear-icon', ele).length).toBe(1);
         });
         it('Value property testing', () => {
             expect(editorObj.componentObj.value.toString() === '1').toEqual(true);
@@ -355,6 +367,45 @@ describe('NumericTextBox Control', () => {
             editorObj.save();
             expect(editorObj.value).toEqual(6);
             expect(valueEle.innerHTML).toEqual('6.00');
+        });
+    });
+
+    describe('Model - value child property update testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Default value with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'Numeric',
+                mode: 'Inline',
+                value: 5
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(5);
+            expect(valueEle.innerHTML).toEqual('5');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-numerictextbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(5);
+            expect(editorObj.model.value).toEqual('5');
+            expect((<HTMLInputElement>select('.e-numerictextbox', document.body)).value).toEqual('5');
+            (<HTMLInputElement>select('.e-numerictextbox', document.body)).value = '';
+            editorObj.setProperties({ value: null }, true);
+            editorObj.componentObj.value = null;
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-numerictextbox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect((<HTMLInputElement>select('.e-numerictextbox', document.body)).value).toEqual('');
         });
     });
 

@@ -171,6 +171,10 @@
       border-bottom-color: $frozen-border-color;
     }
 
+    .e-frozencontent {
+      border-bottom-color: $grid-cell-border-color;
+    }
+
     .e-frozenheader > .e-table,
     .e-frozencontent > .e-table  {
       border-right-color: $frozen-border-color;

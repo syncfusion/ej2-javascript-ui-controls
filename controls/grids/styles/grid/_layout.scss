@@ -191,6 +191,11 @@
       line-height: $grid-bigger-headercelldiv-line-height;
     }
 
+    .e-headercell,
+    .e-detailheadercell {
+      font-size: $grid-bigger-header-font-size;
+    }
+
     .e-icons {
       font-size: $grid-bigger-icons-font-size;
     }
@@ -313,8 +318,33 @@
       margin: $grid-bigger-wrap-rightalign-fltricon-sortdiv-margin;
     }
 
+    &.e-wrap {
+      & .e-rowcell,
+      & .e-columnheader .e-stackedheadercelldiv,
+      & .e-columnheader .e-headercelldiv {
+        line-height: $grid-bigger-wrap-line-height;
+      }
+    }
+
     .e-gridheader .e-rightalign .e-sortfilterdiv {
       margin: $grid-bigger-sortdiv-rightalign-margin;
+    }
+
+    .e-gridheader .e-rightalign .e-sortnumber {
+      float: left;
+      margin: $grid-bigger-sortnumber-rightalign-margin;
+    }
+
+    .e-sortnumber {
+      border-radius: $grid-sortnumber-border-radius;
+      display: inline-block;
+      float: right;
+      font-size: 9px;
+      height: 15px;
+      line-height: $grid-sortnumer-line-height;
+      margin: $grid-bigger-sortnumber-margin;
+      text-align: center;
+      width: 15px;
     }
 
     .e-gridheader .e-rightalign.e-fltr-icon .e-sortfilterdiv {
@@ -342,6 +372,10 @@
       margin: $grid-rtl-bigger-fltrdiv-margin;
     }
 
+    &.e-rtl .e-rightalign .e-filtermenudiv {
+      margin: $grid-rtl-bigger-rightalign-fltrdiv-margin;
+    }
+
     &.e-rtl .e-headercell .e-headercelldiv .e-sortnumber,
     &.e-rtl .e-detailheadercell .e-headercelldiv .e-sortnumber {
       margin: $grid-rtl-bigger-sortnumber-margin;
@@ -352,7 +386,7 @@
     .e-emptyrow td,
     .e-frozencontent table tr td:first-child:empty,
     .e-movablecontent table tr td:first-child:empty,
-    .e-gridcontent tr td:not(.e-indentcell):first-child:empty,
+    &:not(.e-grid-min-height) .e-gridcontent tr td:not(.e-indentcell):first-child:empty,
     &:not(.e-grid-min-height) .e-gridcontent tr.e-row .e-rowcell:empty {
       line-height: $grid-bigger-rowcell-line-height;
     }
@@ -367,6 +401,14 @@
       padding: $grid-bigger-groupdroparea-padding;
     }
 
+    .e-cloneproperties {
+      padding: $grid-bigger-clone-padding;
+    }
+
+    .e-headerclone {
+      font-size: $grid-bigger-header-font-size;
+    }
+
     .e-groupdroparea.e-grouped {
       padding: $grid-bigger-groupedcell-padding;
     }
@@ -379,13 +421,18 @@
     .e-frozencontent table tr td:first-child:empty,
     .e-movablecontent table tr td:first-child:empty,
     .e-frozenhdrcont table tr td:first-child:empty,
-    .e-gridcontent tr td:not(.e-indentcell):first-child:empty,
+    &:not(.e-grid-min-height) .e-gridcontent tr td:not(.e-indentcell):first-child:empty,
     &:not(.e-grid-min-height) .e-gridcontent tr.e-row .e-rowcell:empty {
       height: $grid-bigger-rowcell-line-height + $grid-bigger-content-padding +  $grid-bigger-content-padding;
     }
 
     &.e-bigger .e-columnmenu {
-      bottom: 16px;
+      bottom: $grid-bigger-columnmenu-bottom;
+      margin: $grid-bigger-column-menu-margin;
+    }
+
+    .e-columnmenu {
+      right: 10px;
     }
 
     .e-groupheadercell,
@@ -394,6 +441,7 @@
       height: $grid-bigger-group-headercell-height;
       margin: $grid-bigger-group-headercell-margin;
       padding: $grid-bigger-group-headercell-padding;
+      font-size: $grouped-bigger-text-font-size;
     }
 
     .e-groupheadercell:hover {
@@ -422,7 +470,7 @@
     .e-row .e-input-group .e-input.e-field,
     .e-row .e-input-focus .e-input.e-field {
       font-family: $grid-font-family;
-      font-size: $grid-font-size;
+      font-size: $grid-bigger-font-size;
       padding-bottom: $grid-edit-input-bigger-padding-bottom;
       padding-top: $grid-edit-input-bigger-padding-top;
     }
@@ -523,6 +571,7 @@
       font-size: $grid-bigger-ungroupbutton-icons-font-size;
       margin-left: $grid-bigger-ungroupbutton-icon-margin-left;
       margin-top: $grid-bigger-ungroupbutton-icon-margin-top;
+      margin-right: $grid-bigger-ungroupbutton-icon-margin-right;
     }
 
     .e-groupsort {
@@ -537,6 +586,7 @@
  }
 
     &.e-rtl span.e-ungroupbutton.e-icons {
+      margin-left: $grid-bigger-rtl-ungroup-icon-margin-left;
       margin-right: $grid-bigger-rtl-ungroup-icon-margin-right;
       margin-top: $grid-bigger-rtl-ungroup-icon-margin-top;
       padding-top: $grid-ungroup-rtl-padding-top;
@@ -979,7 +1029,7 @@
     .e-frozencontent table tr td:first-child:empty,
     .e-movablecontent table tr td:first-child:empty,
     .e-frozenhdrcont table tr td:first-child:empty,
-    .e-gridcontent tr td:not(.e-indentcell):first-child:empty,
+    &:not(.e-grid-min-height) .e-gridcontent tr td:not(.e-indentcell):first-child:empty,
     &:not(.e-grid-min-height) .e-gridcontent tr.e-row .e-rowcell:empty {
       height: $grid-rowcell-line-height + $grid-content-padding + $grid-content-padding;
     }
@@ -1296,14 +1346,15 @@
     }
 
     .e-columnmenu {
-      bottom: $grid-column-menu-top;
-      padding: 5px;
       position: absolute;
-      right: 5px;
+      right: 23px;
+      float: right;
+      margin: $grid-column-menu-margin;
+      padding: 6px;
     }
 
     &.e-rtl .e-columnmenu {
-      left: 5px;
+      left: $grid-rtl-column-menu-left;
       right: auto;
     }
 
@@ -1449,7 +1500,7 @@
     &.e-rtl .e-searchclear {
       float: left;
       position: relative;
-      top: 10px;
+      top: $grid-rtl-searchclear;
     }
 
     .e-checkboxlist {
@@ -1692,7 +1743,7 @@
 
     .e-gridheader .e-headercontent .e-reorderuparrow,
     .e-gridheader .e-headercontent .e-reorderdownarrow {
-      font-size: 7px;
+      font-size: $grid-reorderarrow-font-size;
       position: absolute;
       z-index: 10;
     }
@@ -1749,7 +1800,7 @@
     .e-groupdroparea {
       border-top-width: $grid-border-size;
       font-size: $grid-grouparea-font-size;
-      font-weight: lighter;
+      font-weight: $grid-grouparea-font-weight;
       opacity: $grid-conent-font-opacity;
       padding: $group-area-padding;
       text-align: $group-text-align;
@@ -2091,7 +2142,7 @@
         opacity: $grid-column-chosser-searchdiv-opactiy;
         position: absolute;
         right: 0;
-        top: -46px;
+        top: $grid-column-chosser-searchdiv-top;
 
         span.e-ccsearch-icon.e-icons {
           float: right;
@@ -2189,6 +2240,8 @@
 
     .e-frozencontent {
       -ms-touch-action: none; // sass-lint:disable-line no-vendor-prefixes
+      border-bottom-style: $grid-border-type;
+      border-bottom-width: $grid-border-size;
       float: left;
       height: inherit;
       overflow: hidden;
@@ -2481,12 +2534,12 @@
       & .e-groupsort,
       & .e-ungroupbutton,
       & .e-toggleungroup {
-        margin-left: 0;
+        margin-left: $grid-rtl-group-sorticon-margin-left;
         margin-right: $grid-rtl-group-sorticon-margin-right;
     }
 
       & span.e-ungroupbutton.e-icons {
-        margin-left: 0;
+        margin-left: $grid-ungroup-rtl-padding-left;
         margin-right: $grid-ungroup-rtl-padding-right;
         padding-top: $grid-ungroup-rtl-padding-top;
     }
@@ -2792,7 +2845,7 @@
   .e-frozencontent table tr td:first-child:empty,
   .e-movablecontent table tr td:first-child:empty,
   .e-frozenhdrcont table tr td:first-child:empty,
-  .e-gridcontent tr td:not(.e-indentcell):first-child:empty,
+  &:not(.e-grid-min-height) .e-gridcontent tr td:not(.e-indentcell):first-child:empty,
   &:not(.e-grid-min-height) .e-gridcontent tr.e-row .e-rowcell:empty {
     height: 18px;
    }

@@ -160,6 +160,10 @@ const BTN_SAVE = 'e-btn-save';
 /** @hidden */
 const BTN_CANCEL = 'e-btn-cancel';
 /** @hidden */
+const RTE_SPIN_WRAP = 'e-rte-spin-wrap';
+/** @hidden */
+const CTRL_OVERLAY = 'e-control-overlay';
+/** @hidden */
 const DISABLE = 'e-disable';
 /** @hidden */
 const ICONS = 'e-icons';
@@ -173,6 +177,8 @@ const HIDE = 'e-hide';
 const RTL = 'e-rtl';
 /** @hidden */
 const ERROR = 'e-error';
+/** @hidden */
+const LOAD = 'e-loading';
 
 var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -229,6 +235,9 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             this.setProperties({ model: {} }, true);
         }
         this.titleEle = this.createElement('div', { className: TITLE });
+        if (!isNullOrUndefined(this.popupSettings.model) && this.popupSettings.model.afterOpen) {
+            this.afterOpenEvent = this.popupSettings.model.afterOpen;
+        }
     }
     /**
      * To Initialize the In-place editor rendering
@@ -288,6 +297,9 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             this.afterOpenHandler(null);
         }
         else {
+            if (!isNullOrUndefined(this.popupSettings.model) && this.popupSettings.model.afterOpen) {
+                this.popupSettings.model.afterOpen = this.afterOpenHandler.bind(this);
+            }
             let content = this.createElement('div', { className: POPUP });
             if (!this.isEmpty(this.popupSettings.title)) {
                 this.titleEle.innerHTML = this.popupSettings.title;
@@ -325,7 +337,6 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         let ctrlGroupEle = this.createElement('div', { className: CTRL_GROUP });
         let inputWrap = this.createElement('div', { className: INPUT });
         target.appendChild(this.containerEle);
-        this.containerEle.appendChild(this.loader);
         this.loadSpinner();
         this.containerEle.appendChild(this.formEle);
         this.formEle.appendChild(ctrlGroupEle);
@@ -343,6 +354,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             }
             this.componentRoot = ele;
             inputWrap.appendChild(ele);
+            inputWrap.appendChild(this.loader);
         }
         ctrlGroupEle.appendChild(inputWrap);
         ctrlGroupEle.appendChild(this.createElement('div', { className: EDITABLE_ERROR }));
@@ -400,7 +412,9 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             this.notify(render, { module: modulesList[this.type], target: ele, type: this.type });
         }
         else {
-            this.model.showClearButton = true;
+            if (isNullOrUndefined(this.model.showClearButton)) {
+                this.model.showClearButton = true;
+            }
             switch (this.type) {
                 case 'Date':
                     this.componentObj = new DatePicker(this.model, ele);
@@ -439,24 +453,44 @@ let InPlaceEditor = class InPlaceEditor extends Component {
                 break;
         }
     }
-    loadSpinner() {
+    loadSpinner(callType) {
         addClass([this.loader], [SHOW]);
-        setStyleAttribute(this.loader, { 'width': (this.loaderWidth) + 'px' });
-        this.spinObj = { target: this.loader };
+        if (callType === 'validate' && (this.type === 'RTE' || this.type === 'Color' || this.type === 'Slider')) {
+            addClass([this.loader], [RTE_SPIN_WRAP]);
+            addClass([this.getEditElement()], [CTRL_OVERLAY]);
+            this.spinObj = { target: this.loader };
+        }
+        else {
+            this.spinObj = { target: this.loader, width: Browser.isDevice ? '16px' : '14px' };
+        }
+        if (this.formEle) {
+            addClass([this.formEle], [LOAD]);
+        }
+        if (this.btnElements) {
+            addClass([this.btnElements], [HIDE]);
+        }
+        setStyleAttribute(this.loader, { 'width': '100%' });
         createSpinner(this.spinObj);
         showSpinner(this.spinObj.target);
-        if (this.formEle) {
-            addClass([this.formEle], [HIDE]);
-        }
     }
-    removeSpinner() {
+    removeSpinner(callType) {
         this.loader.removeAttribute('style');
         hideSpinner(this.spinObj.target);
         detach(this.spinObj.target.firstChild);
+        if (callType === 'submit' && (this.type === 'RTE' || this.type === 'Color' || this.type === 'Slider')) {
+            removeClass([this.loader], [RTE_SPIN_WRAP]);
+            removeClass([this.getEditElement()], [CTRL_OVERLAY]);
+        }
         if (this.formEle) {
-            removeClass([this.formEle], [HIDE]);
+            removeClass([this.formEle], [LOAD]);
+        }
+        if (this.btnElements) {
+            removeClass([this.btnElements], [HIDE]);
         }
         removeClass([this.loader], [SHOW]);
+    }
+    getEditElement() {
+        return select('.' + ELEMENTS, this.formEle);
     }
     getLocale(prop, val) {
         return new L10n('inplace-editor', prop, this.locale).getConstant(val);
@@ -464,9 +498,15 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     checkValue(val) {
         return (!this.isEmpty(val)) ? val : this.emptyText;
     }
+    extendModelValue(val) {
+        let model = this.model;
+        extend(model, { value: val });
+        this.setProperties({ model: model }, true);
+    }
     updateValue() {
         if (!isNullOrUndefined(this.value)) {
             this.setProperties({ value: getCompValue(this.type, this.value) }, true);
+            this.extendModelValue(getCompValue(this.type, this.value));
         }
     }
     updateModelValue() {
@@ -483,6 +523,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         }
         else if (this.componentObj) {
             this.setProperties({ value: this.componentObj.value }, true);
+            this.extendModelValue(this.componentObj.value);
         }
     }
     getDropDownsValue() {
@@ -731,12 +772,6 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         };
         errorClass([this.formEle, inputEle], ERROR, value ? 'add' : 'remove');
     }
-    hideForm(value) {
-        if (isNullOrUndefined(this.formEle)) {
-            return;
-        }
-        value ? addClass([this.formEle], [HIDE]) : removeClass([this.formEle], [HIDE]);
-    }
     updateArrow() {
         let pos = this.tipObj.tipPointerPosition;
         this.tipObj.tipPointerPosition = (pos === 'Middle') ? 'Auto' : 'Middle';
@@ -746,8 +781,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     triggerSuccess(args) {
         let val = args.value;
         this.trigger('actionSuccess', args);
-        this.removeSpinner();
-        this.hideForm(false);
+        this.removeSpinner('submit');
         this.renderValue(this.checkValue((args.value !== val) ? args.value : this.getRenderValue()));
         this.removeEditor();
     }
@@ -851,6 +885,10 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             this.setAttribute(select('.e-slider-input', this.containerEle), ['name']);
         }
         this.setFocus();
+        if (this.afterOpenEvent) {
+            this.tipObj.setProperties({ afterOpen: this.afterOpenEvent }, true);
+            this.tipObj.trigger('afterOpen', e);
+        }
     }
     popMouseDown(e) {
         let trgClass = e.target.classList;
@@ -889,18 +927,19 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     failureHandler(e) {
         let eventArgs = { data: e, value: this.getSendValue() };
         this.trigger('actionFailure', eventArgs);
-        this.removeSpinner();
-        this.hideForm(false);
+        this.removeSpinner('submit');
         if (this.mode === 'Popup') {
             this.updateArrow();
         }
     }
     enterKeyDownHandler(e) {
-        if ((e.keyCode === 13 && e.which === 13) && closest(e.target, '.' + INPUT)) {
-            this.save();
-        }
-        else if (e.keyCode === 27 && e.which === 27) {
-            this.cancelHandler();
+        if (!closest(e.target, '.' + INPUT + ' .e-richtexteditor')) {
+            if ((e.keyCode === 13 && e.which === 13) && closest(e.target, '.' + INPUT)) {
+                this.save();
+            }
+            else if (e.keyCode === 27 && e.which === 27) {
+                this.cancelHandler();
+            }
         }
     }
     valueKeyDownHandler(e) {
@@ -973,8 +1012,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         }
         this.checkValidation();
         if (!this.formEle.classList.contains(ERROR)) {
-            this.loadSpinner();
-            this.hideForm(true);
+            this.loadSpinner('validate');
             if (this.mode === 'Popup') {
                 this.updateArrow();
             }
@@ -1234,7 +1272,6 @@ class AutoComplete$1 {
         this.base = new Base(this.parent, this);
     }
     render(e) {
-        this.parent.model.showClearButton = true;
         this.compObj = new AutoComplete(this.parent.model, e.target);
     }
     focus() {
@@ -1243,6 +1280,7 @@ class AutoComplete$1 {
     updateValue(e) {
         if (this.compObj && e.type === 'AutoComplete') {
             this.parent.setProperties({ value: this.compObj.value }, true);
+            this.parent.extendModelValue(this.compObj.value);
         }
     }
     /**
@@ -1280,6 +1318,7 @@ class ColorPicker$1 {
     updateValue(e) {
         if (this.compObj && e.type === 'Color') {
             this.parent.setProperties({ value: this.compObj.value }, true);
+            this.parent.extendModelValue(this.compObj.value);
         }
     }
     /**
@@ -1309,7 +1348,6 @@ class ComboBox$1 {
         this.base = new Base(this.parent, this);
     }
     render(e) {
-        this.parent.model.showClearButton = true;
         this.compObj = new ComboBox(this.parent.model, e.target);
     }
     focus() {
@@ -1318,6 +1356,7 @@ class ComboBox$1 {
     updateValue(e) {
         if (this.compObj && e.type === 'ComboBox') {
             this.parent.setProperties({ value: this.compObj.value }, true);
+            this.parent.extendModelValue(this.compObj.value);
         }
     }
     /**
@@ -1347,7 +1386,6 @@ class DateRangePicker$1 {
         this.base = new Base(this.parent, this);
     }
     render(e) {
-        this.parent.model.showClearButton = true;
         this.compObj = new DateRangePicker(this.parent.model);
         this.compObj.appendTo(e.target);
     }
@@ -1357,6 +1395,7 @@ class DateRangePicker$1 {
     updateValue(e) {
         if (this.compObj && e.type === 'DateRange') {
             this.parent.setProperties({ value: this.compObj.value }, true);
+            this.parent.extendModelValue(this.compObj.value);
         }
     }
     /**
@@ -1386,7 +1425,6 @@ class MultiSelect$1 {
         this.base = new Base(this.parent, this);
     }
     render(e) {
-        this.parent.model.showClearButton = true;
         this.compObj = new MultiSelect(this.parent.model, e.target);
     }
     focus() {
@@ -1395,6 +1433,7 @@ class MultiSelect$1 {
     updateValue(e) {
         if (this.compObj && e.type === 'MultiSelect') {
             this.parent.setProperties({ value: this.compObj.value }, true);
+            this.parent.extendModelValue(this.compObj.value);
         }
     }
     getRenderValue() {
@@ -1438,6 +1477,7 @@ class Rte {
             let rteValue = this.compObj.contentModule.getEditPanel().innerHTML === '<p><br></p>' ?
                 '' : this.compObj.contentModule.getEditPanel().innerHTML;
             this.parent.setProperties({ value: rteValue }, true);
+            this.parent.extendModelValue(this.compObj.value);
         }
     }
     refresh() {
@@ -1478,6 +1518,7 @@ class Slider$1 {
     updateValue(e) {
         if (this.compObj && e.type === 'Slider') {
             this.parent.setProperties({ value: this.compObj.value }, true);
+            this.parent.extendModelValue(this.compObj.value);
         }
     }
     refresh() {
@@ -1510,7 +1551,6 @@ class TimePicker$1 {
         this.base = new Base(this.parent, this);
     }
     render(e) {
-        this.parent.model.showClearButton = true;
         this.compObj = new TimePicker(this.parent.model, e.target);
     }
     focus() {
@@ -1519,6 +1559,7 @@ class TimePicker$1 {
     updateValue(e) {
         if (this.compObj && e.type === 'Time') {
             this.parent.setProperties({ value: this.compObj.value }, true);
+            this.parent.extendModelValue(this.compObj.value);
         }
     }
     /**
@@ -1549,5 +1590,5 @@ class TimePicker$1 {
  *
  */
 
-export { parseValue, getCompValue, render, update, destroy, setFocus, accessValue, destroyModules, PopupSettings, modulesList, localeConstant, ROOT, ROOT_TIP, VALUE_WRAPPER, VALUE, OVERLAY_ICON, TIP_TITLE, TITLE, INLINE, POPUP, WRAPPER, LOADING, FORM, CTRL_GROUP, INPUT, BUTTONS, EDITABLE_ERROR, ELEMENTS, OPEN, BTN_SAVE, BTN_CANCEL, DISABLE, ICONS, PRIMARY, SHOW, HIDE, RTL, ERROR, InPlaceEditor, Base, AutoComplete$1 as AutoComplete, ColorPicker$1 as ColorPicker, ComboBox$1 as ComboBox, DateRangePicker$1 as DateRangePicker, MultiSelect$1 as MultiSelect, Rte, Slider$1 as Slider, TimePicker$1 as TimePicker };
+export { parseValue, getCompValue, render, update, destroy, setFocus, accessValue, destroyModules, PopupSettings, modulesList, localeConstant, ROOT, ROOT_TIP, VALUE_WRAPPER, VALUE, OVERLAY_ICON, TIP_TITLE, TITLE, INLINE, POPUP, WRAPPER, LOADING, FORM, CTRL_GROUP, INPUT, BUTTONS, EDITABLE_ERROR, ELEMENTS, OPEN, BTN_SAVE, BTN_CANCEL, RTE_SPIN_WRAP, CTRL_OVERLAY, DISABLE, ICONS, PRIMARY, SHOW, HIDE, RTL, ERROR, LOAD, InPlaceEditor, Base, AutoComplete$1 as AutoComplete, ColorPicker$1 as ColorPicker, ComboBox$1 as ComboBox, DateRangePicker$1 as DateRangePicker, MultiSelect$1 as MultiSelect, Rte, Slider$1 as Slider, TimePicker$1 as TimePicker };
 //# sourceMappingURL=ej2-inplace-editor.es2015.js.map

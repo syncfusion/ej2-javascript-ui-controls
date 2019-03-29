@@ -27,8 +27,10 @@ import { GridSettings } from '../model/gridsettings';
 import { GridSettingsModel } from '../model/gridsettings-model';
 import { PivotButton } from '../../common/actions/pivot-button';
 import { PivotFieldList } from '../../pivotfieldlist/base/field-list';
-import { Grid, Column, QueryCellInfoEventArgs, ColumnModel, Reorder, Resize, SelectionType } from '@syncfusion/ej2-grids';
-import { CellSelectEventArgs, RowSelectEventArgs, ResizeArgs, RowDeselectEventArgs } from '@syncfusion/ej2-grids';
+import { Grid, Column, QueryCellInfoEventArgs, ColumnModel, Reorder, Resize } from '@syncfusion/ej2-grids';
+import { SelectionType, ContextMenuItemModel } from '@syncfusion/ej2-grids';
+import { CellSelectEventArgs, RowSelectEventArgs, ResizeArgs } from '@syncfusion/ej2-grids';
+import { RowDeselectEventArgs, ContextMenuClickEventArgs } from '@syncfusion/ej2-grids';
 import { EditSettingsModel, HeaderCellInfoEventArgs, CellDeselectEventArgs } from '@syncfusion/ej2-grids';
 import { PdfExportProperties, ExcelExportProperties, ExcelQueryCellInfoEventArgs, ColumnDragEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelHeaderQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs, PdfHeaderQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
@@ -51,7 +53,7 @@ import { ChartSettingsModel } from '../model/chartsettings-model';
 import { Chart, ITooltipRenderEventArgs, ILoadedEventArgs } from '@syncfusion/ej2-charts';
 import { IResizeEventArgs, IAxisLabelRenderEventArgs, ExportType } from '@syncfusion/ej2-charts';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
-import { ClickEventArgs } from '@syncfusion/ej2-navigations';
+import { ClickEventArgs, BeforeOpenCloseMenuEventArgs  } from '@syncfusion/ej2-navigations';
 
 /** 
  * It holds the settings of Grouping Bar.
@@ -339,7 +341,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public lastAggregationInfo: IFieldOptions = {};
     /** @hidden */
     public lastCalcFieldInfo: ICalculatedFields = {};
-
+    /** @hidden */
+    public lastCellClicked: Element;
     //Module Declarations
     public pivotView: PivotView;
     /** @hidden */
@@ -389,6 +392,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     private isMouseDown: boolean = false;
     private isMouseUp: boolean = false;
     private lastSelectedElement: HTMLElement;
+    private defaultItems: { [key: string]: ContextMenuItemModel } = {};
     private isCellBoxMultiSelection: boolean = false;
     /** @hidden */
     public gridHeaderCellInfo: CellTemplateArgs[] = [];
@@ -417,6 +421,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public totColWidth: number = 0;
     /** @hidden */
     public posCount: number = 0;
+    /** @hidden */
+    public isModified: boolean = false;
     protected needsID: boolean = true;
     private cellTemplateFn: Function;
 
@@ -696,6 +702,14 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     @Event()
     protected chartAxisLabelRender: EmitType<IAxisLabelRenderEventArgs>;
 
+    /** @hidden */
+    @Event()
+    public contextMenuClick: EmitType<ContextMenuClickEventArgs>;
+
+    /** @hidden */
+    @Event()
+    public contextMenuOpen: EmitType<BeforeOpenCloseMenuEventArgs>;
+
     /**
      * This allows any customization of Pivot cell style while  PDF exporting.
      * @event
@@ -904,6 +918,11 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         if (this.enableVirtualization) {
             modules.push({ args: [this], member: 'virtualscroll' });
         }
+        if (this.gridSettings) {
+            if (this.gridSettings.contextMenuItems) {
+                isCommonRequire = true;
+            }
+        }
         if (isCommonRequire) {
             modules.push({ args: [this], member: 'common' });
         }
@@ -918,6 +937,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.initProperties();
         this.isAdaptive = Browser.isDevice;
         this.renderToolTip();
+        this.renderContextMenu();
         this.keyboardModule = new KeyboardInteraction(this);
         this.contextMenuModule = new PivotContextMenu(this);
         this.globalize = new Internationalization(this.locale);
@@ -1120,6 +1140,121 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         }
     }
 
+    /** @hidden */
+    public renderContextMenu(): void {
+        if (this.gridSettings.contextMenuItems) {
+            let conmenuItems: ContextMenuItemModel[] = [];
+            let customItems: ContextMenuItemModel[] = [];
+            let exportItems: ContextMenuItemModel[] = [];
+            let aggItems: ContextMenuItemModel[] = [];
+            let expItems: ContextMenuItemModel[] = [];
+            let aggregateItems: ContextMenuItemModel[] = [];
+            for (let item of this.gridSettings.contextMenuItems) {
+                if (typeof item === 'string' && this.getDefaultItems().indexOf(item) !== -1) {
+                    if ((item as string).toString().toLowerCase().indexOf('aggregate') !== -1) {
+                        aggregateItems = [
+                            { text: 'Sum', id: 'AggSum' },
+                            { text: 'Distinct Count', id: 'AggDistinctCount' },
+                            { text: 'Count', id: 'AggCount' },
+                            { text: 'Product', id: 'AggProduct' },
+                            { text: 'Avg', id: 'AggAvg' },
+                            { text: 'Max', id: 'AggMax' },
+                            { text: 'Min', id: 'AggMin' },
+                            { text: 'More...', id: 'AggMoreOption' }
+                        ];
+                    } else if ((item as string).toString().toLowerCase().indexOf('export') !== -1) {
+                        exportItems.push(this.buildDefaultItems(item));
+                    } else {
+                        conmenuItems.push(this.buildDefaultItems(item));
+                    }
+                } else if (typeof item !== 'string') {
+                    customItems.push(item);
+                }
+            }
+            if (aggregateItems.length > 0) {
+                let aggregateGroup: ContextMenuItemModel = this.buildDefaultItems('Aggregate');
+                aggregateGroup.items = aggregateItems;
+                aggItems.push(aggregateGroup);
+            }
+            if (exportItems.length > 0) {
+                let exportGroupItems: ContextMenuItemModel = this.buildDefaultItems('export');
+                exportGroupItems.items = exportItems;
+                expItems.push(exportGroupItems);
+            }
+            this.gridSettings.contextMenuItems = [];
+            Array.prototype.push.apply(this.gridSettings.contextMenuItems, aggItems);
+            Array.prototype.push.apply(this.gridSettings.contextMenuItems, conmenuItems);
+            Array.prototype.push.apply(this.gridSettings.contextMenuItems, expItems);
+            Array.prototype.push.apply(this.gridSettings.contextMenuItems, customItems);
+        }
+
+    }
+    private getDefaultItems(): string[] {
+        return ['Drillthrough', 'Expand',
+            'Collapse', 'Pdf Export', 'Excel Export', 'Csv Export', 'Sort Ascending', 'Sort Descending',
+            'Aggregate', 'CalculatedField'];
+    }
+    private buildDefaultItems(item: string): ContextMenuItemModel {
+        let menuItem: ContextMenuItemModel;
+        switch (item) {
+            case 'Aggregate':
+                menuItem = { text: 'Aggregate', target: 'th.e-valuesheader,td.e-valuescontent,.e-stot', id: 'aggregate' };
+                break;
+            case 'CalculatedField':
+                menuItem = { text: 'Calculated Field', target: 'td.e-valuescontent', id: 'CalculatedField' };
+                break;
+            case 'Drillthrough':
+                menuItem = {
+                    text: 'Drill Through', target: 'td.e-valuescontent',
+                    id: 'drillthrough', iconCss: cls.PIVOTVIEW_GRID + ' ' + cls.ICON
+                };
+                break;
+            case 'export':
+                menuItem = {
+                    text: 'Export', target: 'td.e-valuescontent',
+                    id: 'exporting', iconCss: cls.PIVOTVIEW_EXPORT + ' ' + cls.ICON
+                };
+                break;
+            case 'Pdf Export':
+                menuItem = { text: 'PDF', id: 'pdf', iconCss: cls.GRID_PDF_EXPORT + ' ' + cls.ICON };
+                break;
+            case 'Excel Export':
+                menuItem = { text: 'Excel', id: 'excel', iconCss: cls.GRID_EXCEL_EXPORT + ' ' + cls.ICON };
+                break;
+            case 'Csv Export':
+                menuItem = { text: 'CSV', id: 'csv', iconCss: cls.GRID_CSV_EXPORT + ' ' + cls.ICON, };
+                break;
+            case 'Expand':
+                menuItem = {
+                    text: 'Expand', target: 'td.e-rowsheader,.e-columnsheader',
+                    id: 'expand', iconCss: cls.PIVOTVIEW_EXPAND + ' ' + cls.ICON
+                };
+                break;
+            case 'Collapse':
+                menuItem = {
+                    text: 'Collapse', target: 'td.e-rowsheader,.e-columnsheader',
+                    id: 'collapse', iconCss: cls.PIVOTVIEW_COLLAPSE + ' ' + cls.ICON
+                };
+                break;
+            case 'Sort Ascending':
+                menuItem = {
+                    text: 'Ascending', target: 'th.e-valuesheader,.e-stot',
+                    id: 'sortasc', iconCss: cls.ICON_ASC + ' ' + cls.ICON
+                };
+                break;
+            case 'Sort Descending':
+                menuItem = {
+                    text: 'Descending', target: 'th.e-valuesheader,.e-stot',
+                    id: 'sortdesc', iconCss: cls.ICON_DESC + ' ' + cls.ICON
+                };
+                break;
+        }
+        this.defaultItems[item] = {
+            text: menuItem.text, id: menuItem.id,
+            target: menuItem.target, iconCss: menuItem.iconCss
+        };
+        return this.defaultItems[item];
+    }
     /* tslint:disable:align */
     private initProperties(): void {
         this.setProperties({ pivotValues: [] }, true);
@@ -1147,6 +1282,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.chartLoad = this.chartSettings.load ? this.chartSettings.load : undefined;
         this.chartResized = this.chartSettings.resized ? this.chartSettings.resized : undefined;
         this.chartAxisLabelRender = this.chartSettings.axisLabelRender ? this.chartSettings.axisLabelRender : undefined;
+        this.contextMenuClick = this.gridSettings.contextMenuClick ? this.gridSettings.contextMenuClick : undefined;
+        this.contextMenuOpen = this.gridSettings.contextMenuOpen ? this.gridSettings.contextMenuOpen : undefined;
         if (this.gridSettings.rowHeight === null) {
             this.setProperties({ gridSettings: { rowHeight: this.isAdaptive ? 48 : 36 } }, true);
         }
@@ -1406,6 +1543,14 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 }
             }
         }
+        if (this.toolbarModule) {
+            if (this.toolbarModule && this.toolbarModule.action !== 'New' && this.toolbarModule.action !== 'Load'
+                && this.toolbarModule.action !== 'Remove') {
+                this.isModified = true;
+            } else {
+                this.toolbarModule.action = '';
+            }
+        }
     }
     /**
      * Updates the PivotEngine using dataSource from Pivot View component.
@@ -1570,7 +1715,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         }
     }
 
-    private onDrill(target: Element): void {
+    /** @hidden */
+    public onDrill(target: Element): void {
         let fieldName: string = target.parentElement.getAttribute('fieldname');
         let memberName: string =
             (this.engineModule.pivotValues[Number(target.parentElement.getAttribute('index'))]
@@ -1769,11 +1915,24 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             EventHandler.add(this.element, 'mousedown', this.mouseDownHandler, this);
             EventHandler.add(this.element.querySelector('.' + cls.GRID_HEADER), 'mousemove', this.mouseMoveHandler, this);
             EventHandler.add(this.element, 'mouseup', this.mouseUpHandler, this);
+            EventHandler.add(this.element, this.isAdaptive ? 'touchend' : 'contextmenu', this.mouseRclickHandler, this);
             window.addEventListener('resize', this.onWindowResize.bind(this), true);
         }
     }
 
+    private mouseRclickHandler(e: MouseEvent): void {
+        if (e.which === 3) {
+            this.lastCellClicked = (e.target as Element);
+        } else if (e.which === 0) {
+            this.lastCellClicked = (e.target as Element);
+        }
+        this.lastCellClicked = (e.target as Element);
+    }
+
     private mouseDownHandler(e: MouseEvent): void {
+        if (e.which === 3) {
+            this.lastCellClicked = (e.target as Element);
+        }
         if (this.isCellBoxMultiSelection) {
             this.isMouseDown = true;
             this.isMouseUp = false;
@@ -1823,6 +1982,11 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     }
 
     private mouseClickHandler(e: MouseEvent): void {
+        if (e.which === 3) {
+            this.lastCellClicked = (e.target as Element);
+        } else if (e.which === 0) {
+            this.lastCellClicked = (e.target as Element);
+        }
         let target: Element = (e.target as Element);
         if ((target.classList.contains('e-headercell') ||
             target.classList.contains('e-headercelldiv') ||
@@ -1845,7 +2009,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             this.CellClicked(target, e);
             if ((ele.parentElement.parentElement.parentElement.parentElement.classList.contains('e-movableheader')
                 && this.dataSource.valueAxis === 'column') || (ele.parentElement.classList.contains('e-row') &&
-                    this.dataSource.valueAxis === 'row')) {
+                    this.dataSource.valueAxis === 'row') && (ele.parentElement.classList.contains('e-rowsheader') ||
+                    ele.classList.contains('e-stot'))) {
                 /* tslint:disable */
                 let colIndex: number = Number(ele.getAttribute('aria-colindex'));
                 let rowIndex: number = Number(ele.getAttribute('index'));
@@ -1992,7 +2157,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     }
 
     private windowResize(): void {
-        if (this.element && this.element.classList.contains('e-pivotview') && this.engineModule) {
+        if (this.element && this.element.classList.contains('e-pivotview') && this.engineModule && this.engineModule.pivotValues) {
             let colWidth: number = this.renderModule.resizeColWidth(this.dataSource.values.length > 0 ?
                 this.engineModule.pivotValues[0].length : 2);
             this.grid.width = this.renderModule.calculateGridWidth();
@@ -2219,23 +2384,35 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 EventHandler.remove(this.element.querySelector('.' + cls.GRID_HEADER), 'mousemove', this.mouseMoveHandler);
             }
             EventHandler.remove(this.element, 'mouseup', this.mouseUpHandler);
+            EventHandler.remove(this.element, this.isAdaptive ? 'touchend' : 'contextmenu', this.mouseRclickHandler);
             window.removeEventListener('resize', this.onWindowResize.bind(this), true);
         }
     }
 
     private renderEmptyGrid(): void {
         this.isEmptyGrid = true;
-        if (this.element.querySelector('.' + cls.GRID_CLASS)) {
-            remove(this.element.querySelector('.' + cls.GRID_CLASS));
-        }
         this.renderModule = new Render(this);
-        this.renderModule.bindGrid(this, true);
-        /* tslint:disable:no-empty */
-        this.grid.showSpinner = () => { };
-        this.grid.hideSpinner = () => { };
-        /* tslint:enable:no-empty */
-        this.element.appendChild(createElement('div', { id: this.element.id + '_grid' }));
-        this.grid.appendTo('#' + this.element.id + '_grid');
+        if (this.grid) {
+            /* tslint:disable */
+            this.grid.setProperties({
+                columns: this.renderModule.frameEmptyColumns(),
+                dataSource: this.renderModule.frameEmptyData()
+            }, true);
+            /* tslint:enable */
+            this.grid.notify('datasource-modified', {});
+            this.grid.refreshColumns();
+        } else {
+            if (this.element.querySelector('.' + cls.GRID_CLASS)) {
+                remove(this.element.querySelector('.' + cls.GRID_CLASS));
+            }
+            this.renderModule.bindGrid(this, true);
+            /* tslint:disable:no-empty */
+            this.grid.showSpinner = () => { };
+            this.grid.hideSpinner = () => { };
+            /* tslint:enable:no-empty */
+            this.element.appendChild(createElement('div', { id: this.element.id + '_grid' }));
+            this.grid.appendTo('#' + this.element.id + '_grid');
+        }
     }
     /* tslint:disable */
     private initEngine(): void {

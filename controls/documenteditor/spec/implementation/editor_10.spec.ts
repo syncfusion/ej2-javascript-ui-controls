@@ -32,30 +32,30 @@ describe('Rtl text editing validation', () => {
         }, 1000);
     });
     it('arabic text insert', () => {
-        editor.editor.insertText('سشةحمث', false);
+        editor.editor.insertText('سشةحمث');
         expect(editor.selection.start.currentWidget.children[0].characterFormat.bidi).toBe(true)
         expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('سشةحمث')
     });
     it('arabic and english text insert', () => {
         editor.openBlank();
-        editor.editor.insertText('sample', false);
-        editor.editor.insertText('سشةحمث', false);
+        editor.editor.insertText('sample');
+        editor.editor.insertText('سشةحمث');
         expect(editor.selection.start.currentWidget.children[1].characterFormat.bidi).toBe(true)
         expect((editor.selection.start.currentWidget.children[1] as TextElementBox).text).toBe('سشةحمث')
     });
     it('space after arabic text-consider as single text element box', () => {
         editor.openBlank();
-        editor.editor.insertText('سشةحمث', false);
-        editor.editor.insertText('    ', false);
-        editor.editor.insertText('سشةحمث', false);
+        editor.editor.insertText('سشةحمث');
+        editor.editor.insertText('    ');
+        editor.editor.insertText('سشةحمث');
         expect(editor.selection.start.currentWidget.children[0].characterFormat.bidi).toBe(true)
         expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('سشةحمث    سشةحمث')
     });
     it('space after normal text followed by arabic text', () => {
         editor.openBlank();
-        editor.editor.insertText('سشةحمث', false);
-        editor.editor.insertText('    ', false);
-        editor.editor.insertText('sample', false);
+        editor.editor.insertText('سشةحمث');
+        editor.editor.insertText('    ');
+        editor.editor.insertText('sample');
         expect(editor.selection.start.currentWidget.children[0].characterFormat.bidi).toBe(true)
         expect((editor.selection.start.currentWidget.children[1] as TextElementBox).text).toBe('sample')
     });
@@ -85,33 +85,33 @@ describe('Rtl text editing validation- combination of hebrew and arabic text', (
         }, 1000);
     });
     it('Hebrew text after arabic text insert', () => {
-        editor.editor.insertText('سشةحمث', false);
-        editor.editor.insertText('דשצפךק', false);
+        editor.editor.insertText('سشةحمث');
+        editor.editor.insertText('דשצפךק');
         expect(editor.selection.start.currentWidget.children[0].characterFormat.bidi).toBe(true)
         expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('דשצפךק')
     });
     it('arabic and english text insert', () => {
         editor.openBlank();
-        editor.editor.insertText('sample', false);
-        editor.editor.insertText('سشةحمث', false);
-        editor.editor.insertText('דשצפךק', false);
+        editor.editor.insertText('sample');
+        editor.editor.insertText('سشةحمث');
+        editor.editor.insertText('דשצפךק');
         expect(editor.selection.start.currentWidget.children[1].characterFormat.bidi).toBe(true)
         expect((editor.selection.start.currentWidget.children[1] as TextElementBox).text).toBe('דשצפךק')
     });
     it('space after arabic text-consider as single text element box-2', () => {
         editor.openBlank();
-        editor.editor.insertText('سشةحمث', false);
-        editor.editor.insertText('    ', false);
-        editor.editor.insertText('דשצפךק', false);
+        editor.editor.insertText('سشةحمث');
+        editor.editor.insertText('    ');
+        editor.editor.insertText('דשצפךק');
         expect(editor.selection.start.currentWidget.children[0].characterFormat.bidi).toBe(true)
         expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('דשצפךק')
     });
     it('space after hebrew text followed by arabic text and normal text', () => {
         editor.openBlank();
-        editor.editor.insertText('سشةحمث', false);
-        editor.editor.insertText('    ', false);
-        editor.editor.insertText('sample', false);
-        editor.editor.insertText('דשצפךק', false);
+        editor.editor.insertText('سشةحمث');
+        editor.editor.insertText('    ');
+        editor.editor.insertText('sample');
+        editor.editor.insertText('דשצפךק');
         expect(editor.selection.start.currentWidget.children[0].characterFormat.bidi).toBe(true)
         expect((editor.selection.start.currentWidget.children[2] as TextElementBox).text).toBe('דשצפךק')
     });
@@ -294,7 +294,7 @@ describe('LTR text editing inside RTL paragraph', () => {
         }, 1000);
     });
     it('LTR text editing inside Bidi false paragraph at start of paragraph', () => {
-        editor.editor.insertText('s', false);
+        editor.editor.insertText('s');
         let textElement: TextElementBox = editor.selection.start.currentWidget.children[editor.selection.start.currentWidget.children.length - 1] as TextElementBox;
         expect(textElement.text).toBe('s');
     });
@@ -303,13 +303,13 @@ describe('LTR text editing inside RTL paragraph', () => {
         editor.selection.handleLeftKey();
         editor.selection.handleLeftKey();
         editor.selection.handleLeftKey();
-        editor.editor.insertText('s', false);
+        editor.editor.insertText('s');
         let textElement: TextElementBox = editor.selection.start.currentWidget.children[7] as TextElementBox;
         expect(textElement.text).toBe('s');
     });
     it('LTR text editing inside Bidi false paragraph at end of paragraph', () => {
         editor.selection.handleEndKey();
-        editor.editor.insertText('s', false);
+        editor.editor.insertText('s');
         // let textElement: TextElementBox = editor.selection.start.currentWidget.children[0] as TextElementBox;
         // expect(textElement.text).toBe('s');
 
@@ -319,6 +319,6 @@ describe('LTR text editing inside RTL paragraph', () => {
         editor.selection.handleRightKey();
         editor.selection.handleRightKey();
         editor.selection.handleRightKey();
-        editor.editor.insertText('s', false);
+        editor.editor.insertText('s');
     });
 });

@@ -1,4 +1,4 @@
-import { Ajax, Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, closest, createElement, extend, formatUnit, getValue, isNullOrUndefined, isVisible, matches, removeClass, select, selectAll, setStyleAttribute, setValue } from '@syncfusion/ej2-base';
+import { Ajax, Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, closest, createElement, formatUnit, getValue, isNullOrUndefined, isVisible, matches, remove, removeClass, select, selectAll, setStyleAttribute, setValue } from '@syncfusion/ej2-base';
 import { Splitter } from '@syncfusion/ej2-layouts';
 import { Dialog, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { DataManager, Query } from '@syncfusion/ej2-data';
@@ -153,7 +153,7 @@ var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, 
 var columnArray = [
     {
         field: 'name', headerText: 'Name', minWidth: 120, width: 'auto',
-        template: '<span class="e-fe-text">${name}</span>', customAttributes: { class: 'e-fe-grid-name' }
+        template: '<span class="e-fe-text" title="${name}">${name}</span>', customAttributes: { class: 'e-fe-grid-name' }
     },
     {
         field: 'dateModified', headerText: 'DateModified',
@@ -265,6 +265,45 @@ var NavigationPaneSettings = /** @__PURE__ @class */ (function (_super) {
     return NavigationPaneSettings;
 }(ChildProperty));
 
+var __extends$6 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Specifies the Ajax settings of the File Manager.
+ */
+var UploadSettings = /** @__PURE__ @class */ (function (_super) {
+    __extends$6(UploadSettings, _super);
+    function UploadSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$6([
+        Property(true)
+    ], UploadSettings.prototype, "autoUpload", void 0);
+    __decorate$6([
+        Property(0)
+    ], UploadSettings.prototype, "minFileSize", void 0);
+    __decorate$6([
+        Property(30000000)
+    ], UploadSettings.prototype, "maxFileSize", void 0);
+    return UploadSettings;
+}(ChildProperty));
+
 /**
  * FileExplorer common modules
  */
@@ -305,6 +344,8 @@ var CONTENT_ID = '_content';
 var BREADCRUMBBAR_ID = '_breadcrumbbar';
 /** @hidden */
 var UPLOAD_ID = '_upload';
+/** @hidden */
+var SEARCH_ID = '_search';
 /**
  * Specifies the File Manager internal class names
  */
@@ -477,6 +518,8 @@ var modelChanged = 'model-changed';
 /** @hidden */
 var initialEnd = 'initial-end';
 /** @hidden */
+var finalizeEnd = 'finalize-end';
+/** @hidden */
 var createEnd = 'create-end';
 /** @hidden */
 var deleteEnd = 'delete-end';
@@ -513,6 +556,8 @@ var selectAllInit = 'select-all-init';
 /** @hidden */
 var clearAllInit = 'clear-all-init';
 /** @hidden */
+var clearPathInit = 'clear-path-init';
+/** @hidden */
 var layoutChange = 'layout-change';
 /** @hidden */
 var sortByChange = 'sort-by-change';
@@ -538,6 +583,8 @@ var sortColumn = 'sort-column';
 var pathColumn = 'path-column';
 /** @hidden */
 var searchTextChange = 'search-change';
+/** @hidden */
+var downloadInit = 'download-init';
 
 /**
  * Utility file for common actions
@@ -620,7 +667,7 @@ function activeElement(action, isGrid, file) {
             }
             isFile$$1 = (file.activeModule === 'largeiconsview') ?
                 ((blurEle[i].querySelector('.' + LARGE_ICON_FOLDER)) ? false : true) : null;
-            id = (isFile$$1 === false) ? blurEle[i].closest('li').getAttribute('data-uid') : null;
+            id = (isFile$$1 === false) ? closest(blurEle[i], 'li').getAttribute('data-uid') : null;
             (blurEle[i].querySelector('.' + LIST_TEXT)) ?
                 nodeNames.push({ 'name': blurEle[i].querySelector('.' + LIST_TEXT).textContent, 'isFile': isFile$$1, 'id': id }) :
                 nodeNames = nodeNames;
@@ -666,7 +713,7 @@ function getModule(element, file) {
         if (element.classList.contains(ROWCELL)) {
             file.activeModule = 'detailsview';
         }
-        else if (element.closest('.' + LARGE_ICON)) {
+        else if (closest(element, '.' + LARGE_ICON)) {
             file.activeModule = 'largeiconsview';
         }
         else {
@@ -762,7 +809,7 @@ function getImageUrl(parent, item) {
     var baseUrl = parent.ajaxSettings.getImageUrl ? parent.ajaxSettings.getImageUrl : parent.ajaxSettings.url;
     var imgUrl;
     if (parent.breadcrumbbarModule.searchObj.element.value !== '') {
-        imgUrl = baseUrl + '?path=' + parent.path + getValue('filterPath', item);
+        imgUrl = baseUrl + '?path=' + getValue('filterPath', item);
     }
     else {
         imgUrl = baseUrl + '?path=' + parent.path + getValue('name', item);
@@ -777,8 +824,12 @@ function getSortedData(parent, items) {
     var lists = new DataManager(items).executeLocal(query);
     return getValue('records', lists);
 }
+/* istanbul ignore next */
 function getItemObject(parent, item) {
     var name = select('.' + LIST_TEXT, item).textContent;
+    return getObject(parent, name);
+}
+function getObject(parent, name) {
     var currFiles = getValue(parent.path, parent.feFiles);
     var query = new Query().where('name', 'equal', name);
     var lists = new DataManager(currFiles).executeLocal(query);
@@ -879,6 +930,28 @@ function getSortField(id) {
     }
     return field;
 }
+function setNextPath(parent, path) {
+    var currfolders = path.split('/');
+    var folders = parent.originalPath.split('/');
+    for (var i = currfolders.length - 1, len = folders.length - 1; i < len; i++) {
+        var eventName = (folders[i + 1] === '') ? finalizeEnd : initialEnd;
+        var newPath = (folders[i] === '') ? '/' : (parent.path + folders[i] + '/');
+        var data = getObject(parent, folders[i]);
+        var id = getValue('nodeId', data);
+        parent.setProperties({ path: newPath }, true);
+        parent.pathId.push(id);
+        parent.itemData = [data];
+        read(parent, eventName, parent.path);
+        break;
+    }
+}
+function openSearchFolder(parent, data) {
+    var fPath = getValue('filterPath', data) + '/';
+    fPath = fPath.replace(/\\/g, '/');
+    parent.notify(clearPathInit, { selectedNode: parent.pathId[parent.pathId.length - 1] });
+    parent.originalPath = fPath;
+    read(parent, (parent.path !== parent.originalPath) ? initialEnd : finalizeEnd, parent.path);
+}
 
 /**
  * Function to read the content from given path in File Manager.
@@ -924,7 +997,7 @@ parent, path, names, targetPath, pasteOperation, navigationPane, replaceItems) {
  * @private
  */
 function Delete(parent, items, path, operation, treeView) {
-    var data = { action: operation, targetPath: path, itemNames: items };
+    var data = { action: operation, path: path, itemNames: items };
     createAjax(parent, data, deleteSuccess, path, treeView);
 }
 /**
@@ -933,7 +1006,7 @@ function Delete(parent, items, path, operation, treeView) {
  */
 /* istanbul ignore next */
 function GetDetails(parent, itemNames, path, operation) {
-    var data = { action: operation, targetPath: path, itemNames: itemNames };
+    var data = { action: operation, path: path, itemNames: itemNames };
     createAjax(parent, data, detailsSuccess, path, null, operation);
 }
 function createAjax(parent, data, fn, event, navigationPane, operation, targetPath) {
@@ -1380,12 +1453,12 @@ function getOptions(parent, text, e, details, replaceItems) {
             var intl = new Internationalization();
             var parseDate = intl.parseDate(details.modified, { format: 'MM/dd/yyy hh:mm:ss' });
             var formattedString = intl.formatDate(new Date(details.modified), { format: 'MMMM dd, yyyy HH:mm:ss' });
-            options.header = details.name.split('.')[0];
+            options.header = details.name;
             options.content = '<table>' +
                 '<tr><td>' + getLocaleText(parent, 'Type') + '</td><td class="' + VALUE + '" title="' +
                 (details.isFile ? 'File' : 'Folder') + '">' + (details.isFile ? 'File' : 'Folder') + '</td></tr>' +
-                '<tr><td>' + getLocaleText(parent, 'Size') + '</td><td>' + details.size
-                + '<span class="' + VALUE + '" title ="' + details.size + '"></span></td></tr>' +
+                '<tr><td>' + getLocaleText(parent, 'Size') + '</td><td><span class="' + VALUE + '" title ="' +
+                details.size + '">' + details.size + '</span></td></tr>' +
                 '<tr><td>' + getLocaleText(parent, 'Location') + '</td><td class="' + VALUE + '" title="' +
                 details.location + '">' + details.location + '</td></tr>' +
                 '<tr><td>' + getLocaleText(parent, 'Modified') + '</td><td class="' + VALUE + '" >'
@@ -1606,15 +1679,20 @@ function createImageDialog(parent, header, imageUrl) {
 }
 function openImage(parent) {
     setTimeout(function () {
-        parent.viewerObj.element.focus();
+        if (parent.viewerObj) {
+            parent.viewerObj.element.focus();
+        }
     });
     updateImage(parent);
 }
 function updateImage(parent) {
     var content = select('.e-dlg-content', parent.viewerObj.element);
     var imgWrap = select('.e-image-wrap', parent.viewerObj.element);
-    imgWrap.style.width = (content.offsetWidth - 36) + 'px';
-    imgWrap.style.height = (content.offsetHeight - 20) + 'px';
+    var cssObj = window.getComputedStyle(content, null);
+    var paddingWidth = cssObj ? (2 * parseFloat(cssObj.paddingRight)) : 36;
+    var paddingHeight = cssObj ? (2 * parseFloat(cssObj.paddingBottom)) : 20;
+    imgWrap.style.width = (content.offsetWidth - paddingWidth) + 'px';
+    imgWrap.style.height = (content.offsetHeight - paddingHeight) + 'px';
 }
 
 /**
@@ -1635,6 +1713,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         this.count = 0;
         this.isRendered = true;
         this.tapCount = 0;
+        this.isSetModel = false;
         this.parent = parent;
         this.element = select('#' + this.parent.element.id + LARGEICON_ID, this.parent.element);
         addClass([this.element], LARGE_ICONS);
@@ -1696,7 +1775,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
             var iconsView = select('#' + this.parent.element.id + LARGEICON_ID, this.parent.element);
             var ul = select('ul', iconsView);
             if (ul) {
-                ul.remove();
+                remove(ul);
             }
             this.listObj = {
                 ariaAttributes: {
@@ -1736,17 +1815,18 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
                     this.parent.uploadItem = [];
                 }
             }
-            this.parent.activeModule = 'largeiconsview';
+            var activeEle = this.element.querySelectorAll('.' + ACTIVE);
+            if (activeEle.length !== 0) {
+                this.parent.activeModule = 'largeiconsview';
+            }
             iconsView.classList.remove(DISPLAY_NONE);
-            var pane = select('#' + this.parent.element.id + CONTENT_ID, this.parent.element);
-            var bar = select('#' + this.parent.element.id + BREADCRUMBBAR_ID, this.parent.element);
-            this.element.style.height = (pane.offsetHeight - bar.offsetHeight) + 'px';
+            this.adjustHeight();
             this.element.style.maxHeight = '100%';
             this.getItemCount();
             this.addEventListener();
             this.wireEvents();
             this.isRendered = true;
-            if (this.parent.persistData) {
+            if (this.parent.selectedItems.length) {
                 this.checkItem();
             }
         }
@@ -1757,6 +1837,11 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
      */
     LargeIconsView.prototype.getModuleName = function () {
         return 'largeiconsview';
+    };
+    LargeIconsView.prototype.adjustHeight = function () {
+        var pane = select('#' + this.parent.element.id + CONTENT_ID, this.parent.element);
+        var bar = select('#' + this.parent.element.id + BREADCRUMBBAR_ID, this.parent.element);
+        this.element.style.height = (pane.offsetHeight - bar.offsetHeight) + 'px';
     };
     LargeIconsView.prototype.onItemCreated = function (args) {
         if (!this.parent.showFileExtension && getValue('isFile', args.curData)) {
@@ -1786,11 +1871,11 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         checkElement.setAttribute('aria-checked', 'false');
         args.item.firstElementChild.insertBefore(checkElement, args.item.firstElementChild.childNodes[0]);
     };
-    /* istanbul ignore next */
     LargeIconsView.prototype.onLayoutChange = function (args) {
         if (this.parent.view === 'LargeIcons') {
             this.destroy();
             this.render(args);
+            /* istanbul ignore next */
             if (this.parent.cutNodes && this.parent.cutNodes.length !== 0) {
                 var indexes = this.getIndexes(args.files, this.parent.selectedNodes);
                 var length_1 = 0;
@@ -1825,6 +1910,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         var items = JSON.parse(JSON.stringify(args.files));
         while (i < items.length) {
             var icon = fileType(items[i]);
+            /* istanbul ignore next */
             var pasteNodes = this.parent.pasteNodes;
             var className = ((this.parent.selectedItems &&
                 this.parent.selectedItems.indexOf(getValue('name', args.files[i])) !== -1) ||
@@ -1837,12 +1923,12 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
             else {
                 setValue('icon', icon, items[i]);
             }
-            setValue('htmlAttributes', { class: className }, items[i]);
+            setValue('htmlAttributes', { class: className, title: getValue('name', args.files[i]) }, items[i]);
             i++;
         }
         return items;
     };
-    LargeIconsView.prototype.onInitialEnd = function (args) {
+    LargeIconsView.prototype.onFinalizeEnd = function (args) {
         this.render(args);
         this.parent.notify(searchTextChange, args);
     };
@@ -1854,6 +1940,8 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         this.clearSelect();
         this.selectItems(args.files, [getValue('name', this.parent.createdItem)]);
         this.parent.createdItem = null;
+        this.parent.largeiconsviewModule.element.focus();
+        this.parent.persistData = false;
     };
     /* istanbul ignore next */
     LargeIconsView.prototype.onDeleteEnd = function (args) {
@@ -1929,9 +2017,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         this.isRendered = false;
     };
     LargeIconsView.prototype.onAfterRequest = function (args) {
-        if (getValue('action', args) === 'failure') {
-            this.isRendered = true;
-        }
+        this.isRendered = true;
     };
     /* istanbul ignore next */
     LargeIconsView.prototype.onSearch = function (args) {
@@ -1942,7 +2028,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         if (this.parent.isDestroyed) {
             return;
         }
-        this.parent.off(initialEnd, this.onInitialEnd);
+        this.parent.off(finalizeEnd, this.onFinalizeEnd);
         this.parent.off(createEnd, this.onCreateEnd);
         this.parent.off(deleteEnd, this.onDeleteEnd);
         this.parent.off(refreshEnd, this.onRefreshEnd);
@@ -1963,7 +2049,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         this.parent.off(resizeEnd, this.resizeHandler);
     };
     LargeIconsView.prototype.addEventListener = function () {
-        this.parent.on(initialEnd, this.onInitialEnd, this);
+        this.parent.on(finalizeEnd, this.onFinalizeEnd, this);
         this.parent.on(createEnd, this.onCreateEnd, this);
         this.parent.on(deleteEnd, this.onDeleteEnd, this);
         this.parent.on(refreshEnd, this.onRefreshEnd, this);
@@ -1985,14 +2071,16 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
     };
     LargeIconsView.prototype.onPropertyChanged = function (e) {
         if (e.module !== this.getModuleName() && e.module !== 'common') {
-            /* istanbul ignore next */
             return;
         }
         for (var _i = 0, _a = Object.keys(e.newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
             switch (prop) {
+                case 'height':
+                    this.adjustHeight();
+                    break;
                 case 'selectedItems':
-                    var activeEle = this.element.querySelectorAll('.' + ACTIVE);
+                    this.isSetModel = true;
                     if (this.parent.selectedItems.length !== 0) {
                         var currentDataSource = getValue(this.parent.path, this.parent.feFiles);
                         this.selectItems(currentDataSource, this.parent.selectedItems);
@@ -2002,6 +2090,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
                             this.removeActive(this.element.querySelectorAll('.' + ACTIVE)[0]);
                         }
                     }
+                    this.isSetModel = false;
                     break;
                 case 'showThumbnail':
                     refresh(this.parent);
@@ -2056,10 +2145,11 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         this.wireClickEvent(false);
         EventHandler.remove(this.element, 'mouseover', this.onMouseOver);
         this.keyboardModule.destroy();
+        this.keyboardDownModule.destroy();
     };
     /* istanbul ignore next */
     LargeIconsView.prototype.onMouseOver = function (e) {
-        var targetEle = e.target.closest('.e-list-item');
+        var targetEle = closest(e.target, '.e-list-item');
         removeBlur(this.parent, 'hover');
         if (targetEle !== null) {
             targetEle.classList.add(HOVER);
@@ -2109,7 +2199,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
     };
     LargeIconsView.prototype.doTapAction = function (eve) {
         var target = eve.originalEvent.target;
-        var item = target.closest('.' + LIST_ITEM);
+        var item = closest(target, '.' + LIST_ITEM);
         if (this.multiSelect || target.classList.contains(LIST_PARENT) || isNullOrUndefined(item)) {
             this.clickHandler(eve);
         }
@@ -2130,11 +2220,13 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
     };
     LargeIconsView.prototype.clickHandler = function (e) {
         var target = e.originalEvent.target;
+        removeBlur(this.parent, 'hover');
         this.doSelection(target, e.originalEvent);
+        this.parent.activeModule = 'largeiconsview';
     };
     /** @hidden */
     LargeIconsView.prototype.doSelection = function (target, e) {
-        var item = target.closest('.' + LIST_ITEM);
+        var item = closest(target, '.' + LIST_ITEM);
         var fItem = this.getFocusedItem();
         var cList = target.classList;
         this.parent.isFile = false;
@@ -2193,6 +2285,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         this.parent.activeElements = this.element.querySelectorAll('.e-active');
     };
     LargeIconsView.prototype.dblClickHandler = function (e) {
+        this.parent.activeModule = 'largeiconsview';
         var target = e.originalEvent.target;
         this.doOpenAction(target);
     };
@@ -2209,7 +2302,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         if (isNullOrUndefined(target)) {
             return;
         }
-        var item = target.closest('.' + LIST_ITEM);
+        var item = closest(target, '.' + LIST_ITEM);
         this.parent.isFile = false;
         if (!isNullOrUndefined(item)) {
             this.updateType(item);
@@ -2221,11 +2314,17 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
             }
             var text = select('.' + LIST_TEXT, item).textContent;
             if (!this.parent.isFile) {
-                var newPath = this.parent.path + text + '/';
-                this.parent.setProperties({ path: newPath }, true);
-                this.parent.pathId.push(getValue('nodeId', details));
-                this.parent.itemData = [details];
-                openAction(this.parent);
+                var val = this.parent.breadcrumbbarModule.searchObj.element.value;
+                if (val === '') {
+                    var newPath = this.parent.path + text + '/';
+                    this.parent.setProperties({ path: newPath }, true);
+                    this.parent.pathId.push(getValue('nodeId', details));
+                    this.parent.itemData = [details];
+                    openAction(this.parent);
+                }
+                else {
+                    openSearchFolder(this.parent, details);
+                }
                 this.parent.setProperties({ selectedItems: [] }, true);
             }
             else {
@@ -2306,12 +2405,11 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
                 this.navigateItem(firstItem);
                 break;
             case 'tab':
-                if (!isNullOrUndefined(firstItem)) {
-                    this.startItem = firstItem;
-                    this.clearSelect();
+                if (!isNullOrUndefined(fItem)) {
+                    this.addFocus(fItem);
+                }
+                else if (!isNullOrUndefined(firstItem)) {
                     this.addFocus(firstItem);
-                    this.parent.notify(selectionChanged, {});
-                    this.triggerSelect('select', firstItem);
                 }
                 break;
             case 'moveDown':
@@ -2560,7 +2658,9 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
     LargeIconsView.prototype.addActive = function (nextItem) {
         if (!isNullOrUndefined(nextItem)) {
             if (!nextItem.classList.contains(ACTIVE)) {
-                this.parent.selectedItems.push(nextItem.textContent);
+                if (!this.isSetModel) {
+                    this.parent.selectedItems.push(nextItem.textContent);
+                }
                 addClass([nextItem], [ACTIVE]);
                 this.checkState(nextItem, true);
             }
@@ -2593,13 +2693,13 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         if (toCheck) {
             if (!checkEle.classList.contains(CHECK)) {
                 addClass([checkEle], CHECK);
-                checkEle.closest('.' + CB_WRAP).setAttribute('aria-checked', 'true');
+                closest(checkEle, '.' + CB_WRAP).setAttribute('aria-checked', 'true');
             }
         }
         else {
             if (checkEle.classList.contains(CHECK)) {
                 removeClass([checkEle], CHECK);
-                checkEle.closest('.' + CB_WRAP).setAttribute('aria-checked', 'false');
+                closest(checkEle, '.' + CB_WRAP).setAttribute('aria-checked', 'false');
             }
         }
     };
@@ -2627,7 +2727,9 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         this.perRow = perRow;
     };
     LargeIconsView.prototype.triggerSelect = function (action, item) {
-        var eventArgs = { action: action, fileDetails: this.getItemObject(item) };
+        var data = this.getItemObject(item);
+        this.parent.visitedData = data;
+        var eventArgs = { action: action, fileDetails: data };
         this.parent.trigger('fileSelect', eventArgs);
     };
     LargeIconsView.prototype.selectItems = function (files, items) {
@@ -2689,7 +2791,7 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
     BreadCrumbBar.prototype.render = function () {
         this.addEventListener();
     };
-    BreadCrumbBar.prototype.onPathChanged = function () {
+    BreadCrumbBar.prototype.onPathChange = function () {
         var rootName = getValue('name', getValue('/', this.parent.feParent));
         if (!this.addressBarLink) {
             this.addressPath = rootName + this.parent.path;
@@ -2717,13 +2819,13 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
                 }
                 addressbarLI.setAttribute('data-utext', id);
                 addressbarLI.classList.add('e-address-list-item');
-                addressbarLI.setAttribute('tabindex', '0');
                 if (i !== 0) {
                     var icon = createElement('span', { className: ICONS });
                     addressbarLI.appendChild(icon);
                 }
                 if (countOfAddressBarPath - i !== 1) {
                     addressATag = createElement('a', { className: LIST_TEXT });
+                    addressbarLI.setAttribute('tabindex', '0');
                 }
                 else {
                     addressATag = createElement('span', { className: LIST_TEXT });
@@ -2750,9 +2852,6 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
             this.updateBreadCrumbBar(addressbarUL);
         }
         this.addressBarLink = '';
-        if (this.searchObj.value !== '') {
-            this.searchObj.value = '';
-        }
     };
     /* istanbul ignore next */
     BreadCrumbBar.prototype.updateBreadCrumbBar = function (addresBarUL) {
@@ -2771,11 +2870,12 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
             liElementsWidth = liElementsWidth + width;
         }
         if (!isNullOrUndefined(ulElement)) {
-            ulElement.remove();
+            remove(ulElement);
         }
         var searchContainer = this.parent.createElement('div');
         searchContainer.setAttribute('class', 'e-search-wrap');
-        var searchInput = createElement('input', { id: this.parent.element.id + '_search' });
+        var id = this.parent.element.id + SEARCH_ID;
+        var searchInput = createElement('input', { id: id, attrs: { autocomplete: 'off' } });
         searchContainer.appendChild(searchInput);
         var searchEle = this.parent.breadCrumbBarNavigation.querySelector('.e-search-wrap .e-input');
         if (isNullOrUndefined(searchEle)) {
@@ -2784,12 +2884,13 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
             EventHandler.add(span, 'click', this.onShowInput, this);
             searchInput.parentElement.insertBefore(span, searchInput);
             this.searchObj = new TextBox({
+                value: '',
                 showClearButton: true,
                 placeholder: getLocaleText(this.parent, 'Search'),
                 focus: this.onFocus.bind(this),
                 blur: this.onBlur.bind(this),
             });
-            this.searchObj.appendTo('#' + this.parent.element.id + '_search');
+            this.searchObj.appendTo('#' + this.parent.element.id + SEARCH_ID);
             this.searchEventBind(this.parent.searchSettings.allowSearchOnTyping);
             var search$$1 = this.searchObj.element.nextElementSibling;
             EventHandler.add(search$$1, 'mousedown', this.searchChangeHandler.bind(this), this);
@@ -2839,7 +2940,7 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
     };
     /* istanbul ignore next */
     BreadCrumbBar.prototype.onFocus = function () {
-        var wrap = this.searchObj.element.closest('.e-search-wrap');
+        var wrap = closest(this.searchObj.element, '.e-search-wrap');
         wrap.classList.add('e-focus');
     };
     /* istanbul ignore next */
@@ -2848,7 +2949,7 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
     };
     /* istanbul ignore next */
     BreadCrumbBar.prototype.onBlur = function () {
-        var wrap = this.searchObj.element.closest('.e-search-wrap');
+        var wrap = closest(this.searchObj.element, '.e-search-wrap');
         wrap.classList.remove('e-focus');
     };
     /* istanbul ignore next */
@@ -2888,7 +2989,9 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
                 searchWord = '*' + args.value + '*';
             }
             if (this.searchObj.element.value.length > 0) {
-                Search(this.parent, search, this.parent.path, searchWord, false, false);
+                var caseSensitive = this.parent.searchSettings.ignoreCase;
+                var hiddenItems = this.parent.showHiddenItems;
+                Search(this.parent, search, this.parent.path, searchWord, hiddenItems, !caseSensitive);
             }
             else {
                 read(this.parent, pathChanged, this.parent.path);
@@ -2932,27 +3035,33 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
         var path = this.addressBarLink.substr(this.addressBarLink.indexOf('/'), this.addressBarLink.length);
         return path;
     };
-    BreadCrumbBar.prototype.onInitialEnd = function () {
-        this.onPathChanged();
-    };
-    BreadCrumbBar.prototype.onRefreshEnd = function () {
-        this.onPathChanged();
+    BreadCrumbBar.prototype.onUpdatePath = function () {
+        this.onPathChange();
+        this.removeSearchValue();
     };
     BreadCrumbBar.prototype.onCreateEnd = function (args) {
         var path = this.addressPath.substring(this.addressPath.indexOf('/'), this.addressPath.length);
         if (path !== this.parent.path) {
-            this.onPathChanged();
+            this.onPathChange();
         }
     };
     /* istanbul ignore next */
     BreadCrumbBar.prototype.onDeleteEnd = function () {
         var path = this.addressPath.substring(this.addressPath.indexOf('/'), this.addressPath.length);
         if (path !== this.parent.path) {
-            this.onPathChanged();
+            this.onUpdatePath();
         }
     };
-    BreadCrumbBar.prototype.onRenameEnd = function () {
-        this.onPathChanged();
+    /* istanbul ignore next */
+    BreadCrumbBar.prototype.removeSearchValue = function () {
+        if (this.searchObj.value !== '' || this.searchObj.element.value !== '') {
+            this.searchObj.value = '';
+            this.searchObj.element.value = '';
+            this.searchObj.dataBind();
+        }
+    };
+    BreadCrumbBar.prototype.onResize = function () {
+        this.onPathChange();
     };
     BreadCrumbBar.prototype.liClick = function (currentPath) {
         read(this.parent, pathChanged, currentPath);
@@ -2966,15 +3075,15 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
         this.parent.on(modelChanged, this.onPropertyChanged, this);
         EventHandler.add(this.parent.breadCrumbBarNavigation, 'click', this.addressPathClickHandler, this);
         this.parent.on(destroy, this.destroy, this);
-        this.parent.on(pathChanged, this.onPathChanged, this);
-        this.parent.on(initialEnd, this.onInitialEnd, this);
-        this.parent.on(refreshEnd, this.onRefreshEnd, this);
-        this.parent.on(openEnd, this.onPathChanged, this);
+        this.parent.on(pathChanged, this.onUpdatePath, this);
+        this.parent.on(finalizeEnd, this.onUpdatePath, this);
+        this.parent.on(refreshEnd, this.onUpdatePath, this);
+        this.parent.on(openEnd, this.onUpdatePath, this);
         this.parent.on(createEnd, this.onCreateEnd, this);
-        this.parent.on(renameEnd, this.onRenameEnd, this);
+        this.parent.on(renameEnd, this.onUpdatePath, this);
         this.parent.on(deleteEnd, this.onDeleteEnd, this);
-        this.parent.on(splitterResize, this.onPathChanged, this);
-        this.parent.on(resizeEnd, this.onPathChanged, this);
+        this.parent.on(splitterResize, this.onResize, this);
+        this.parent.on(resizeEnd, this.onResize, this);
         this.parent.on(searchTextChange, this.onSearchTextChange, this);
     };
     BreadCrumbBar.prototype.keyActionHandler = function (e) {
@@ -2987,15 +3096,15 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
     };
     BreadCrumbBar.prototype.removeEventListener = function () {
         this.keyboardModule.destroy();
-        this.parent.off(pathChanged, this.onPathChanged);
-        this.parent.off(initialEnd, this.onInitialEnd);
-        this.parent.off(refreshEnd, this.onRefreshEnd);
-        this.parent.off(openEnd, this.onPathChanged);
+        this.parent.off(pathChanged, this.onUpdatePath);
+        this.parent.off(finalizeEnd, this.onUpdatePath);
+        this.parent.off(refreshEnd, this.onUpdatePath);
+        this.parent.off(openEnd, this.onUpdatePath);
         this.parent.off(createEnd, this.onCreateEnd);
-        this.parent.off(renameEnd, this.onRenameEnd);
+        this.parent.off(renameEnd, this.onUpdatePath);
         this.parent.off(deleteEnd, this.onDeleteEnd);
-        this.parent.off(splitterResize, this.onPathChanged);
-        this.parent.off(resizeEnd, this.onPathChanged);
+        this.parent.off(splitterResize, this.onResize);
+        this.parent.off(resizeEnd, this.onResize);
         this.parent.off(searchTextChange, this.onSearchTextChange);
     };
     /**
@@ -3023,7 +3132,7 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
         }
     };
     BreadCrumbBar.prototype.onSearchTextChange = function (args) {
-        this.searchObj.element.placeholder = getLocaleText(this.parent, 'Search ' + args.cwd.name);
+        this.searchObj.element.placeholder = getLocaleText(this.parent, 'Search') + ' ' + args.cwd.name;
     };
     return BreadCrumbBar;
 }());
@@ -3041,6 +3150,10 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
         this.render();
     }
     ContextMenu$$1.prototype.render = function () {
+        this.keyConfigs = {
+            downarrow: 'downarrow',
+            uparrow: 'uparrown'
+        };
         this.contextMenu = new ContextMenu({
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
@@ -3057,12 +3170,14 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
     ContextMenu$$1.prototype.onBeforeItemRender = function (args) {
         if (args.item.id === this.getMenuId('largeiconsview')) {
             var iconSpan = createElement('span');
-            args.element.insertBefore(iconSpan, args.element.childNodes[1]);
+            var element = args.element;
+            element.insertBefore(iconSpan, this.parent.view === 'LargeIcons' ? element.childNodes[1] : element.childNodes[0]);
             iconSpan.setAttribute('class', ICON_LARGE + ' ' + MENU_ICON);
         }
         if (args.item.id === this.getMenuId('detailsview')) {
             var iconSpan = createElement('span');
-            args.element.insertBefore(iconSpan, args.element.childNodes[1]);
+            var element = args.element;
+            element.insertBefore(iconSpan, this.parent.view === 'Details' ? element.childNodes[1] : element.childNodes[0]);
             iconSpan.setAttribute('class', ICON_GRID + ' ' + MENU_ICON);
         }
     };
@@ -3080,37 +3195,37 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
         if (target.classList.contains(FULLROW)) {
             this.parent.selectedItems.length = 0;
         }
-        this.targetElement = this.parent.fileView === 'Details' ? target.closest('tr') : target;
+        this.targetElement = this.parent.view === 'Details' ? closest(target, 'tr') : target;
         var view = this.getTargetView(target);
         /* istanbul ignore next */
-        if (target.classList.contains(TREE_VIEW) || target.closest('th') ||
-            (target.closest('#' + this.parent.element.id + BREADCRUMBBAR_ID))) {
+        if (target.classList.contains(TREE_VIEW) || closest(target, 'th') ||
+            (closest(target, '#' + this.parent.element.id + BREADCRUMBBAR_ID))) {
             args.cancel = true;
             // tslint:disable-next-line
         }
-        else if (!(this.parent.fileView === 'LargeIcons') && this.targetElement &&
+        else if (!(this.parent.view === 'LargeIcons') && this.targetElement &&
             this.targetElement.classList.contains('e-emptyrow')) {
             this.setLayoutItem(target);
             //Paste
             // this.contextMenu.enableItems([this.getMenuId('Paste')], this.parent.enablePaste, true);
             /* istanbul ignore next */
         }
-        else if (target.closest('.' + EMPTY)) {
+        else if (closest(target, '.' + EMPTY)) {
             this.setLayoutItem(target);
             // tslint:disable-next-line
         }
         else if (!target.classList.contains(MENU_ITEM) && !target.classList.contains(MENU_ICON) && !target.classList.contains(SUBMENU_ICON)) {
             /* istanbul ignore next */
             // tslint:disable-next-line
-            if (this.parent.fileView === 'LargeIcons' && !isNullOrUndefined(target.closest('li')) && !target.closest('#' + this.parent.element.id + TREE_ID)) {
+            if (this.parent.view === 'LargeIcons' && !isNullOrUndefined(closest(target, 'li')) && !target.closest('#' + this.parent.element.id + TREE_ID)) {
                 var eveArgs = { ctrlKey: true, shiftKey: true };
-                data = getItemObject(this.parent, this.targetElement.closest('li'));
-                if (!target.closest('li').classList.contains('e-active')) {
+                data = this.parent.visitedData;
+                if (!closest(target, 'li').classList.contains('e-active')) {
                     this.parent.largeiconsviewModule.doSelection(target, eveArgs);
                 }
                 select$$1 = true;
             }
-            else if (!isNullOrUndefined(target.closest('tr'))) {
+            else if (!isNullOrUndefined(closest(target, 'tr'))) {
                 uid = this.targetElement.getAttribute('data-uid');
                 data = this.parent.detailsviewModule.gridObj.getRowObjectFromUID(uid).data;
                 if (isNullOrUndefined(this.targetElement.getAttribute('aria-selected'))) {
@@ -3121,16 +3236,17 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
                 select$$1 = true;
                 /* istanbul ignore next */
             }
-            else if (target.closest('#' + this.parent.element.id + TREE_ID)) {
+            else if (closest(target, '#' + this.parent.element.id + TREE_ID)) {
+                uid = closest(target, 'li').getAttribute('data-uid');
                 treeFolder = true;
             }
             /* istanbul ignore next */
             if (select$$1) {
-                if (this.parent.fileView === 'LargeIcons') {
+                if (this.parent.view === 'LargeIcons') {
                     if (data.isFile === true) {
                         this.setFileItem(target);
-                        if (target.closest('li') &&
-                            (target.closest('li')).getElementsByClassName('e-list-img').length === 0) {
+                        if (closest(target, 'li') &&
+                            (closest(target, 'li')).getElementsByClassName('e-list-img').length === 0) {
                             this.contextMenu.enableItems([this.getMenuId('Open')], false, true);
                         }
                     }
@@ -3141,8 +3257,8 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
                 }
                 else if (data['isFile'] === true) {
                     this.setFileItem(target);
-                    if (target.closest('tr') &&
-                        (target.closest('tr')).getElementsByClassName(ICON_IMAGE).length === 0) {
+                    if (closest(target, 'tr') &&
+                        (closest(target, 'tr')).getElementsByClassName(ICON_IMAGE).length === 0) {
                         this.contextMenu.enableItems([this.getMenuId('Open')], false, true);
                     }
                 }
@@ -3153,6 +3269,9 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
             }
             else if (treeFolder) {
                 this.setFolderItem(true);
+                if (uid === this.parent.pathId[0]) {
+                    this.contextMenu.enableItems([this.getMenuId('Delete'), this.getMenuId('Rename')], false, true);
+                }
                 /* istanbul ignore next */
                 // tslint:disable-next-line
             }
@@ -3198,7 +3317,6 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
         this.contextMenu.dataBind();
         if (isTree) {
             this.contextMenu.enableItems([this.getMenuId('Open')], false, true);
-            this.contextMenu.enableItems([this.getMenuId('Download')], false, true);
         }
         else if (this.parent.selectedItems.length !== 1) {
             this.contextMenu.enableItems([this.getMenuId('Rename')], false, true);
@@ -3217,10 +3335,10 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
     ContextMenu$$1.prototype.setLayoutItem = function (target) {
         this.contextMenu.items = this.getItemData(this.parent.contextMenuSettings.layout);
         this.contextMenu.dataBind();
-        if ((this.parent.fileView === 'LargeIcons' &&
-            (target.closest('#' + this.parent.element.id + LARGEICON_ID).getElementsByClassName(EMPTY).length !== 0))
-            || (this.parent.fileView === 'Details' &&
-                (target.closest('#' + this.parent.element.id + GRID_ID).getElementsByClassName(EMPTY).length !== 0))) {
+        if ((this.parent.view === 'LargeIcons' &&
+            (closest(target, '#' + this.parent.element.id + LARGEICON_ID).getElementsByClassName(EMPTY).length !== 0))
+            || (this.parent.view === 'Details' &&
+                (closest(target, '#' + this.parent.element.id + GRID_ID).getElementsByClassName(EMPTY).length !== 0))) {
             this.contextMenu.enableItems([this.getMenuId('SelectAll')], false, true);
             this.contextMenu.dataBind();
         }
@@ -3254,7 +3372,7 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
             var path = void 0;
             // tslint:disable-next-line
             var data = void 0;
-            if (this.parent.fileView === 'Details') {
+            if (this.parent.view === 'Details') {
                 var uid = this.targetElement.getAttribute('data-uid');
                 data = this.parent.detailsviewModule.gridObj.getRowObjectFromUID(uid).data;
                 /* istanbul ignore next */
@@ -3314,6 +3432,10 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
                     for (var ele = 0; ele < elements.length; ele++) {
                         items[ele] = getItemObject(this.parent, elements[ele]);
                     }
+                }
+                else if (this.parent.activeModule === 'navigationpane' && this.parent.selectedItems.length === 0) {
+                    this.parent.notify(downloadInit, {});
+                    items = this.parent.itemData;
                 }
                 if (items.length > 0) {
                     Download(this.parent, items);
@@ -3396,10 +3518,23 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
     ContextMenu$$1.prototype.addEventListener = function () {
         this.parent.on(destroy, this.destroy, this);
         this.parent.on(modelChanged, this.onPropertyChanged, this);
+        this.keyboardModule = new KeyboardEvents(this.contextMenu.element, {
+            keyAction: this.keyActionHandler.bind(this),
+            keyConfigs: this.keyConfigs,
+            eventName: 'keydown',
+        });
     };
     ContextMenu$$1.prototype.removeEventListener = function () {
         this.parent.off(destroy, this.destroy);
         this.parent.off(modelChanged, this.onPropertyChanged);
+        this.keyboardModule.destroy();
+    };
+    ContextMenu$$1.prototype.keyActionHandler = function (e) {
+        switch (e.action) {
+            case 'uparrow':
+            case 'downarrow':
+                e.preventDefault();
+        }
     };
     /**
      * For internal use only - Get the module name.
@@ -3420,7 +3555,7 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
         this.removeEventListener();
         this.contextMenu.destroy();
         if (document.getElementById(this.parent.element.id + CONTEXT_MENU_ID)) {
-            document.getElementById(this.parent.element.id + CONTEXT_MENU_ID).remove();
+            remove(document.getElementById(this.parent.element.id + CONTEXT_MENU_ID));
         }
     };
     /* istanbul ignore next */
@@ -3467,24 +3602,24 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
                         items: [
                             {
                                 id: this.getMenuId('Name'), text: getLocaleText(this.parent, 'Name'),
-                                iconCss: this.parent.sortBy === 'name' ? TB_OPTION_DOT : ''
+                                iconCss: this.parent.sortBy === 'name' ? TB_OPTION_DOT : null
                             },
                             {
                                 id: this.getMenuId('Size'), text: getLocaleText(this.parent, 'Size'),
-                                iconCss: this.parent.sortBy === 'size' ? TB_OPTION_DOT : ''
+                                iconCss: this.parent.sortBy === 'size' ? TB_OPTION_DOT : null
                             },
                             {
                                 id: this.getMenuId('Date'), text: getLocaleText(this.parent, 'DateModified'),
-                                iconCss: this.parent.sortBy === 'dateModified' ? TB_OPTION_DOT : ''
+                                iconCss: this.parent.sortBy === 'dateModified' ? TB_OPTION_DOT : null
                             },
                             { separator: true },
                             {
                                 id: this.getMenuId('Ascending'), text: getLocaleText(this.parent, 'Ascending'),
-                                iconCss: this.parent.sortOrder === 'Ascending' ? TB_OPTION_TICK : ''
+                                iconCss: this.parent.sortOrder === 'Ascending' ? TB_OPTION_TICK : null
                             },
                             {
                                 id: this.getMenuId('Descending'), text: getLocaleText(this.parent, 'Descending'),
-                                iconCss: this.parent.sortOrder === 'Descending' ? TB_OPTION_TICK : ''
+                                iconCss: this.parent.sortOrder === 'Descending' ? TB_OPTION_TICK : null
                             }
                         ]
                     };
@@ -3496,11 +3631,11 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
                         items: [
                             {
                                 id: this.getMenuId('largeiconsview'), text: getLocaleText(this.parent, 'View-LargeIcons'),
-                                iconCss: this.parent.view === 'Details' ? '' : TB_OPTION_TICK
+                                iconCss: this.parent.view === 'Details' ? null : TB_OPTION_TICK
                             },
                             {
                                 id: this.getMenuId('detailsview'), text: getLocaleText(this.parent, 'View-Details'),
-                                iconCss: this.parent.view === 'Details' ? TB_OPTION_TICK : ''
+                                iconCss: this.parent.view === 'Details' ? TB_OPTION_TICK : null
                             }
                         ]
                     };
@@ -3544,7 +3679,8 @@ var defaultLocale = {
     'Paste': 'Paste',
     'SortBy': 'Sort by',
     'Refresh': 'Refresh',
-    'Selection': 'items selected',
+    'Item-Selection': 'item selected',
+    'Items-Selection': 'items selected',
     'View': 'View',
     'Details': 'Details',
     'SelectAll': 'Select all',
@@ -3608,7 +3744,7 @@ var defaultLocale = {
     'Search-Key': 'Try with different keywords'
 };
 
-var __extends$6 = (undefined && undefined.__extends) || (function () {
+var __extends$7 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -3621,7 +3757,7 @@ var __extends$6 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$7 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -3640,7 +3776,7 @@ var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, 
  * ```
  */
 var FileManager = /** @__PURE__ @class */ (function (_super) {
-    __extends$6(FileManager, _super);
+    __extends$7(FileManager, _super);
     function FileManager(options, element) {
         var _this = _super.call(this, options, element) || this;
         _this.selectedNodes = [];
@@ -3656,7 +3792,6 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
         _this.persistData = false;
         _this.isOpened = false;
         _this.searchedItems = [];
-        FileManager_1.Inject(BreadCrumbBar, LargeIconsView, ContextMenu$2);
         return _this;
     }
     FileManager_1 = FileManager;
@@ -3672,8 +3807,8 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
      * Initialize the event handler
      */
     FileManager.prototype.preRender = function () {
-        this.pathId = ['fe_tree'];
-        this.itemData = [];
+        FileManager_1.Inject(BreadCrumbBar, LargeIconsView, ContextMenu$2);
+        this.ensurePath();
         this.feParent = [];
         this.feFiles = [];
         setStyleAttribute(this.element, { 'width': formatUnit(this.width), 'height': formatUnit(this.height) });
@@ -3682,7 +3817,7 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
         if (this.isMobile) {
             this.setProperties({ navigationPaneSettings: { visible: false } }, true);
         }
-        var ele = this.element.closest('.e-bigger');
+        var ele = closest(this.element, '.e-bigger');
         this.isBigger = ele ? true : false;
         createSpinner({ target: this.element }, createElement);
         this.addWrapper();
@@ -3700,7 +3835,7 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
      * @hidden
      */
     FileManager.prototype.getPersistData = function () {
-        var keyEntity = ['view'];
+        var keyEntity = ['view', 'path', 'selectedItems'];
         return this.addOnPersist(keyEntity);
     };
     /**
@@ -3754,7 +3889,7 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
         this.fileView = this.view;
         this.setRtl(this.enableRtl);
         this.addEventListeners();
-        read(this, initialEnd, '/');
+        read(this, (this.path !== this.originalPath) ? initialEnd : finalizeEnd, this.path);
         this.adjustHeight();
         if (isNullOrUndefined(this.navigationpaneModule)) {
             this.splitterObj.collapse(0);
@@ -3762,6 +3897,22 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
             bar.classList.add(DISPLAY_NONE);
         }
         this.wireEvents();
+    };
+    FileManager.prototype.ensurePath = function () {
+        var currentPath = this.path;
+        if (isNullOrUndefined(currentPath)) {
+            currentPath = '/';
+        }
+        if (currentPath.indexOf('/') !== 0) {
+            currentPath = '/' + currentPath;
+        }
+        if (currentPath.lastIndexOf('/') !== (currentPath.length - 1)) {
+            currentPath = currentPath + '/';
+        }
+        this.originalPath = currentPath;
+        this.setProperties({ path: '/' }, true);
+        this.pathId = ['fe_tree'];
+        this.itemData = [];
     };
     FileManager.prototype.initialize = function () {
         if (this.isMobile) {
@@ -3831,6 +3982,7 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
         var toolbar = select('#' + this.element.id + TOOLBAR_ID, this.element);
         var toolBarHeight = this.toolbarModule ? toolbar.offsetHeight : 0;
         this.splitterObj.height = (this.element.clientHeight - toolBarHeight).toString();
+        this.splitterObj.dataBind();
     };
     /* istanbul ignore next */
     FileManager.prototype.splitterResize = function () {
@@ -3890,8 +4042,11 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
             close: this.onClose.bind(this),
         });
         this.uploadDialogObj.appendTo('#' + this.element.id + UPLOAD_DIALOG_ID);
+        this.renderUploadBox();
+    };
+    FileManager.prototype.renderUploadBox = function () {
         var uploadUrl = this.ajaxSettings.uploadUrl ? this.ajaxSettings.uploadUrl : this.ajaxSettings.url;
-        var defaultModel = {
+        this.uploadObj = new Uploader({
             dropArea: select('#' + this.element.id + CONTENT_ID, this.element),
             asyncSettings: {
                 saveUrl: uploadUrl,
@@ -3905,11 +4060,17 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
             selected: this.onSelected.bind(this),
             success: this.onUploadSuccess.bind(this),
             failure: this.onUploadFailure.bind(this),
-        };
-        var uploadModel = {};
-        extend(uploadModel, this.uploadSettings, defaultModel);
-        this.uploadObj = new Uploader(uploadModel);
+            autoUpload: this.uploadSettings.autoUpload,
+            minFileSize: this.uploadSettings.minFileSize,
+            maxFileSize: this.uploadSettings.maxFileSize,
+        });
         this.uploadObj.appendTo('#' + this.element.id + UPLOAD_ID);
+    };
+    FileManager.prototype.updateUploader = function () {
+        this.uploadObj.autoUpload = this.uploadSettings.autoUpload;
+        this.uploadObj.minFileSize = this.uploadSettings.minFileSize;
+        this.uploadObj.maxFileSize = this.uploadSettings.maxFileSize;
+        this.uploadObj.dataBind();
     };
     /* istanbul ignore next */
     FileManager.prototype.onOpen = function () {
@@ -3951,9 +4112,13 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
     FileManager.prototype.onUploadFailure = function (files) {
         this.trigger('onError', { action: 'Upload', error: files });
     };
+    FileManager.prototype.onInitialEnd = function () {
+        setNextPath(this, this.path);
+    };
     FileManager.prototype.addEventListeners = function () {
         this.on(beforeRequest, this.showSpinner, this);
         this.on(afterRequest, this.hideSpinner, this);
+        this.on(initialEnd, this.onInitialEnd, this);
         EventHandler.add(this.element, 'contextmenu', this.onContextMenu, this);
     };
     FileManager.prototype.removeEventListeners = function () {
@@ -3962,6 +4127,7 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
         }
         this.off(beforeRequest, this.showSpinner);
         this.off(afterRequest, this.hideSpinner);
+        this.off(initialEnd, this.onInitialEnd);
         EventHandler.remove(this.element, 'contextmenu', this.onContextMenu);
     };
     FileManager.prototype.resizeHandler = function () {
@@ -4005,6 +4171,11 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
     FileManager.prototype.unWireEvents = function () {
         this.keyboardModule.destroy();
     };
+    FileManager.prototype.setPath = function () {
+        this.ensurePath();
+        this.notify(clearPathInit, { selectedNode: this.pathId[0] });
+        read(this, (this.path !== this.originalPath) ? initialEnd : finalizeEnd, this.path);
+    };
     /**
      * Called internally if any of the property value changed.
      * @param  {FileManager} newProp
@@ -4017,86 +4188,8 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
             switch (prop) {
-                case 'cssClass':
-                    this.addCssClass(oldProp.cssClass, newProp.cssClass);
-                    this.notify(modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
-                    break;
-                case 'height':
-                    var height = !isNullOrUndefined(newProp.height) ? formatUnit(newProp.height) : newProp.height;
-                    setStyleAttribute(this.element, { 'height': height });
-                    this.notify(modelChanged, { module: 'toolbar', newProp: newProp, oldProp: oldProp });
-                    var header = document.getElementById('file_grid').querySelector('.e-gridheader');
-                    this.detailsviewModule.gridObj.height = this.setHeight() - header.offsetHeight;
-                    this.navigationpaneModule.treeObj.element.style.height = this.setHeight() + 'px';
-                    break;
-                case 'width':
-                    var width = !isNullOrUndefined(newProp.width) ? formatUnit(newProp.width) : newProp.width;
-                    setStyleAttribute(this.element, { 'width': width });
-                    this.notify(modelChanged, { module: 'toolbar', newProp: newProp, oldProp: oldProp });
-                    break;
                 case 'ajaxSettings':
-                    if (!isNullOrUndefined(newProp.ajaxSettings.url)) {
-                        this.setProperties({ ajaxSettings: { url: newProp.ajaxSettings.url } }, true);
-                    }
-                    if (!isNullOrUndefined(newProp.ajaxSettings.uploadUrl)) {
-                        this.setProperties({ ajaxSettings: { uploadUrl: newProp.ajaxSettings.uploadUrl } }, true);
-                    }
-                    if (!isNullOrUndefined(newProp.ajaxSettings.downloadUrl)) {
-                        this.setProperties({ ajaxSettings: { downloadUrl: newProp.ajaxSettings.downloadUrl } }, true);
-                    }
-                    if (!isNullOrUndefined(newProp.ajaxSettings.getImageUrl)) {
-                        this.setProperties({ ajaxSettings: { getImageUrl: newProp.ajaxSettings.getImageUrl } }, true);
-                    }
-                    refresh(this);
-                    break;
-                case 'toolbarSettings':
-                    this.adjustHeight();
-                    this.notify(modelChanged, { module: 'toolbar', newProp: newProp, oldProp: oldProp });
-                    break;
-                case 'searchSettings':
-                    if (!isNullOrUndefined(newProp.searchSettings.allowSearchOnTyping)) {
-                        this.setProperties({ searchSettings: { allowSearchOnTyping: newProp.searchSettings.allowSearchOnTyping } }, true);
-                    }
-                    if (isNullOrUndefined(newProp.searchSettings.ignoreCase)) {
-                        this.setProperties({ searchSettings: { ignoreCase: newProp.searchSettings.ignoreCase } }, true);
-                    }
-                    if (isNullOrUndefined(newProp.searchSettings.filterType)) {
-                        this.setProperties({ searchSettings: { filterType: newProp.searchSettings.filterType } }, true);
-                    }
-                    this.notify(modelChanged, { module: 'breadcrumbbar', newProp: newProp, oldProp: oldProp });
-                    break;
-                case 'selectedItems':
-                    if (this.fileView === 'Details') {
-                        this.notify(modelChanged, { module: 'detailsview', newProp: newProp, oldProp: oldProp });
-                    }
-                    else if (this.fileView === 'LargeIcons') {
-                        this.notify(modelChanged, { module: 'largeiconsview', newProp: newProp, oldProp: oldProp });
-                    }
-                    break;
-                case 'showThumbnail':
-                    this.notify(modelChanged, { module: 'largeiconsview', newProp: newProp, oldProp: oldProp });
-                    break;
-                case 'enableRtl':
-                    this.setRtl(newProp.enableRtl);
-                    this.notify(modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
-                    break;
-                case 'showFileExtension':
-                    this.notify(modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
-                    break;
-                case 'showHiddenItems':
-                    this.notify(modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
-                    break;
-                case 'navigationPaneSettings':
-                    this.splitterAdjust();
-                    this.notify(modelChanged, { module: 'navigationpane', newProp: newProp, oldProp: oldProp });
-                    break;
-                case 'view':
-                    if (newProp.view === 'Details') {
-                        this.notify(modelChanged, { module: 'detailsview', newProp: newProp, oldProp: oldProp });
-                    }
-                    else if (newProp.view === 'LargeIcons') {
-                        this.notify(modelChanged, { module: 'largeiconsview', newProp: newProp, oldProp: oldProp });
-                    }
+                    this.ajaxSettingSetModel(newProp);
                     break;
                 case 'allowMultiSelection':
                     if (this.allowMultiSelection) {
@@ -4113,8 +4206,110 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
                     }
                     this.notify(modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
                     break;
+                case 'cssClass':
+                    this.addCssClass(oldProp.cssClass, newProp.cssClass);
+                    this.notify(modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'detailsViewSettings':
+                    this.notify(modelChanged, { module: 'detailsview', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'enableRtl':
+                    this.setRtl(newProp.enableRtl);
+                    this.notify(modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'height':
+                    var height = !isNullOrUndefined(newProp.height) ? formatUnit(newProp.height) : newProp.height;
+                    setStyleAttribute(this.element, { 'height': height });
+                    this.adjustHeight();
+                    this.notify(modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'locale':
+                    if (!isNullOrUndefined(newProp.enableRtl)) {
+                        this.setProperties({ enableRtl: newProp.enableRtl }, true);
+                    }
+                    this.localeSetModelOption(newProp);
+                    break;
+                case 'navigationPaneSettings':
+                    this.splitterAdjust();
+                    this.notify(modelChanged, { module: 'navigationpane', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'path':
+                    this.setPath();
+                    break;
+                case 'searchSettings':
+                    if (!isNullOrUndefined(newProp.searchSettings.allowSearchOnTyping)) {
+                        this.setProperties({ searchSettings: { allowSearchOnTyping: newProp.searchSettings.allowSearchOnTyping } }, true);
+                    }
+                    if (isNullOrUndefined(newProp.searchSettings.ignoreCase)) {
+                        this.setProperties({ searchSettings: { ignoreCase: newProp.searchSettings.ignoreCase } }, true);
+                    }
+                    if (isNullOrUndefined(newProp.searchSettings.filterType)) {
+                        this.setProperties({ searchSettings: { filterType: newProp.searchSettings.filterType } }, true);
+                    }
+                    this.notify(modelChanged, { module: 'breadcrumbbar', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'selectedItems':
+                    if (this.view === 'Details') {
+                        this.notify(modelChanged, { module: 'detailsview', newProp: newProp, oldProp: oldProp });
+                    }
+                    else if (this.view === 'LargeIcons') {
+                        this.notify(modelChanged, { module: 'largeiconsview', newProp: newProp, oldProp: oldProp });
+                    }
+                    break;
+                case 'showFileExtension':
+                    this.notify(modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'showHiddenItems':
+                    this.notify(modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'showThumbnail':
+                    this.notify(modelChanged, { module: 'largeiconsview', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'toolbarSettings':
+                    this.adjustHeight();
+                    this.notify(modelChanged, { module: 'toolbar', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'uploadSettings':
+                    this.updateUploader();
+                    break;
+                case 'view':
+                    if (newProp.view === 'Details') {
+                        this.notify(modelChanged, { module: 'detailsview', newProp: newProp, oldProp: oldProp });
+                    }
+                    else if (newProp.view === 'LargeIcons') {
+                        this.notify(modelChanged, { module: 'largeiconsview', newProp: newProp, oldProp: oldProp });
+                    }
+                    break;
+                case 'width':
+                    var width = !isNullOrUndefined(newProp.width) ? formatUnit(newProp.width) : newProp.width;
+                    setStyleAttribute(this.element, { 'width': width });
+                    this.notify(modelChanged, { module: 'toolbar', newProp: newProp, oldProp: oldProp });
+                    break;
             }
         }
+    };
+    /* istanbul ignore next */
+    FileManager.prototype.ajaxSettingSetModel = function (newProp) {
+        if (!isNullOrUndefined(newProp.ajaxSettings.url)) {
+            this.setProperties({ ajaxSettings: { url: newProp.ajaxSettings.url } }, true);
+        }
+        if (!isNullOrUndefined(newProp.ajaxSettings.uploadUrl)) {
+            this.setProperties({ ajaxSettings: { uploadUrl: newProp.ajaxSettings.uploadUrl } }, true);
+        }
+        if (!isNullOrUndefined(newProp.ajaxSettings.downloadUrl)) {
+            this.setProperties({ ajaxSettings: { downloadUrl: newProp.ajaxSettings.downloadUrl } }, true);
+        }
+        if (!isNullOrUndefined(newProp.ajaxSettings.getImageUrl)) {
+            this.setProperties({ ajaxSettings: { getImageUrl: newProp.ajaxSettings.getImageUrl } }, true);
+        }
+        this.setProperties({ path: '/' }, true);
+        this.setProperties({ selectedItems: [] }, true);
+        _super.prototype.refresh.call(this);
+    };
+    /* istanbul ignore next */
+    FileManager.prototype.localeSetModelOption = function (newProp) {
+        this.uploadObj.locale = newProp.locale;
+        _super.prototype.refresh.call(this);
     };
     /**
      * Triggers when the component is destroyed.
@@ -4124,18 +4319,26 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
         if (this.isDestroyed) {
             return;
         }
-        this.notify(destroy, {});
+        if (!this.refreshing) {
+            this.notify(destroy, {});
+        }
         this.uploadObj.destroy();
+        this.uploadObj = null;
         this.uploadDialogObj.destroy();
+        this.uploadDialogObj = null;
         this.splitterObj.destroy();
+        this.splitterObj = null;
         if (this.dialogObj) {
             this.dialogObj.destroy();
+            this.dialogObj = null;
         }
         if (this.viewerObj) {
             this.viewerObj.destroy();
+            this.viewerObj = null;
         }
         if (this.extDialogObj) {
             this.extDialogObj.destroy();
+            this.extDialogObj = null;
         }
         this.element.removeAttribute('style');
         this.element.removeAttribute('tabindex');
@@ -4147,7 +4350,7 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
         _super.prototype.destroy.call(this);
     };
     /**
-     * Disables the specified toolbar items.
+     * Disables the specified toolbar items of the file manager.
      * @param {items: string[]} items - Specifies an array of items to be disabled.
      * @returns void
      */
@@ -4157,7 +4360,7 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * Enables the specified toolbar items.
+     * Enables the specified toolbar items of the file manager.
      * @param {items: string[]} items - Specifies an array of items to be enabled.
      * @returns void
      */
@@ -4167,10 +4370,10 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * Refresh the folder content.
+     * Refresh the folder files of the file manager.
      * @returns void
      */
-    FileManager.prototype.refreshContent = function () {
+    FileManager.prototype.refreshFiles = function () {
         refresh(this);
     };
     /**
@@ -4186,16 +4389,6 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
             (operation === 'Remove') ? this.deleteRecords.push(selectNodes[i].name) : this.deleteRecords = this.deleteRecords;
             i++;
         }
-    };
-    /**
-     * To set the height for navigationPane and DetailsView
-     * @hidden
-     */
-    FileManager.prototype.setHeight = function () {
-        var toolbarHeight = this.toolbarModule ? this.toolbarModule.toolbarObj.element.offsetHeight : 0;
-        var fileHeight = this.element.clientHeight;
-        var height = fileHeight - toolbarHeight;
-        return height;
     };
     /**
      * Gets details of file's / folder's
@@ -4260,97 +4453,97 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
         }
     };
     var FileManager_1;
-    __decorate$6([
+    __decorate$7([
         Complex({}, AjaxSettings)
     ], FileManager.prototype, "ajaxSettings", void 0);
-    __decorate$6([
+    __decorate$7([
         Property(true)
     ], FileManager.prototype, "allowMultiSelection", void 0);
-    __decorate$6([
+    __decorate$7([
         Complex({}, ContextMenuSettings)
     ], FileManager.prototype, "contextMenuSettings", void 0);
-    __decorate$6([
+    __decorate$7([
         Property('')
     ], FileManager.prototype, "cssClass", void 0);
-    __decorate$6([
+    __decorate$7([
         Complex({}, DetailsViewSettings)
     ], FileManager.prototype, "detailsViewSettings", void 0);
-    __decorate$6([
+    __decorate$7([
         Property(false)
     ], FileManager.prototype, "enablePersistence", void 0);
-    __decorate$6([
+    __decorate$7([
         Property(false)
     ], FileManager.prototype, "enableRtl", void 0);
-    __decorate$6([
+    __decorate$7([
         Property('400px')
     ], FileManager.prototype, "height", void 0);
-    __decorate$6([
+    __decorate$7([
         Property('LargeIcons')
     ], FileManager.prototype, "view", void 0);
-    __decorate$6([
+    __decorate$7([
         Complex({}, NavigationPaneSettings)
     ], FileManager.prototype, "navigationPaneSettings", void 0);
-    __decorate$6([
+    __decorate$7([
         Property('/')
     ], FileManager.prototype, "path", void 0);
-    __decorate$6([
+    __decorate$7([
         Complex({}, SearchSettings)
     ], FileManager.prototype, "searchSettings", void 0);
-    __decorate$6([
+    __decorate$7([
         Property()
     ], FileManager.prototype, "selectedItems", void 0);
-    __decorate$6([
+    __decorate$7([
         Property(true)
     ], FileManager.prototype, "showFileExtension", void 0);
-    __decorate$6([
+    __decorate$7([
         Property(false)
     ], FileManager.prototype, "showHiddenItems", void 0);
-    __decorate$6([
+    __decorate$7([
         Property(true)
     ], FileManager.prototype, "showThumbnail", void 0);
-    __decorate$6([
+    __decorate$7([
         Complex({}, ToolbarSettings)
     ], FileManager.prototype, "toolbarSettings", void 0);
-    __decorate$6([
-        Property()
+    __decorate$7([
+        Complex({}, UploadSettings)
     ], FileManager.prototype, "uploadSettings", void 0);
-    __decorate$6([
+    __decorate$7([
         Property('100%')
     ], FileManager.prototype, "width", void 0);
-    __decorate$6([
+    __decorate$7([
         Event()
     ], FileManager.prototype, "beforeFileLoad", void 0);
-    __decorate$6([
+    __decorate$7([
         Event()
     ], FileManager.prototype, "beforeFileOpen", void 0);
-    __decorate$6([
+    __decorate$7([
         Event()
     ], FileManager.prototype, "beforeSend", void 0);
-    __decorate$6([
+    __decorate$7([
         Event()
     ], FileManager.prototype, "created", void 0);
-    __decorate$6([
+    __decorate$7([
         Event()
     ], FileManager.prototype, "destroyed", void 0);
-    __decorate$6([
+    __decorate$7([
         Event()
     ], FileManager.prototype, "fileSelect", void 0);
-    __decorate$6([
+    __decorate$7([
         Event()
     ], FileManager.prototype, "menuClick", void 0);
-    __decorate$6([
+    __decorate$7([
         Event()
     ], FileManager.prototype, "menuOpen", void 0);
-    __decorate$6([
+    __decorate$7([
         Event()
     ], FileManager.prototype, "onError", void 0);
-    __decorate$6([
+    __decorate$7([
         Event()
     ], FileManager.prototype, "onSuccess", void 0);
-    __decorate$6([
+    __decorate$7([
         Event()
     ], FileManager.prototype, "toolbarClick", void 0);
-    FileManager = FileManager_1 = __decorate$6([
+    FileManager = FileManager_1 = __decorate$7([
         NotifyPropertyChanges
     ], FileManager);
     return FileManager;
@@ -4415,6 +4608,12 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             return;
         }
         switch (tool) {
+            case 'sortby':
+                var target = closest(args.originalEvent.target, '.' + TB_ITEM);
+                if (target && target.classList.contains('e-toolbar-popup')) {
+                    args.cancel = true;
+                }
+                break;
             case 'newfolder':
                 createDialog(this.parent, 'NewFolder');
                 break;
@@ -4451,7 +4650,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             /* istanbul ignore next */
             case 'download':
                 if (this.parent.selectedItems.length > 0) {
-                    if (this.parent.fileView === 'LargeIcons') {
+                    if (this.parent.view === 'LargeIcons') {
                         var elementRecords = [];
                         var elements = selectAll('.e-active', this.parent.largeiconsviewModule.listElements);
                         for (var ele = 0; ele < elements.length; ele++) {
@@ -4560,7 +4759,6 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         }
     };
     Toolbar$$1.prototype.updateLayout = function (view) {
-        this.parent.fileView = view;
         this.parent.setProperties({ view: view }, true);
         var searchWord;
         if (this.parent.breadcrumbbarModule.searchObj.value && this.parent.breadcrumbbarModule.searchObj.value === '') {
@@ -4604,7 +4802,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
                     var spanElement = '<span class="e-tbar-btn-text e-tbar-ddb-text">' + itemText + '</span>';
                     item = {
                         id: itemId, tooltipText: itemTooltip,
-                        template: '<button id="' + itemId + '" class="e-tbar-btn e-tbtn-txt">' + spanElement + '</button>',
+                        template: '<button id="' + itemId + '" class="e-tbar-btn e-tbtn-txt" tabindex="-1">' + spanElement + '</button>',
                     };
                     break;
                 case 'Refresh':
@@ -4615,10 +4813,11 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
                     item = { id: itemId, tooltipText: itemTooltip, overflow: 'Show', align: 'Right', template: txt };
                     break;
                 case 'View':
+                    var id = this.parent.element.id + VIEW_ID;
                     item = {
                         id: itemId, tooltipText: itemTooltip, prefixIcon: this.parent.view === 'Details' ? ICON_GRID : ICON_LARGE,
                         overflow: 'Show', align: 'Right',
-                        template: '<button id="' + this.parent.element.id + VIEW_ID + '" class="e-tbar-btn e-tbtn-txt"></button>'
+                        template: '<button id="' + id + '" class="e-tbar-btn e-tbtn-txt" tabindex="-1"></button>'
                     };
                     break;
                 case 'Details':
@@ -4686,11 +4885,16 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         else if (this.parent.selectedItems.length > 1) {
             this.hideItems(this.multiple, false);
             this.hideItems(this.selection, true);
-            var ele = select('.' + STATUS, this.toolbarObj.element);
-            if (ele) {
-                ele.textContent = this.parent.selectedItems.length + ' ' + getLocaleText(this.parent, 'Selection');
-                this.toolbarObj.hideItem(ele.parentElement, false);
+        }
+        var ele = select('.' + STATUS, this.toolbarObj.element);
+        if (this.parent.selectedItems.length > 0 && ele) {
+            if (this.parent.selectedItems.length === 1) {
+                ele.textContent = this.parent.selectedItems.length + ' ' + getLocaleText(this.parent, 'Item-Selection');
             }
+            else {
+                ele.textContent = this.parent.selectedItems.length + ' ' + getLocaleText(this.parent, 'Items-Selection');
+            }
+            this.toolbarObj.hideItem(ele.parentElement, false);
         }
     };
     Toolbar$$1.prototype.hideItems = function (tools, toHide) {
@@ -4847,11 +5051,11 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
         };
     }
     NavigationPane.prototype.onInit = function (args) {
+        if (!isNullOrUndefined(this.treeObj)) {
+            return;
+        }
         var rootData = getValue('/', this.parent.feParent);
-        setValue('selected', true, rootData);
         setValue('icon', 'e-fe-folder', rootData);
-        this.rootID = 'fe_tree';
-        setValue('nodeId', this.rootID, rootData);
         this.rootNode = getValue('name', getValue('/', this.parent.feParent));
         this.treeObj = new TreeView({
             fields: { dataSource: [rootData], id: 'nodeId', text: 'name', hasChildren: 'hasChild', iconCss: 'icon' },
@@ -4864,8 +5068,6 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
         });
         this.treeObj.appendTo('#' + this.parent.element.id + TREE_ID);
         this.treeObj.element.style.width = '25%';
-        this.addChild(args.files, this.rootID, false);
-        setValue(this.parent.path, args.files, this.parent.feFiles);
         this.parent.persistData = true;
         this.wireEvents();
     };
@@ -4925,7 +5127,6 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
             return;
         }
         var path = getPath(args.node, getValue('text', args.nodeData));
-        this.parent.expandedPath = path;
         if (args.node.querySelector('.' + LIST_ITEM) === null) {
             this.expandNodeTarget = args.node.getAttribute('data-uid');
             this.parent.expandedId = this.expandNodeTarget;
@@ -4959,13 +5160,16 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
     };
     NavigationPane.prototype.updateTree = function (args) {
         var id = this.treeObj.selectedNodes[0];
+        var toExpand = this.treeObj.expandedNodes.indexOf(id) === -1 ? false : true;
+        this.removeChildNodes(id);
+        setValue(this.parent.path, args.files, this.parent.feFiles);
+        this.addChild(args.files, id, !toExpand);
+    };
+    NavigationPane.prototype.removeChildNodes = function (id) {
         var sNode = select('[data-uid="' + id + '"]', this.treeObj.element);
         var parent = select('.' + LIST_PARENT, sNode);
         var childs = parent ? Array.prototype.slice.call(parent.children) : null;
-        var toExpand = this.treeObj.expandedNodes.indexOf(id) === -1 ? false : true;
         this.treeObj.removeNodes(childs);
-        setValue(this.parent.path, args.files, this.parent.feFiles);
-        this.addChild(args.files, id, !toExpand);
     };
     NavigationPane.prototype.onOpenEnd = function (args) {
         var sleId = this.parent.pathId[this.parent.pathId.length - 1];
@@ -4983,6 +5187,12 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
     };
     NavigationPane.prototype.onInitialEnd = function (args) {
         this.onInit(args);
+        this.addChild(args.files, getValue('nodeId', args.cwd), false);
+    };
+    NavigationPane.prototype.onFinalizeEnd = function (args) {
+        this.onInit(args);
+        this.addChild(args.files, getValue('nodeId', args.cwd), false);
+        this.treeObj.selectedNodes = [this.parent.pathId[this.parent.pathId.length - 1]];
     };
     NavigationPane.prototype.onCreateEnd = function (args) {
         this.updateTree(args);
@@ -4991,8 +5201,8 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
     NavigationPane.prototype.onDeleteEnd = function (args) {
         if (this.parent.activeModule === 'navigationpane') {
             var selectedNode = this.treeObj.selectedNodes[0];
-            var selectedNodeEle = (select('[data-uid="' + selectedNode + '"]', this.treeObj.element))
-                .closest('.' + LIST_PARENT).parentElement;
+            var selcetedEle = select('[data-uid="' + selectedNode + '"]', this.treeObj.element);
+            var selectedNodeEle = closest(selcetedEle, '.' + LIST_PARENT).parentElement;
             this.treeObj.selectedNodes = [selectedNodeEle.getAttribute('data-uid')];
             this.treeObj.dataBind();
         }
@@ -5023,112 +5233,33 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
             var prop = _a[_i];
             switch (prop) {
                 case 'enableRtl':
-                    this.treeObj.enableRtl = e.newProp.enableRtl;
-                    this.treeObj.dataBind();
+                    if (this.treeObj) {
+                        this.treeObj.enableRtl = e.newProp.enableRtl;
+                        this.treeObj.dataBind();
+                    }
                     break;
                 case 'navigationPaneSettings':
                     var args = { files: getValue('/', this.parent.feFiles) };
-                    this.onInitialEnd(args);
+                    this.onFinalizeEnd(args);
                     break;
             }
         }
     };
     /* istanbul ignore next */
-    NavigationPane.prototype.setPath = function (path) {
-        this.parent.notify(treeSelect, { module: 'navigationpane' });
-    };
-    /* istanbul ignore next */
-    NavigationPane.prototype.onTreeSelect = function (e) {
-        if (e.module !== this.getModuleName() && e.module !== 'common') {
-            return;
-        }
-        var tPath = this.parent.path;
-        if (tPath === '') {
-            return;
-        }
-        if (!(tPath.charAt(tPath.length - 1) === '/')) {
-            tPath = tPath + '/';
-        }
-        this.parent.setProperties({ path: tPath }, true);
-        var expId = (this.rootNode + this.parent.path.replace(new RegExp(' ', 'g'), '*')).toLocaleLowerCase();
-        if (select('[data-uid="' + expId + '"]', this.treeObj.element)) {
-            var ele = select('[data-uid="' + expId + '"]', this.treeObj.element).parentNode.parentNode;
-            if (ele.classList.contains(COLLAPSED)) {
-                this.expand(expId);
-            }
-            else {
-                if (this.treeObj.selectedNodes[0] !== expId) {
-                    this.tapFunction(expId, 'select');
-                }
-            }
-        }
-        else {
-            this.expand(expId);
-        }
-    };
-    /* istanbul ignore next */
-    NavigationPane.prototype.expand = function (expId) {
-        if (isNullOrUndefined(select('[data-uid="' + expId + '"]', this.treeObj.element))) {
-            while (isNullOrUndefined(select('[data-uid="' + expId + '"]', this.treeObj.element))) {
-                var elem = expId.substr(0, expId.lastIndexOf('/'));
-                expId = elem.substr(0, elem.lastIndexOf('/') + 1);
-            }
-            var ele = select('[data-uid="' + expId + '"]', this.treeObj.element);
-            if (isNullOrUndefined(ele.querySelector('.' + ICONS))) {
-                this.tapFunction(expId, 'select');
-            }
-            else if (ele.querySelector('.' + ICONS).classList.contains(ICON_COLLAPSIBLE)) {
-                this.tapFunction(expId, 'select');
-            }
-            else {
-                this.tapFunction(expId, 'expand');
-            }
-        }
-        else {
-            var ele = select('[data-uid="' + expId + '"]', this.treeObj.element).parentNode.parentNode;
-            if (ele.classList.contains(COLLAPSED)) {
-                var elem = expId.substr(0, expId.lastIndexOf('/'));
-                expId = elem.substr(0, elem.lastIndexOf('/') + 1);
-            }
-            this.tapFunction(expId, 'expand');
-        }
-    };
-    /* istanbul ignore next */
-    NavigationPane.prototype.tapFunction = function (expId, process) {
-        /* tslint:disable-next-line */
-        var mouseEventArgs = {
-            /* tslint:disable:no-empty */
-            preventDefault: function () { },
-            stopImmediatePropagation: function () { },
-            target: null,
-            type: null,
-            shiftKey: false,
-            ctrlKey: false,
-            originalEvent: { target: null }
-        };
-        /* tslint:disable-next-line */
-        var tapEvent = {
-            originalEvent: mouseEventArgs,
-            tapCount: 1
-        };
-        /* tslint:disable-next-line */
-        var proxy = this.treeObj;
-        var list = select('[data-uid="' + expId + '"]', this.treeObj.element);
-        if (process === 'expand') {
-            mouseEventArgs.target = list.querySelector('.' + ICONS);
-        }
-        else if (process === 'select') {
-            mouseEventArgs.target = list.querySelector('.' + FULLROW);
-        }
-        proxy.touchClickObj.tap(tapEvent);
-        this.expandTree = true;
+    NavigationPane.prototype.onDownLoadInit = function () {
+        this.updateActionData();
     };
     NavigationPane.prototype.onSelectionChanged = function (e) {
         this.treeObj.selectedNodes = [e.selectedNode];
     };
+    NavigationPane.prototype.onClearPathInit = function (e) {
+        this.removeChildNodes(e.selectedNode);
+    };
     NavigationPane.prototype.addEventListener = function () {
         this.parent.on(modelChanged, this.onPropertyChanged, this);
+        this.parent.on(downloadInit, this.onDownLoadInit, this);
         this.parent.on(initialEnd, this.onInitialEnd, this);
+        this.parent.on(finalizeEnd, this.onFinalizeEnd, this);
         this.parent.on(pathChanged, this.onPathChanged, this);
         this.parent.on(nodeExpand, this.onNodeExpanded, this);
         this.parent.on(createEnd, this.onCreateEnd, this);
@@ -5140,10 +5271,12 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
         this.parent.on(destroy, this.destroy, this);
         this.parent.on(renameInit, this.onRenameInit, this);
         this.parent.on(renameEnd, this.onRenameEnd, this);
-        this.parent.on(treeSelect, this.onTreeSelect, this);
+        this.parent.on(clearPathInit, this.onClearPathInit, this);
     };
     NavigationPane.prototype.removeEventListener = function () {
         this.parent.off(initialEnd, this.onInitialEnd);
+        this.parent.off(downloadInit, this.onDownLoadInit);
+        this.parent.off(finalizeEnd, this.onFinalizeEnd);
         this.parent.off(modelChanged, this.onPropertyChanged);
         this.parent.off(pathChanged, this.onPathChanged);
         this.parent.off(updateTreeSelection, this.onSelectionChanged);
@@ -5155,7 +5288,7 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
         this.parent.off(destroy, this.destroy);
         this.parent.off(renameInit, this.onRenameInit);
         this.parent.off(renameEnd, this.onRefreshEnd);
-        this.parent.off(treeSelect, this.onTreeSelect);
+        this.parent.off(clearPathInit, this.onClearPathInit);
         this.parent.off(deleteEnd, this.onDeleteEnd);
     };
     /**
@@ -5231,9 +5364,12 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
         }
     };
     NavigationPane.prototype.updateRenameData = function () {
+        this.updateActionData();
+        this.parent.currentItemText = getValue('name', this.parent.itemData[0]);
+    };
+    NavigationPane.prototype.updateActionData = function () {
         var data = this.treeObj.getTreeData(this.treeObj.selectedNodes[0])[0];
         this.parent.itemData = [data];
-        this.parent.currentItemText = getValue('name', data);
         this.parent.isFile = false;
     };
     /**
@@ -5309,6 +5445,13 @@ var DetailsView = /** @__PURE__ @class */ (function () {
             removeClass([this.parent.element], MULTI_SELECT);
             var items = getSortedData(this.parent, args.files);
             var columns = this.getColumns();
+            var sortSettings = void 0;
+            if (this.parent.isMobile) {
+                sortSettings = [];
+            }
+            else {
+                sortSettings = [{ direction: this.parent.sortOrder, field: this.parent.sortBy }];
+            }
             this.gridObj = new Grid({
                 dataSource: items,
                 allowSorting: true,
@@ -5321,7 +5464,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
                 },
                 enableRtl: this.parent.enableRtl,
                 pageSettings: { pageSize: 20 },
-                sortSettings: { allowUnsort: false, columns: [{ direction: this.parent.sortOrder, field: this.parent.sortBy }] },
+                sortSettings: { allowUnsort: false, columns: sortSettings },
                 columns: columns,
                 recordDoubleClick: this.DblClickEvents.bind(this),
                 beforeDataBound: this.onBeforeDataBound.bind(this),
@@ -5329,17 +5472,14 @@ var DetailsView = /** @__PURE__ @class */ (function () {
                 rowDataBound: this.onRowDataBound.bind(this),
                 actionBegin: this.onActionBegin.bind(this),
                 headerCellInfo: this.onHeaderCellInfo.bind(this),
+                width: '100%'
             });
             this.gridObj.appendTo('#' + this.parent.element.id + GRID_ID);
             this.wireEvents();
-            var pane = select('#' + this.parent.element.id + CONTENT_ID, this.parent.element);
-            var bar = select('#' + this.parent.element.id + BREADCRUMBBAR_ID, this.parent.element);
-            var gridHeader = select('.' + GRID_HEADER, this.parent.element);
-            var height = (pane.offsetHeight - bar.offsetHeight - gridHeader.offsetHeight);
-            this.gridObj.height = height;
+            this.adjustHeight();
             // tslint:disable-next-line
             this.gridObj.defaultLocale.EmptyRecord = '';
-            this.checkEmptyDiv(args);
+            this.emptyArgs = args;
         }
     };
     DetailsView.prototype.getColumns = function () {
@@ -5359,7 +5499,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
                 columns[i].headerText = getLocaleText(this.parent, columns[i].headerText);
             }
         }
-        var iWidth = (this.parent.isBigger ? '54' : '46');
+        var iWidth = ((this.parent.isMobile || this.parent.isBigger) ? '54' : '46');
         var icon = {
             field: 'type', width: iWidth, minWidth: iWidth, template: '<span class="e-fe-icon ${iconClass}"></span>',
             allowResizing: false, allowSorting: true, customAttributes: { class: 'e-fe-grid-icon' },
@@ -5380,6 +5520,17 @@ var DetailsView = /** @__PURE__ @class */ (function () {
             }
         }
         return columns;
+    };
+    DetailsView.prototype.adjustHeight = function () {
+        if (!this.gridObj) {
+            return;
+        }
+        var pane = select('#' + this.parent.element.id + CONTENT_ID, this.parent.element);
+        var bar = select('#' + this.parent.element.id + BREADCRUMBBAR_ID, this.parent.element);
+        var gridHeader = select('.' + GRID_HEADER, this.parent.element);
+        var height = (pane.offsetHeight - bar.offsetHeight - gridHeader.offsetHeight);
+        this.gridObj.height = height;
+        this.gridObj.dataBind();
     };
     DetailsView.prototype.renderCheckBox = function () {
         this.gridObj.columns = this.getColumns();
@@ -5443,6 +5594,17 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         if (args.requestType === 'sorting') {
             this.parent.sortOrder = args.direction;
             this.parent.sortBy = args.columnName;
+            if (this.parent.selectedItems.length !== 0) {
+                this.sortItem = true;
+                var rows = this.gridObj.getSelectedRowIndexes();
+                var len = rows.length;
+                this.sortSelectedNodes = [];
+                while (len > 0) {
+                    var data = this.gridObj.getRowsObject()[rows[len - 1]].data;
+                    this.sortSelectedNodes.push(getValue('name', data));
+                    len--;
+                }
+            }
             this.parent.notify(sortByChange, {});
         }
     };
@@ -5515,6 +5677,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         if (this.gridObj.currentViewData.length * this.gridObj.getRowHeight() < this.gridObj.height) {
             var hdTable = this.gridObj.getHeaderContent();
             hdTable.style.paddingRight = '';
+            hdTable.style.paddingLeft = '';
             var hdContent = select('.e-headercontent', hdTable);
             hdContent.style.borderRightWidth = '0';
             var cnTable = this.gridObj.getContent().querySelector('.e-content');
@@ -5523,11 +5686,17 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         }
         else {
             var hdTable = this.gridObj.getHeaderContent();
-            hdTable.style.paddingRight = '16px';
+            if (!this.parent.enableRtl) {
+                hdTable.style.paddingRight = '16px';
+            }
+            else {
+                hdTable.style.paddingLeft = '16px';
+            }
             var cnTable = this.gridObj.getContent().querySelector('.e-content');
             cnTable.classList.remove('e-scrollShow');
         }
         this.isRendered = true;
+        this.checkEmptyDiv(this.emptyArgs);
     };
     DetailsView.prototype.selectRecords = function (nodes) {
         var gridRecords = this.gridObj.getCurrentViewRecords();
@@ -5542,17 +5711,6 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         }
     };
     DetailsView.prototype.onSortColumn = function (args) {
-        if (this.parent.selectedItems.length !== 0) {
-            this.sortItem = true;
-            var rows = this.gridObj.getSelectedRowIndexes();
-            var len = rows.length;
-            this.sortSelectedNodes = [];
-            while (len > 0) {
-                var data = this.gridObj.getRowsObject()[rows[len - 1]].data;
-                this.sortSelectedNodes.push(getValue('name', data));
-                len--;
-            }
-        }
         this.gridObj.sortModule.sortColumn(this.parent.sortBy, this.parent.sortOrder);
     };
     DetailsView.prototype.onPropertyChanged = function (e) {
@@ -5563,6 +5721,18 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         for (var _i = 0, _a = Object.keys(e.newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
             switch (prop) {
+                case 'height':
+                    this.adjustHeight();
+                    break;
+                case 'detailsViewSettings':
+                    if (!isNullOrUndefined(this.gridObj)) {
+                        var columns = this.getColumns();
+                        this.gridObj.columns = columns;
+                        this.gridObj.allowResizing = this.parent.detailsViewSettings.columnResizing;
+                        this.gridObj.dataBind();
+                        this.gridObj.refreshColumns();
+                    }
+                    break;
                 case 'selectedItems':
                     if (this.parent.selectedItems.length !== 0) {
                         this.selectRecords(this.parent.selectedItems);
@@ -5625,7 +5795,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
             this.gridObj.dataSource = getSortedData(this.parent, args.files);
             this.parent.notify(searchTextChange, args);
         }
-        this.checkEmptyDiv(args);
+        this.emptyArgs = args;
     };
     DetailsView.prototype.checkEmptyDiv = function (args) {
         var items = getSortedData(this.parent, args.files);
@@ -5675,11 +5845,17 @@ var DetailsView = /** @__PURE__ @class */ (function () {
             }
         }
         else {
-            var newPath = this.parent.path + getValue('name', data) + '/';
-            this.parent.setProperties({ path: newPath }, true);
-            this.parent.pathId.push(getValue('nodeId', data));
-            this.parent.itemData = [data];
-            openAction(this.parent);
+            var val = this.parent.breadcrumbbarModule.searchObj.element.value;
+            if (val === '') {
+                var newPath = this.parent.path + getValue('name', data) + '/';
+                this.parent.setProperties({ path: newPath }, true);
+                this.parent.pathId.push(getValue('nodeId', data));
+                this.parent.itemData = [data];
+                openAction(this.parent);
+            }
+            else {
+                openSearchFolder(this.parent, data);
+            }
         }
     };
     /* istanbul ignore next */
@@ -5699,6 +5875,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
             if (this.parent.breadcrumbbarModule.searchObj.element.value.trim() !== '') {
                 this.onSearchFiles(args);
             }
+            this.adjustHeight();
         }
     };
     /* istanbul ignore next */
@@ -5728,9 +5905,17 @@ var DetailsView = /** @__PURE__ @class */ (function () {
             this.selectedItem = true;
         }
     };
-    DetailsView.prototype.onInitialEnd = function (args) {
-        this.render(args);
-        this.parent.notify(searchTextChange, args);
+    DetailsView.prototype.onFinalizeEnd = function (args) {
+        if (this.parent.view !== 'Details') {
+            return;
+        }
+        if (!this.gridObj) {
+            this.render(args);
+            this.parent.notify(searchTextChange, args);
+        }
+        else {
+            this.onPathChanged(args);
+        }
     };
     DetailsView.prototype.onCreateEnd = function (args) {
         if (this.parent.view !== 'Details') {
@@ -5785,12 +5970,10 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         this.isRendered = false;
     };
     DetailsView.prototype.onAfterRequest = function (args) {
-        if (getValue('action', args) === 'failure') {
-            this.isRendered = true;
-        }
+        this.isRendered = true;
     };
     DetailsView.prototype.addEventListener = function () {
-        this.parent.on(initialEnd, this.onInitialEnd, this);
+        this.parent.on(finalizeEnd, this.onFinalizeEnd, this);
         this.parent.on(destroy, this.destroy, this);
         this.parent.on(layoutChange, this.onLayoutChange, this);
         this.parent.on(pathChanged, this.onPathChanged, this);
@@ -5813,7 +5996,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         this.parent.on(afterRequest, this.onAfterRequest, this);
     };
     DetailsView.prototype.removeEventListener = function () {
-        this.parent.off(initialEnd, this.onInitialEnd);
+        this.parent.off(finalizeEnd, this.onFinalizeEnd);
         this.parent.off(destroy, this.destroy);
         this.parent.off(layoutChange, this.onLayoutChange);
         this.parent.off(pathChanged, this.onPathChanged);
@@ -5885,11 +6068,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         if (this.parent.isDevice && isNullOrUndefined(indexes) && args.target && !multiSelect && !args.target.closest('.e-headercell')) {
             this.parent.isFile = getValue('isFile', args.data);
             if (!this.parent.isFile) {
-                var newPath = this.parent.path + getValue('name', args.data) + '/';
-                this.parent.setProperties({ path: newPath }, true);
-                this.parent.pathId.push(getValue('nodeId', args.data));
-                this.parent.itemData = [args.data];
-                openAction(this.parent);
+                this.openContent(args.data);
             }
         }
         this.parent.visitedItem = args.row;
@@ -5980,7 +6159,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
                         }
                         var target = e.originalEvent.target;
                         if (target) {
-                            var row = target.closest('.' + ROW);
+                            var row = closest(target, '.' + ROW);
                             var index = proxy_1.gridObj.getRows().indexOf(row);
                             proxy_1.gridObj.selectRow(index);
                         }
@@ -5998,6 +6177,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
     DetailsView.prototype.removeSelection = function () {
         removeClass([this.parent.element], MULTI_SELECT);
         this.gridObj.clearSelection();
+        this.parent.setProperties({ selectedItems: [] }, true);
         this.parent.notify(selectionChanged, {});
     };
     /**
@@ -6110,5 +6290,5 @@ var DetailsView = /** @__PURE__ @class */ (function () {
  * File Manager all modules
  */
 
-export { AjaxSettings, toolbarItems, ToolbarSettings, SearchSettings, columnArray, DetailsViewSettings, fileItems, folderItems, layoutItems, ContextMenuSettings, NavigationPaneSettings, TOOLBAR_ID, LAYOUT_ID, TREE_ID, GRID_ID, LARGEICON_ID, DIALOG_ID, ALT_DIALOG_ID, IMG_DIALOG_ID, EXTN_DIALOG_ID, UPLOAD_DIALOG_ID, CONTEXT_MENU_ID, SORTBY_ID, VIEW_ID, SPLITTER_ID, CONTENT_ID, BREADCRUMBBAR_ID, UPLOAD_ID, ROOT, CONTROL, CHECK_SELECT, ROOT_POPUP, MOBILE, MULTI_SELECT, FILTER, LAYOUT, LAYOUT_CONTENT, LARGE_ICONS, TB_ITEM, LIST_ITEM, LIST_TEXT, LIST_PARENT, TB_OPTION_TICK, TB_OPTION_DOT, BLUR, ACTIVE, HOVER, FOCUS, CHECK, FRAME, CB_WRAP, ROW, ROWCELL, EMPTY, EMPTY_CONTENT, EMPTY_INNER_CONTENT, FOLDER, ICON_IMAGE, ICON_MUSIC, ICON_VIDEO, LARGE_ICON, LARGE_EMPTY_FOLDER, LARGE_EMPTY_FOLDER_TWO, LARGE_ICON_FOLDER, SELECTED_ITEMS, TEXT_CONTENT, GRID_HEADER, TEMPLATE_CELL, TREE_VIEW, MENU_ITEM, MENU_ICON, SUBMENU_ICON, GRID_VIEW, ICON_VIEW, ICON_OPEN, ICON_UPLOAD, ICON_CUT, ICON_COPY, ICON_PASTE, ICON_DELETE, ICON_RENAME, ICON_NEWFOLDER, ICON_DETAILS, ICON_SHORTBY, ICON_REFRESH, ICON_SELECTALL, ICON_DOWNLOAD, ICON_OPTIONS, ICON_GRID, ICON_LARGE, ICON_BREADCRUMB, ICON_CLEAR, ICONS, DETAILS_LABEL, ERROR_CONTENT, STATUS, BREADCRUMBS, RTL, DISPLAY_NONE, COLLAPSED, FULLROW, ICON_COLLAPSIBLE, SPLIT_BAR, HEADER_CHECK, OVERLAY, VALUE, isFile, modelChanged, initialEnd, createEnd, deleteEnd, refreshEnd, resizeEnd, splitterResize, pathChanged, destroy, beforeRequest, upload, afterRequest, download, uiRefresh, search, openInit, openEnd, selectionChanged, selectAllInit, clearAllInit, layoutChange, sortByChange, nodeExpand, renameInit, renameEnd, showPaste, hidePaste, hideLayout, updateTreeSelection, treeSelect, sortColumn, pathColumn, searchTextChange, FileManager, Toolbar$1 as Toolbar, BreadCrumbBar, NavigationPane, DetailsView, LargeIconsView, createDialog, createImageDialog, ContextMenu$2 as ContextMenu };
+export { AjaxSettings, toolbarItems, ToolbarSettings, SearchSettings, columnArray, DetailsViewSettings, fileItems, folderItems, layoutItems, ContextMenuSettings, NavigationPaneSettings, UploadSettings, TOOLBAR_ID, LAYOUT_ID, TREE_ID, GRID_ID, LARGEICON_ID, DIALOG_ID, ALT_DIALOG_ID, IMG_DIALOG_ID, EXTN_DIALOG_ID, UPLOAD_DIALOG_ID, CONTEXT_MENU_ID, SORTBY_ID, VIEW_ID, SPLITTER_ID, CONTENT_ID, BREADCRUMBBAR_ID, UPLOAD_ID, SEARCH_ID, ROOT, CONTROL, CHECK_SELECT, ROOT_POPUP, MOBILE, MULTI_SELECT, FILTER, LAYOUT, LAYOUT_CONTENT, LARGE_ICONS, TB_ITEM, LIST_ITEM, LIST_TEXT, LIST_PARENT, TB_OPTION_TICK, TB_OPTION_DOT, BLUR, ACTIVE, HOVER, FOCUS, CHECK, FRAME, CB_WRAP, ROW, ROWCELL, EMPTY, EMPTY_CONTENT, EMPTY_INNER_CONTENT, FOLDER, ICON_IMAGE, ICON_MUSIC, ICON_VIDEO, LARGE_ICON, LARGE_EMPTY_FOLDER, LARGE_EMPTY_FOLDER_TWO, LARGE_ICON_FOLDER, SELECTED_ITEMS, TEXT_CONTENT, GRID_HEADER, TEMPLATE_CELL, TREE_VIEW, MENU_ITEM, MENU_ICON, SUBMENU_ICON, GRID_VIEW, ICON_VIEW, ICON_OPEN, ICON_UPLOAD, ICON_CUT, ICON_COPY, ICON_PASTE, ICON_DELETE, ICON_RENAME, ICON_NEWFOLDER, ICON_DETAILS, ICON_SHORTBY, ICON_REFRESH, ICON_SELECTALL, ICON_DOWNLOAD, ICON_OPTIONS, ICON_GRID, ICON_LARGE, ICON_BREADCRUMB, ICON_CLEAR, ICONS, DETAILS_LABEL, ERROR_CONTENT, STATUS, BREADCRUMBS, RTL, DISPLAY_NONE, COLLAPSED, FULLROW, ICON_COLLAPSIBLE, SPLIT_BAR, HEADER_CHECK, OVERLAY, VALUE, isFile, modelChanged, initialEnd, finalizeEnd, createEnd, deleteEnd, refreshEnd, resizeEnd, splitterResize, pathChanged, destroy, beforeRequest, upload, afterRequest, download, uiRefresh, search, openInit, openEnd, selectionChanged, selectAllInit, clearAllInit, clearPathInit, layoutChange, sortByChange, nodeExpand, renameInit, renameEnd, showPaste, hidePaste, hideLayout, updateTreeSelection, treeSelect, sortColumn, pathColumn, searchTextChange, downloadInit, FileManager, Toolbar$1 as Toolbar, BreadCrumbBar, NavigationPane, DetailsView, LargeIconsView, createDialog, createImageDialog, ContextMenu$2 as ContextMenu };
 //# sourceMappingURL=ej2-filemanager.es5.js.map

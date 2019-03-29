@@ -1,6 +1,6 @@
 {
 	"name": "@syncfusion/ej2",
-	"version": "17.1.5",
+	"version": "17.28.0",
 	"description": "A modern JavaScript UI toolkit that has been built from the ground up to be lightweight, responsive, modular and touch friendly. It is written in TypeScript and has no external dependencies.",
 	"author": "Syncfusion Inc.",
 	"license": "SEE LICENSE IN license",
@@ -66,7 +66,7 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/syncfusion/ej2"
+		"url": "https://github.com/syncfusion/ej2-javascript-ui-controls"
 	},
 	"scripts": {
 		"build": "gulp build"

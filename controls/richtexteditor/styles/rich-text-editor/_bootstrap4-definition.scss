@@ -9,13 +9,13 @@ $rte-content-bg: $content-bg !default;
 $rte-content-font-color: $gray-900 !default;
 $rte-item-color: $gray-900 !default;
 $rte-icons-color: $gray-900 !default;
-$rte-big-quick-item-btn-width: 39px !default;
-$rte-quick-item-btn-width: 27px !default;
-$rte-big-quick-item-btn-height: 34px !default;
-$rte-quick-item-btn-height: 26px !default;
+$rte-big-quick-item-btn-width: 38px !default;
+$rte-quick-item-btn-width: 32px !default;
+$rte-big-quick-item-btn-height: 38px !default;
+$rte-quick-item-btn-height: 32px !default;
 $rte-big-quick-item-padding: 0 !default;
 $rte-quick-item-padding: 0 !default;
-$rte-quick-item-icon-min-width: 25px !default;
+$rte-quick-item-icon-min-width: 26px !default;
 $rte-big-quick-item-line-height: normal !default;
 $rte-quick-item-line-height: 20px !default;
 $rte-quick-item-active-bg: darken($gray-600, 10%) !default;
@@ -33,8 +33,8 @@ $rte-big-quick-drop-btn-icon-size: 16px !default;
 $rte-quick-drop-btn-icon-size: 14px !default;
 $rte-big-quick-drop-btn-caret-icon-size: 10px !default;
 $rte-quick-drop-btn-caret-icon-size: 12px !default;
-$rte-big-quick-drop-btn-caret-font-size: 11px !default;
-$rte-quick-drop-btn-caret-font-size: 10px !default;
+$rte-big-quick-drop-btn-caret-font-size: 10px !default;
+$rte-quick-drop-btn-caret-font-size: 8px !default;
 $rte-quick-drop-btn-border-color: $white !default;
 $rte-quick-drop-btn-hover-border-color: darken($gray-600, 10%) !default;
 $rte-quick-pop-border: 1px solid rgba(0, 0, 0, .2) !default;
@@ -49,7 +49,7 @@ $rte-big-tb-items-margin-left: 3px !default;
 $rte-tb-items-margin-left: 6px !default;
 $rte-big-tb-items-padding-left: 3px !default;
 $rte-tb-items-padding-left: 6px !default;
-$rte-big-active-tb-item-btn-padding: 0 6px !default;
+$rte-big-active-tb-item-btn-padding: 0 5px !default;
 $rte-active-tb-item-btn-padding: 0 2px !default;
 $rte-tb-item-active-bg: $gray-600 !default;
 $rte-tb-active-font-color: $gray-900 !default;
@@ -128,7 +128,16 @@ $rte-table-border-color: $gray-500 !default;
 $rte-table-alternate-color: $gray-100 !default;
 $rte-table-header-bg: $gray-200 !default;
 
+$rte-insert-dialog-label-padding-top: 14px !default;
+$rte-insert-dialog-label-padding-bottom: 14px !default;
+$rte-big-quick-tbar-item-min-height: 38px !default;
+$rte-big-quick-tbar-item-min-width: 38px !default;
+$rte-content-font-size: 14px !default;
+
 $rte-table-popup-border: rgba(0, 0, 0, .2) !default;
+$rte-big-content-font-size: 16px !default;
+$rte-dropdown-caret-icon-size: 8px !default;
+$rte-big-dropdown-caret-icon-size: 10px !default;
 
 @include export-module('richtexteditor-bootstrap4') {
   #{&}.e-richtexteditor {
@@ -190,18 +199,13 @@ $rte-table-popup-border: rgba(0, 0, 0, .2) !default;
         & .e-toolbar-extended .e-toolbar-item .e-tbar-btn.e-btn:hover {
           border: 1px solid transparent;
           padding: 0 2px;
-         }
-
-        & .e-toolbar-items .e-toolbar-item .e-rte-inline-dropdown.e-control.e-tbar-btn.e-btn:active,
-        & .e-toolbar-items .e-toolbar-item.e-active .e-rte-inline-dropdown.e-control.e-tbar-btn.e-btn,
-        & .e-toolbar-extended .e-toolbar-item.e-active .e-rte-inline-dropdown.e-tbar-btn,
-        & .e-toolbar-extended .e-toolbar-item .e-rte-inline-dropdown.e-tbar-btn:active {
-          border: 1px solid $gray-100;
         }
 
-        & .e-toolbar-items .e-toolbar-item .e-rte-inline-dropdown.e-control.e-tbar-btn.e-btn:hover,
-        & .e-toolbar-extended .e-toolbar-item .e-rte-inline-dropdown.e-control.e-tbar-btn.e-btn:hover {
-          border: 1px solid $gray-100;
+        & .e-toolbar-items .e-toolbar-item .e-rte-inline-dropdown.e-control.e-tbar-btn.e-btn,
+        & .e-toolbar-extended .e-toolbar-item .e-rte-inline-dropdown.e-control.e-tbar-btn.e-btn {
+          border: 1px solid transparent;
+          padding-bottom: 1px;
+          padding-top: 1px;
         }
       }
     }
@@ -219,27 +223,35 @@ $rte-table-popup-border: rgba(0, 0, 0, .2) !default;
         color: $white;
       }
     }
+
+    & .e-rte-content,
+    & .e-source-content  {
+
+      & .e-content {
+        font-size: $rte-content-font-size;
+      }
+    }
   }
 
   .e-bigger #{&}.e-richtexteditor {
     & .e-rte-toolbar {
       &.e-extended-toolbar {
         & .e-toolbar-extended.e-toolbar-pop .e-toolbar-item.e-toolbar-popup .e-tbar-btn {
-          padding: 0 6px;
+          padding: 0 5px;
         }
       }
 
       &.e-extended-toolbar .e-toolbar-items .e-toolbar-item {
         & .e-tbar-btn.e-btn.e-control.e-dropdown-btn.e-rte-dropdown-btn.e-rte-dropdown-items.e-active,
         & .e-tbar-btn.e-btn.e-control.e-dropdown-btn.e-rte-dropdown-items.e-rte-dropdown-btn:hover {
-          padding-left: 6px;
-          padding-right: 6px;
+          padding-left: 5px;
+          padding-right: 5px;
         }
 
         & .e-tbar-btn.e-btn.e-control.e-dropdown-btn.e-rte-dropdown-btn.e-rte-dropdown-items {
           border: 1px solid transparent;
-          padding-left: 6px;
-          padding-right: 6px;
+          padding-left: 5px;
+          padding-right: 5px;
         }
       }
 
@@ -247,13 +259,45 @@ $rte-table-popup-border: rgba(0, 0, 0, .2) !default;
         & .e-tbar-btn.e-btn,
         & .e-tbar-btn.e-btn.e-control,
         & .e-control.e-tbar-btn.e-btn.e-icon-btn {
-          padding: 0 6px;
+          padding: 0 5px;
         }
+      }
+    }
+
+    & .e-rte-content,
+    & .e-source-content  {
+
+      & .e-content {
+        font-size: $rte-big-content-font-size;
       }
     }
   }
 
   .e-rte-quick-popup.e-popup {
     border-radius: 4px;
+  }
+
+  #{&}.e-rte-quick-popup .e-rte-quick-toolbar .e-tbar-btn.e-rte-inline-dropdown {
+    & .e-rte-color-content {
+      line-height: 26px;
+      min-height: 26px;
+      min-width: 26px;
+    }
+
+    & .e-btn-icon.e-caret {
+      font-size: 8px;
+    }
+  }
+
+  .e-bigger #{&}.e-rte-quick-popup .e-rte-quick-toolbar .e-tbar-btn.e-rte-inline-dropdown {
+    & .e-rte-color-content {
+      line-height: 32px;
+      min-height: 26px;
+      min-width: 32px;
+     }
+
+    & .e-btn-icon.e-caret {
+      font-size: 10px;
+    }
   }
 }

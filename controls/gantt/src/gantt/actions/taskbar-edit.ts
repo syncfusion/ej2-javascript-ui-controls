@@ -1,4 +1,4 @@
-import { isNullOrUndefined, createElement, extend, addClass, removeClass, closest } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, createElement, extend, addClass, remove, removeClass, closest } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import { parentsUntil } from '../base/utils';
 import { IGanttData, ITaskData, ITaskbarEditedEventArgs, IDependencyEventArgs } from '../base/interface';
@@ -99,7 +99,7 @@ export class TaskbarEdit {
         this.taskBarEditElement = element;
         this.taskBarEditRecord = isNullOrUndefined(this.taskBarEditElement) ?
             null : this.parent.ganttChartModule.getRecordByTaskBar(this.taskBarEditElement);
-        if (element && e.type === 'mousedown') {
+        if (element && (e.type === 'mousedown' || e.type === 'pointerdown')) {
             this.roundOffDuration = true;
             this.taskBarEditAction = this.getTaskBarAction(e);
             if ((this.taskBarEditAction === 'ConnectorPointLeftDrag' || this.taskBarEditAction === 'ConnectorPointRightDrag') &&
@@ -164,7 +164,7 @@ export class TaskbarEdit {
             mouseDownElement.classList.contains(cls.taskBarLeftResizer) ? 'LeftResizing' :
                 mouseDownElement.classList.contains(cls.taskBarRightResizer) ? 'RightResizing' :
                     mouseDownElement.classList.contains(cls.childProgressResizer) ? 'ProgressResizing' :
-                        mouseDownElement.closest('.' + cls.childProgressResizer) ? 'ProgressResizing' :
+                        closest(mouseDownElement, '.' + cls.childProgressResizer) ? 'ProgressResizing' :
                             mouseDownElement.classList.contains(cls.connectorPointLeft) ? 'ConnectorPointLeftDrag' :
                                 mouseDownElement.classList.contains(cls.connectorPointRight) ? 'ConnectorPointRightDrag' :
                                     this.taskBarEditRecord.ganttProperties.isMilestone ? 'MilestoneDrag' : 'ChildDrag';
@@ -934,7 +934,8 @@ export class TaskbarEdit {
      */
     public removeFalseLine(isRemoveConnectorPointDisplay: boolean): void {
         if (this.falseLine) {
-            this.falseLine.remove();
+            remove(this.falseLine);
+            this.falseLine = null;
             if (isRemoveConnectorPointDisplay) {
                 removeClass(
                     this.parent.ganttChartModule.scrollElement.querySelectorAll(

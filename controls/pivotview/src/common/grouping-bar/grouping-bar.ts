@@ -49,7 +49,7 @@ export class GroupingBar implements IAction {
     constructor(parent: PivotView) {
         this.parent = parent;
         this.parent.groupingBarModule = this;
-        this.resColWidth = (this.parent.isAdaptive ? 180 : 250);
+        this.resColWidth = (this.parent.isAdaptive ? 180 : 249);
         this.addEventListener();
         this.parent.axisFieldModule = new AxisFields(this.parent);
         this.touchObj = new Touch(this.parent.element, {

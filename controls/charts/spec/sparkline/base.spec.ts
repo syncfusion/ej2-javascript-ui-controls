@@ -61,7 +61,7 @@ describe('Sparkline Component Base Spec', () => {
         });
         it('Sparkline background and border checking', () => {
             let fill: string = ele.getAttribute('fill');
-            expect(fill).toBe('green');
+            expect(fill).toBe('#FFFFFF');
             let stroke: string = ele.getAttribute('stroke');
             expect(stroke).toBe('yellow');
             let strwid: string = ele.getAttribute('stroke-width');

@@ -446,9 +446,33 @@ describe("paste cleanup testing", () => {
     rteObj.onPaste(keyBoardEvent);
     setTimeout(() => {
       let allElem: any = rteObj.element.getElementsByTagName("textarea")[0].firstElementChild;
+      expect(allElem.children[0].tagName.toLowerCase() === 'a').toBe(true);
+      expect(allElem.children[0].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
+      done();
+    }, 100);
+  });
+
+  it("Paste URL with other contents", (done) => {
+    keyBoardEvent.clipboardData = {
+      getData: () => {
+        return 'Hi syncfusion website https://ej2.syncfusion.com is here';
+      },
+      items: []
+    };
+    rteObj.dataBind()
+    rteObj.element.getElementsByTagName("textarea")[0].focus();
+    setCursorPoint(rteObj.element.getElementsByTagName("textarea")[0], 0);
+    rteObj.onPaste(keyBoardEvent);
+    setTimeout(() => {
+      let allElem: any = rteObj.element.getElementsByTagName("textarea")[0].firstElementChild;
+      expect(allElem.children[1].tagName.toLowerCase() === 'a').toBe(true);
+      expect(allElem.children[1].getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
       let expected: boolean = false;
-      expect(allElem.tagName.toLowerCase() === 'a').toBe(true);
-      expect(allElem.getAttribute('href') === 'https://ej2.syncfusion.com').toBe(true);
+      let expectedElem: string = `<span>Hi syncfusion website </span><a class="e-rte-anchor" href="https://ej2.syncfusion.com" title="https://ej2.syncfusion.com">https://ej2.syncfusion.com</a><span> is here</span>`;
+      if (allElem.innerHTML === expectedElem) {
+        expected = true;
+      }
+      expect(expected).toBe(true);
       done();
     }, 100);
   });

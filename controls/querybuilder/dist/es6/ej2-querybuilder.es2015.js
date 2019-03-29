@@ -1,11 +1,11 @@
-import { Animation, Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, detach, extend, getComponent, getInstance, getValue, isNullOrUndefined, removeClass, rippleEffect } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, detach, extend, getComponent, getInstance, getValue, isNullOrUndefined, removeClass, rippleEffect } from '@syncfusion/ej2-base';
 import { Button, RadioButton } from '@syncfusion/ej2-buttons';
 import { CheckBoxSelection, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
 import { DataManager, Deferred, Predicate, Query } from '@syncfusion/ej2-data';
 import { NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { DatePicker } from '@syncfusion/ej2-calendars';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
-import { Tooltip } from '@syncfusion/ej2-popups';
+import { Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -46,37 +46,29 @@ __decorate([
 __decorate([
     Property(null)
 ], Columns.prototype, "step", void 0);
-class Rules extends ChildProperty {
-}
-__decorate([
-    Property('')
-], Rules.prototype, "condition", void 0);
-__decorate([
-    Property()
-], Rules.prototype, "rules", void 0);
-__decorate([
-    Property(null)
-], Rules.prototype, "field", void 0);
-__decorate([
-    Property(null)
-], Rules.prototype, "label", void 0);
-__decorate([
-    Property(null)
-], Rules.prototype, "type", void 0);
-__decorate([
-    Property(null)
-], Rules.prototype, "operator", void 0);
-__decorate([
-    Property(null)
-], Rules.prototype, "value", void 0);
 class Rule extends ChildProperty {
 }
 __decorate([
-    Property('and')
+    Property('')
 ], Rule.prototype, "condition", void 0);
 __decorate([
-    Property()
+    Collection([], Rule)
 ], Rule.prototype, "rules", void 0);
+__decorate([
+    Property(null)
+], Rule.prototype, "field", void 0);
+__decorate([
+    Property(null)
+], Rule.prototype, "label", void 0);
+__decorate([
+    Property(null)
+], Rule.prototype, "type", void 0);
+__decorate([
+    Property(null)
+], Rule.prototype, "operator", void 0);
+__decorate([
+    Property(null)
+], Rule.prototype, "value", void 0);
 class ShowButtons extends ChildProperty {
 }
 __decorate([
@@ -172,6 +164,9 @@ let QueryBuilder = class QueryBuilder extends Component {
         if (type === 'before') {
             this.trigger('beforeChange', args);
         }
+        else if (type === 'ruleChange') {
+            this.trigger('ruleChange', args);
+        }
         else {
             this.trigger('change', args);
         }
@@ -187,6 +182,9 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         if (target.className.indexOf('e-collapse-rule') > -1) {
             let animation = new Animation({ duration: 1000, delay: 0 });
+            if (this.element.querySelectorAll('.e-summary-content').length < 1) {
+                this.renderSummary();
+            }
             let summaryElem = document.getElementById(this.element.id + '_summary_content');
             let txtareaElem = summaryElem.querySelector('.e-summary-text');
             animation.animate('.e-query-builder', { name: 'SlideLeftIn' });
@@ -228,6 +226,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         else if (target.tagName === 'LABEL' && target.parentElement.className.indexOf('e-btn-group') > -1) {
             let element = closest(target, '.e-group-container');
+            let beforeRules = this.getValidRules(this.rule);
             groupID = element.id.replace(this.element.id + '_', '');
             args = { groupID: groupID, cancel: false, type: 'condition', value: target.textContent.toLowerCase() };
             args = this.triggerEvents(args, 'before');
@@ -237,6 +236,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             let rule = this.getGroup(element);
             rule.condition = args.value;
             this.triggerEvents({ groupID: groupID, type: 'condition', value: rule.condition });
+            this.filterRules(beforeRules, this.getValidRules(this.rule), 'condition');
         }
     }
     selectBtn(target, event) {
@@ -448,8 +448,8 @@ let QueryBuilder = class QueryBuilder extends Component {
                 obj = this.refreshLevel(obj);
             }
         }
-        let ruleListElem = groupElem.closest('.e-rule-list');
-        obj.groupElement = ruleListElem ? ruleListElem.closest('.e-group-container') : groupElem;
+        let ruleListElem = closest(groupElem, '.e-rule-list');
+        obj.groupElement = ruleListElem ? closest(ruleListElem, '.e-group-container') : groupElem;
         obj.level = this.levelColl[obj.groupElement.id].slice();
         return obj;
     }
@@ -584,7 +584,6 @@ let QueryBuilder = class QueryBuilder extends Component {
             select: this.selectBtn.bind(this, groupBtn)
         });
         btnObj.appendTo(groupBtn);
-        rippleEffect(groupBtn, { selector: '.e-round' });
         this.triggerEvents({ groupID: target.id.replace(this.element.id + '_', ''), type: 'insertGroup' });
     }
     notifyChange(value, element) {
@@ -624,8 +623,13 @@ let QueryBuilder = class QueryBuilder extends Component {
             element = dateElement.element;
         }
         let value;
+        let rbValue;
+        let dropDownObj;
         if (element.className.indexOf('e-radio') > -1) {
-            value = getComponent(element, 'radio').label;
+            rbValue = parseInt(element.id.split('valuekey')[1], 0);
+            dropDownObj =
+                getComponent(closest(element, '.e-rule-container').querySelector('.e-filter-input'), 'dropdownlist');
+            value = this.columns[dropDownObj.index].values[rbValue];
         }
         else if (element.className.indexOf('e-multiselect') > -1) {
             value = getComponent(element, 'multiselect').value;
@@ -849,18 +853,61 @@ let QueryBuilder = class QueryBuilder extends Component {
         return result;
     }
     renderMultiSelect(rule, parentId, i, selectedValue) {
-        let ds = this.getDistinctValues(this.dataColl, rule.field);
+        let isFetched = false;
+        let ds;
+        if (this.dataColl[1]) {
+            if (Object.keys(this.dataColl[1]).indexOf(rule.field) > -1) {
+                isFetched = true;
+                ds = this.getDistinctValues(this.dataColl, rule.field);
+            }
+        }
         let multiSelectObj = new MultiSelect({
-            dataSource: new DataManager(ds),
+            dataSource: isFetched ? ds : this.dataManager,
             query: new Query([rule.field]),
             fields: { text: rule.field, value: rule.field },
             value: selectedValue,
             mode: 'CheckBox',
             width: '100%',
             change: this.changeValue.bind(this, i),
-            close: this.closePopup.bind(this, i)
+            close: this.closePopup.bind(this, i),
+            actionBegin: this.multiSelectOpen.bind(this, parentId + '_valuekey' + i)
         });
         multiSelectObj.appendTo('#' + parentId + '_valuekey' + i);
+    }
+    multiSelectOpen(parentId, args) {
+        if (this.dataSource instanceof DataManager) {
+            let element = document.getElementById(parentId);
+            let dropDownObj = getComponent(closest(element, '.e-rule-container').querySelector('.e-filter-input'), 'dropdownlist');
+            let value = this.columns[dropDownObj.index].field;
+            let isFetched = false;
+            if (this.dataColl[1]) {
+                if (Object.keys(this.dataColl[1]).indexOf(value) > -1) {
+                    isFetched = true;
+                }
+            }
+            if (!isFetched) {
+                args.cancel = true;
+                let multiselectObj = getComponent(element, 'multiselect');
+                multiselectObj.hideSpinner();
+                let data = this.dataManager.executeQuery(new Query().select(value));
+                let deferred = new Deferred();
+                this.createSpinner(closest(element, '.e-multi-select-wrapper').parentElement);
+                showSpinner(closest(element, '.e-multi-select-wrapper').parentElement);
+                data.then((e) => {
+                    this.dataColl = extend(this.dataColl, e.result, [], true);
+                    let ds = this.getDistinctValues(this.dataColl, value);
+                    multiselectObj.dataSource = ds;
+                    hideSpinner(closest(element, '.e-multi-select-wrapper').parentElement);
+                }).catch((e) => {
+                    deferred.reject(e);
+                });
+            }
+        }
+    }
+    createSpinner(element) {
+        let spinnerElem = this.createElement('span', { attrs: { class: 'e-qb-spinner' } });
+        element.appendChild(spinnerElem);
+        createSpinner({ target: spinnerElem, width: Browser.isDevice ? '16px' : '14px' });
     }
     closePopup(i, args) {
         let element = document.getElementById(args.popup.element.id.replace('_popup', ''));
@@ -1007,10 +1054,11 @@ let QueryBuilder = class QueryBuilder extends Component {
                                 let values = itemData.values && itemData.values.length ? itemData.values : ['True', 'False'];
                                 let isCheck = this.isImportRules ? Boolean(rule.value) : true;
                                 let radiobutton = new RadioButton({
-                                    label: values[i], name: parentId + 'default', checked: isCheck,
+                                    label: values[i].toString(), name: parentId + 'default', checked: isCheck, value: values[i],
                                     change: this.changeValue.bind(this, i)
                                 });
                                 radiobutton.appendTo('#' + parentId + '_valuekey' + i);
+                                this.updateRules(radiobutton.element, values[i], 0);
                             }
                             break;
                         case 'date':
@@ -1166,6 +1214,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         let eventsArgs;
         let groupID = groupElem.id.replace(this.element.id + '_', '');
         let ruleID;
+        let beforeRules = this.getValidRules(this.rule);
         while (ruleElem && ruleElem.previousElementSibling !== null) {
             ruleElem = ruleElem.previousElementSibling;
             index++;
@@ -1191,6 +1240,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             if (this.allowValidation && rule.rules[index].field && target.parentElement.className.indexOf('e-tooltip') > -1) {
                 getComponent(target.parentElement, 'tooltip').destroy();
             }
+            this.filterRules(beforeRules, this.getValidRules(this.rule), 'field');
         }
         else if (closest(target, '.e-rule-operator')) {
             dropDownObj = getComponent(target, 'dropdownlist');
@@ -1209,9 +1259,18 @@ let QueryBuilder = class QueryBuilder extends Component {
                 this.updateValues(inputElem[i], rule.rules[index]);
             }
             this.triggerEvents(eventsArgs);
+            this.filterRules(beforeRules, this.getValidRules(this.rule), 'operator');
         }
         else if (closest(target, '.e-rule-value')) {
             this.ruleValueUpdate(target, selectedValue, rule, index, groupElem, ruleElem, i);
+            this.filterRules(beforeRules, this.getValidRules(this.rule), 'value');
+        }
+    }
+    filterRules(beforeRule, afterRule, type) {
+        let beforeRuleStr = JSON.stringify({ condition: beforeRule.condition, rule: beforeRule.rules });
+        let afetrRuleStr = JSON.stringify({ condition: afterRule.condition, rule: afterRule.rules });
+        if (beforeRuleStr !== afetrRuleStr) {
+            this.triggerEvents({ previousRule: beforeRule, rule: afterRule, type: type }, 'ruleChange');
         }
     }
     ruleValueUpdate(target, selectedValue, rule, index, groupElem, ruleElem, i) {
@@ -1415,8 +1474,13 @@ let QueryBuilder = class QueryBuilder extends Component {
         else {
             this.displayMode = 'Horizontal';
         }
-        if (this.isImportRules && this.summaryView) {
-            this.renderSummary();
+        if (this.summaryView) {
+            if (this.isImportRules) {
+                this.renderSummary();
+            }
+            else {
+                this.renderSummaryCollapse();
+            }
         }
         else {
             if (this.columns.length && this.isImportRules) {
@@ -1665,7 +1729,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         this.groupElem = this.groupTemplate();
         if (this.dataSource instanceof DataManager) {
             this.dataManager = this.dataSource;
-            this.executeDataManager(new Query());
+            this.executeDataManager(new Query().take(1));
         }
         else {
             this.dataManager = new DataManager(this.dataSource);
@@ -1713,6 +1777,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         let i;
         let len;
         let args = { groupID: groupId, cancel: false, type: 'deleteGroup' };
+        let beforeRules = this.getValidRules(this.rule);
         args = this.triggerEvents(args, 'before');
         if (args.cancel) {
             return;
@@ -1744,6 +1809,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         detach(target);
         this.refreshLevelColl();
         this.triggerEvents(args);
+        this.filterRules(beforeRules, this.getValidRules(this.rule), 'deleteGroup');
     }
     deleteRule(target) {
         let groupElem = closest(target, '.e-group-container');
@@ -1752,7 +1818,8 @@ let QueryBuilder = class QueryBuilder extends Component {
         let rule = this.getGroup(groupElem);
         let ruleElem = closest(target, '.e-rule-container');
         groupID = groupElem.id.replace(this.element.id + '_', '');
-        ruleID = target.closest('.e-rule-container').id.replace(this.element.id + '_', '');
+        ruleID = closest(target, '.e-rule-container').id.replace(this.element.id + '_', '');
+        let beforeRules = this.getValidRules(this.rule);
         let args = { groupID: groupID, ruleID: ruleID, cancel: false, type: 'deleteRule' };
         args = this.triggerEvents(args, 'before');
         if (args.cancel) {
@@ -1785,6 +1852,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         detach(clnruleElem);
         this.triggerEvents(args);
+        this.filterRules(beforeRules, this.getValidRules(this.rule), 'deleteRule');
     }
     setGroupRules(rule) {
         this.reset();
@@ -1792,8 +1860,49 @@ let QueryBuilder = class QueryBuilder extends Component {
         this.ruleIdCounter = 0;
         this.isImportRules = true;
         this.rule = rule;
+        rule = this.getRuleCollection(this.rule, false);
         this.importRules(this.rule, this.element.querySelector('.e-group-container'), true);
         this.isImportRules = false;
+    }
+    /**
+     * return the valid rule or rules collection.
+     * @returns RuleModel.
+     */
+    getValidRules(currentRule) {
+        let ruleCondtion = currentRule.condition;
+        let ruleColl = extend([], currentRule.rules, [], true);
+        let rule = this.getRuleCollection({ condition: ruleCondtion, rules: ruleColl }, true);
+        return rule;
+    }
+    getRuleCollection(rule, isValidRule) {
+        let orgRule;
+        if (rule.rules && rule.rules.length && (Object.keys(rule.rules[0]).length > 6 || isValidRule)) {
+            let jLen = rule.rules.length;
+            for (let j = 0; j < jLen; j++) {
+                orgRule = rule.rules[j];
+                orgRule = this.getRuleCollection(orgRule, isValidRule);
+                rule.rules[j] = orgRule;
+                if (Object.keys(orgRule).length < 1 && isValidRule) {
+                    rule.rules.splice(j, 1);
+                    j--;
+                    jLen--;
+                }
+            }
+        }
+        if (!rule.condition) {
+            if (rule.field !== '' && rule.operator !== '' && rule.value !== '') {
+                rule = {
+                    'label': rule.label, 'field': rule.field, 'operator': rule.operator, 'type': rule.type, 'value': rule.value
+                };
+            }
+            else {
+                rule = {};
+            }
+        }
+        else {
+            rule = { 'condition': rule.condition, 'rules': rule.rules };
+        }
+        return rule;
     }
     /**
      * Set the rule or rules collection.
@@ -1824,12 +1933,13 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
     }
     /**
-     * Gets the predicate from collection of rules.
-     * @returns object.
+     * return the Query from current rules collection.
+     * @returns Promise.
      */
     getFilteredRecords() {
-        let query = new Query().where(this.getPredicate(this.rule));
-        return new DataManager(this.dataSource).executeLocal(query);
+        let predicate = this.getPredicate(this.getValidRules(this.rule));
+        let dataManagerQuery = new Query().where(predicate);
+        return this.dataManager.executeQuery(dataManagerQuery);
     }
     /**
      * Deletes the rule or rules based on the rule ID.
@@ -2136,7 +2246,8 @@ let QueryBuilder = class QueryBuilder extends Component {
      * @returns object.
      */
     getSqlFromRules(rule) {
-        return this.getSqlString(rule).replace(/"/g, '\'');
+        rule = this.getRuleCollection(rule, false);
+        return this.getSqlString(this.getValidRules(rule)).replace(/"/g, '\'');
     }
     sqlParser(sqlString) {
         let st = 0;
@@ -2352,6 +2463,9 @@ __decorate([
     Event()
 ], QueryBuilder.prototype, "change", void 0);
 __decorate([
+    Event()
+], QueryBuilder.prototype, "ruleChange", void 0);
+__decorate([
     Property({ ruleDelete: true, groupInsert: true, groupDelete: true })
 ], QueryBuilder.prototype, "showButtons", void 0);
 __decorate([
@@ -2405,5 +2519,5 @@ QueryBuilder = __decorate([
  * QueryBuilder all modules
  */
 
-export { Columns, Rules, Rule, ShowButtons, QueryBuilder };
+export { Columns, Rule, ShowButtons, QueryBuilder };
 //# sourceMappingURL=ej2-querybuilder.es2015.js.map

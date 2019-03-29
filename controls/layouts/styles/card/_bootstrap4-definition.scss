@@ -1,6 +1,6 @@
 // Card Base
 
-$skin-name: 'bootstrap4' !default;
+$card-skin-name: 'bootstrap4' !default;
 $card-img-brdr-radious: 50% !default;
 $card-brdr-radious: 4px !default;
 $card-action-btn-txt-transform: none !default;
@@ -12,7 +12,7 @@ $card-title-font: 18px !default;
 $card-action-btn-icon-font: 14px !default;
 $card-action-btn-font: 14px !default;
 $card-content-font-size: 14px !default;
-$card-header-title-font: 14px !default;
+$card-header-title-font: 18px !default;
 $card-header-sub-title-font: 14px !default;
 
 // Mouse
@@ -25,7 +25,7 @@ $card-title-nrml-padding: 16px !default;
 $card-hor-image-margin: 2px !default;
 $card-sep-margin: 12px 0 !default;
 $card-header-minheight: 22.5px !default;
-$card-header-nrml-padding: 16px !default;
+$card-header-nrml-padding: 16px 16px 3px 16px !default;
 $card-header-txt-nrml-padding: 0 0 0 7.5px !default;
 $card-header-txt-title-lheight: normal !default;
 $card-header-txt-title-nrml-padding: 10px 0 0 !default;
@@ -36,16 +36,16 @@ $card-image-mheight: 112.5px !default;
 $card-image-title-lheight: 27px !default;
 $card-image-title-mheight: 27px !default;
 $card-image-title-nrml-padding: 0 12px !default;
-$card-action-nrml-padding: 6px !default;
-$card-action-nrml-vertical-padding: 12px !default;
+$card-action-nrml-padding: 16px !default;
+$card-action-nrml-vertical-padding: 16px !default;
 $card-action-nrml-btn-vertical-margin: 0 0 6px 0 !default;
 $card-action-btn-nrml-height: 31px !default;
 $card-action-btn-nrml-margin: 0 0 0 6px !default;
 $card-action-btn-nrml-padding: 0 6px !default;
-$card-nrml-content-padding: 16px !default;
-$card-header-txt-nrml-title-font: 14px !default;
+$card-nrml-content-padding: 3px 16px 16px 16px !default;
+$card-header-txt-nrml-title-font: 18px !default;
 $card-header-txt-nrml-subtitle-font: 14px !default;
-$card-image-title-font: 18px !default;
+$card-image-title-font: 20px !default;
 $card-action-btn-icon-width: 24px !default;
 $card-action-btn-icon-height: 24px !default;
 
@@ -60,7 +60,7 @@ $card-title-bigger-lheight: normal !default;
 $card-hor-image-bigger-margin: 2px !default;
 $card-sep-bigger-margin: 16px 0 !default;
 $card-header-bigger-minheight: 30px !default;
-$card-header-bigger-padding: 20px !default;
+$card-header-bigger-padding: 20px 20px 4px 20px !default;
 $card-header-txt-bigger-padding: 0 0 0 12px !default;
 $card-header-txt-title-bigger-lheight: normal !default;
 $card-header-txt-title-bigger-padding: 12px 0 0 !default;
@@ -77,8 +77,10 @@ $card-action-bigger-btn-vertical-margin: 0 0 10px 0 !default;
 $card-action-btn-bigger-height: 38px !default;
 $card-action-btn-bigger-margin: 0 0 0 20px !default;
 $card-action-btn-bigger-padding: 0 6px !default;
-$card-bigger-content-padding: 20px !default;
+$card-bigger-content-padding: 4px 20px 20px 20px !default;
 $card-header-txt-bigger-title-font: 20px !default;
+$card-txt-bigger-title-font: 20px !default;
+$card-content-bigger-font-size: 16px !default;
 $card-header-txt-bigger-subtitle-font: 16px !default;
 $card-image-title-bigger-font: 20px !default;
 $card-action-btn-bigger-icon-width: 24px !default;

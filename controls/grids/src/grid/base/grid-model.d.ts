@@ -333,7 +333,7 @@ export interface SearchSettingsModel {
      * notequal<br/></td><td colspan=1 rowspan=1> 
      * Checks for strings not equal to the specified string. <br/></td></tr> 
      * </table> 
-     * @default contains 
+     * @default 'contains'
      */
     operator?: string;
 
@@ -748,13 +748,13 @@ export interface GridModel extends ComponentModel{
 
     /**
      * Defines the scrollable height of the grid content.    
-     * @default auto    
+     * @default 'auto'    
      */
     height?: string | number;
 
     /**
      * Defines the Grid width.    
-     * @default auto    
+     * @default 'auto'    
      */
     width?: string | number;
 

@@ -29,6 +29,7 @@ let maxElement: string = "<div>" + createElement("input", { attrs: { max: "5", n
 let minLengthElement: string = "<div>" + createElement("input", { attrs: { minLength: "5", name: "minLengthElement" } }).outerHTML + "</div>";
 let maxLengthElement: string = "<div>" + createElement("input", { attrs: { maxLength: "5", name: "maxLengthElement" } }).outerHTML + "</div>";
 let mailElement: string = "<div>" + createElement("input", { attrs: { type: "email", name: "mailElement" } }).outerHTML + "</div>";
+let inputMailElement: string = "<div><input type=\"text\" required=\"true\" name=\"inputMailElement\" data-required-message=\"Enter your mail address\" /></div>";
 let urlElement: string = "<div>" + createElement("input", { attrs: { type: "url", name: "urlElement" } }).outerHTML + "</div>";
 let dateElement: string = "<div>" + createElement("input", { attrs: { type: "date", name: "dateElement" } }).outerHTML + "</div>";
 let numberElement: string = "<div>" + createElement("input", { attrs: { type: "number", name: "numberElement" } }).outerHTML + "</div>";
@@ -65,6 +66,13 @@ let inputTypeElement: HTMLFormElement = <HTMLFormElement>createElement('form', {
 let html5Elements: HTMLFormElement = <HTMLFormElement>createElement('form', {
     id: 'formId2', innerHTML: messageElement + mailElement + rangeLengthElement + minElement + maxElement + minLengthElement + maxLengthElement + rangeElement + urlElement + dateElement + html5dateElement + numberElement + html5numberElement + digitsElement + regexElement + dateIsoElement + dataValidation + errorContainer + mvcErrorContainer
         + hiddenElement + validateHiddenElement
+});
+let formElements: HTMLFormElement = <HTMLFormElement>createElement('form', {
+    id: 'formId3', innerHTML: messageElement + inputMailElement
+});
+
+let formElements1: HTMLFormElement = <HTMLFormElement>createElement('form', {
+    id: 'formId4', innerHTML: messageElement + inputMailElement + inputElement2
 });
 let annotationElements: HTMLFormElement = <HTMLFormElement>createElement('form', { id: 'formId1', innerHTML: annotationCredit + annotationMinLength + annotationMaxLength + annotationRange + annotationPhone + annotationRegex + annotationComparable + annotationCompareTo + annotationRequired + compareToElement + comparableElement + annotationCompareTo + annotationComparable });
 
@@ -2611,5 +2619,47 @@ describe('name attribute with dot sepeartor', () => {
         let element: HTMLElement = <HTMLElement>formObj.element.querySelector('[name="User.Email"]').nextSibling;
         expect(element.innerText).toEqual("Enter valid email address");
         done();
+    });
+});
+describe('Html5 rules data-validation # ', () => {
+    beforeAll(() => {
+        formObj = new FormValidator(formElements);
+    });
+
+    describe('Validate inputs and check', () => {
+        it('error messages', () => {
+            formObj.validate();
+            expect((formObj as any).errorRules[0].message).toEqual("this is required field");
+            expect((formObj as any).errorRules[1].message).toEqual("Enter your mail address");
+        });
+    });
+
+    afterAll(function () {
+        formObj.destroy();
+    });
+});
+
+describe('Html5 rules data-validation and script side validation combination# ', () => {
+    beforeAll(() => {
+        let options = {
+            rules: {
+                'input2': { required: [true, 'Enter the value'] },
+            },
+
+        };
+        formObj = new FormValidator(formElements1, options);
+    });
+
+    describe('Validate inputs and check', () => {
+        it('error messages', () => {
+            formObj.validate();
+            expect((formObj as any).errorRules[0].message).toEqual("Enter the value");
+            expect((formObj as any).errorRules[1].message).toEqual("this is required field");
+            expect((formObj as any).errorRules[2].message).toEqual("Enter your mail address");
+        });
+    });
+
+    afterAll(function () {
+        formObj.destroy();
     });
 });

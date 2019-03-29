@@ -79,14 +79,14 @@ export class CellOptionsDialog {
         this.target = createElement('div', {
             id: this.owner.owner.containerId + '_tableCellMarginsDialog', className: 'e-de-table-cell-margin-dlg'
         });
-        let innerDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width: 475px;position: relative;height: 165px;' });
+        let innerDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width: 504px;position: relative;height: auto;' });
         let innerDivLabel: HTMLElement = createElement('Label', {
             className: 'e-de-cell-dia-options-label', id: this.target.id + '_innerDivLabel'
         });
         innerDivLabel.innerHTML = localValue.getConstant('Cell margins');
         innerDiv.appendChild(innerDivLabel);
         let table: HTMLTableElement = <HTMLTableElement>createElement('TABLE', {
-            styles: 'height: 40px;padding-bottom: 0px;', className: 'e-de-cell-margin-top'
+            styles: 'padding-bottom: 8px;padding-top: 8px;', className: 'e-de-cell-margin-top'
         });
         let tr: HTMLTableRowElement = <HTMLTableRowElement>createElement('tr');
         let td: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { className: 'e-de-tbl-btn-seperator' });
@@ -350,22 +350,22 @@ export class CellOptionsDialog {
             table.appendChild(tr2); div.appendChild(table);
             dialog.target.appendChild(div);
             dialog.topMarginBox = new NumericTextBox({
-                value: 0, min: 0, max: 1584, width: 150, decimals: 2,
+                value: 0, min: 0, max: 1584, width: 175, decimals: 2,
                 enablePersistence: false
             });
             dialog.topMarginBox.appendTo(topTextBox);
             dialog.leftMarginBox = new NumericTextBox({
-                value: 0, min: 0, max: 1584, width: 150,
+                value: 0, min: 0, max: 1584, width: 175,
                 decimals: 2, enablePersistence: false
             });
             dialog.leftMarginBox.appendTo(leftTextBox);
             dialog.bottomMarginBox = new NumericTextBox({
-                value: 0, min: 0, max: 1584, width: 150, decimals: 2,
+                value: 0, min: 0, max: 1584, width: 175, decimals: 2,
                 enablePersistence: false
             });
             dialog.bottomMarginBox.appendTo(bottomTextBox);
             dialog.rightMarginBox = new NumericTextBox({
-                value: 0, min: 0, max: 1584, width: 150,
+                value: 0, min: 0, max: 1584, width: 175,
                 decimals: 2, enablePersistence: false
             });
             dialog.rightMarginBox.appendTo(rightTextBox);

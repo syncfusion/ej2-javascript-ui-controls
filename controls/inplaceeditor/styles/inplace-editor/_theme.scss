@@ -48,12 +48,12 @@
   }
 
   #{&}.e-inplaceeditor,
-  .e-inplaceeditor-tip {
+  #{&}.e-inplaceeditor-tip {
 
     .e-editable-action-buttons {
 
-      .e-btn-save,
-      .e-btn-cancel {
+      .e-btn-save.e-icon-btn,
+      .e-btn-cancel.e-icon-btn {
         background: $editor-btn-bg;
         border: $editor-btn-border;
         box-shadow: $editor-btn-box-shadow;
@@ -89,7 +89,7 @@
     }
   }
 
-  .e-inplaceeditor-tip {
+  #{&}.e-inplaceeditor-tip {
 
     &.e-tooltip-wrap {
       background: $editor-tip-bg;

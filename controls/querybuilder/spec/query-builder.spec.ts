@@ -1,7 +1,7 @@
 /**
  *  QueryBuilder spec document
  */
-import { QueryBuilder, ColumnsModel, RulesModel, RuleModel } from '../src/query-builder/index';
+import { QueryBuilder, ColumnsModel,  RuleModel } from '../src/query-builder/index';
 import { createElement, remove, select, selectAll, detach, getComponent } from '@syncfusion/ej2-base';
 import { NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { CheckBox } from '@syncfusion/ej2-buttons';
@@ -115,7 +115,7 @@ describe('QueryBuilder', () => {
         }
     ];
 
-    let importRules: RulesModel = {
+    let importRules: RuleModel = {
         'condition': 'and',
         'rules': [{
             'label': 'EmployeeID',
@@ -631,14 +631,14 @@ describe('QueryBuilder', () => {
             queryBuilder = new QueryBuilder({
                 summaryView: true,
             }, '#querybuilder');
-            expect(selectAll('.e-summary-content', queryBuilder.element).length).toBe(1);
+            expect(queryBuilder.element.querySelectorAll('.e-collapse-rule').length).toBe(1);
         });
 
         it('disable summaryView testing', () => {
             queryBuilder = new QueryBuilder({
                 summaryView: false,
             }, '#querybuilder');
-            expect(selectAll('.e-summary-content', queryBuilder.element).length).toBe(0);
+            expect(queryBuilder.element.querySelectorAll('.e-collapse-rule').length).toBe(0);
         });
         it('disable Button testing', () => {
             queryBuilder = new QueryBuilder({

@@ -191,7 +191,7 @@ export class ExcelFilter extends CheckBoxFilter {
                 pos.left = (window.innerWidth - contextRect.width) / 2;
                 this.closeDialog();
             } else {
-                pos.top = window.scrollY + client.top;
+                pos.top = Browser.isIE ? window.pageYOffset + client.top : window.scrollY + client.top;
                 pos.left = this.getCMenuYPosition(this.dlg, this.menuObj);
             }
             this.menuObj.open(pos.top, pos.left, e.target as HTMLElement);
@@ -231,7 +231,9 @@ export class ExcelFilter extends CheckBoxFilter {
         let contextWidth: number = this.getContextBounds(context).width;
         let targetPosition: ClientRect = target.getBoundingClientRect();
         let leftPos: number = targetPosition.right + contextWidth - this.parent.element.clientWidth;
-        return (leftPos < 1) ? (targetPosition.right + 1) : (targetPosition.left - contextWidth - 1);
+        let targetBorder: number = (target as HTMLElement).offsetWidth - (target as HTMLElement).clientWidth;
+        targetBorder = targetBorder ? targetBorder + 1 : 0;
+        return (leftPos < 1) ? (targetPosition.right + 1 - targetBorder) : (targetPosition.left - contextWidth - 1 + targetBorder);
     }
 
     public openDialog(options: IFilterArgs): void {

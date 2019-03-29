@@ -50,8 +50,20 @@ describe('DatePicker Control', () => {
             expect(document.activeElement.tagName === 'INPUT').toEqual(true);
         });
         it('Clear icon availability testing', () => {
-            expect(editorObj.componentObj.showClearButton === true).toEqual(true);
-            expect(selectAll('.e-clear-icon', ele).length === 1).toEqual(true);
+            expect(editorObj.componentObj.showClearButton).toBe(true);
+            expect(selectAll('.e-clear-icon', ele).length).toBe(1);
+        });
+        it('Clear icon availability testing for false', () => {
+            editorObj.componentObj.showClearButton = false;
+            editorObj.componentObj.dataBind();
+            expect(editorObj.componentObj.showClearButton).toBe(false);
+            expect(selectAll('.e-clear-icon', ele).length).toBe(0);
+        });
+        it('Clear icon availability testing for true', () => {
+            editorObj.componentObj.showClearButton = true;
+            editorObj.componentObj.dataBind();
+            expect(editorObj.componentObj.showClearButton).toBe(true);
+            expect(selectAll('.e-clear-icon', ele).length).toBe(1);
         });
         it('Value property testing', () => {
             // expect((<HTMLInputElement>select('input', ele)).value === '11/29/2018').toEqual(true);
@@ -595,6 +607,46 @@ describe('DatePicker Control', () => {
             expect(selectAll('.e-datepicker', document.body).length === 1).toEqual(true);
             editorObj.save();
             expect(dateString).toEqual(date.toISOString());
+        });
+    });
+
+    describe('Model - value child property update testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Default value with initial render testing', () => {
+            let date: Date = new Date('11/12/2019');
+            editorObj = renderEditor({
+                type: 'Date',
+                mode: 'Inline',
+                value: date
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(date);
+            expect(valueEle.innerHTML).toEqual('11/12/2019');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(date);
+            expect(editorObj.model.value).toEqual(date);
+            expect((<HTMLInputElement>select('.e-datepicker', document.body)).value).toEqual('11/12/2019');
+            (<HTMLInputElement>select('.e-datepicker', document.body)).value = '';
+            editorObj.setProperties({ value: null }, true);
+            editorObj.componentObj.value = null;
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect((<HTMLInputElement>select('.e-datepicker', document.body)).value).toEqual('');
         });
     });
 

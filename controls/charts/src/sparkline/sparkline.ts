@@ -438,7 +438,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         let borderRect: RectOption;
         if (width > 0 || this.containerArea.background !== 'transparent') {
             borderRect = new RectOption(
-                this.element.id + '_SparklineBorder', this.containerArea.background, this.containerArea.border, 1,
+                this.element.id + '_SparklineBorder', this.sparkTheme.background, this.containerArea.border, 1,
                 new Rect(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width));
             this.svgObject.appendChild(drawRectangle(this, borderRect) as SVGRectElement);
         }

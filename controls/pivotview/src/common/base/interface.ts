@@ -5,6 +5,7 @@ import { Grid, ExcelStyle, CellSelectionMode, SelectionType, CheckboxSelectionTy
 import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell } from '@syncfusion/ej2-pdf-export';
 import { SeriesModel } from '@syncfusion/ej2-charts';
 import { ItemModel } from '@syncfusion/ej2-navigations';
+import { SummaryTypes } from '../../base/types';
 
 /**
  * Interface
@@ -395,4 +396,16 @@ export interface PdfBorder {
 export interface CellTemplateArgs {
     /** Defines the cell element */
     targetCell?: HTMLElement;
+}
+
+export interface AggregateEventArgs {
+    fieldName?: string;
+    row?: IAxisSet;
+    column?: IAxisSet;
+    value?: number;
+    cellSets?: IDataSet[];
+    rowCellType?: string;
+    columnCellType?: string;
+    aggregateType?: SummaryTypes;
+    skipFormatting?: boolean;
 }

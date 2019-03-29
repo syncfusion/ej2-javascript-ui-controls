@@ -1,7 +1,7 @@
 import { TreeView as BaseTreeView, NodeSelectEventArgs, NodeExpandEventArgs, DrawNodeEventArgs } from '@syncfusion/ej2-navigations';
 import { NodeEditEventArgs } from '@syncfusion/ej2-navigations';
 import { isNullOrUndefined as isNOU, select, setValue, getValue } from '@syncfusion/ej2-base';
-import { KeyboardEvents, KeyboardEventArgs, Touch } from '@syncfusion/ej2-base';
+import { KeyboardEvents, KeyboardEventArgs, Touch, closest } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import * as events from '../base/constant';
 import * as CLS from '../base/classes';
@@ -31,7 +31,6 @@ export class NavigationPane {
     public treeNodes: string[] = [];
     public removeNodes: string[] = [];
     public copyNodes: { [key: string]: Object }[];
-    public rootID: string;
     public touchClickObj: Touch;
     public expandTree: boolean = false;
     /**
@@ -55,11 +54,9 @@ export class NavigationPane {
     }
 
     private onInit(args: ReadArgs): void {
+        if (!isNOU(this.treeObj)) { return; }
         let rootData: { [key: string]: Object; } = getValue('/', this.parent.feParent);
-        setValue('selected', true, rootData);
         setValue('icon', 'e-fe-folder', rootData);
-        this.rootID = 'fe_tree';
-        setValue('nodeId', this.rootID, rootData);
         this.rootNode = getValue('name', getValue('/', this.parent.feParent));
         this.treeObj = new BaseTreeView({
             fields: { dataSource: [rootData], id: 'nodeId', text: 'name', hasChildren: 'hasChild', iconCss: 'icon' },
@@ -72,8 +69,6 @@ export class NavigationPane {
         });
         this.treeObj.appendTo('#' + this.parent.element.id + CLS.TREE_ID);
         this.treeObj.element.style.width = '25%';
-        this.addChild(args.files, this.rootID, false);
-        setValue(this.parent.path, args.files, this.parent.feFiles);
         this.parent.persistData = true;
         this.wireEvents();
     }
@@ -131,7 +126,6 @@ export class NavigationPane {
     private onNodeExpand(args: NodeExpandEventArgs): void {
         if (!args.isInteracted) { return; }
         let path: string = getPath(args.node, getValue('text', args.nodeData));
-        this.parent.expandedPath = path;
         if (args.node.querySelector('.' + CLS.LIST_ITEM) === null) {
             this.expandNodeTarget = args.node.getAttribute('data-uid');
             this.parent.expandedId = this.expandNodeTarget;
@@ -169,13 +163,17 @@ export class NavigationPane {
 
     private updateTree(args: ReadArgs): void {
         let id: string = this.treeObj.selectedNodes[0];
+        let toExpand: boolean = this.treeObj.expandedNodes.indexOf(id) === -1 ? false : true;
+        this.removeChildNodes(id);
+        setValue(this.parent.path, args.files, this.parent.feFiles);
+        this.addChild(args.files, id, !toExpand);
+    }
+
+    private removeChildNodes(id: string): void {
         let sNode: Element = select('[data-uid="' + id + '"]', this.treeObj.element);
         let parent: Element = select('.' + CLS.LIST_PARENT, sNode);
         let childs: Element[] = parent ? Array.prototype.slice.call(parent.children) : null;
-        let toExpand: boolean = this.treeObj.expandedNodes.indexOf(id) === -1 ? false : true;
         this.treeObj.removeNodes(childs);
-        setValue(this.parent.path, args.files, this.parent.feFiles);
-        this.addChild(args.files, id, !toExpand);
     }
 
     private onOpenEnd(args: ReadArgs): void {
@@ -196,6 +194,13 @@ export class NavigationPane {
 
     private onInitialEnd(args: ReadArgs): void {
         this.onInit(args);
+        this.addChild(args.files, getValue('nodeId', args.cwd), false);
+    }
+
+    private onFinalizeEnd(args: ReadArgs): void {
+        this.onInit(args);
+        this.addChild(args.files, getValue('nodeId', args.cwd), false);
+        this.treeObj.selectedNodes = [this.parent.pathId[this.parent.pathId.length - 1]];
     }
 
     private onCreateEnd(args: ReadArgs): void {
@@ -205,8 +210,8 @@ export class NavigationPane {
     private onDeleteEnd(args: ReadArgs): void {
         if (this.parent.activeModule === 'navigationpane') {
             let selectedNode: string = this.treeObj.selectedNodes[0];
-            let selectedNodeEle: HTMLElement = (select('[data-uid="' + selectedNode + '"]', this.treeObj.element))
-                .closest('.' + CLS.LIST_PARENT).parentElement;
+            let selcetedEle: Element = select('[data-uid="' + selectedNode + '"]', this.treeObj.element);
+            let selectedNodeEle: HTMLElement = closest(selcetedEle, '.' + CLS.LIST_PARENT).parentElement;
             this.treeObj.selectedNodes = [selectedNodeEle.getAttribute('data-uid')];
             this.treeObj.dataBind();
         }
@@ -241,106 +246,37 @@ export class NavigationPane {
         for (let prop of Object.keys(e.newProp)) {
             switch (prop) {
                 case 'enableRtl':
-                    this.treeObj.enableRtl = e.newProp.enableRtl;
-                    this.treeObj.dataBind();
+                    if (this.treeObj) {
+                        this.treeObj.enableRtl = e.newProp.enableRtl;
+                        this.treeObj.dataBind();
+                    }
                     break;
                 case 'navigationPaneSettings':
                     let args: ReadArgs = { files: getValue('/', this.parent.feFiles) };
-                    this.onInitialEnd(args);
+                    this.onFinalizeEnd(args);
                     break;
             }
         }
     }
-    /* istanbul ignore next */
-    private setPath(path: string): void {
-        this.parent.notify(events.treeSelect, { module: 'navigationpane' });
-    }
 
     /* istanbul ignore next */
-    private onTreeSelect(e: NotifyArgs): void {
-        if (e.module !== this.getModuleName() && e.module !== 'common') {
-            return;
-        }
-        let tPath: string = this.parent.path;
-        if (tPath === '') { return; }
-        if (!(tPath.charAt(tPath.length - 1) === '/')) { tPath = tPath + '/'; }
-        this.parent.setProperties({ path: tPath }, true);
-        let expId: string = (this.rootNode + this.parent.path.replace(new RegExp(' ', 'g'), '*')).toLocaleLowerCase();
-        if (select('[data-uid="' + expId + '"]', this.treeObj.element)) {
-            let ele: Element = select('[data-uid="' + expId + '"]', this.treeObj.element).parentNode.parentNode as Element;
-            if (ele.classList.contains(CLS.COLLAPSED)) {
-                this.expand(expId);
-            } else {
-                if (this.treeObj.selectedNodes[0] !== expId) {
-                    this.tapFunction(expId, 'select');
-                }
-            }
-        } else {
-            this.expand(expId);
-        }
-    }
-
-    /* istanbul ignore next */
-    private expand(expId: string): void {
-        if (isNOU(select('[data-uid="' + expId + '"]', this.treeObj.element))) {
-            while (isNOU(select('[data-uid="' + expId + '"]', this.treeObj.element))) {
-                let elem: string = expId.substr(0, expId.lastIndexOf('/'));
-                expId = elem.substr(0, elem.lastIndexOf('/') + 1);
-            }
-            let ele: Element = select('[data-uid="' + expId + '"]', this.treeObj.element);
-            if (isNOU(ele.querySelector('.' + CLS.ICONS))) {
-                this.tapFunction(expId, 'select');
-            } else if (ele.querySelector('.' + CLS.ICONS).classList.contains(CLS.ICON_COLLAPSIBLE)) {
-                this.tapFunction(expId, 'select');
-            } else {
-                this.tapFunction(expId, 'expand');
-            }
-        } else {
-            let ele: Element = select('[data-uid="' + expId + '"]', this.treeObj.element).parentNode.parentNode as Element;
-            if (ele.classList.contains(CLS.COLLAPSED)) {
-                let elem: string = expId.substr(0, expId.lastIndexOf('/'));
-                expId = elem.substr(0, elem.lastIndexOf('/') + 1);
-            }
-            this.tapFunction(expId, 'expand');
-        }
-    }
-    /* istanbul ignore next */
-    private tapFunction(expId: string, process: string): void {
-        /* tslint:disable-next-line */
-        let mouseEventArgs: any = {
-            /* tslint:disable:no-empty */
-            preventDefault: (): void => { },
-            stopImmediatePropagation: (): void => { },
-            target: null,
-            type: null,
-            shiftKey: false,
-            ctrlKey: false,
-            originalEvent: { target: null }
-        };
-        /* tslint:disable-next-line */
-        let tapEvent: any = {
-            originalEvent: mouseEventArgs,
-            tapCount: 1
-        };
-        /* tslint:disable-next-line */
-        let proxy: any = this.treeObj;
-        let list: Element = select('[data-uid="' + expId + '"]', this.treeObj.element);
-        if (process === 'expand') {
-            mouseEventArgs.target = list.querySelector('.' + CLS.ICONS);
-        } else if (process === 'select') {
-            mouseEventArgs.target = list.querySelector('.' + CLS.FULLROW);
-        }
-        proxy.touchClickObj.tap(tapEvent);
-        this.expandTree = true;
+    private onDownLoadInit(): void {
+        this.updateActionData();
     }
 
     private onSelectionChanged(e: NotifyArgs): void {
         this.treeObj.selectedNodes = [e.selectedNode];
     }
 
+    private onClearPathInit(e: NotifyArgs): void {
+        this.removeChildNodes(e.selectedNode);
+    }
+
     private addEventListener(): void {
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);
+        this.parent.on(events.downloadInit, this.onDownLoadInit, this);
         this.parent.on(events.initialEnd, this.onInitialEnd, this);
+        this.parent.on(events.finalizeEnd, this.onFinalizeEnd, this);
         this.parent.on(events.pathChanged, this.onPathChanged, this);
         this.parent.on(events.nodeExpand, this.onNodeExpanded, this);
         this.parent.on(events.createEnd, this.onCreateEnd, this);
@@ -352,11 +288,13 @@ export class NavigationPane {
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.renameInit, this.onRenameInit, this);
         this.parent.on(events.renameEnd, this.onRenameEnd, this);
-        this.parent.on(events.treeSelect, this.onTreeSelect, this);
+        this.parent.on(events.clearPathInit, this.onClearPathInit, this);
     }
 
     private removeEventListener(): void {
         this.parent.off(events.initialEnd, this.onInitialEnd);
+        this.parent.off(events.downloadInit, this.onDownLoadInit);
+        this.parent.off(events.finalizeEnd, this.onFinalizeEnd);
         this.parent.off(events.modelChanged, this.onPropertyChanged);
         this.parent.off(events.pathChanged, this.onPathChanged);
         this.parent.off(events.updateTreeSelection, this.onSelectionChanged);
@@ -368,7 +306,7 @@ export class NavigationPane {
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.renameInit, this.onRenameInit);
         this.parent.off(events.renameEnd, this.onRefreshEnd);
-        this.parent.off(events.treeSelect, this.onTreeSelect);
+        this.parent.off(events.clearPathInit, this.onClearPathInit);
         this.parent.off(events.deleteEnd, this.onDeleteEnd);
     }
 
@@ -450,9 +388,13 @@ export class NavigationPane {
     }
 
     private updateRenameData(): void {
+        this.updateActionData();
+        this.parent.currentItemText = getValue('name', this.parent.itemData[0]);
+    }
+
+    private updateActionData(): void {
         let data: Object = this.treeObj.getTreeData(this.treeObj.selectedNodes[0])[0];
         this.parent.itemData = [data];
-        this.parent.currentItemText = getValue('name', data);
         this.parent.isFile = false;
     }
 

@@ -480,8 +480,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             let groupElement: HTMLElement = <HTMLElement>this.renderer.createGroup({ id: this.element.id + '_group' });
             svgObject.appendChild(groupElement);
             let pathElement: Element = this.renderer.drawPath({
-                'id': this.element.id + '_path', 'stroke-width': this.border.width,
-                'fill': this.fill || this.themeStyle.tooltipFill, 'opacity': this.opacity,
+                'id': this.element.id + '_path', 'stroke-width': this.theme === 'Bootstrap4' ? 0 : this.border.width,
+                'fill': this.fill || this.themeStyle.tooltipFill, 'opacity': this.theme === 'Bootstrap4' ? 0.9 : this.opacity,
                 'stroke': this.border.color
             });
             groupElement.appendChild(pathElement);
@@ -573,7 +573,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             this.rx, this.ry, pointRect, arrowLocation,
             this.arrowPadding, isTop, isBottom, isLeft, tipLocation.x, tipLocation.y, this.tipRadius
         ));
-        if (this.enableShadow) {
+        if (this.enableShadow && this.theme !== 'Bootstrap4') {
             // To fix next chart initial tooltip opacity issue in tab control
             let shadowId: string = this.element.id + '_shadow';
             pathElement.setAttribute('filter', Browser.isIE ? '' : 'url(#' + shadowId + ')');

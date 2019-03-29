@@ -300,6 +300,12 @@ export class Column {
      */
 
     public filter: IFilter = {};
+    /**    
+     * If `lockColumn` set to true, then it disables Reordering of a particular column.
+     * The locked column will be moved to first position.
+     * @default false         
+     */
+    public lockColumn: boolean;
 
     constructor(options: ColumnModel) {
       merge(this, options);
@@ -638,4 +644,10 @@ export interface ColumnModel {
      * @default true   
      */
     allowEditing?: boolean;
+    /**
+     * If `lockColumn` set to true, then it disables Reordering of a particular column.
+     * The locked column will be moved to first position.
+     * @default false
+     */
+    lockColumn?: boolean;
 }

@@ -2,6 +2,8 @@
   /*! component icons */
   .e-input-group-icon.e-range-icon,
   &.e-control-wrapper .e-input-group-icon.e-range-icon {
+    border-bottom-right-radius: $range-icon-bottom-right-radius;
+    border-top-right-radius: $range-icon-top-right-radius;
     font-size: $range-icon-font-size;
     margin: $range-icon-margin;
     min-height: $range-icon-container-min-height;
@@ -41,8 +43,8 @@
     & .e-control-wrapper .e-input-group-icon.e-range-icon {
       font-size: $range-bigger-icon-font-size;
       margin: $range-icon-bigger-margin;
-      min-height: $range-icon-container-min-height;
-      min-width: $range-icon-container-min-width;
+      min-height: $range-bigger-icon-container-min-height;
+      min-width: $range-bigger-icon-container-min-width;
       outline: none;
     }
   }

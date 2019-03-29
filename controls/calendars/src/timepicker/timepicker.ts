@@ -1882,7 +1882,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             let focusArguments: FocusEventArgs = {
                 model: this
             };
-            this.trigger('focus', focusArguments);
         }
     }
     /**

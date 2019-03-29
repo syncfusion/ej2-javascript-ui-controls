@@ -1057,20 +1057,26 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     MenuBase.prototype.preRender = function () {
-        if (this.element.tagName === 'EJS-CONTEXTMENU') {
-            this.element.style.display = 'none';
-            this.element.classList.remove('e-' + this.getModuleName());
-            this.element.classList.remove('e-control');
-            var ejInst = getValue('ej2_instances', this.element);
-            var ul = this.createElement('ul');
-            this.ngElement = this.element;
-            this.element = ul;
-            this.element.classList.add('e-control');
-            this.element.classList.add('e-' + this.getModuleName());
-            setValue('ej2_instances', ejInst, this.element);
-            if (!this.element.id) {
-                this.element.id = getUniqueID(this.getModuleName());
+        if (!this.isMenu) {
+            var ul = void 0;
+            if (this.element.tagName === 'EJS-CONTEXTMENU') {
+                ul = this.createElement('ul', {
+                    id: getUniqueID(this.getModuleName()), className: 'e-control e-lib e-' + this.getModuleName()
+                });
+                var ejInst = getValue('ej2_instances', this.element);
+                removeClass([this.element], ['e-control', 'e-lib', 'e-' + this.getModuleName()]);
+                this.clonedElement = this.element;
+                this.element = ul;
+                setValue('ej2_instances', ejInst, this.element);
             }
+            else {
+                ul = this.createElement('ul', { id: getUniqueID(this.getModuleName()) });
+                append([].slice.call(this.element.cloneNode(true).children), ul);
+                var refEle = this.element.nextElementSibling;
+                refEle ? this.element.parentElement.insertBefore(ul, refEle) : this.element.parentElement.appendChild(ul);
+                this.clonedElement = ul;
+            }
+            this.clonedElement.style.display = 'none';
         }
         if (this.element.tagName === 'EJS-MENU') {
             var ele = this.element;
@@ -1085,7 +1091,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             ele = ul;
             wrapper.appendChild(ele);
             setValue('ej2_instances', ejInstance, ele);
-            this.ngElement = wrapper;
+            this.clonedElement = wrapper;
             this.element = ele;
             if (!this.element.id) {
                 this.element.id = getUniqueID(this.getModuleName());
@@ -1317,7 +1323,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 }
                 fli.classList.add(SELECTED);
                 if (e.action === ENTER) {
-                    eventArgs = { element: fli, item: item };
+                    eventArgs = { element: fli, item: item, event: e };
                     this.trigger('select', eventArgs);
                 }
                 fli.focus();
@@ -1335,7 +1341,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                         fli.classList.remove(FOCUSED);
                     }
                     fli.classList.add(SELECTED);
-                    eventArgs = { element: fli, item: item };
+                    eventArgs = { element: fli, item: item, event: e };
                     this.trigger('select', eventArgs);
                     this.closeMenu(null, e);
                 }
@@ -1690,6 +1696,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         var level = this.navIdx ? this.navIdx.length : 0;
         var showIcon = this.hasField(items, this.getField('iconCss', level));
         var id = 'id';
+        var iconCss = 'iconCss';
         var listBaseOptions = {
             showIcon: showIcon,
             moduleName: 'menu',
@@ -1698,7 +1705,6 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             itemCreating: function (args) {
                 if (!args.curData[args.fields[id]]) {
                     args.curData[args.fields[id]] = getUniqueID('menuitem');
-                    _this.clearChanges();
                 }
                 args.curData.htmlAttributes = {
                     role: 'menuitem',
@@ -1706,6 +1712,9 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 };
                 if (_this.isMenu && !args.curData[_this.getField('separator', level)]) {
                     args.curData.htmlAttributes['aria-label'] = args.curData[args.fields.text];
+                }
+                if (args.curData[args.fields[iconCss]] === '') {
+                    args.curData[args.fields[iconCss]] = null;
                 }
             },
             itemCreated: function (args) {
@@ -1736,6 +1745,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 _this.trigger('beforeItemRender', eventArgs);
             }
         };
+        this.setProperties({ 'items': this.items }, true);
         var ul = ListBase.createList(this.createElement, items, listBaseOptions, !this.template);
         ul.setAttribute('tabindex', '0');
         if (this.isMenu) {
@@ -1823,7 +1833,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 this.setLISelected(cli);
                 var navIdx = this.getIndex(cli.id, true);
                 var item = this.getItem(navIdx);
-                var eventArgs = { element: cli, item: item };
+                var eventArgs = { element: cli, item: item, event: e };
                 this.trigger('select', eventArgs);
             }
             if (isInstLI && (e.type === 'mouseover' || Browser.isDevice || this.showItemOnClick)) {
@@ -2001,7 +2011,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                     if (!Object.keys(oldProp.items).length) {
                         var ul_3 = this_1.element;
                         ul_3.innerHTML = '';
-                        var lis = [].slice.call(this_1.createItems(newProp.items).children);
+                        var lis = [].slice.call(this_1.createItems(this_1.items).children);
                         lis.forEach(function (li) {
                             ul_3.appendChild(li);
                         });
@@ -2057,12 +2067,13 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
      * Used to unwire the bind events.
      * @private
      */
-    MenuBase.prototype.unWireEvents = function () {
+    MenuBase.prototype.unWireEvents = function (targetSelctor) {
+        if (targetSelctor === void 0) { targetSelctor = this.target; }
         var wrapper = this.getWrapper();
-        if (this.target) {
+        if (targetSelctor) {
             var target = void 0;
             var touchModule = void 0;
-            var targetElems = selectAll(this.target);
+            var targetElems = selectAll(targetSelctor);
             for (var i = 0, len = targetElems.length; i < len; i++) {
                 target = targetElems[i];
                 if (Browser.isIos) {
@@ -2360,39 +2371,60 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    MenuBase.prototype.removeAttributes = function () {
+        var _this = this;
+        ['top', 'left', 'display', 'z-index'].forEach(function (key) {
+            _this.element.style.removeProperty(key);
+        });
+        ['role', 'tabindex', 'class', 'style'].forEach(function (key) {
+            if (key === 'class' && _this.element.classList.contains('e-menu-parent')) {
+                _this.element.classList.remove('e-menu-parent');
+            }
+            if (['class', 'style'].indexOf(key) === -1 || !_this.element.getAttribute(key)) {
+                _this.element.removeAttribute(key);
+            }
+            if (_this.isMenu && key === 'class' && _this.element.classList.contains('e-vertical')) {
+                _this.element.classList.remove('e-vertical');
+            }
+        });
+    };
     /**
      * Destroys the widget.
      * @returns void
      */
     MenuBase.prototype.destroy = function () {
-        var _this = this;
         var wrapper = this.getWrapper();
         if (wrapper) {
-            _super.prototype.destroy.call(this);
             this.unWireEvents();
-            if (this.ngElement && !this.isMenu) {
-                this.ngElement.style.display = 'block';
+            if (!this.isMenu) {
+                this.clonedElement.style.display = '';
+                if (this.clonedElement.tagName === 'EJS-CONTEXTMENU') {
+                    addClass([this.clonedElement], ['e-control', 'e-lib', 'e-' + this.getModuleName()]);
+                    this.element = this.clonedElement;
+                }
+                else {
+                    if (this.refreshing && this.clonedElement.childElementCount && this.clonedElement.children[0].tagName === 'LI') {
+                        this.setProperties({ 'items': [] }, true);
+                    }
+                    if (document.getElementById(this.clonedElement.id)) {
+                        var refEle = this.clonedElement.nextElementSibling;
+                        refEle && refEle !== wrapper ? this.clonedElement.parentElement.insertBefore(this.element, refEle) :
+                            this.clonedElement.parentElement.appendChild(this.element);
+                        this.element.innerHTML = '';
+                        append([].slice.call(this.clonedElement.children), this.element);
+                        detach(this.clonedElement);
+                        this.removeAttributes();
+                    }
+                }
+                this.clonedElement = null;
             }
             else {
                 this.closeMenu();
                 this.element.innerHTML = '';
-                ['top', 'left', 'display', 'z-index'].forEach(function (key) {
-                    _this.element.style.removeProperty(key);
-                });
-                ['role', 'tabindex', 'class', 'style'].forEach(function (key) {
-                    if (key === 'class' && _this.element.classList.contains('e-menu-parent')) {
-                        _this.element.classList.remove('e-menu-parent');
-                    }
-                    if (['class', 'style'].indexOf(key) === -1 || !_this.element.getAttribute(key)) {
-                        _this.element.removeAttribute(key);
-                    }
-                    if (_this.isMenu && key === 'class' && _this.element.classList.contains('e-vertical')) {
-                        _this.element.classList.remove('e-vertical');
-                    }
-                });
+                this.removeAttributes();
                 wrapper.parentNode.insertBefore(this.element, wrapper);
             }
-            if (this.isMenu && this.ngElement) {
+            if (this.isMenu && this.clonedElement) {
                 detach(this.element);
                 wrapper.style.display = '';
                 wrapper.classList.remove('e-' + this.getModuleName() + '-wrapper');
@@ -2401,6 +2433,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             else {
                 detach(wrapper);
             }
+            _super.prototype.destroy.call(this);
         }
     };
     __decorate$2([
@@ -2922,7 +2955,9 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     Toolbar.prototype.eleFocus = function (closest$$1, pos) {
         var sib = Object(closest$$1)[pos + 'ElementSibling'];
         var contains = function (el) {
-            return el.classList.contains(CLS_SEPARATOR) || el.classList.contains(CLS_DISABLE$2) || el.getAttribute('disabled');
+            // tslint:disable-next-line:max-line-length
+            return el.classList.contains(CLS_SEPARATOR) || el.classList.contains(CLS_DISABLE$2) || el.getAttribute('disabled') || el.classList.contains(CLS_HIDDEN) || !isVisible(el);
+            // tslint:enable-next-line:max-line-length
         };
         if (sib) {
             var skipEle = contains(sib);
@@ -4771,7 +4806,9 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         if (trgt.classList.contains(CLS_CONTENT) || trgt.classList.contains(CLS_CTENT) || cntclkCheck) {
             return;
         }
-        [].slice.call(this.element.children).forEach(function (el) {
+        var acrdcontainer = this.element.querySelector('.' + CLS_CONTAINER);
+        var acrdnchild = (acrdcontainer) ? acrdcontainer.children : this.element.children;
+        [].slice.call(acrdnchild).forEach(function (el) {
             if (el.classList.contains(CLS_ACTIVE)) {
                 acrdActive.push(el);
             }
@@ -5555,8 +5592,7 @@ var ContextMenu = /** @__PURE__ @class */ (function (_super) {
                     this.filter = newProp.filter;
                     break;
                 case 'target':
-                    this.unWireEvents();
-                    this.target = newProp.target;
+                    this.unWireEvents(oldProp.target);
                     this.wireEvents();
                     break;
             }
@@ -5660,11 +5696,7 @@ var Menu = /** @__PURE__ @class */ (function (_super) {
             }
         }
         else {
-            this.tempItems = this.items;
-            this.items = [];
-            this.tempItems.map(this.createMenuItems, this);
-            this.setProperties({ items: this.items }, true);
-            this.tempItems = [];
+            this.updateMenuItems(this.items);
         }
         _super.prototype.preRender.call(this);
     };
@@ -5681,6 +5713,13 @@ var Menu = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    Menu.prototype.updateMenuItems = function (items) {
+        this.tempItems = items;
+        this.items = [];
+        this.tempItems.map(this.createMenuItems, this);
+        this.setProperties({ items: this.items }, true);
+        this.tempItems = [];
+    };
     /**
      * Called internally if any of the property value changed
      * @private
@@ -5689,7 +5728,6 @@ var Menu = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     Menu.prototype.onPropertyChanged = function (newProp, oldProp) {
-        _super.prototype.onPropertyChanged.call(this, newProp, oldProp);
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
             switch (prop) {
@@ -5703,8 +5741,14 @@ var Menu = /** @__PURE__ @class */ (function (_super) {
                         this.element.removeAttribute('aria-orientation');
                     }
                     break;
+                case 'items':
+                    if (!Object.keys(oldProp.items).length) {
+                        this.updateMenuItems(newProp.items);
+                    }
+                    break;
             }
         }
+        _super.prototype.onPropertyChanged.call(this, newProp, oldProp);
     };
     Menu.prototype.createMenuItems = function (item) {
         var pIdField;
@@ -11721,7 +11765,6 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
         else {
             this.setMediaQuery();
         }
-        this.checkType(true);
         this.setType(this.type);
         this.setCloseOnDocumentClick();
         this.setEnableRTL();
@@ -11787,24 +11830,14 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
         removeClass([this.element], [OPEN, CLOSE, RIGHT, LEFT, SLIDE, PUSH, OVER]);
         this.element.classList.add(ROOT$1);
         addClass([this.element], (this.position === 'Right') ? RIGHT : LEFT);
-        if (this.type === 'Auto' && !Browser.isDevice) {
-            this.show();
+        if (this.type === 'Auto' && !Browser.isDevice && !this.enableDock) {
+            addClass([this.element], OPEN);
         }
-        else if (!this.isOpen) {
+        else {
             addClass([this.element], CLOSE);
         }
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
         this.element.setAttribute('tabindex', this.tabIndex);
-    };
-    Sidebar.prototype.checkType = function (val) {
-        if (!(this.type === 'Push' || this.type === 'Over' || this.type === 'Slide')) {
-            this.type = 'Auto';
-        }
-        else {
-            if (!this.element.classList.contains(CLOSE) && !val) {
-                this.hide();
-            }
-        }
     };
     Sidebar.prototype.destroyBackDrop = function () {
         var sibling = document.querySelector('.e-main-content') ||
@@ -12043,11 +12076,9 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
                     this.setAnimation();
                     break;
                 case 'type':
-                    this.checkType(false);
                     removeClass([this.element], [VISIBILITY]);
                     this.addClass();
-                    addClass([this.element], this.type === 'Auto' ? (Browser.isDevice ? ['e-over'] :
-                        ['e-push']) : ['e-' + this.type.toLowerCase()]);
+                    this.setType(this.type);
                     break;
                 case 'position':
                     this.element.style.transform = '';
@@ -12168,6 +12199,7 @@ var Sidebar = /** @__PURE__ @class */ (function (_super) {
                     if (sibling && (this.enableDock || this.element.classList.contains(OPEN))) {
                         this.position === 'Left' ? sibling.style.marginLeft = margin : sibling.style.marginRight = margin;
                     }
+                    this.setProperties({ isOpen: true }, true);
                 }
                 this.createBackDrop();
         }

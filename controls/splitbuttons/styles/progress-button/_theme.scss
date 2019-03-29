@@ -276,11 +276,16 @@
 
   &.e-primary,
   &.e-success,
-  &.e-warning,
   &.e-danger,
   &.e-info {
     .e-progress {
       background-color: $progress-btn-bgcolor;
+      }
+  }
+
+  &.e-warning {
+    .e-progress {
+      background-color: $progress-btn-warning-progress-color;
       }
   }
 

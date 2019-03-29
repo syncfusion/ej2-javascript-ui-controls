@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 17.1.38 (2019-03-29)
+
+### Dialog
+
+#### Bug Fixes
+
+- Provided an additional `cssClass`, `zIndex`, `open` and `close` event properties to dialog utility.
+
+- Enable/ Disable the dialog button issue in dynamic way has been fixed.
+
 ## 16.4.47 (2019-01-16)
 
 ### Dialog
@@ -25,6 +35,14 @@
 #### Bug Fixes
 
 - The issue with collision while displays popup on scrollable viewport element has been resolved.
+
+## 16.4.42 (2018-12-14)
+
+### Dialog
+
+#### Bug Fixes
+
+- Introduced a new argument `isInteracted` by deprecating existing event argument `isInteraction` for unique naming convention.
 
 ## 16.4.40-beta (2018-12-10)
 

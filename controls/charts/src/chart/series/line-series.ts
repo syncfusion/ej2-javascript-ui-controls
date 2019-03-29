@@ -25,7 +25,7 @@ export class LineSeries extends LineBase {
         let isPolar: boolean = (series.chart && series.chart.chartAreaType === 'PolarRadar');
         let isDrop: boolean = (series.emptyPointSettings && series.emptyPointSettings.mode === 'Drop');
         let getCoordinate: Function = isPolar ? TransformToVisible : getPoint;
-        let visiblePoints: Points[] = this.improveChartPerformance(series);
+        let visiblePoints: Points[] = this.enableComplexProperty(series);
         for (let point of visiblePoints) {
             point.regions = [];
             if (point.visible && withInRange(visiblePoints[point.index - 1], point, visiblePoints[point.index + 1], series)) {

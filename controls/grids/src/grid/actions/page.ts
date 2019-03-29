@@ -18,6 +18,7 @@ export class Page implements IAction {
     private element: HTMLElement;
     private pageSettings: PageSettingsModel;
     private isForceCancel: boolean;
+    private isInitialLoad: boolean;
 
     //Module declarations
     private parent: IGrid;
@@ -79,7 +80,9 @@ export class Page implements IAction {
 
     private onSelect(e: Pager): void {
         this.pageSettings.pageSize = e.pageSize;
-        this.pageSettings.currentPage = 1;
+        if (!this.isInitialLoad) {
+            this.pageSettings.currentPage = 1;
+        }
     }
 
     private addAriaAttr(): void {
@@ -216,9 +219,11 @@ export class Page implements IAction {
     }
 
     private appendToElement(e?: NotifyArgs): void {
+        this.isInitialLoad = true;
         this.parent.element.appendChild(this.element);
         this.parent.setGridPager(this.element);
         this.pagerObj.appendTo(this.element);
+        this.isInitialLoad = false;
     }
 
     private enableAfterRender(e?: NotifyArgs): void {

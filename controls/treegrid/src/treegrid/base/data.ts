@@ -85,7 +85,7 @@ public isRemote(): boolean {
  * @hidden
  */
   public convertToFlatData(data: Object): void {
-    this.parent.flatData = [];
+    this.parent.flatData = <Object[]>(Object.keys(data).length === 0 ? this.parent.dataSource : []);
     if ((isRemoteData(this.parent) && !isOffline(this.parent)) && data instanceof DataManager) {
       let dm: DataManager = <DataManager>this.parent.dataSource;
       if (this.parent.parentIdMapping) {
@@ -120,7 +120,7 @@ public isRemote(): boolean {
       this.taskIds = [];
       for (let i: number = 0; i < Object.keys(data).length; i++) {
         let tempData: Object = data[i];
-        this.hierarchyData.push(extend({}, tempData, true));
+        this.hierarchyData.push(extend({}, tempData));
         if (!isNullOrUndefined(tempData[this.parent.idMapping])) {
           this.taskIds.push(tempData[this.parent.idMapping]);
         }
@@ -129,7 +129,6 @@ public isRemote(): boolean {
         let selfData: ITreeData[] = [];
         let mappingData: Object[] = new DataManager(this.hierarchyData).executeLocal(
           new Query()
-            .where(this.parent.parentIdMapping, 'notequal', null)
             .group(this.parent.parentIdMapping)
         );
         for (let i: number = 0; i < mappingData.length; i++) {
@@ -147,7 +146,7 @@ public isRemote(): boolean {
         this.hierarchyData = this.selfReferenceUpdate(selfData);
       }
       if (!Object.keys(this.hierarchyData).length) {
-        this.parent.flatData = [];
+        this.parent.flatData = <Object[]>(this.parent.dataSource);
       } else {
         this.createRecords(this.hierarchyData);
       }

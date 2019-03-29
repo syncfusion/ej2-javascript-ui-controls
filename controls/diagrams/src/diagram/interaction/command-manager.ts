@@ -3389,7 +3389,7 @@ export class CommandHandler {
             let undoSelectorObj: SelectorModel = { nodes: [], connectors: [] };
             let redoSelectorObj: SelectorModel = { nodes: [], connectors: [] };
 
-            objects = sort(objects);
+            objects = sort(objects, option);
             for (i = 1; i < objects.length; i++) {
                 right = right + (objects[i] as Node).wrapper.bounds.topRight.x - (objects[i - 1] as Node).wrapper.bounds.topRight.x;
                 left = left + (objects[i] as Node).wrapper.bounds.topLeft.x - (objects[i - 1] as Node).wrapper.bounds.topLeft.x;

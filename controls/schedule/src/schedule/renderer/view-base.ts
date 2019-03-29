@@ -373,7 +373,7 @@ export class ViewBase {
         this.parent.resourceBase.renderResourceTree();
     }
     public addAutoHeightClass(element: Element): void {
-        if (!this.parent.uiStateValues.isGroupAdaptive && this.parent.enableAdaptiveRows && this.parent.activeView.isTimelineView()
+        if (!this.parent.uiStateValues.isGroupAdaptive && this.parent.rowAutoHeight && this.parent.activeView.isTimelineView()
             && this.parent.activeViewOptions.group.resources.length > 0) {
             addClass([element], cls.AUTO_HEIGHT);
         }

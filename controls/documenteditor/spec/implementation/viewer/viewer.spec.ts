@@ -33,7 +33,7 @@ describe('Position editable div on', () => {
         }, 750);
     });
     it('IME start event', (done: DoneFn) => {
-        editor.editor.insertText('Syncfusion Software ', false);
+        editor.editor.insertText('Syncfusion Software ');
         expect(editor.viewer.iframe.getAttribute('style')).toBe('pointer-events:none;position:absolute;top:-10000px');
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionstart', true, true);

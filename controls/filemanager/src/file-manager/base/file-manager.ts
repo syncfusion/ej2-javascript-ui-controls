@@ -1,4 +1,4 @@
-﻿import { Component, EmitType, ModuleDeclaration, isNullOrUndefined, L10n, extend } from '@syncfusion/ej2-base';
+﻿import { Component, EmitType, ModuleDeclaration, isNullOrUndefined, L10n, closest } from '@syncfusion/ej2-base';
 import { Property, INotifyPropertyChanged, NotifyPropertyChanges, Complex, select } from '@syncfusion/ej2-base';
 import { createElement, addClass, removeClass, setStyleAttribute as setAttr } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, formatUnit, Browser, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
@@ -12,7 +12,9 @@ import { AjaxSettingsModel, SearchSettings, SearchSettingsModel } from '../model
 import { Toolbar } from '../actions/toolbar';
 import { DetailsView } from '../layout/details-view';
 import { LargeIconsView } from '../layout/large-icons-view';
-import { Uploader, UploadingEventArgs, RemovingEventArgs, UploaderModel } from '@syncfusion/ej2-inputs';
+import { Uploader, UploadingEventArgs, RemovingEventArgs } from '@syncfusion/ej2-inputs';
+import { UploadSettingsModel } from '../models/upload-settings-model';
+import { UploadSettings } from '../models/upload-settings';
 import * as events from './constant';
 import * as CLS from './classes';
 import { read, paste, Delete, GetDetails } from '../common/operations';
@@ -21,7 +23,7 @@ import { IFileManager, ITreeView, IContextMenu, viewType, SortOrder } from './in
 import { FileBeforeSendEventArgs, FileOnSuccessEventArgs, FileOnErrorEventArgs, FileBeforeLoadEventArgs } from './interface';
 import { FileOpenEventArgs, FileSelectEventArgs, FileMenuClickEventArgs, FileMenuOpenEventArgs } from './interface';
 import { FileToolbarClickEventArgs } from './interface';
-import { activeElement, removeBlur, refresh, getPathObject, getLocaleText } from '../common/utility';
+import { activeElement, removeBlur, refresh, getPathObject, getLocaleText, setNextPath } from '../common/utility';
 import { TreeView as BaseTreeView } from '@syncfusion/ej2-navigations';
 import { ContextMenuSettingsModel } from '../models/contextMenu-settings-model';
 import { ContextMenuSettings } from '../models/contextMenu-settings';
@@ -63,12 +65,14 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /* Internal variables */
     private keyboardModule: KeyboardEvents;
     private keyConfigs: { [key: string]: string };
+    public originalPath: string;
     public pathId: string[];
-    public expandedPath: string;
     public expandedId: string;
     public itemData: Object[];
+    public visitedData: Object;
     public visitedItem: Element;
     public toolbarSelection: boolean;
+    // Specifies the parent path of the CWD(this.path).
     public targetPath: string;
     public feParent: Object[];
     public feFiles: Object[];
@@ -114,17 +118,19 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public searchedItems: { [key: string]: Object; }[] = [];
 
     /**
-     * Specifies the Ajax settings of the FileManager component.
+     * Specifies the AJAX settings of the file manager.
      * @default {
      *  getImageUrl: null;
-     *  url: null,
+     *  url: null;
+     *  uploadUrl: null;
+     *  downloadUrl: null;
      * }
      */
     @Complex<AjaxSettingsModel>({}, AjaxSettings)
     public ajaxSettings: AjaxSettingsModel;
 
     /**
-     * Enables or disables the multiple files selection
+     * Enables or disables the multiple files selection of the file manager.
      * @default true
      */
     @Property(true)
@@ -154,7 +160,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * @default {     
      * Columns: [{
      * field: 'name', headerText: 'Name', minWidth: 120, width: 'auto', customAttributes: { class: 'e-fe-grid-name' },
-     * template: '<span class="e-fe-text">${name}</span>'},{field: 'size', headerText: 'Size', 
+     * template: '<span class="e-fe-text" title="${name}">${name}</span>'},{field: 'size', headerText: 'Size', 
      * minWidth: 50, width: '110', template: '<span class="e-fe-size">${size}</span>'},
      * { field: 'dateModified', headerText: 'DateModified',
      * minWidth: 50, width: '190'}
@@ -166,7 +172,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
 
     /**
      * Enables or disables persisting component's state between page reloads. If enabled, following APIs will persist.
-     * 1. `view` - Represents the previous view of the FileManager component.
+     * 1. `view` - Represents the previous view of the file manager.
      * @default false
      */
     @Property(false)
@@ -180,14 +186,14 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public enableRtl: boolean;
 
     /**
-     * Specifies the height of the FileManager component.
+     * Specifies the height of the file manager.
      * @default '400px'
      */
     @Property('400px')
     public height: string | number;
 
     /**
-     * Specifies the initial view of the FileManager component. 
+     * Specifies the initial view of the file manager. 
      * With the help of this property, initial view can be changed to details or largeicons view.
      * @default 'LargeIcons'
      */
@@ -206,7 +212,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public navigationPaneSettings: NavigationPaneSettingsModel;
 
     /**
-     * Specifies the current path of the FileManager component.
+     * Specifies the current path of the file manager.
      * @default '/'
      */
     @Property('/')
@@ -231,7 +237,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public selectedItems: string[];
 
     /**
-     * Show or hide the file extension in FileManager component.
+     * Show or hide the file extension in file manager.
      * @default true
      */
     @Property(true)
@@ -262,14 +268,14 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public toolbarSettings: ToolbarSettingsModel;
 
     /**
-     * Specifies the upload settings for the FileManager component.
+     * Specifies the upload settings for the file manager.
      * @default null
      */
-    @Property()
-    public uploadSettings: UploaderModel;
+    @Complex<UploadSettingsModel>({}, UploadSettings)
+    public uploadSettings: UploadSettingsModel;
 
     /**
-     * Specifies the width of the FileManager component.
+     * Specifies the width of the file manager.
      * @default '100%'
      */
     @Property('100%')
@@ -290,21 +296,21 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public beforeFileOpen: EmitType<FileOpenEventArgs>;
 
     /**
-     * Triggers before the Ajax request send to the server.
+     * Triggers before the AJAX request send to the server.
      * @event
      */
     @Event()
     public beforeSend: EmitType<FileBeforeSendEventArgs>;
 
     /**
-     * Triggers when the FileManager control is created.
+     * Triggers when the file manager component is created.
      * @event
      */
     @Event()
     public created: EmitType<Object>;
 
     /**
-     * Triggers when the FileManager control is destroyed.
+     * Triggers when the file manager component is destroyed.
      * @event
      */
     @Event()
@@ -332,14 +338,14 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public menuOpen: EmitType<FileMenuOpenEventArgs>;
 
     /**
-     * Triggers when the Ajax request is failed.
+     * Triggers when the AJAX request is failed.
      * @event
      */
     @Event()
     public onError: EmitType<FileOnErrorEventArgs>;
 
     /**
-     * Triggers when the Ajax request is success.
+     * Triggers when the AJAX request is success.
      * @event
      */
     @Event()
@@ -354,7 +360,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
 
     constructor(options?: FileManagerModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
-        FileManager.Inject(BreadCrumbBar, LargeIconsView, ContextMenu);
     }
 
     /**
@@ -370,8 +375,8 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Initialize the event handler
      */
     protected preRender(): void {
-        this.pathId = ['fe_tree'];
-        this.itemData = [];
+        FileManager.Inject(BreadCrumbBar, LargeIconsView, ContextMenu);
+        this.ensurePath();
         this.feParent = [];
         this.feFiles = [];
         setAttr(this.element, { 'width': formatUnit(this.width), 'height': formatUnit(this.height) });
@@ -380,7 +385,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         if (this.isMobile) {
             this.setProperties({ navigationPaneSettings: { visible: false } }, true);
         }
-        let ele: Element = this.element.closest('.e-bigger');
+        let ele: Element = closest(this.element, '.e-bigger');
         this.isBigger = ele ? true : false;
         createSpinner({ target: this.element }, createElement);
         this.addWrapper();
@@ -399,7 +404,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * @hidden
      */
     public getPersistData(): string {
-        let keyEntity: string[] = ['view'];
+        let keyEntity: string[] = ['view', 'path', 'selectedItems'];
         return this.addOnPersist(keyEntity);
     }
 
@@ -455,7 +460,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         this.fileView = this.view;
         this.setRtl(this.enableRtl);
         this.addEventListeners();
-        read(this, events.initialEnd, '/');
+        read(this, (this.path !== this.originalPath) ? events.initialEnd : events.finalizeEnd, this.path);
         this.adjustHeight();
         if (isNOU(this.navigationpaneModule)) {
             this.splitterObj.collapse(0);
@@ -463,6 +468,23 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             bar.classList.add(CLS.DISPLAY_NONE);
         }
         this.wireEvents();
+    }
+
+    private ensurePath(): void {
+        let currentPath: string = this.path;
+        if (isNOU(currentPath)) {
+            currentPath = '/';
+        }
+        if (currentPath.indexOf('/') !== 0) {
+            currentPath = '/' + currentPath;
+        }
+        if (currentPath.lastIndexOf('/') !== (currentPath.length - 1)) {
+            currentPath = currentPath + '/';
+        }
+        this.originalPath = currentPath;
+        this.setProperties({ path: '/' }, true);
+        this.pathId = ['fe_tree'];
+        this.itemData = [];
     }
 
     private initialize(): void {
@@ -531,6 +553,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         let toolbar: HTMLElement = <HTMLElement>select('#' + this.element.id + CLS.TOOLBAR_ID, this.element);
         let toolBarHeight: number = this.toolbarModule ? toolbar.offsetHeight : 0;
         this.splitterObj.height = (this.element.clientHeight - toolBarHeight).toString();
+        this.splitterObj.dataBind();
     }
     /* istanbul ignore next */
     private splitterResize(): void {
@@ -596,8 +619,12 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             close: this.onClose.bind(this),
         });
         this.uploadDialogObj.appendTo('#' + this.element.id + CLS.UPLOAD_DIALOG_ID);
+        this.renderUploadBox();
+    }
+
+    private renderUploadBox(): void {
         let uploadUrl: string = this.ajaxSettings.uploadUrl ? this.ajaxSettings.uploadUrl : this.ajaxSettings.url;
-        let defaultModel: UploaderModel = {
+        this.uploadObj = new Uploader({
             dropArea: <HTMLElement>select('#' + this.element.id + CLS.CONTENT_ID, this.element),
             asyncSettings: {
                 saveUrl: uploadUrl,
@@ -611,12 +638,20 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             selected: this.onSelected.bind(this),
             success: this.onUploadSuccess.bind(this),
             failure: this.onUploadFailure.bind(this),
-        };
-        let uploadModel: UploaderModel = {};
-        extend(uploadModel, this.uploadSettings, defaultModel);
-        this.uploadObj = new Uploader(uploadModel);
+            autoUpload: this.uploadSettings.autoUpload,
+            minFileSize: this.uploadSettings.minFileSize,
+            maxFileSize: this.uploadSettings.maxFileSize,
+        });
         this.uploadObj.appendTo('#' + this.element.id + CLS.UPLOAD_ID);
     }
+
+    private updateUploader(): void {
+        this.uploadObj.autoUpload = this.uploadSettings.autoUpload;
+        this.uploadObj.minFileSize = this.uploadSettings.minFileSize;
+        this.uploadObj.maxFileSize = this.uploadSettings.maxFileSize;
+        this.uploadObj.dataBind();
+    }
+
     /* istanbul ignore next */
     private onOpen(): void {
         this.isOpened = true;
@@ -658,15 +693,21 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         this.trigger('onError', { action: 'Upload', error: files });
     }
 
+    private onInitialEnd(): void {
+        setNextPath(this, this.path);
+    }
+
     private addEventListeners(): void {
         this.on(events.beforeRequest, this.showSpinner, this);
         this.on(events.afterRequest, this.hideSpinner, this);
+        this.on(events.initialEnd, this.onInitialEnd, this);
         EventHandler.add(this.element, 'contextmenu', this.onContextMenu, this);
     }
     private removeEventListeners(): void {
         if (this.isDestroyed) { return; }
         this.off(events.beforeRequest, this.showSpinner);
         this.off(events.afterRequest, this.hideSpinner);
+        this.off(events.initialEnd, this.onInitialEnd);
         EventHandler.remove(this.element, 'contextmenu', this.onContextMenu);
     }
 
@@ -718,6 +759,12 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         this.keyboardModule.destroy();
     }
 
+    private setPath(): void {
+        this.ensurePath();
+        this.notify(events.clearPathInit, { selectedNode: this.pathId[0] });
+        read(this, (this.path !== this.originalPath) ? events.initialEnd : events.finalizeEnd, this.path);
+    }
+
     /**
      * Called internally if any of the property value changed.
      * @param  {FileManager} newProp
@@ -729,83 +776,8 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public onPropertyChanged(newProp: FileManagerModel, oldProp: FileManagerModel): void {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'cssClass':
-                    this.addCssClass(oldProp.cssClass, newProp.cssClass);
-                    this.notify(events.modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
-                    break;
-                case 'height':
-                    let height: string | number = !isNOU(newProp.height) ? formatUnit(newProp.height) : newProp.height;
-                    setAttr(this.element, { 'height': height });
-                    this.notify(events.modelChanged, { module: 'toolbar', newProp: newProp, oldProp: oldProp });
-                    let header: HTMLElement = <HTMLElement>document.getElementById('file_grid').querySelector('.e-gridheader');
-                    this.detailsviewModule.gridObj.height = this.setHeight() - header.offsetHeight;
-                    this.navigationpaneModule.treeObj.element.style.height = this.setHeight() + 'px';
-                    break;
-                case 'width':
-                    let width: string | number = !isNOU(newProp.width) ? formatUnit(newProp.width) : newProp.width;
-                    setAttr(this.element, { 'width': width });
-                    this.notify(events.modelChanged, { module: 'toolbar', newProp: newProp, oldProp: oldProp });
-                    break;
                 case 'ajaxSettings':
-                    if (!isNullOrUndefined(newProp.ajaxSettings.url)) {
-                        this.setProperties({ ajaxSettings: { url: newProp.ajaxSettings.url } }, true);
-                    }
-                    if (!isNullOrUndefined(newProp.ajaxSettings.uploadUrl)) {
-                        this.setProperties({ ajaxSettings: { uploadUrl: newProp.ajaxSettings.uploadUrl } }, true);
-                    }
-                    if (!isNullOrUndefined(newProp.ajaxSettings.downloadUrl)) {
-                        this.setProperties({ ajaxSettings: { downloadUrl: newProp.ajaxSettings.downloadUrl } }, true);
-                    }
-                    if (!isNullOrUndefined(newProp.ajaxSettings.getImageUrl)) {
-                        this.setProperties({ ajaxSettings: { getImageUrl: newProp.ajaxSettings.getImageUrl } }, true);
-                    }
-                    refresh(this as IFileManager);
-                    break;
-                case 'toolbarSettings':
-                    this.adjustHeight();
-                    this.notify(events.modelChanged, { module: 'toolbar', newProp: newProp, oldProp: oldProp });
-                    break;
-                case 'searchSettings':
-                    if (!isNullOrUndefined(newProp.searchSettings.allowSearchOnTyping)) {
-                        this.setProperties({ searchSettings: { allowSearchOnTyping: newProp.searchSettings.allowSearchOnTyping } }, true);
-                    }
-                    if (isNullOrUndefined(newProp.searchSettings.ignoreCase)) {
-                        this.setProperties({ searchSettings: { ignoreCase: newProp.searchSettings.ignoreCase } }, true);
-                    }
-                    if (isNullOrUndefined(newProp.searchSettings.filterType)) {
-                        this.setProperties({ searchSettings: { filterType: newProp.searchSettings.filterType } }, true);
-                    }
-                    this.notify(events.modelChanged, { module: 'breadcrumbbar', newProp: newProp, oldProp: oldProp });
-                    break;
-                case 'selectedItems':
-                    if (this.fileView === 'Details') {
-                        this.notify(events.modelChanged, { module: 'detailsview', newProp: newProp, oldProp: oldProp });
-                    } else if (this.fileView === 'LargeIcons') {
-                        this.notify(events.modelChanged, { module: 'largeiconsview', newProp: newProp, oldProp: oldProp });
-                    } break;
-                case 'showThumbnail':
-                    this.notify(events.modelChanged, { module: 'largeiconsview', newProp: newProp, oldProp: oldProp });
-                    break;
-                case 'enableRtl':
-                    this.setRtl(newProp.enableRtl);
-                    this.notify(events.modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
-                    break;
-                case 'showFileExtension':
-                    this.notify(events.modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
-                    break;
-                case 'showHiddenItems':
-                    this.notify(events.modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
-                    break;
-                case 'navigationPaneSettings':
-                    this.splitterAdjust();
-                    this.notify(events.modelChanged, { module: 'navigationpane', newProp: newProp, oldProp: oldProp });
-                    break;
-                case 'view':
-                    if (newProp.view === 'Details') {
-                        this.notify(events.modelChanged, { module: 'detailsview', newProp: newProp, oldProp: oldProp });
-                    } else if (newProp.view === 'LargeIcons') {
-                        this.notify(events.modelChanged, { module: 'largeiconsview', newProp: newProp, oldProp: oldProp });
-                    }
+                    this.ajaxSettingSetModel(newProp);
                     break;
                 case 'allowMultiSelection':
                     if (this.allowMultiSelection) {
@@ -820,8 +792,109 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                     }
                     this.notify(events.modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
                     break;
+                case 'cssClass':
+                    this.addCssClass(oldProp.cssClass, newProp.cssClass);
+                    this.notify(events.modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'detailsViewSettings':
+                    this.notify(events.modelChanged, { module: 'detailsview', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'enableRtl':
+                    this.setRtl(newProp.enableRtl);
+                    this.notify(events.modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'height':
+                    let height: string | number = !isNOU(newProp.height) ? formatUnit(newProp.height) : newProp.height;
+                    setAttr(this.element, { 'height': height });
+                    this.adjustHeight();
+                    this.notify(events.modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'locale':
+                    if (!isNOU(newProp.enableRtl)) {
+                        this.setProperties({ enableRtl: newProp.enableRtl } , true);
+                    }
+                    this.localeSetModelOption(newProp);
+                    break;
+                case 'navigationPaneSettings':
+                    this.splitterAdjust();
+                    this.notify(events.modelChanged, { module: 'navigationpane', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'path':
+                    this.setPath();
+                    break;
+                case 'searchSettings':
+                    if (!isNullOrUndefined(newProp.searchSettings.allowSearchOnTyping)) {
+                        this.setProperties({ searchSettings: { allowSearchOnTyping: newProp.searchSettings.allowSearchOnTyping } }, true);
+                    }
+                    if (isNullOrUndefined(newProp.searchSettings.ignoreCase)) {
+                        this.setProperties({ searchSettings: { ignoreCase: newProp.searchSettings.ignoreCase } }, true);
+                    }
+                    if (isNullOrUndefined(newProp.searchSettings.filterType)) {
+                        this.setProperties({ searchSettings: { filterType: newProp.searchSettings.filterType } }, true);
+                    }
+                    this.notify(events.modelChanged, { module: 'breadcrumbbar', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'selectedItems':
+                    if (this.view === 'Details') {
+                        this.notify(events.modelChanged, { module: 'detailsview', newProp: newProp, oldProp: oldProp });
+                    } else if (this.view === 'LargeIcons') {
+                        this.notify(events.modelChanged, { module: 'largeiconsview', newProp: newProp, oldProp: oldProp });
+                    }
+                    break;
+                case 'showFileExtension':
+                    this.notify(events.modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'showHiddenItems':
+                    this.notify(events.modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'showThumbnail':
+                    this.notify(events.modelChanged, { module: 'largeiconsview', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'toolbarSettings':
+                    this.adjustHeight();
+                    this.notify(events.modelChanged, { module: 'toolbar', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'uploadSettings':
+                    this.updateUploader();
+                    break;
+                case 'view':
+                    if (newProp.view === 'Details') {
+                        this.notify(events.modelChanged, { module: 'detailsview', newProp: newProp, oldProp: oldProp });
+                    } else if (newProp.view === 'LargeIcons') {
+                        this.notify(events.modelChanged, { module: 'largeiconsview', newProp: newProp, oldProp: oldProp });
+                    }
+                    break;
+                case 'width':
+                    let width: string | number = !isNOU(newProp.width) ? formatUnit(newProp.width) : newProp.width;
+                    setAttr(this.element, { 'width': width });
+                    this.notify(events.modelChanged, { module: 'toolbar', newProp: newProp, oldProp: oldProp });
+                    break;
             }
         }
+    }
+    /* istanbul ignore next */
+    private ajaxSettingSetModel(newProp: FileManagerModel): void {
+        if (!isNullOrUndefined(newProp.ajaxSettings.url)) {
+            this.setProperties({ ajaxSettings: { url: newProp.ajaxSettings.url } }, true);
+        }
+        if (!isNullOrUndefined(newProp.ajaxSettings.uploadUrl)) {
+            this.setProperties({ ajaxSettings: { uploadUrl: newProp.ajaxSettings.uploadUrl } }, true);
+        }
+        if (!isNullOrUndefined(newProp.ajaxSettings.downloadUrl)) {
+            this.setProperties({ ajaxSettings: { downloadUrl: newProp.ajaxSettings.downloadUrl } }, true);
+        }
+        if (!isNullOrUndefined(newProp.ajaxSettings.getImageUrl)) {
+            this.setProperties({ ajaxSettings: { getImageUrl: newProp.ajaxSettings.getImageUrl } }, true);
+        }
+        this.setProperties({ path: '/' }, true);
+        this.setProperties({ selectedItems: [] }, true);
+        super.refresh();
+    }
+
+    /* istanbul ignore next */
+    private localeSetModelOption(newProp: FileManagerModel): void {
+        this.uploadObj.locale = newProp.locale;
+        super.refresh();
     }
 
     /**
@@ -830,13 +903,27 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      */
     public destroy(): void {
         if (this.isDestroyed) { return; }
-        this.notify(events.destroy, {});
+        if (!this.refreshing) {
+            this.notify(events.destroy, {});
+        }
         this.uploadObj.destroy();
+        this.uploadObj = null;
         this.uploadDialogObj.destroy();
+        this.uploadDialogObj = null;
         this.splitterObj.destroy();
-        if (this.dialogObj) { this.dialogObj.destroy(); }
-        if (this.viewerObj) { this.viewerObj.destroy(); }
-        if (this.extDialogObj) { this.extDialogObj.destroy(); }
+        this.splitterObj = null;
+        if (this.dialogObj) {
+            this.dialogObj.destroy();
+            this.dialogObj = null;
+        }
+        if (this.viewerObj) {
+            this.viewerObj.destroy();
+            this.viewerObj = null;
+        }
+        if (this.extDialogObj) {
+            this.extDialogObj.destroy();
+            this.extDialogObj = null;
+        }
         this.element.removeAttribute('style');
         this.element.removeAttribute('tabindex');
         this.removeEventListeners();
@@ -848,7 +935,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * Disables the specified toolbar items.
+     * Disables the specified toolbar items of the file manager.
      * @param {items: string[]} items - Specifies an array of items to be disabled.
      * @returns void
      */
@@ -859,7 +946,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * Enables the specified toolbar items.
+     * Enables the specified toolbar items of the file manager.
      * @param {items: string[]} items - Specifies an array of items to be enabled.
      * @returns void
      */
@@ -870,10 +957,10 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * Refresh the folder content.
+     * Refresh the folder files of the file manager.
      * @returns void
      */
-    public refreshContent(): void {
+    public refreshFiles(): void {
         refresh(this);
     }
 
@@ -890,17 +977,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
             (operation === 'Remove') ? this.deleteRecords.push(selectNodes[i].name) : this.deleteRecords = this.deleteRecords;
             i++;
         }
-    }
-
-    /**
-     * To set the height for navigationPane and DetailsView
-     * @hidden
-     */
-    public setHeight(): number {
-        let toolbarHeight: number = this.toolbarModule ? this.toolbarModule.toolbarObj.element.offsetHeight : 0;
-        let fileHeight: number = this.element.clientHeight;
-        let height: number = fileHeight - toolbarHeight;
-        return height;
     }
 
     /**

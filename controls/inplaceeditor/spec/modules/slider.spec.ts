@@ -54,6 +54,20 @@ describe('Slider module', () => {
             editorObj.save();
             expect(valueEle.innerHTML === '20').toEqual(true);
         });
+        it('Without compObj data to update value method testing', () => {
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-slider', ele).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(20);
+            expect(editorObj.sliderModule.compObj.value).toEqual(20);
+            editorObj.sliderModule.compObj.value = 30;
+            expect(editorObj.sliderModule.compObj.value).toEqual(30);
+            editorObj.sliderModule.compObj = undefined;
+            editorObj.save();
+            expect(editorObj.value).toEqual(20);
+        });
     });
     describe('Duplicate ID availability testing', () => {
         let editorObj: any;

@@ -269,11 +269,35 @@ export namespace DarkTheme {
 }
 
 export function getThemeStyle(theme: MapsTheme): IThemeStyle {
-    let style: IThemeStyle;
+    let style: IThemeStyle; let color: string;
+    switch (theme) {
+        case 'MaterialDark':
+            color = '#303030';
+            break;
+        case 'FabricDark':
+            color = '#201F1F';
+            break;
+        case 'BootstrapDark':
+            color = '#1A1A1A';
+            break;
+    }
     switch (theme) {
         case 'MaterialDark':
         case 'FabricDark':
         case 'BootstrapDark':
+            style = {
+                backgroundColor: color,
+                areaBackgroundColor: color,
+                titleFontColor: '#FFFFFF',
+                subTitleFontColor: '#FFFFFF',
+                legendTitleFontColor: '#DADADA',
+                legendTextColor: '#DADADA',
+                dataLabelFontColor: '#DADADA',
+                tooltipFontColor: '#ffffff',
+                tooltipFillColor: '#363F4C',
+                zoomFillColor: '#FFFFFF'
+            };
+            break;
         case 'HighContrast':
         case 'Highcontrast':
             style = {
@@ -284,8 +308,8 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
                 legendTitleFontColor: '#FFFFFF',
                 legendTextColor: '#FFFFFF',
                 dataLabelFontColor: '#000000',
-                tooltipFontColor: '#ffffff',
-                tooltipFillColor: '#363F4C',
+                tooltipFontColor: '#000000',
+                tooltipFillColor: '#ffffff',
                 zoomFillColor: '#FFFFFF'
             };
             break;
@@ -300,7 +324,13 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
                 dataLabelFontColor: '#212529',
                 tooltipFontColor: '#FFFFFF',
                 tooltipFillColor: '#000000',
-                zoomFillColor: '#FFFFFF'
+                zoomFillColor: '#5B6269',
+                fontFamily: 'HelveticaNeue-Medium',
+                titleFontSize: '16px',
+                legendFontSize: '14px',
+                tooltipFillOpacity: 1,
+                tooltipTextOpacity: 0.9,
+                labelFontFamily: 'HelveticaNeue'
             };
             break;
         default:

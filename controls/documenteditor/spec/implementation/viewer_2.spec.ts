@@ -47,10 +47,10 @@ describe('Show Tool tip validation', () => {
     });
     it('Show hyperlink validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('https://syncfusion.com', true);
+        editor.editorModule.insertTextInternal('https://syncfusion.com', true);
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('https://ej2-syncfusion.com', true);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertTextInternal('https://ej2-syncfusion.com', true);
+        editor.editorModule.insertText(' ');
         editor.selection.selectPosition(editor.documentStart, editor.documentStart);
         let event: any = {
             preventDefault: () => { return true; },
@@ -68,10 +68,10 @@ describe('Show Tool tip validation', () => {
     });
     it('Update Position for tooltip element', () => {
         editor.openBlank();
-        editor.editorModule.insertText('https://syncfusion.com', true);
+        editor.editorModule.insertTextInternal('https://syncfusion.com', true);
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('https://ej2-syncfusion.com', true);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertTextInternal('https://ej2-syncfusion.com', true);
+        editor.editorModule.insertText(' ');
         editor.selection.moveToLineStart();
         let hyperlinkLocation = editor.selection.start.location;
         editor.selection.selectPosition(editor.documentStart, editor.documentStart);
@@ -92,10 +92,10 @@ describe('Show Tool tip validation', () => {
     });
     it('Prevent tooltip if context menu open', () => {
         editor.openBlank();
-        editor.editorModule.insertText('https://syncfusion.com', true);
+        editor.editorModule.insertTextInternal('https://syncfusion.com', true);
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('https://ej2-syncfusion.com', true);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertTextInternal('https://ej2-syncfusion.com', true);
+        editor.editorModule.insertText(' ');
         editor.selection.moveToLineStart();
         let hyperlinkLocation = editor.selection.start.location;
         editor.selection.selectPosition(editor.documentStart, editor.documentStart);
@@ -112,10 +112,10 @@ describe('Show Tool tip validation', () => {
     it('hyperlink navigate with out ctrl click', () => {
         editor.useCtrlClickToFollowHyperlink = false;
         editor.openBlank();
-        editor.editorModule.insertText('https://syncfusion.com', true);
+        editor.editorModule.insertTextInternal('https://syncfusion.com', true);
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('https://ej2-syncfusion.com', true);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertTextInternal('https://ej2-syncfusion.com', true);
+        editor.editorModule.insertText(' ');
         editor.selection.selectPosition(editor.documentStart, editor.documentStart);
         let event: any = {
             preventDefault: () => { return true; },
@@ -408,7 +408,7 @@ describe('Touch event validation', () => {
         viewer.onTouchUpInternal(event);
     });
     it('Selection using touch gripper', () => {
-        editor.editorModule.insertText('Syncfusion', false);
+        editor.editorModule.insertText('Syncfusion');
         editor.selection.selectPosition(editor.documentStart, editor.documentStart);
         let point = editor.selection.start.location;
         let pageX: number = point.x + viewer.currentPage.boundingRectangle.x;
@@ -689,14 +689,14 @@ describe('Key down internal validation -1 tab key', () => {
         }, 1000);
     });
     it('ctrl tab key validation with selection', () => {
-        editor.editorModule.insertText('Adventure Works cycle', false);
+        editor.editorModule.insertText('Adventure Works cycle');
         let event: any = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
         event = { keyCode: 9, preventDefault: function () { }, altKey: false, ctrlKey: true, shiftKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
     });
     it('shift tab key validation', () => {
-        editor.editorModule.insertText('Adventure Works cycle', false);
+        editor.editorModule.insertText('Adventure Works cycle');
         let event: any = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
         event = { keyCode: 9, preventDefault: function () { }, altKey: false, ctrlKey: false, shiftKey: true, which: 0 };
@@ -710,7 +710,7 @@ describe('Key down internal validation -1 tab key', () => {
         viewer.onKeyDownInternal(event);
     });
     it('tab key validation with selection', () => {
-        editor.editorModule.insertText('Adventure Works cycle', false);
+        editor.editorModule.insertText('Adventure Works cycle');
         let event: any = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
         event = { keyCode: 9, preventDefault: function () { }, altKey: false, ctrlKey: false, shiftKey: false, which: 0 };
@@ -752,7 +752,7 @@ describe('Key down internal validation -2 paragraph alignent', () => {
         }, 1000);
     });
     it('BeforeSpacing', () => {
-        editor.editorModule.insertText('Adventure Works cycle', false);
+        editor.editorModule.insertText('Adventure Works cycle');
         let event: any = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
         event = { keyCode: 48, preventDefault: function () { }, altKey: false, ctrlKey: true, shiftKey: false, which: 0 };
@@ -760,7 +760,7 @@ describe('Key down internal validation -2 paragraph alignent', () => {
         expect(editor.selection.paragraphFormat.beforeSpacing).toBe(0);
     });
     it('Linespacing validation', () => {
-        editor.editorModule.insertText('Adventure Works cycle', false);
+        editor.editorModule.insertText('Adventure Works cycle');
         let event: any = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
         event = { keyCode: 49, preventDefault: function () { }, altKey: false, ctrlKey: true, shiftKey: false, which: 0 };
@@ -774,7 +774,7 @@ describe('Key down internal validation -2 paragraph alignent', () => {
         expect(editor.selection.paragraphFormat.lineSpacing).toBe(1.5);
     });
     it('copy and font dialog validation', () => {
-        editor.editorModule.insertText('Adventure Works cycle', false);
+        editor.editorModule.insertText('Adventure Works cycle');
         let event: any = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
         event = { keyCode: 67, preventDefault: function () { }, altKey: false, ctrlKey: true, shiftKey: false, which: 0 };
@@ -784,7 +784,7 @@ describe('Key down internal validation -2 paragraph alignent', () => {
         viewer.onKeyDownInternal(event);
     });
     it('Text Alignment validation', () => {
-        editor.editorModule.insertText('Adventure Works cycle', false);
+        editor.editorModule.insertText('Adventure Works cycle');
         let event: any;
         event = { keyCode: 76, preventDefault: function () { }, altKey: false, ctrlKey: true, shiftKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
@@ -794,7 +794,7 @@ describe('Key down internal validation -2 paragraph alignent', () => {
         expect(editor.selection.paragraphFormat.textAlignment).toBe('Right');
     });
     it('cut validation', () => {
-        editor.editorModule.insertText('Adventure Works cycle', false);
+        editor.editorModule.insertText('Adventure Works cycle');
         let event: any = { keyCode: 65, preventDefault: function () { }, altKey: false, ctrlKey: true, shiftKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
         event = { keyCode: 88, preventDefault: function () { }, altKey: false, ctrlKey: true, shiftKey: false, which: 0 };
@@ -826,7 +826,7 @@ describe('Key down internal validation -2 paragraph alignment', () => {
         }, 1000);
     });
     it('Font size increment and decrement validation', () => {
-        editor.editorModule.insertText('Adventure Works cycle', false);
+        editor.editorModule.insertText('Adventure Works cycle');
         let event: any = { keyCode: 65, preventDefault: function () { }, altKey: false, ctrlKey: true, shiftKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
         let previousSize = editor.selection.characterFormat.fontSize;
@@ -837,7 +837,7 @@ describe('Key down internal validation -2 paragraph alignment', () => {
         expect(previousSize).toBe(editor.selection.characterFormat.fontSize);
     });
     it('Left indent', () => {
-        editor.editorModule.insertText('Adventure Works cycle', false);
+        editor.editorModule.insertText('Adventure Works cycle');
         let event: any = { keyCode: 65, preventDefault: function () { }, altKey: false, ctrlKey: true, shiftKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
         let prevLeftIndent = editor.selection.paragraphFormat.leftIndent;
@@ -846,7 +846,7 @@ describe('Key down internal validation -2 paragraph alignment', () => {
         expect(prevLeftIndent).not.toBe(editor.selection.paragraphFormat.leftIndent);
     });
     it('Highlight Color validation', () => {
-        editor.editorModule.insertText('Adventure Works cycle', false);
+        editor.editorModule.insertText('Adventure Works cycle');
         let event: any = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
         event = { keyCode: 72, preventDefault: function () { }, altKey: true, ctrlKey: true, shiftKey: false, which: 0 };
@@ -854,7 +854,7 @@ describe('Key down internal validation -2 paragraph alignment', () => {
         expect(editor.selection.characterFormat.highlightColor).toBe('Yellow');
     });
     it('backspace and delete key', () => {
-        editor.editorModule.insertText('Adventure Works cycle', false);
+        editor.editorModule.insertText('Adventure Works cycle');
         let event: any = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
         event = { keyCode: 8, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -905,7 +905,7 @@ describe('Key Board shortcut Validation', () => {
         }, 1000);
     });
     it('handle control up key', () => {
-        editor.editorModule.insertText('Syncfusion Software', true);
+        editor.editorModule.insertTextInternal('Syncfusion Software', true);
         let event: any = { keyCode: 37, preventDefault: () => { return true; }, ctrlKey: true, shiftKey: false, altKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
         expect(editor.selectionModule.isEmpty).toBe(true);
@@ -914,18 +914,18 @@ describe('Key Board shortcut Validation', () => {
     });
     it('Handle Control up key', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software', true);
+        editor.editorModule.insertTextInternal('Syncfusion Software', true);
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Syncfusion Software', true);
+        editor.editorModule.insertTextInternal('Syncfusion Software', true);
         let event: any = { keyCode: 38, preventDefault: () => { return true; }, ctrlKey: true, shiftKey: false, altKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(0);
     });
     it('Handle Control down key', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software', true);
+        editor.editorModule.insertTextInternal('Syncfusion Software', true);
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Syncfusion Software', true);
+        editor.editorModule.insertTextInternal('Syncfusion Software', true);
         let event: any = { keyCode: 40, preventDefault: () => { return true; }, ctrlKey: true, shiftKey: false, altKey: false, which: 0 };
         editor.selectionModule.moveUp();
         viewer.onKeyDownInternal(event);
@@ -1026,7 +1026,7 @@ describe('Key Board shortcut Validation', () => {
         }, 1000);
     });
     it('handle control up key', () => {
-        editor.editorModule.insertText('Syncfusion Software', true);
+        editor.editorModule.insertTextInternal('Syncfusion Software', true);
         let event: any = { keyCode: 37, preventDefault: () => { return true; }, ctrlKey: true, shiftKey: false, altKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
         expect(editor.selectionModule.isEmpty).toBe(true);
@@ -1035,18 +1035,18 @@ describe('Key Board shortcut Validation', () => {
     });
     it('Handle Control up key', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software', true);
+        editor.editorModule.insertTextInternal('Syncfusion Software', true);
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Syncfusion Software', true);
+        editor.editorModule.insertTextInternal('Syncfusion Software', true);
         let event: any = { keyCode: 38, preventDefault: () => { return true; }, ctrlKey: true, shiftKey: false, altKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
         expect(editor.selection.start.offset).toBe(0);
     });
     it('Handle Control down key', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software', true);
+        editor.editorModule.insertTextInternal('Syncfusion Software', true);
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Syncfusion Software', true);
+        editor.editorModule.insertTextInternal('Syncfusion Software', true);
         let event: any = { keyCode: 40, preventDefault: () => { return true; }, ctrlKey: true, shiftKey: false, altKey: false, which: 0 };
         editor.selectionModule.moveUp();
         viewer.onKeyDownInternal(event);
@@ -1270,7 +1270,7 @@ describe('First Page header odd and even page header validation', () => {
     it('Header footer validation', () => {
         editor.viewer.onDocumentChanged([createDocument()]);
         expect(editor.viewer.isBlockInHeader(editor.selection.start.paragraph)).toBe(false);
-        editor.editorModule.insertText('S', true);
+        editor.editorModule.insertTextInternal('S', true);
         editor.editorModule.onApplyCharacterFormat('fontSize', 56);
         for (let i = 0; i < 35; i++) {
             editor.editorModule.onEnter();
@@ -1284,7 +1284,7 @@ describe('First Page header odd and even page header validation', () => {
         }
         viewer.onDoubleTap(event);
         editor.dataBind();
-        editor.editorModule.insertText('Syncfusion', true);
+        editor.editorModule.insertTextInternal('Syncfusion', true);
         viewer.viewerContainer.scrollTop = 0;
         viewer.updateVisiblePages();
     });
@@ -1320,7 +1320,7 @@ describe('Header footer enable validation', () => {
         }
         viewer.onDoubleTap(event);
         editor.dataBind();
-        editor.editorModule.insertText('Syncfusion', true);
+        editor.editorModule.insertTextInternal('Syncfusion', true);
         editor.editorModule.onEnter();
         editor.editorModule.onEnter();
         editor.editorModule.onEnter();
@@ -1353,7 +1353,7 @@ describe('Header footer enable validation', () => {
         viewer.onMouseDownInternal(event);
         viewer.onMouseMoveInternal(event);
         viewer.onMouseUpInternal(event);
-        editor.editorModule.insertText('Syncfusion', true);
+        editor.editorModule.insertTextInternal('Syncfusion', true);
         editor.editorModule.onEnter();
         editor.editorModule.onEnter();
         editor.editorModule.onEnter();

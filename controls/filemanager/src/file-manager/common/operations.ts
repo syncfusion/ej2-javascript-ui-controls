@@ -56,7 +56,7 @@ export function paste(
  * @private
  */
 export function Delete(parent: IFileManager, items: string[], path: string, operation: string, treeView: ITreeView): void {
-    let data: Object = { action: operation, targetPath: path, itemNames: items };
+    let data: Object = { action: operation, path: path, itemNames: items };
     createAjax(parent, data, deleteSuccess, path, treeView);
 }
 
@@ -66,7 +66,7 @@ export function Delete(parent: IFileManager, items: string[], path: string, oper
  */
 /* istanbul ignore next */
 export function GetDetails(parent: IFileManager, itemNames: string[], path: string, operation: string): void {
-    let data: Object = { action: operation, targetPath: path, itemNames: itemNames };
+    let data: Object = { action: operation, path: path, itemNames: itemNames };
     createAjax(parent, data, detailsSuccess, path, null, operation);
 }
 

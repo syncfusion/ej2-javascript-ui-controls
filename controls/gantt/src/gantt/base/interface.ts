@@ -92,9 +92,9 @@ export interface IQueryTaskbarInfoEventArgs {
     rowElement: Element;
     taskbarElement: Element;
     taskbarBgColor?: string;
-    //taskbarBorderColor?: string;
+    taskbarBorderColor?: string;
     progressBarBgColor?: string;
-    progressBarBorderColor?: string;
+    //progressBarBorderColor?: string;
     milestoneColor?: string;
     rightLabelColor?: string;
     leftLabelColor?: string;

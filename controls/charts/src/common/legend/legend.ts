@@ -355,6 +355,9 @@ export class BaseLegend {
             this.legendCollections[firstLegend].location = start;
             let previousLegend: LegendOptions = this.legendCollections[firstLegend];
             for (let legendOption of this.legendCollections) {
+                if (this.chart.getModuleName() === 'accumulationchart') {
+                    legendOption.fill = this.chart.visibleSeries[0].points[legendOption.pointIndex].color;
+                }
                 if (legendOption.render && legendOption.text !== '') {
                     legendSeriesGroup = chart.renderer.createGroup({
                         id: this.legendID + this.generateId(legendOption, '_g_', count)});

@@ -6558,7 +6558,7 @@ function evalExp(str, nameSpace, helper) {
                 let fNameSpace = (helper && helper.hasOwnProperty(fnStr[0]) ? 'this.' : 'global');
                 fNameSpace = (/\./.test(fnStr[0]) ? '' : fNameSpace);
                 cnt = '" + ' + (fNameSpace === 'global' ? '' : fNameSpace) +
-                    cnt.replace(rlStr, addNameSpace(matches[1].replace(',', nameSpace + '.'), (fNameSpace === 'global' ? false : true), nameSpace, localKeys)) +
+                    cnt.replace(rlStr, addNameSpace(matches[1].replace(',', '+' + nameSpace + '.'), (fNameSpace === 'global' ? false : true), nameSpace, localKeys)) +
                     '+"';
             }
         }
@@ -6572,7 +6572,7 @@ function evalExp(str, nameSpace, helper) {
         }
         else {
             // evaluate normal expression
-            cnt = '"+' + addNameSpace(cnt, (localKeys.indexOf(cnt) === -1), nameSpace, localKeys) + '+"';
+            cnt = '"+' + addNameSpace(cnt.replace(/\,/gi, '+' + nameSpace + '.'), (localKeys.indexOf(cnt) === -1), nameSpace, localKeys) + '+"';
         }
         return cnt;
     });

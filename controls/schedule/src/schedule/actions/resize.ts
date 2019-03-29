@@ -270,8 +270,8 @@ export class Resize extends ActionBase {
         if (isLeft) {
             this.actionObj.start = this.parent.activeViewOptions.timeScale.enable ? this.calculateIntervalTime(resizeTime) : resizeTime;
         } else {
-            let resizeEnd: Date = (this.actionObj.event[this.parent.eventFields.isAllDay] && resizeTime.getHours() === 0 &&
-                resizeTime.getMinutes() === 0) ? util.addDays(resizeTime, 1) : resizeTime;
+            let resizeEnd: Date = (resizeTime.getHours() === 0 && resizeTime.getMinutes() === 0) ?
+                util.addDays(resizeTime, 1) : resizeTime;
             this.actionObj.end = this.parent.activeViewOptions.timeScale.enable && this.parent.currentView !== 'Month' ?
                 this.calculateIntervalTime(resizeEnd) : resizeEnd;
         }
@@ -302,7 +302,7 @@ export class Resize extends ActionBase {
     private getLeftRightStyles(e: MouseEvent & TouchEvent, isLeft: boolean): { [key: string]: Object } {
         let styles: { [key: string]: Object } = {};
         let isTimelineView: boolean = this.parent.activeView.isTimelineView();
-        let isTimeViews: boolean = ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'].indexOf(this.parent.currentView) > -1  &&
+        let isTimeViews: boolean = ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'].indexOf(this.parent.currentView) > -1 &&
             this.parent.activeViewOptions.timeScale.enable;
         let slotInterval: number = (this.actionObj.cellWidth / this.actionObj.slotInterval) * this.actionObj.interval;
         let pageWidth: number = isLeft ? (this.actionObj.X - this.actionObj.pageX) : (this.actionObj.pageX - this.actionObj.X);

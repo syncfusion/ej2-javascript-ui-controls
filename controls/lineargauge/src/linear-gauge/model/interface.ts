@@ -234,4 +234,16 @@ export interface IThemeStyle {
     minorTickColor: string;
 
     pointerColor: string;
+
+    fontFamily?: string;
+
+    fontSize?: string;
+
+    labelFontFamily?: string;
+
+    tooltipFillOpacity?: number;
+
+    tooltipTextOpacity?: number;
+
+    containerBackground?: string;
 }

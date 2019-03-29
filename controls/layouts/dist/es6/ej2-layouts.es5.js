@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, compile, detach, formatUnit, isNullOrUndefined, isUndefined, removeClass, select, selectAll, setStyleAttribute } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, closest, compile, detach, formatUnit, isNullOrUndefined, isUndefined, removeClass, select, selectAll, setStyleAttribute } from '@syncfusion/ej2-base';
 
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -123,6 +123,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         _this.border = 0;
         _this.validDataAttributes = ['data-size', 'data-min', 'data-max', 'data-collapsible', 'data-resizable', 'data-content', 'data-collapsed'];
         _this.validElementAttributes = ['data-orientation', 'data-width', 'data-height'];
+        _this.iconsDelay = 300;
         return _this;
     }
     /**
@@ -250,7 +251,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         EventHandler.add(document, 'touchstart click', this.onDocumentClick, this);
     };
     Splitter.prototype.onDocumentClick = function (e) {
-        if (!e.target.classList.contains(SPLIT_BAR)) {
+        if (!e.target.classList.contains(SPLIT_BAR) && !isNullOrUndefined(this.currentSeparator)) {
             this.currentSeparator.classList.remove(SPLIT_BAR_HOVER);
             this.currentSeparator.classList.remove(SPLIT_BAR_ACTIVE);
         }
@@ -584,8 +585,15 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         return resizable;
     };
     Splitter.prototype.addMouseActions = function (separator) {
-        separator.addEventListener('mouseover', function () {
-            addClass([separator], [SPLIT_BAR_HOVER]);
+        var _this = this;
+        // tslint:disable-next-line
+        var sTout;
+        separator.addEventListener('mouseenter', function () {
+            /* istanbul ignore next */
+            sTout = setTimeout(function () { addClass([separator], [SPLIT_BAR_HOVER]); }, _this.iconsDelay);
+        });
+        separator.addEventListener('mouseleave', function () {
+            clearTimeout(sTout);
         });
         separator.addEventListener('mouseout', function () {
             removeClass([separator], [SPLIT_BAR_HOVER]);
@@ -645,7 +653,9 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         EventHandler.add(this.currentSeparator, 'touchstart click', this.clickHandler, this);
     };
     Splitter.prototype.clickHandler = function (e) {
-        e.target.classList.add(SPLIT_BAR_HOVER);
+        if (!e.target.classList.contains(NAVIGATE_ARROW)) {
+            e.target.classList.add(SPLIT_BAR_HOVER);
+        }
         var icon = e.target;
         if (icon.classList.contains(ARROW_LEFT) || icon.classList.contains(ARROW_UP)) {
             this.collapseAction(e);
@@ -1296,19 +1306,38 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
     };
     Splitter.prototype.setTemplate = function (template, toElement) {
         toElement.innerHTML = '';
+        this.templateCompile(toElement, template);
+    };
+    // tslint:disable-next-line
+    Splitter.prototype.templateCompile = function (ele, cnt) {
+        var tempEle = this.createElement('div');
+        this.compileElement(tempEle, cnt, 'content');
+        if (tempEle.childNodes.length !== 0) {
+            for (var item = 0; item < tempEle.childNodes.length; item++) {
+                ele.appendChild(tempEle.childNodes[item]);
+            }
+        }
+    };
+    Splitter.prototype.compileElement = function (ele, val, prop) {
+        if (typeof (val) === 'string') {
+            val = (val).trim();
+        }
         var templateFn;
-        if (this.element.nodeName === 'EJS-SPLITTER' || typeof (template) !== 'object') {
-            templateFn = compile(template);
+        if (!isNullOrUndefined(val.outerHTML)) {
+            templateFn = compile(val.outerHTML);
         }
         else {
-            templateFn = compile(template.outerHTML);
+            templateFn = compile(val);
         }
-        var fromElements = [];
-        for (var _i = 0, _a = templateFn({}); _i < _a.length; _i++) {
-            var item = _a[_i];
-            fromElements.push(item);
+        var templateFUN;
+        if (!isNullOrUndefined(templateFn)) {
+            templateFUN = templateFn({}, this, prop);
         }
-        append([].slice.call(fromElements), toElement);
+        if (!isNullOrUndefined(templateFn) && templateFUN.length > 0) {
+            [].slice.call(templateFUN).forEach(function (el) {
+                ele.appendChild(el);
+            });
+        }
     };
     Splitter.prototype.paneCollapsible = function (pane, index) {
         this.paneSettings[index].collapsible ? addClass([pane], COLLAPSIBLE) : removeClass([pane], COLLAPSIBLE);
@@ -1933,7 +1962,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     };
     DashboardLayout.prototype.downResizeHandler = function (e) {
         this.resizeCalled = false;
-        var el = (e.currentTarget).closest('.e-panel');
+        var el = closest((e.currentTarget), '.e-panel');
         var args = { event: e, element: el };
         this.trigger('resizeStart', args);
         this.downTarget = e.currentTarget;
@@ -1959,7 +1988,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     // tslint:disable-next-line:max-func-body-length
     DashboardLayout.prototype.moveResizeHandler = function (e) {
         this.moveTarget = this.downTarget;
-        var el = this.moveTarget.closest('.e-panel');
+        var el = closest((this.moveTarget), '.e-panel');
         var args = { event: e, element: el };
         this.trigger('resize', args);
         if (this.lastMouseX === e.pageX || this.lastMouseY === e.pageY) {
@@ -2070,7 +2099,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         this.upTarget = this.downTarget;
-        var el = this.upTarget.closest('.e-panel');
+        var el = closest((this.upTarget), '.e-panel');
         var args = { event: e, element: el };
         this.trigger('resizeStop', args);
         if (el) {
@@ -3646,6 +3675,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                 _this.gridPanelCollection.splice(_this.gridPanelCollection.indexOf(item), 1);
             }
         });
+        this.updateCloneArrayObject();
     };
     /**
      * Moves the panel in the DashboardLayout.

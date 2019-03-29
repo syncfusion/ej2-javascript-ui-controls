@@ -325,7 +325,7 @@ describe('BookMark validation in double tap', () => {
         }, 1000);
     });
     it('Book Mark insert validation', () => {
-        editor.editorModule.insertText('Sample Work', false);
+        editor.editorModule.insertText('Sample Work');
         editor.selection.handleLeftKey();
         editor.selection.handleShiftLeftKey();
         editor.selection.handleShiftLeftKey();
@@ -372,7 +372,7 @@ describe('BookMark validation in double tap', () => {
         }, 1000);
     });
     it('Book Mark insert validation', () => {
-        editor.editorModule.insertText('Sample Work', false);
+        editor.editorModule.insertText('Sample Work');
         editor.selection.selectAll();
         editor.bookmarkDialogModule.show();
         (editor.bookmarkDialogModule as any).addBookmark();

@@ -297,7 +297,7 @@ describe('DropDownList', () => {
         let originalTimeout: number;
         beforeEach(() => {
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 6000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 8000;
             document.body.appendChild(element);
         });
         afterEach(() => {
@@ -326,7 +326,7 @@ describe('DropDownList', () => {
                 expect(listObj.list.classList.contains('e-nodata')).toBe(true);
                 expect(listObj.isDataFetched).toBe(true);
                 done();
-            }, 3000);
+            }, 4000);
         });
         it('dynamic change datascource ', (done) => {
             listObj.hidePopup();
@@ -339,7 +339,7 @@ describe('DropDownList', () => {
                 expect(listObj.isDataFetched).not.toBe(true);
                 expect(listObj.listData.length === 3).toBe(true);
                 done();
-            }, 3000);
+            }, 4000);
         });
         it('set empty datasource ', (done) => {
             listObj.hidePopup();
@@ -355,15 +355,18 @@ describe('DropDownList', () => {
                 expect(listObj.list.classList.contains('e-nodata')).toBe(true);
                 expect(listObj.isDataFetched).toBe(true);
                 done();
-            }, 2000);
+            }, 3000);
         });
-        it('set null datasource ', () => {
+        it('set null datasource ', (done) => {
             listObj.hidePopup();
             listObj.dataSource = null;
             listObj.query = query;
             listObj.dataBind();
             listObj.showPopup();
-            expect(listObj.list.classList.contains('e-nodata')).toBe(true);
+            setTimeout(() => {
+                expect(listObj.list.classList.contains('e-nodata')).toBe(true);
+                done();
+            }, 1000);
         });
     });
     describe('EJ2-16375: Form reset', () => {
@@ -622,7 +625,10 @@ describe('DropDownList', () => {
     describe('EJ2-18309 - Maximum call stack error while emptying dataSource with filtering and remote data', () => {
         let listObj: any;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let originalTimeout: number;
         beforeEach((done) => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 6000;
             document.body.appendChild(element);
             listObj = new DropDownList({
                 dataSource: new DataManager({
@@ -639,6 +645,7 @@ describe('DropDownList', () => {
             done();
         });
         afterEach(() => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
             if (element) {
                 element.remove();
                 document.body.innerHTML = '';
@@ -652,8 +659,8 @@ describe('DropDownList', () => {
                 setTimeout(() => {
                     expect(listObj.list.classList.contains('e-nodata')).toBe(true);
                     done();
-                }, 400);
-            }, 2000);
+                }, 1000);
+            }, 3000);
         });
     });
 });

@@ -903,7 +903,11 @@ export class TextSelection {
                     if (nextPageElement) {
                         let lastElement: HTMLElement = nextPageElement.lastChild as HTMLElement;
                         if (lastElement) {
-                            this.extendSelectionStich(lastElement.childNodes[0], this.getTextLastLength(lastElement), selection);
+                            if (lastElement.childNodes[0]) {
+                                this.extendSelectionStich(lastElement.childNodes[0], this.getTextLastLength(lastElement), selection);
+                            } else {
+                                this.extendSelectionStich(lastElement, this.getTextLastLength(lastElement), selection);
+                            }
                         } else {
                             nextPageElement = this.pdfViewerBase.getElement('_textLayer_' + currentPageNumber);
                             let lastElement: HTMLElement = nextPageElement.firstChild as HTMLElement;
@@ -1011,8 +1015,14 @@ export class TextSelection {
     }
 
     private getSelectionRangeObject(startNode: string, startOffset: number, endNode: string, endOffset: number, pageNumber: number): Range {
-        let startElement: Node = document.getElementById(startNode).childNodes[0];
-        let endElement: Node = document.getElementById(endNode).childNodes[0];
+        let startElement: Node = document.getElementById(startNode);
+        let endElement: Node = document.getElementById(endNode);
+        if (startElement.childNodes[0]) {
+            startElement = startElement.childNodes[0];
+        }
+        if (endElement.childNodes[0]) {
+            endElement = endElement.childNodes[0];
+        }
         // tslint:disable-next-line:radix
         let currentAnchorOffset: number = parseInt(startNode.split('_' + pageNumber + '_')[1]);
         // tslint:disable-next-line:radix
@@ -1054,7 +1064,7 @@ export class TextSelection {
             let anchorTextId: number = this.pdfViewerBase.textLayer.getTextIndex(range.startContainer, anchorPageId);
             let focusPageId: number = this.pdfViewerBase.textLayer.getPageIndex(range.endContainer);
             let focusTextId: number = this.pdfViewerBase.textLayer.getTextIndex(range.endContainer, focusPageId);
-            let textDivs: NodeList = this.pdfViewerBase.getElement('_textLayer_' + pageNumber).childNodes;
+            let textDivs: NodeList = this.pdfViewerBase.getElement('_textLayer_' + focusPageId).childNodes;
             if (pageNumber === anchorPageId) {
                 currentId = anchorTextId;
             } else {

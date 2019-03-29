@@ -2,11 +2,11 @@
  * FileManager spec document
  */
 import { FileManager } from '../../../src/file-manager/base/file-manager';
-import {NavigationPane} from '../../../src/file-manager/layout/navigation-pane';
-import {DetailsView} from '../../../src/file-manager/layout/details-view';
+import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane';
+import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement, Browser, EventHandler, isNullOrUndefined, select } from '@syncfusion/ej2-base';
-import { toolbarItems, toolbarItems1, toolbarItems3, data1, data2, data3, data4, data5, data6, data7, data8, data9, data12, data13, UploadData, rename, renameExist, renameExtension, renamed_ext, renamedwithout_ext, getMultipleDetails, pastesuccess, paste1 } from '../data';
+import { toolbarItems, toolbarItems1, toolbarItems3, data1, data2, data3, folderRename, dataSortbySize, data4, data5, data6, data7, data8, data9, data12, data13, UploadData, rename, renameExist, renameExtension, renamed_ext, renamedwithout_ext, getMultipleDetails, pastesuccess, paste1, dataDelete, getSingleDetails, singleSelectionDetails } from '../data';
 import { extend } from '@syncfusion/ej2-grids';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
@@ -37,7 +37,8 @@ describe('FileManager control LargeIcons view', () => {
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
                 showThumbnail: false,
-            }, '#file');
+            });
+            feObj.appendTo('#file');
             this.request = jasmine.Ajax.requests.mostRecent();
             this.request.respondWith({
                 status: 200,
@@ -98,7 +99,7 @@ describe('FileManager control LargeIcons view', () => {
                     let li1: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
                     expect(li1.length).toEqual(6);
                     expect(document.getElementById('file_largeicons').querySelectorAll('li').length).toEqual(6);
-                   expect(document.getElementById('file_largeicons').querySelectorAll('li')[4].classList.contains('e-active')).toBe(true);
+                    expect(document.getElementById('file_largeicons').querySelectorAll('li')[4].classList.contains('e-active')).toBe(true);
                     //create new folder with exisiting name
                     items[0].click();
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -220,6 +221,263 @@ describe('FileManager control LargeIcons view', () => {
                 expect(ntr[1].querySelector('.e-frame').classList.contains('e-check')).toBe(true);
                 expect(ntr[2].classList.contains('e-active')).toBe(true);
                 expect(ntr[2].querySelector('.e-frame').classList.contains('e-check')).toBe(true);
+                done();
+            }, 500);
+        });
+
+
+        it('mouse click on new  button', (done: Function) => {
+            let items: any = document.getElementsByClassName('e-fe-newfolder');
+            items[0].click();
+            (<HTMLInputElement>document.getElementById('newname')).value = "New Folder";
+            (<HTMLElement>document.getElementById('file_dialog').querySelectorAll('.e-btn')[1]).click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data5)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let nli: any = document.getElementById('file_tree').querySelectorAll('li');
+                let ntr: any = document.getElementById('file_largeicons').querySelectorAll('li');
+                let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+                expect(nli.length).toEqual(6);
+                expect(ntr.length).toEqual(6);
+                expect(nar.length).toEqual(1);
+                expect(ntr[1].classList.contains('e-active')).toBe(false);
+                expect(ntr[1].querySelector('.e-frame').classList.contains('e-check')).toBe(false);
+                expect(ntr[2].classList.contains('e-active')).toBe(false);
+                expect(ntr[2].querySelector('.e-frame').classList.contains('e-check')).toBe(false);
+                done();
+            }, 500);
+        });
+        it('mouse click on delete button', (done: Function) => {
+            let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
+            mouseEventArgs.target = li[0];
+            mouseEventArgs.ctrlKey = true;
+            feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+            let items: any = document.getElementsByClassName('e-fe-delete');
+            items[0].click();
+            (<HTMLElement>document.getElementById('file_dialog').querySelectorAll('.e-btn')[1]).click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(dataDelete)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let nli: any = document.getElementById('file_tree').querySelectorAll('li');
+                let ntr: any = document.getElementById('file_largeicons').querySelectorAll('li');
+                let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+                expect(nli.length).toEqual(4);
+                expect(ntr.length).toEqual(4);
+                expect(nar.length).toEqual(1);
+                expect(ntr[1].classList.contains('e-active')).toBe(false);
+                expect(ntr[1].querySelector('.e-frame').classList.contains('e-check')).toBe(false);
+                expect(ntr[2].classList.contains('e-active')).toBe(false);
+                expect(ntr[2].querySelector('.e-frame').classList.contains('e-check')).toBe(false);
+                done();
+            }, 500);
+        });
+        it('mouse click on sortby button', (done: Function) => {
+            // let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
+            // mouseEventArgs.target = li[0];
+            // mouseEventArgs.ctrlKey = true;
+            // feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+            let items: any = document.getElementById('file_tb_sortby');
+            items.click();
+            let size: any = document.getElementById('file_ddl_size');
+            size.click();
+            // (<HTMLElement>document.getElementById('file_dialog').querySelectorAll('.e-btn')[1]).click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(dataSortbySize)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let nli: any = document.getElementById('file_tree').querySelectorAll('li');
+                let ntr: any = document.getElementById('file_largeicons').querySelectorAll('li');
+                let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+                // expect(nli.length).toEqual(4);
+                // expect(ntr.length).toEqual(4);
+                expect(nar.length).toEqual(1);
+                expect(ntr[0].textContent).toBe("Food");
+                expect(ntr[1].querySelector('.e-frame').classList.contains('e-check')).toBe(false);
+                expect(ntr[2].classList.contains('e-active')).toBe(false);
+                expect(ntr[2].querySelector('.e-frame').classList.contains('e-check')).toBe(false);
+                done();
+            }, 500);
+        });
+        // it('mouse click on view button', (done: Function) => {
+        //     let items: any = document.getElementById('file_view');
+        //     items.click();
+        //     let size: any = document.getElementById('file_ddl_details');
+        //     size.click();
+        //     this.request = jasmine.Ajax.requests.mostRecent();
+        //     this.request.respondWith({
+        //         status: 200,
+        //         responseText: JSON.stringify(data1)
+        //     });
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(function () {
+        //         let nli: any = document.getElementById('file_tree').querySelectorAll('li');
+        //         let ntr: any = document.getElementById('file_largeicons').querySelectorAll('li');
+        //         let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+        //         expect(nli.length).toEqual(5);
+        //         expect(ntr.length).toEqual(5);
+        //         expect(nar.length).toEqual(1);
+        //         expect(document.getElementById('file_grid').offsetWidth != 0).toEqual(true);
+        //         expect(document.getElementById('file_largeicons').offsetWidth == 0).toEqual(true);
+        //         expect(ntr[0].textContent).toBe("Documents");
+        //         expect(ntr[1].querySelector('.e-frame').classList.contains('e-check')).toBe(false);
+        //         expect(ntr[2].classList.contains('e-active')).toBe(false);
+        //         expect(ntr[2].querySelector('.e-frame').classList.contains('e-check')).toBe(false);
+        //         let items: any = document.getElementById('file_view');
+        //         items.click();
+        //         let size: any = document.getElementById('file_ddl_large');
+        //         size.click();
+        //         this.request = jasmine.Ajax.requests.mostRecent();
+        //         this.request.respondWith({
+        //             status: 200,
+        //             responseText: JSON.stringify(data1)
+        //         });
+        //         setTimeout(function () {
+        //             let nli: any = document.getElementById('file_tree').querySelectorAll('li');
+        //             let ntr: any = document.getElementById('file_largeicons').querySelectorAll('li');
+        //             let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+        //             expect(nli.length).toEqual(5);
+        //             expect(ntr.length).toEqual(5);
+        //             expect(nar.length).toEqual(1);
+        //             expect(document.getElementById('file_largeicons').offsetWidth != 0).toEqual(true);
+        //             expect(document.getElementById('file_grid').offsetWidth == 0).toEqual(true);
+
+        //         }, 500);
+        //     }, 500);
+        // });
+        // it('mouse click on  info button', (done: Function) => {
+        //     let items: any = document.getElementById('file_tb_details');
+        //     items.click();
+        //     this.request = jasmine.Ajax.requests.mostRecent();
+        //     this.request.respondWith({
+        //         status: 200,
+        //         responseText: JSON.stringify(getSingleDetails)
+        //     });
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(function () {
+        //         expect(document.getElementById('file_dialog_title').textContent).toBe('FileContent')
+        //         expect((<any>document.querySelectorAll('.e-fe-value')[0]).textContent).toBe('Folder')
+        //         // expect((<any>document.querySelectorAll('.e-fe-value')[1]).textContent).toBe('0')
+        //         expect((<any>document.querySelectorAll('.e-fe-value')[2]).textContent).toBe('/FileContent')
+        //         expect((<any>document.querySelectorAll('.e-fe-value')[3]).textContent).toBe('October 16, 2018 19:43:17')
+        //         let lgli: any = document.getElementById('file_largeicons').querySelectorAll('li');
+        //         mouseEventArgs.target = lgli[1];
+        //         feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+        //         let items: any = document.getElementById('file_tb_details');
+        //         items.click();
+        //         this.request = jasmine.Ajax.requests.mostRecent();
+        //         this.request.respondWith({
+        //             status: 200,
+        //             responseText: JSON.stringify(singleSelectionDetails)
+        //         });
+        //         setTimeout(function () {
+        //             expect(document.getElementById('file_dialog_title').textContent).toBe('Documents')
+        //             expect(document.querySelectorAll('.e-fe-value').length).toBe(4)
+        //             expect((<any>document.querySelectorAll('.e-fe-value')[0]).textContent).toBe('Folder')
+        //             // expect((<any>document.querySelectorAll('.e-fe-value')[1]).textContent).toBe('0')
+        //             expect((<any>document.querySelectorAll('.e-fe-value')[2]).textContent).toBe('/Documents')
+        //             expect((<any>document.querySelectorAll('.e-fe-value')[3]).textContent).toBe('October 16, 2018 19:43:17')
+        //             let nli: any = document.getElementById('file_tree').querySelectorAll('li');
+        //             let ntr: any = document.getElementById('file_largeicons').querySelectorAll('li');
+        //             let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+        //             expect(nli.length).toEqual(5);
+        //             expect(ntr.length).toEqual(5);
+        //             expect(nar.length).toEqual(1);
+        //             expect(document.getElementById('file_largeicons').offsetWidth != 0).toEqual(true);
+        //             // expect(document.getElementById('file_grid').offsetWidth == 0).toEqual(true);
+        //         }, 500);
+        //     }, 500);
+        // });
+
+        // it('mouse click on download button', (done: Function) => {
+        //     let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
+        //     mouseEventArgs.target = li[0];
+        //     mouseEventArgs.ctrlKey = true;
+        //     feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+        //     let items: any = document.getElementsByClassName('e-fe-download');
+        //     items[0].click();
+        //     (<HTMLElement>document.getElementById('file_dialog').querySelectorAll('.e-btn')[1]).click();
+        //     this.request = jasmine.Ajax.requests.mostRecent();
+        //     this.request.respondWith({
+        //         status: 200,
+        //         responseText: JSON.stringify(data1)
+        //     });
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+
+        //     setTimeout(function () {
+        //         let nli: any = document.getElementById('file_tree').querySelectorAll('li');
+        //         let ntr: any = document.getElementById('file_largeicons').querySelectorAll('li');
+        //         let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+        //         expect(nli.length).toEqual(4);
+        //         expect(ntr.length).toEqual(4);
+        //         expect(nar.length).toEqual(1);
+        //         expect(ntr[1].classList.contains('e-active')).toBe(false);
+        //         expect(ntr[1].querySelector('.e-frame').classList.contains('e-check')).toBe(false);
+        //         expect(ntr[2].classList.contains('e-active')).toBe(false);
+        //         expect(ntr[2].querySelector('.e-frame').classList.contains('e-check')).toBe(false);
+        //         done();
+        //     }, 500);
+        // });
+
+        it('mouse click on rename button', (done: Function) => {
+            let lgli: any = document.getElementById('file_largeicons').querySelectorAll('li');
+            mouseEventArgs.target = lgli[1];
+            feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+            let items: any = document.getElementsByClassName('e-fe-rename');
+            items[0].click();
+            let nli: any = document.getElementById('file_tree').querySelectorAll('li');
+            let ntr: any = document.getElementById('file_largeicons').querySelectorAll('li');
+            let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+            expect(nli.length).toEqual(5);
+            expect(ntr.length).toEqual(5);
+            expect(nar.length).toEqual(1);
+            expect(ntr[1].textContent).toBe("Employees");
+            (<HTMLInputElement>document.getElementById('rename')).value = "My Folder";
+            (<HTMLElement>document.getElementById('file_dialog').querySelectorAll('.e-btn')[1]).click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(folderRename)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(rename)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let nli: any = document.getElementById('file_tree').querySelectorAll('li');
+                let ntr: any = document.getElementById('file_largeicons').querySelectorAll('li');
+                let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+                expect(nli.length).toEqual(5);
+                expect(ntr.length).toEqual(5);
+                expect(nar.length).toEqual(1);
+                expect(ntr[2].textContent).toBe("My Folder");
+                expect(nli[2].textContent).toBe("My Folder");
+                expect(ntr[1].classList.contains('e-active')).toBe(false);
                 done();
             }, 500);
         });

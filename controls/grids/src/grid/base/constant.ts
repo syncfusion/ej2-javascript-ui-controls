@@ -334,3 +334,7 @@ export const rowPositionChanged: string = 'row-position-changed';
 export const batchForm: string = 'batchedit-form';
 /** @hidden */
 export const beforeStartEdit: string = 'edit-form';
+/** @hidden */
+export const beforeBatchCancel: string = 'before-batch-cancel';
+/** @hidden */
+export const batchEditFormRendered: string = 'batcheditform-rendered';

@@ -60,18 +60,18 @@
         }
 
         &.e-south-east::before {
-          bottom: 0;
+          bottom: 4px;
           content: '\e7cf';
           font-size: 12px;
           position: absolute;
-          right: 1px;
+          right: 4px;
         }
 
         &.e-south-west::before {
-          bottom: 0;
+          bottom: 4px;
           content: '\e7cf';
           font-size: 12px;
-          left: 1px;
+          left: 4px;
           position: absolute;
           transform: rotateY(180deg);
         }

@@ -11,7 +11,7 @@ $input-child-padding-top: $zero-value !default;
 $input-child-bigger-padding-top: $zero-value !default;
 
 //default 
-$skin-name: 'highcontrast' !default;
+$input-skin-name: 'highcontrast' !default;
 $input-bg-color: $bg-base-0 !default;
 $input-success-color: $success-alt !default;
 $input-warning-color: $alert-alt !default;
@@ -105,6 +105,14 @@ $input-header-font-color: $content-font !default;
 
 //enddefault
 //dimensions
+$textarea-padding: 4px 10px $zero-value 10px !default;
+$textarea-bigger-padding: 6px 12px $zero-value 12px !default;
+$textarea-small-padding: 4px 10px $zero-value 10px !default;
+$textarea-bigger-small-padding: 4px 12px $zero-value 12px !default;
+$textarea-min-height: 30px;
+$textarea-bigger-min-height: 36px;
+$textarea-bigger-small-min-height: 32px;
+$textarea-small-min-height: 26px;
 $input-text-indent: 10px !default;
 $input-bigger-text-indent: 12px !default;
 $input-small-text-indent: 10px !default;
@@ -242,6 +250,17 @@ $input-readonly-bg-color: none !default;;
   box-sizing: border-box;
   left: 0%;
   top: 50%;
+  transform: translate(-0%, -50%);
+  width: 100%;
+}
+@mixin textarea-float-label-alignment {
+  -moz-transform: translate(-0%, -50%);
+  -ms-transform: translate(-0%, -50%);
+  -o-transform: translate(-0%, -50%);
+  -webkit-transform: translate(-0%, -50%);
+  box-sizing: border-box;
+  left: 0%;
+  top: 15px;
   transform: translate(-0%, -50%);
   width: 100%;
 }

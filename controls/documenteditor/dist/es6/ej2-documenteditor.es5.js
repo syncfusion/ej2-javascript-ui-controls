@@ -35097,7 +35097,7 @@ var Search = /** @__PURE__ @class */ (function () {
         if (index < 0) {
             return 0;
         }
-        this.owner.editorModule.insertText(replaceText, true);
+        this.owner.editorModule.insertTextInternal(replaceText, true);
         var endTextPosition = result.end;
         var startPosition = new TextPosition(this.viewer.owner);
         startPosition.setPositionParagraph(endTextPosition.currentWidget, endPosition.offset - replaceText.length);
@@ -35156,7 +35156,7 @@ var Search = /** @__PURE__ @class */ (function () {
         for (var i = count - 1; i >= 0; i--) {
             var result = results.innerList[i];
             this.navigate(results.innerList[i]);
-            this.owner.editorModule.insertText(replaceText, true);
+            this.owner.editorModule.insertTextInternal(replaceText, true);
             if (result.isHeader || result.isFooter) {
                 this.viewer.layout.updateHeaderFooterToParent(this.viewer.selection.start.paragraph.bodyWidget);
             }
@@ -38509,7 +38509,7 @@ var Editor = /** @__PURE__ @class */ (function () {
                 clearTimeout(this.animationTimer);
             }
             classList(this.selection.caret, [], ['e-de-cursor-animation']);
-            this.owner.editorModule.insertText(text, false);
+            this.owner.editorModule.insertText(text);
             /* tslint:disable:align */
             this.animationTimer = setTimeout(function () {
                 if (_this.animationTimer) {
@@ -38564,12 +38564,19 @@ var Editor = /** @__PURE__ @class */ (function () {
     };
     /**
      * Inserts the specified text at cursor position
-     * @param  {string} text
-     * @param  {boolean} isReplace
+     * @param  {string} text - text to insert
+     */
+    Editor.prototype.insertText = function (text) {
+        if (isNullOrUndefined(text) || text === '') {
+            return;
+        }
+        this.insertTextInternal(text, false);
+    };
+    /**
      * @private
      */
     //tslint:disable: max-func-body-length
-    Editor.prototype.insertText = function (text, isReplace) {
+    Editor.prototype.insertTextInternal = function (text, isReplace) {
         var selection = this.viewer.selection;
         var insertPosition;
         var isRemoved = true;
@@ -38710,7 +38717,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         var paragraphInfo = this.getParagraphInfo(this.selection.start);
         var startPosition = this.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
         // Insert IME text in current selection
-        this.insertText(text, false);
+        this.insertText(text);
         this.viewer.lastComposedText = text;
         // update selection start
         var start = this.selection.start;
@@ -55639,7 +55646,7 @@ var TableDialog = /** @__PURE__ @class */ (function () {
         var rowContainer = createElement('div', {
             className: 'e-de-insert-table-dlg-sub-header', innerHTML: localValue.getConstant('Number of rows')
         });
-        var rowValue = createElement('div', { className: 'e-de-insert-table-dlg-input' });
+        var rowValue = createElement('div');
         this.rowsCountBox = createElement('input', {
             attrs: { type: 'text' }, id: this.owner.owner.containerId + 'row'
         });
@@ -56942,13 +56949,13 @@ var PageSetupDialog = /** @__PURE__ @class */ (function () {
         var ejtabContainer = createElement('div', { id: this.target.id + '_MarginTabContainer' });
         this.target.appendChild(ejtabContainer);
         this.marginTab = createElement('div', {
-            id: this.target.id + '_marginPropertyTab', styles: 'position: relative;width:400px;'
+            id: this.target.id + '_marginPropertyTab', styles: 'position: relative;'
         });
         this.paperTab = createElement('div', {
-            id: this.target.id + '_paperSizePropertyTab', styles: 'position: relative;width:400px;'
+            id: this.target.id + '_paperSizePropertyTab', styles: 'position: relative;'
         });
         this.layoutTab = createElement('div', {
-            id: this.target.id + '_CellPropertiesDialogTab', styles: 'position: relative;width:400px;'
+            id: this.target.id + '_CellPropertiesDialogTab', styles: 'position: relative;'
         });
         // tslint:disable-next-line:max-line-length
         var ejtab = createElement('div', { id: this.target.id + '_PageSetupDialogTab', className: 'e-de-page-setup-ppty-tab' });
@@ -57010,7 +57017,7 @@ var PageSetupDialog = /** @__PURE__ @class */ (function () {
         }
         var topLabel = createElement('label', {
             innerHTML: locale.getConstant('Top'), className: 'e-de-page-setup-dlg-sub-header',
-            id: this.target.id + '_TopLabel', styles: 'padding-top:0px;width:190px;'
+            id: this.target.id + '_TopLabel', styles: 'padding-top:0px;'
         });
         var topTextBox = createElement('input', {
             attrs: { 'type': 'text' }, id: this.target.id + '_Top'
@@ -57028,7 +57035,7 @@ var PageSetupDialog = /** @__PURE__ @class */ (function () {
         leftMarginDiv.appendChild(bottomBoxLabel);
         leftMarginDiv.appendChild(bottomTextBox);
         var leftBoxLabel = createElement('label', {
-            innerHTML: locale.getConstant('Left'), className: 'e-de-page-setup-dlg-sub-header', styles: 'padding-top:0px;width:190px;',
+            innerHTML: locale.getConstant('Left'), className: 'e-de-page-setup-dlg-sub-header', styles: 'padding-top:0px;',
             id: this.target.id + '_leftLabel'
         });
         var leftTextBox = createElement('input', {
@@ -57108,7 +57115,7 @@ var PageSetupDialog = /** @__PURE__ @class */ (function () {
         }
         var widthLabel = createElement('label', {
             innerHTML: locale.getConstant('Width'), className: 'e-de-page-setup-dlg-sub-header',
-            id: this.target.id + '_widthLabel', styles: 'padding-top:0px;width:190px;'
+            id: this.target.id + '_widthLabel', styles: 'padding-top:0px;'
         });
         var widthTextBox = createElement('input', {
             attrs: { 'type': 'text' }, id: this.target.id + '_Width'
@@ -57116,7 +57123,7 @@ var PageSetupDialog = /** @__PURE__ @class */ (function () {
         leftSizeDiv.appendChild(widthLabel);
         leftSizeDiv.appendChild(widthTextBox);
         var heightLabel = createElement('label', {
-            innerHTML: locale.getConstant('Height'), className: 'e-de-page-setup-dlg-sub-header', styles: 'padding-top:0px;width:190px;',
+            innerHTML: locale.getConstant('Height'), className: 'e-de-page-setup-dlg-sub-header', styles: 'padding-top:0px;',
             id: this.target.id + '_heightLabel'
         });
         var heightTextBox = createElement('input', {
@@ -57196,7 +57203,7 @@ var PageSetupDialog = /** @__PURE__ @class */ (function () {
         }
         var headerLabel = createElement('label', {
             innerHTML: locale.getConstant('Header'), className: 'e-de-page-setup-dlg-sub-header',
-            id: this.target.id + '_headerLabel', styles: 'padding-top:0px;width:190px;'
+            id: this.target.id + '_headerLabel', styles: 'padding-top:0px;'
         });
         var headerBox = createElement('input', {
             attrs: { 'type': 'text' }, id: this.target.id + '_header'
@@ -57204,7 +57211,7 @@ var PageSetupDialog = /** @__PURE__ @class */ (function () {
         leftLayoutDiv.appendChild(headerLabel);
         leftLayoutDiv.appendChild(headerBox);
         var footerLabel = createElement('label', {
-            innerHTML: locale.getConstant('Footer'), className: 'e-de-page-setup-dlg-sub-header', styles: 'padding-top:0px;width:190px;',
+            innerHTML: locale.getConstant('Footer'), className: 'e-de-page-setup-dlg-sub-header', styles: 'padding-top:0px;',
             id: this.target.id + '_footerLabel'
         });
         var footerBox = createElement('input', {
@@ -57604,7 +57611,7 @@ var ParagraphDialog = /** @__PURE__ @class */ (function () {
         var rightIndentionDiv = createElement('div', { className: 'e-de-para-dlg-right-sub-container', styles: 'float:right;position:relative;' });
         indentionDiv.appendChild(rightIndentionDiv);
         // tslint:disable-next-line:max-line-length
-        var spacingDiv = createElement('div', { id: 'spacing_div', styles: 'width: 400px;height: 150px;', className: 'e-de-para-dlg-sub-container' });
+        var spacingDiv = createElement('div', { id: 'spacing_div', styles: 'width: 400px;height: 150px;float:left;', className: 'e-de-para-dlg-sub-container' });
         var leftSpacingDiv = createElement('div', { id: 'left_spacing', styles: 'float:left;position:relative;' });
         spacingDiv.appendChild(leftSpacingDiv);
         // tslint:disable-next-line:max-line-length
@@ -58874,7 +58881,7 @@ var StyleDialog = /** @__PURE__ @class */ (function () {
         this.styleBasedOn = new DropDownList({ dataSource: [], select: this.styleBasedOnChange, popupHeight: '253px', width: '210px', enableRtl: isRtl });
         this.styleBasedOn.appendTo(styleBasedOnValue);
         styleBasedOnWholeDiv.appendChild(styleBasedOnDivElement);
-        var styleParagraphWholeDiv = createElement('div', { className: 'e-de-style-left-div' });
+        var styleParagraphWholeDiv = createElement('div');
         styleBasedParaDiv.appendChild(styleParagraphWholeDiv);
         if (isRtl) {
             nameWholeDiv.classList.add('e-de-rtl');
@@ -58899,7 +58906,7 @@ var StyleDialog = /** @__PURE__ @class */ (function () {
         container.appendChild(formatting);
         var optionsDiv = createElement('div', { className: 'e-de-style-options-div' });
         container.appendChild(optionsDiv);
-        var fontOptionsDiv = createElement('div', { styles: 'display:flex;margin-bottom: 15px;' });
+        var fontOptionsDiv = createElement('div', { styles: 'display:flex;margin-bottom: 14px;' });
         optionsDiv.appendChild(fontOptionsDiv);
         this.createFontOptions(fontOptionsDiv, isRtl);
         var paragraphOptionsDiv = createElement('div', { styles: 'display:flex', className: 'e-style-paragraph' });
@@ -58928,7 +58935,7 @@ var StyleDialog = /** @__PURE__ @class */ (function () {
     StyleDialog.prototype.createFormatDropdown = function (parentDiv, localValue, isRtl) {
         var _this = this;
         var formatBtn = createElement('button', { id: 'style_format_dropdown', innerHTML: localValue.getConstant('Format') });
-        formatBtn.style.height = '35px';
+        formatBtn.style.height = '31px';
         parentDiv.appendChild(formatBtn);
         var items = [{ text: localValue.getConstant('Font') + '..', id: 'style_font' },
             { text: localValue.getConstant('Paragraph') + '..', id: 'style_paragraph' },
@@ -60024,7 +60031,7 @@ var FontDialog = /** @__PURE__ @class */ (function () {
         this.target.appendChild(fontDiv);
         var sizeDiv = this.getFontSizeDiv(locale, isRtl);
         this.target.appendChild(sizeDiv);
-        var colorDiv = createElement('div', { id: id + '_fontColor', styles: 'margin-top:15px;' });
+        var colorDiv = createElement('div', { id: id + '_fontColor', styles: 'margin-top:14px;' });
         this.fontColorDiv = createElement('div', { id: id + '_fontColorDiv', className: 'e-de-font-dlg-display' });
         var fontColorLabel = createElement('label', {
             className: 'e-de-font-dlg-header-font-color e-de-font-color-margin',
@@ -60813,7 +60820,7 @@ var TablePropertiesDialog = /** @__PURE__ @class */ (function () {
         var container = createElement('div', { id: element.id + '_table_TabContainer' });
         var sizeHeader = createElement('div', {
             id: container.id + '_sizeLabel', innerHTML: localValue.getConstant('Size'),
-            styles: 'width:100%;margin:0px;padding-top: 20px;padding-bottom: 0px;', className: 'e-de-table-dialog-options-label'
+            styles: 'width:100%;margin:0px;', className: 'e-de-table-dialog-options-label'
         });
         var parentContainer = createElement('div', { styles: 'display: inline-flex;' });
         var childContainer1 = createElement('div', {
@@ -60846,9 +60853,9 @@ var TablePropertiesDialog = /** @__PURE__ @class */ (function () {
         });
         var alignmentHeader = createElement('div', {
             innerHTML: localValue.getConstant('Alignment'), className: 'e-de-table-dialog-options-label',
-            styles: 'width: 100%;margin: 0px;padding-bottom: 15px'
+            styles: 'width: 100%;margin: 0px;'
         });
-        var alignmentContainer = createElement('div', { styles: 'height:70px;display:inline-flex' });
+        var alignmentContainer = createElement('div', { styles: 'height:85px;display:inline-flex' });
         var classDivName = element.id + 'e-de-table-alignment';
         var leftAlignDiv = createElement('div', { className: 'e-de-table-dia-align-div' });
         this.left = createElement('div', {
@@ -60892,7 +60899,8 @@ var TablePropertiesDialog = /** @__PURE__ @class */ (function () {
         }
         this.indentingLabel = createElement('label', {
             innerHTML: localValue.getConstant('Indent from left'),
-            styles: 'font-weight: normal;font-size: 11px;position:relative;' + leftIndentLabelMargin
+            // tslint:disable-next-line:max-line-length
+            styles: 'font-weight: normal;font-size: 11px;position:relative;display:block;margin-bottom:18px;top:10px;' + leftIndentLabelMargin
         });
         var leftIndentBox = createElement('div', {
             styles: 'margin-top: 15px;position: relative;' + leftIndentBoxMargin
@@ -60900,7 +60908,7 @@ var TablePropertiesDialog = /** @__PURE__ @class */ (function () {
         this.leftIndent = createElement('input', { id: element.id + '_left_indent' });
         var tableDirHeader = createElement('div', {
             innerHTML: localValue.getConstant('Table direction'), className: 'e-de-table-dialog-options-label',
-            styles: 'width: 100%;margin: 0px;padding-bottom: 15px;padding-top:20px;'
+            styles: 'width: 100%;margin: 0px;padding-top:14px;'
         });
         var tableDirContainer = createElement('div', { styles: 'display:flex' });
         var rtlDiv = createElement('div', { id: element.id + '_TableDirDiv', className: 'e-de-tbl-rtl-btn-div' });
@@ -61160,12 +61168,12 @@ var TablePropertiesDialog = /** @__PURE__ @class */ (function () {
         var rowDiv = createElement('div', { styles: 'width: 100%;' });
         var sizeLabeldiv = createElement('div', {
             innerHTML: localValue.getConstant('Size'),
-            styles: 'width: 100%;padding-top: 20px;padding-bottom: 10px;',
+            styles: 'width: 100%;',
             className: 'e-de-table-dialog-options-label'
         });
         var parentDiv = createElement('div', { styles: 'display: inline-flex;width: 100%;' });
         var childDiv1 = createElement('div', {
-            className: 'e-de-table-header-div', styles: 'margin-top:9px'
+            className: 'e-de-table-header-div', styles: 'margin-top:6px'
         });
         var rowHeightCheckBox = createElement('input', {
             attrs: { 'type': 'checkbox' }, id: element.id + '_height_CheckBox'
@@ -61185,8 +61193,9 @@ var TablePropertiesDialog = /** @__PURE__ @class */ (function () {
                 + '</option><option>' + localValue.getConstant('Exactly') + '</option>',
             id: element.id + '_height_type'
         });
+        // tslint:disable-next-line:max-line-length
         var labeltext = createElement('label', {
-            innerHTML: localValue.getConstant('Row height is'), styles: 'font-size: 11px;font-weight: normal;width: 75px;'
+            innerHTML: localValue.getConstant('Row height is'), styles: 'font-size: 11px;font-weight: normal;width: 75px;display:block;margin-bottom:8px'
         });
         rowDiv.appendChild(sizeLabeldiv);
         element.appendChild(rowDiv);
@@ -61343,7 +61352,7 @@ var TablePropertiesDialog = /** @__PURE__ @class */ (function () {
         var sizeDiv = createElement('div', { styles: 'width: 100%;' });
         var div = createElement('div', {
             innerHTML: localValue.getConstant('Size'), className: 'e-de-table-dialog-options-label',
-            styles: 'width: 100%;padding-top: 20px;padding-bottom: 10px;',
+            styles: 'width: 100%;',
         });
         var parentdiv = createElement('div', { styles: 'width: 100%;display: inline-flex;' });
         var childdiv1 = createElement('div', {
@@ -61370,7 +61379,7 @@ var TablePropertiesDialog = /** @__PURE__ @class */ (function () {
         });
         var labeltext = createElement('label', {
             innerHTML: localValue.getConstant('Measure in'),
-            styles: 'font-size: 11px;font-weight: normal;'
+            styles: 'font-size: 11px;font-weight: normal;display:block;margin-bottom:8px'
         });
         sizeDiv.appendChild(div);
         element.appendChild(sizeDiv);
@@ -61896,7 +61905,7 @@ var BordersAndShadingDialog = /** @__PURE__ @class */ (function () {
             previewContinerPosition = 'right: 342px;';
         }
         else {
-            previewContinerPosition = 'left: 345px;';
+            previewContinerPosition = 'left: 339px;';
         }
         var previewContiner = createElement('div', {
             // tslint:disable-next-line:max-line-length
@@ -62199,7 +62208,7 @@ var BordersAndShadingDialog = /** @__PURE__ @class */ (function () {
             shdApplyPosition = 'left: 150px;';
         }
         var shdApply = createElement('div', {
-            styles: 'position:absolute;top:41px;' + shdApplyPosition + 'width:180px;'
+            styles: 'position:absolute;top:44px;' + shdApplyPosition + 'width:180px;'
         });
         var div = createElement('div', {
             styles: 'width:100px;padding-bottom: 10px;', innerHTML: localeValue.getConstant('Apply To'),
@@ -62309,12 +62318,12 @@ var BordersAndShadingDialog = /** @__PURE__ @class */ (function () {
         this.ulelementShading.appendTo(ulelementShading);
         this.borderColorPicker = new ColorPicker({
             value: '#000000', change: this.applyPreviewTableBorderColor,
-            enableRtl: isRtl, locale: this.owner.owner.locale
+            enableRtl: isRtl, locale: this.owner.owner.locale, cssClass: 'e-de-dlg-clr-picker'
         });
         this.borderColorPicker.appendTo(borderColorPickerElement);
         this.shadingColorPicker = new ColorPicker({
             value: '#000000', change: this.applyPreviewTableBackgroundColor,
-            enableRtl: isRtl, locale: this.owner.owner.locale
+            enableRtl: isRtl, locale: this.owner.owner.locale, cssClass: 'e-de-dlg-clr-picker'
         });
         this.shadingColorPicker.appendTo(shadingColorPickerElement);
         if (isRtl) {
@@ -62860,7 +62869,9 @@ var TableOptionsDialog = /** @__PURE__ @class */ (function () {
         this.target = createElement('div', {
             id: this.owner.owner.containerId + '_insertCellMarginsDialog', className: 'e-de-table-options-dlg'
         });
-        var innerDiv = createElement('div', { styles: 'width: 475px;position: relative;height: 180px;' });
+        var innerDiv = createElement('div', {
+            styles: 'width: 504px;position: relative;height: auto;margin-bottom: 14px'
+        });
         var innerDivLabel = createElement('Label', {
             id: this.target.id + '_innerDivLabel', className: 'e-de-cell-dia-options-label',
             innerHTML: localValue.getConstant('Default cell margins')
@@ -62875,7 +62886,7 @@ var TableOptionsDialog = /** @__PURE__ @class */ (function () {
         cellSpaceLabel.innerHTML = localValue.getConstant('Default cell spacing');
         div.appendChild(cellSpaceLabel);
         var table2 = createElement('TABLE', {
-            styles: 'height: 30px;padding-bottom: 15px;'
+            styles: 'height: 30px;'
         });
         var tr3 = createElement('tr');
         var td5 = createElement('td');
@@ -62887,7 +62898,7 @@ var TableOptionsDialog = /** @__PURE__ @class */ (function () {
             td6Padding = 'padding-right:15px;';
         }
         else {
-            td6Padding = 'padding-left:15px;';
+            td6Padding = 'padding-left:14px;';
         }
         var td6 = createElement('td', { styles: td6Padding, });
         this.cellspacingTextBox = createElement('input', {
@@ -62903,7 +62914,7 @@ var TableOptionsDialog = /** @__PURE__ @class */ (function () {
         this.target.appendChild(div);
         this.target.appendChild(divBtn);
         this.cellSpaceTextBox = new NumericTextBox({
-            value: 0, min: 0, max: 264.5, width: 150,
+            value: 0, min: 0, max: 264.5, width: 163,
             decimals: 2, enablePersistence: false
         });
         this.cellSpaceTextBox.appendTo(this.cellspacingTextBox);
@@ -63124,14 +63135,14 @@ var CellOptionsDialog = /** @__PURE__ @class */ (function () {
         this.target = createElement('div', {
             id: this.owner.owner.containerId + '_tableCellMarginsDialog', className: 'e-de-table-cell-margin-dlg'
         });
-        var innerDiv = createElement('div', { styles: 'width: 475px;position: relative;height: 165px;' });
+        var innerDiv = createElement('div', { styles: 'width: 504px;position: relative;height: auto;' });
         var innerDivLabel = createElement('Label', {
             className: 'e-de-cell-dia-options-label', id: this.target.id + '_innerDivLabel'
         });
         innerDivLabel.innerHTML = localValue.getConstant('Cell margins');
         innerDiv.appendChild(innerDivLabel);
         var table = createElement('TABLE', {
-            styles: 'height: 40px;padding-bottom: 0px;', className: 'e-de-cell-margin-top'
+            styles: 'padding-bottom: 8px;padding-top: 8px;', className: 'e-de-cell-margin-top'
         });
         var tr = createElement('tr');
         var td = createElement('td', { className: 'e-de-tbl-btn-seperator' });
@@ -63360,22 +63371,22 @@ var CellOptionsDialog = /** @__PURE__ @class */ (function () {
             div.appendChild(table);
             dialog.target.appendChild(div);
             dialog.topMarginBox = new NumericTextBox({
-                value: 0, min: 0, max: 1584, width: 150, decimals: 2,
+                value: 0, min: 0, max: 1584, width: 175, decimals: 2,
                 enablePersistence: false
             });
             dialog.topMarginBox.appendTo(topTextBox);
             dialog.leftMarginBox = new NumericTextBox({
-                value: 0, min: 0, max: 1584, width: 150,
+                value: 0, min: 0, max: 1584, width: 175,
                 decimals: 2, enablePersistence: false
             });
             dialog.leftMarginBox.appendTo(leftTextBox);
             dialog.bottomMarginBox = new NumericTextBox({
-                value: 0, min: 0, max: 1584, width: 150, decimals: 2,
+                value: 0, min: 0, max: 1584, width: 175, decimals: 2,
                 enablePersistence: false
             });
             dialog.bottomMarginBox.appendTo(bottomTextBox);
             dialog.rightMarginBox = new NumericTextBox({
-                value: 0, min: 0, max: 1584, width: 150,
+                value: 0, min: 0, max: 1584, width: 175,
                 decimals: 2, enablePersistence: false
             });
             dialog.rightMarginBox.appendTo(rightTextBox);
@@ -64320,8 +64331,7 @@ var Text = /** @__PURE__ @class */ (function () {
         var fontFamilyDiv = this.createDiv(element + '_fontFamilyDiv', fontDiv);
         var fontFamily = createElement('input', {
             id: element + '_fontFamily',
-            /* tslint:disable-next-line:max-line-length */
-            styles: 'font-size: 12px;letter-spacing: 0.05px;', className: 'e-prop-font-style'
+            className: 'e-prop-font-style'
         });
         fontFamilyDiv.appendChild(fontFamily);
         classList(fontFamilyDiv, ['e-de-panel-left-width'], []);
@@ -64333,7 +64343,7 @@ var Text = /** @__PURE__ @class */ (function () {
         }
         var fontSize = createElement('input', {
             id: element + '_fontSize',
-            styles: 'font-size: 12px;letter-spacing: 0.05px;', innerHTML: 'type:number',
+            innerHTML: 'type:number',
             className: 'e-prop-font-style',
         });
         fontSizeDiv.appendChild(fontSize);
@@ -65006,7 +65016,7 @@ var Paragraph = /** @__PURE__ @class */ (function () {
         label.innerHTML = this.localObj.getConstant('Paragraph');
         paragraphDiv.appendChild(label);
         var styleDiv = this.createDivElement(element + '_styleDiv', paragraphDiv);
-        styleDiv.classList.add('e-de-ctnr-segment');
+        styleDiv.classList.add('e-de-ctnr-segment', 'e-de-ctnr-style-div');
         // tslint:disable-next-line:max-line-length
         var styleSelect = createElement('input', { id: element + '_style', styles: 'width:248px;font-size: 12px;letter-spacing: 0.05px;' });
         styleDiv.appendChild(styleSelect);
@@ -65043,9 +65053,9 @@ var Paragraph = /** @__PURE__ @class */ (function () {
         // tslint:disable-next-line:max-line-length
         this.increaseIndent = this.createButtonTemplate(element + '_increaseIndent', 'e-de-ctnr-increaseindent e-icons', incDecIndentDiv, 'e-de-prop-indent-last-button', '37', this.localObj.getConstant('Increase indent'));
         var listDiv = this.createDivElement(element + '_listDiv', paragraphDiv, 'display:flex;');
-        classList(listDiv, ['e-de-ctnr-segment'], []);
+        classList(listDiv, ['e-de-ctnr-segment', 'e-de-ctnr-group-btn'], []);
         if (isRtl) {
-            classList(listDiv, ['e-de-ctnr-segment-rtl'], []);
+            classList(listDiv, ['e-de-ctnr-segment-rtl', 'e-de-ctnr-group-btn'], []);
         }
         var lineHeight = createElement('button', { id: element + '_lineHeight' });
         listDiv.appendChild(lineHeight);
@@ -65659,7 +65669,7 @@ var HeaderFooterProperties = /** @__PURE__ @class */ (function () {
         optionsLabel.innerHTML = localObj.getConstant('Options');
         optionsLabelDiv.appendChild(optionsLabel);
         var optionsDiv = this.createDivTemplate(elementId + '_optionsDiv', optionsLabelDiv);
-        var firstPageDiv = this.createDivTemplate(elementId + '_firstPageDiv', optionsDiv, 'margin-bottom:3px;');
+        var firstPageDiv = this.createDivTemplate(elementId + '_firstPageDiv', optionsDiv, 'margin-bottom:10px;');
         var firstPage = createElement('input', { id: 'firstPage', className: 'e-de-prop-sub-label' });
         firstPageDiv.appendChild(firstPage);
         // tslint:disable-next-line:max-line-length
@@ -65707,7 +65717,7 @@ var HeaderFooterProperties = /** @__PURE__ @class */ (function () {
             
         }
         // tslint:disable-next-line:max-line-length
-        var headerTopDiv = this.createDivTemplate(elementId + '_headerTopDiv', positionDiv, 'margin-bottom:15px;');
+        var headerTopDiv = this.createDivTemplate(elementId + '_headerTopDiv', positionDiv, 'margin-bottom:14px;');
         // tslint:disable-next-line:max-line-length
         var headerTopLabel = createElement('label', { className: 'e-de-prop-sub-label', styles: 'display:block' });
         headerTopLabel.innerHTML = localObj.getConstant('Header from Top');
@@ -66003,21 +66013,18 @@ var TocProperties = /** @__PURE__ @class */ (function () {
         };
         this.tocHeaderDiv = function (container) {
             var closeButtonFloat;
-            var headerDivMargin;
             var closeButtonMargin;
             if (!_this.isRtl) {
                 closeButtonFloat = 'float:right;';
-                headerDivMargin = 'margin-left:5.5px;';
                 closeButtonMargin = 'margin-right:7px;';
             }
             else {
                 closeButtonFloat = 'float:left;';
-                headerDivMargin = 'margin-right:5.5px;';
                 closeButtonMargin = 'margin-left:7px;';
             }
             var headerDiv = createElement('div', {
                 id: _this.elementId + 'toc_id',
-                styles: 'display: block;margin-top:8px;margin-bottom: 2px;' + headerDivMargin
+                styles: 'display: block;'
             });
             container.appendChild(headerDiv);
             _this.element.appendChild(container);
@@ -66114,7 +66121,7 @@ var TocProperties = /** @__PURE__ @class */ (function () {
                 
             }
             // tslint:disable-next-line:max-line-length
-            var checkboxElement = createElement('div', { id: 'toc_checkboxDiv', styles: 'margin-bottom:20px;' });
+            var checkboxElement = createElement('div', { id: 'toc_checkboxDiv', styles: 'margin-bottom:36px;' });
             container.appendChild(checkboxElement);
             var showPageNumberDiv = createElement('div', { className: 'e-de-toc-checkbox1' });
             showPageNumberDiv.setAttribute('title', _this.localObj.getConstant('Show page numbers in table of contents.'));
@@ -66905,7 +66912,7 @@ var StatusBar = /** @__PURE__ @class */ (function () {
             div.appendChild(label);
             // tslint:disable-next-line:max-line-length
             _this.pageNumberLabel = createElement('label', { styles: 'text-transform:capitalize;white-space:pre;overflow:hidden;user-select:none;cursor:text;height:17px;max-width:150px' });
-            _this.editablePageNumber = createElement('div', { styles: 'display: inline-flex;height: 17px;padding: 0px 4px;', className: 'e-de-pagenumber-text' });
+            _this.editablePageNumber = createElement('div', { styles: 'display: inline-flex;height: 17px;padding: 0px 4px;', className: 'e-input e-de-pagenumber-text' });
             _this.editablePageNumber.appendChild(_this.pageNumberLabel);
             if (isRtl) {
                 label.style.marginLeft = '6px';

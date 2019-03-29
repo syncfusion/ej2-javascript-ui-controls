@@ -118,7 +118,7 @@ export class StyleDialog {
         this.styleBasedOn.appendTo(styleBasedOnValue);
         styleBasedOnWholeDiv.appendChild(styleBasedOnDivElement);
 
-        let styleParagraphWholeDiv: HTMLElement = createElement('div', { className: 'e-de-style-left-div' });
+        let styleParagraphWholeDiv: HTMLElement = createElement('div');
         styleBasedParaDiv.appendChild(styleParagraphWholeDiv);
         if (isRtl) {
             nameWholeDiv.classList.add('e-de-rtl');
@@ -143,7 +143,7 @@ export class StyleDialog {
         container.appendChild(formatting);
         let optionsDiv: HTMLElement = createElement('div', { className: 'e-de-style-options-div' });
         container.appendChild(optionsDiv);
-        let fontOptionsDiv: HTMLElement = createElement('div', { styles: 'display:flex;margin-bottom: 15px;' });
+        let fontOptionsDiv: HTMLElement = createElement('div', { styles: 'display:flex;margin-bottom: 14px;' });
         optionsDiv.appendChild(fontOptionsDiv);
         this.createFontOptions(fontOptionsDiv, isRtl);
         let paragraphOptionsDiv: HTMLElement = createElement('div', { styles: 'display:flex', className: 'e-style-paragraph' });
@@ -174,7 +174,7 @@ export class StyleDialog {
     }
     private createFormatDropdown(parentDiv: HTMLElement, localValue: L10n, isRtl?: boolean): void {
         let formatBtn: HTMLElement = createElement('button', { id: 'style_format_dropdown', innerHTML: localValue.getConstant('Format') });
-        formatBtn.style.height = '35px';
+        formatBtn.style.height = '31px';
         parentDiv.appendChild(formatBtn);
         let items: ItemModel[] = [{ text: localValue.getConstant('Font') + '..', id: 'style_font' },
         { text: localValue.getConstant('Paragraph') + '..', id: 'style_paragraph' },

@@ -34,7 +34,7 @@ describe('Selection Module Unit Test script', () => {
     });
     beforeEach(() => {
         editor.openBlank();
-        editor.editorModule.insertText('Adventure Works cycles', false);
+        editor.editorModule.insertText('Adventure Works cycles');
         viewer.selection.selectAll()
     });
     afterAll((done) => {
@@ -83,7 +83,7 @@ describe('Selection Public APi testing ', () => {
     });
     it('Cut, Copy , paste validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.selection.selectAll();
         editor.selection.copy();
         expect(editor.editorModule.copiedData).not.toBe('');
@@ -91,7 +91,7 @@ describe('Selection Public APi testing ', () => {
         editor.selection.selectAll();
         editor.editor.cut();
         expect(editor.selectionModule.start.paragraph.isEmpty()).toBe(true);
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         expect(editor.selectionModule.start.paragraph.isEmpty()).toBe(false);
     });
     it('insert hyperlink with same display text', () => {
@@ -103,7 +103,7 @@ describe('Selection Public APi testing ', () => {
     });
     it('Toggle text alignment', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.selection.selectAll();
         editor.selectionModule.toggleTextAlignment('Center');
         expect(editor.selectionModule.paragraphFormat.textAlignment).toBe('Center');
@@ -118,7 +118,7 @@ describe('Selection Public APi testing ', () => {
     });
     it('Increase indent and decrease indent', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.selection.selectAll();
         editor.selectionModule.increaseIndent();
         expect(editor.selectionModule.paragraphFormat.leftIndent).toBeGreaterThan(0);
@@ -132,7 +132,7 @@ describe('Selection Public APi testing ', () => {
 
     it('Add selection range testing', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.selection.start.setPositionForCurrentIndex('0;0;0;0;5');
         expect(editor.selection.start.hierarchicalPosition).toBe('0;0;0;0;5');
         editor.selection.end.setPositionForCurrentIndex('0;0;0;0;7');
@@ -164,7 +164,7 @@ describe('Selection Public APi testing - 2', () => {
     });
     it('Toggle Bold texting', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.selection.selectAll();
         editor.selectionModule.toggleBold();
         expect(editor.selectionModule.characterFormat.bold).toBe(true);
@@ -179,7 +179,7 @@ describe('Selection Public APi testing - 2', () => {
     });
     it('Toggle italic validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.selection.selectAll();
         editor.selectionModule.toggleItalic();
         expect(editor.selectionModule.characterFormat.italic).toBe(true);
@@ -194,7 +194,7 @@ describe('Selection Public APi testing - 2', () => {
     });
     it('Toggle Underline validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.selection.selectAll();
         editor.selectionModule.toggleUnderline('Single');
         expect(editor.selectionModule.characterFormat.underline).toBe('Single');
@@ -209,7 +209,7 @@ describe('Selection Public APi testing - 2', () => {
     });
     it('Toggle highlight validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.selection.selectAll();
         editor.selectionModule.toggleHighlightColor('Yellow');
         expect(editor.selectionModule.characterFormat.highlightColor).toBe('Yellow');
@@ -224,7 +224,7 @@ describe('Selection Public APi testing - 2', () => {
     });
     it('Toggle Strike through validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.selection.selectAll();
         editor.selectionModule.toggleStrikethrough();
         expect(editor.selectionModule.characterFormat.strikethrough).toBe('SingleStrike');
@@ -239,7 +239,7 @@ describe('Selection Public APi testing - 2', () => {
     });
     it('Toggle Subscript validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.selection.selectAll();
         editor.selection.toggleSubscript();
         expect(editor.selection.characterFormat.baselineAlignment).toBe('Subscript');
@@ -254,7 +254,7 @@ describe('Selection Public APi testing - 2', () => {
     });
     it('Toggle Superscript validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.selection.selectAll();
         editor.selectionModule.toggleSuperscript();
         expect(editor.selectionModule.characterFormat.baselineAlignment).toBe('Superscript');
@@ -269,9 +269,9 @@ describe('Selection Public APi testing - 2', () => {
     });
     it('Get Selected text and Move to previous paragraph end ', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
 
         let start: TextPosition = editor.selection.getDocumentStart();
         start.setPositionInternal(start);
@@ -290,9 +290,9 @@ describe('Selection Public APi testing - 2', () => {
     });
     // it('Move to word ,paragraph start and end', () => {
     //     editor.openBlank();
-    //     editor.editorModule.insertText('Syncfusion Software', false);
+    //     editor.editorModule.insertText('Syncfusion Software');
     //     editor.editorModule.onEnter();
-    //     editor.editorModule.insertText('Syncfusion Software', false);
+    //     editor.editorModule.insertText('Syncfusion Software');
 
     //     editor.selectionModule.selectPosition(editor.documentEnd, editor.documentEnd);
     //     editor.selectionModule.start.moveToLineStartInternal(editor.selection, false);
@@ -410,7 +410,7 @@ describe('Selection with out clearing multi selection', () => {
     });
     it('Select without clearing selection range', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.selection.selectCurrentWord();
         let line: LineWidget = editor.selection.start.paragraph.childWidgets[0] as LineWidget;
         let startPos = new TextPosition(editor);
@@ -459,7 +459,7 @@ describe('Select Current Word', () => {
     });
     it('Select current word validation in list text element box', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.editor.applyNumbering('%1.', 'Arabic');
         editor.selection.handleHomeKey();
         editor.selection.selectCurrentWord();
@@ -467,7 +467,7 @@ describe('Select Current Word', () => {
     });
     it('Select current word validation in list text element box with continous word', () => {
         editor.openBlank();
-        editor.editorModule.insertText('SyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftware', false);
+        editor.editorModule.insertText('SyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftware');
         editor.editor.applyNumbering('%1.', 'Arabic');
         editor.selection.handleUpKey();
         editor.selection.handleHomeKey();
@@ -476,14 +476,14 @@ describe('Select Current Word', () => {
     });
     it('Select current word validation in text element box with out list', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.selection.handleHomeKey();
         editor.selection.selectCurrentWord();
         expect(editor.selection.getText(true)).toBe('Syncfusion ');
     });
     it('Select current word validation text element box without list', () => {
         editor.openBlank();
-        editor.editorModule.insertText('SyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftware', false);
+        editor.editorModule.insertText('SyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftwareSyncfusionSoftware');
         editor.selection.handleUpKey();
         editor.selection.handleHomeKey();
         editor.selection.selectCurrentWord();
@@ -516,7 +516,7 @@ describe('Cut and Copy operation without SfdtExport', () => {
     });
     it('Cut, Copy , paste validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.selection.selectAll();
         expect(() => { editor.selection.copy() }).not.toThrowError();
         expect(() => { editor.editorModule.cut() }).not.toThrowError();

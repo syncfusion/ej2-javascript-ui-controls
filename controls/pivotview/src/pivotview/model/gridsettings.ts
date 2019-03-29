@@ -6,6 +6,7 @@ import { CellSelectingEventArgs, CellDeselectEventArgs, ResizeArgs, PrintEventAr
 import { ContextMenuItemModel, RowDeselectEventArgs, PdfQueryCellInfoEventArgs, ColumnDragEventArgs } from '@syncfusion/ej2-grids';
 import { BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { ColumnRenderEventArgs, SelectionSettings } from '../../common';
+import { PivotContextMenuItem } from '../../common/base/enum';
 
 /** 
  *  Represents Pivot widget model class.
@@ -109,7 +110,7 @@ export class GridSettings extends ChildProperty<GridSettings> {
      * @default null
      */
     @Property()
-    public contextMenuItems: ContextMenuItemModel[];
+    public contextMenuItems: PivotContextMenuItem[] | ContextMenuItemModel[];
 
     /**
      * Triggers before Grid copy action.

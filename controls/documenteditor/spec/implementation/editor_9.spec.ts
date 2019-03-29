@@ -33,9 +33,9 @@ describe('Section Break API Validation', () => {
         }, 1000);
     });
     it('Insert Section break inside paragraph', () => {
-        editor.editorModule.insertText('Section 1', false);
+        editor.editorModule.insertText('Section 1');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Section 1', false);
+        editor.editorModule.insertText('Section 1');
         editor.selection.moveUp();
         editor.editorModule.insertSectionBreak();
         expect((editor.viewer as PageLayoutViewer).pages.length).toBe(2);
@@ -752,9 +752,9 @@ describe('Table shift downward validation when field is present inside header wi
     });
     it('header height validation after text insert', () => {
         let height: number = editor.viewer.pages[0].headerWidget.height;
-        editor.editor.insertText('s', false);
+        editor.editor.insertText('s');
         expect(height).toEqual(editor.viewer.pages[0].headerWidget.height);
-        editor.editor.insertText('s', false);
+        editor.editor.insertText('s');
         expect(height).toEqual(editor.viewer.pages[0].headerWidget.height);
     });
 });

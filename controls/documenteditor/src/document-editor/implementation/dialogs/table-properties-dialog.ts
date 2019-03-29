@@ -418,7 +418,7 @@ export class TablePropertiesDialog {
         let container: HTMLDivElement = <HTMLDivElement>createElement('div', { id: element.id + '_table_TabContainer' });
         let sizeHeader: HTMLDivElement = <HTMLDivElement>createElement('div', {
             id: container.id + '_sizeLabel', innerHTML: localValue.getConstant('Size'),
-            styles: 'width:100%;margin:0px;padding-top: 20px;padding-bottom: 0px;', className: 'e-de-table-dialog-options-label'
+            styles: 'width:100%;margin:0px;', className: 'e-de-table-dialog-options-label'
         });
         let parentContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'display: inline-flex;' });
         let childContainer1: HTMLDivElement = <HTMLDivElement>createElement('div', {
@@ -451,9 +451,9 @@ export class TablePropertiesDialog {
         });
         let alignmentHeader: HTMLDivElement = createElement('div', {
             innerHTML: localValue.getConstant('Alignment'), className: 'e-de-table-dialog-options-label',
-            styles: 'width: 100%;margin: 0px;padding-bottom: 15px'
+            styles: 'width: 100%;margin: 0px;'
         }) as HTMLDivElement;
-        let alignmentContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'height:70px;display:inline-flex' });
+        let alignmentContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'height:85px;display:inline-flex' });
         let classDivName: string = element.id + 'e-de-table-alignment';
         let leftAlignDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { className: 'e-de-table-dia-align-div' });
         this.left = createElement('div', {
@@ -496,7 +496,8 @@ export class TablePropertiesDialog {
         }
         this.indentingLabel = createElement('label', {
             innerHTML: localValue.getConstant('Indent from left'),
-            styles: 'font-weight: normal;font-size: 11px;position:relative;' + leftIndentLabelMargin
+            // tslint:disable-next-line:max-line-length
+            styles: 'font-weight: normal;font-size: 11px;position:relative;display:block;margin-bottom:18px;top:10px;' + leftIndentLabelMargin
         }) as HTMLLabelElement;
         let leftIndentBox: HTMLDivElement = <HTMLDivElement>createElement('div', {
             styles: 'margin-top: 15px;position: relative;' + leftIndentBoxMargin
@@ -504,7 +505,7 @@ export class TablePropertiesDialog {
         this.leftIndent = <HTMLInputElement>createElement('input', { id: element.id + '_left_indent' });
         let tableDirHeader: HTMLDivElement = createElement('div', {
             innerHTML: localValue.getConstant('Table direction'), className: 'e-de-table-dialog-options-label',
-            styles: 'width: 100%;margin: 0px;padding-bottom: 15px;padding-top:20px;'
+            styles: 'width: 100%;margin: 0px;padding-top:14px;'
         }) as HTMLDivElement;
         let tableDirContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'display:flex' });
         let rtlDiv: HTMLElement = createElement('div', { id: element.id + '_TableDirDiv', className: 'e-de-tbl-rtl-btn-div' });
@@ -789,7 +790,7 @@ export class TablePropertiesDialog {
         let rowDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width: 100%;' });
         let sizeLabeldiv: HTMLDivElement = <HTMLDivElement>createElement('div', {
             innerHTML: localValue.getConstant('Size'),
-            styles: 'width: 100%;padding-top: 20px;padding-bottom: 10px;',
+            styles: 'width: 100%;',
             className: 'e-de-table-dialog-options-label'
         });
         let parentDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'display: inline-flex;width: 100%;' });
@@ -800,7 +801,7 @@ export class TablePropertiesDialog {
             childDiv1Float = 'float: left;';
         }
         let childDiv1: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            className: 'e-de-table-header-div', styles: 'margin-top:9px'
+            className: 'e-de-table-header-div', styles: 'margin-top:6px'
         });
         let rowHeightCheckBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
             attrs: { 'type': 'checkbox' }, id: element.id + '_height_CheckBox'
@@ -826,8 +827,9 @@ export class TablePropertiesDialog {
                 + '</option><option>' + localValue.getConstant('Exactly') + '</option>',
             id: element.id + '_height_type'
         }) as HTMLSelectElement;
+        // tslint:disable-next-line:max-line-length
         let labeltext: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
-            innerHTML: localValue.getConstant('Row height is'), styles: 'font-size: 11px;font-weight: normal;width: 75px;'
+            innerHTML: localValue.getConstant('Row height is'), styles: 'font-size: 11px;font-weight: normal;width: 75px;display:block;margin-bottom:8px'
         });
         rowDiv.appendChild(sizeLabeldiv); element.appendChild(rowDiv); childDiv1.appendChild(rowHeightCheckBox);
         parentDiv.appendChild(childDiv1); childdiv2.appendChild(this.rowHeight); parentDiv.appendChild(childdiv2);
@@ -986,7 +988,7 @@ export class TablePropertiesDialog {
         let sizeDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width: 100%;' });
         let div: HTMLDivElement = createElement('div', {
             innerHTML: localValue.getConstant('Size'), className: 'e-de-table-dialog-options-label',
-            styles: 'width: 100%;padding-top: 20px;padding-bottom: 10px;',
+            styles: 'width: 100%;',
         }) as HTMLDivElement;
         let parentdiv: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width: 100%;display: inline-flex;' });
         let childdiv1Float: string;
@@ -1031,7 +1033,7 @@ export class TablePropertiesDialog {
         }) as HTMLSelectElement;
         let labeltext: HTMLLabelElement = createElement('label', {
             innerHTML: localValue.getConstant('Measure in'),
-            styles: 'font-size: 11px;font-weight: normal;'
+            styles: 'font-size: 11px;font-weight: normal;display:block;margin-bottom:8px'
         }) as HTMLLabelElement;
         sizeDiv.appendChild(div); element.appendChild(sizeDiv); childdiv1.appendChild(preferredCellWidthCheckBox);
         parentdiv.appendChild(childdiv1); childdiv2.appendChild(this.preferredCellWidth);

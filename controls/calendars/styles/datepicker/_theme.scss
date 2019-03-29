@@ -25,6 +25,10 @@
       }&.e-date-icon.e-icons.e-active {
         color: $datepicker-icon-color;
       }&.e-date-icon.e-icons.e-active {
+        @if $skin-name == 'bootstrap4' {
+          background: $datepicker-icon-active-bg-color;
+          border-color: $datepicker-active-border-color;
+        }
         color: $datepicker-active-icon-color;
       }
     }

@@ -2,6 +2,10 @@
   /*! datetimepicker theme */
   .e-datetime-wrapper {
     & .e-input-group-icon.e-icons.e-active {
+      @if $skin-name == 'bootstrap4' {
+        background: $datetime-icon-active-bg-color;
+        border-color: $datetime-active-border-color;
+      }
       color: $datetime-list-active-icon-color;
     }
 

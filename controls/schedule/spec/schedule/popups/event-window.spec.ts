@@ -1673,6 +1673,22 @@ describe('Schedule event window initial load', () => {
             let cancelButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_CANCEL_BUTTON_CLASS) as HTMLElement;
             cancelButton.click();
         });
+        it('Edit event validation checking after close icon click', () => {
+            let appElements: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            triggerMouseEvent(appElements[2], 'click');
+            triggerMouseEvent(appElements[2], 'dblclick');
+            let quickDialog: HTMLElement = schObj.quickPopup.quickDialog.element;
+            expect(quickDialog.classList.contains('e-popup-close')).toEqual(true);
+            let dialogElement: HTMLElement = document.querySelector('.' + cls.EVENT_WINDOW_DIALOG_CLASS) as HTMLElement;
+            expect(document.querySelector('.e-schedule-dialog .e-dlg-content .e-tooltip-wrap') as HTMLInputElement).toEqual(null);
+            let saveButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_SAVE_BUTTON_CLASS) as HTMLElement;
+            saveButton.click();
+            expect(document.querySelector('.e-schedule-dialog .e-dlg-content .e-tooltip-wrap#Location_Error #Location-info').innerHTML).toEqual('This field is required.');
+            expect(schObj.eventWindow.dialogObject.visible).toEqual(true);
+            let cancelButton: HTMLElement = dialogElement.querySelector('.' + cls.EVENT_WINDOW_CANCEL_BUTTON_CLASS) as HTMLElement;
+            cancelButton.click();
+        });
+
         it('save checking after clearing validation error', (done: Function) => {
             let dataBound: (args: Object) => void = () => {
                 expect(schObj.eventsData.length).toEqual(5);

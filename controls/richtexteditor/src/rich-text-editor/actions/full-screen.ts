@@ -48,7 +48,7 @@ export class FullScreen {
     public hideFullScreen(event?: MouseEvent | KeyboardEventArgs): void {
         if (this.parent.element.classList.contains(classes.CLS_FULL_SCREEN)) {
             this.parent.element.classList.remove(classes.CLS_FULL_SCREEN);
-            let elem: NodeListOf<Element> = document.querySelectorAll('.e-overflow');
+            let elem: NodeListOf<Element> = document.querySelectorAll('.e-rte-overflow');
             for (let i: number = 0; i < elem.length; i++) {
                 removeClass([elem[i]], ['e-rte-overflow']);
             }

@@ -1,5 +1,5 @@
 import { remove, extend, isNullOrUndefined, createElement, L10n, getValue, closest } from '@syncfusion/ej2-base';
-import { DataManager } from '@syncfusion/ej2-data';
+import { DataManager, DataUtil } from '@syncfusion/ej2-data';
 import { Dialog, PositionDataModel, DialogModel } from '@syncfusion/ej2-popups';
 import { Tab, TabModel, TabItemModel, EJ2Instance } from '@syncfusion/ej2-navigations';
 import { Grid, Edit, Toolbar as GridToolbar, Page, GridModel } from '@syncfusion/ej2-grids';
@@ -190,6 +190,20 @@ export class DialogEdit {
         this.createDialog();
     }
     /**
+     *
+     * @return {Date}
+     * @private
+     */
+    public getMinimumStartDate(): Date {
+        let minDate: Date = DataUtil.aggregates.min(this.parent.flatData, 'ganttProperties.startDate');
+        if (!isNullOrUndefined(minDate)) {
+            return new Date(minDate.getTime());
+        } else {
+            return new Date(this.parent.timelineModule.timelineStartDate.getTime());
+        }
+    }
+
+    /**
      * @private
      */
     public composeAddRecord(): IGanttData {
@@ -205,14 +219,14 @@ export class DialogEdit {
                 tempData.ganttProperties.taskId = tempData[field];
             } else if (columns[i].field === taskSettings.startDate) {
                 if (isNullOrUndefined(tempData[taskSettings.endDate])) {
-                    tempData[field] = this.parent.dateValidationModule.checkStartDate(this.parent.timelineModule.timelineStartDate);
+                    tempData[field] = this.getMinimumStartDate();
                 } else {
                     tempData[field] = new Date(tempData[taskSettings.endDate]);
                 }
                 tempData.ganttProperties.startDate = new Date(tempData[field]);
             } else if (columns[i].field === taskSettings.endDate) {
                 if (isNullOrUndefined(tempData[taskSettings.startDate])) {
-                    tempData[field] = this.parent.dateValidationModule.checkStartDate(this.parent.timelineModule.timelineStartDate);
+                    tempData[field] = this.getMinimumStartDate();
                 } else {
                     tempData[field] = new Date(tempData[taskSettings.startDate]);
                 }
@@ -659,6 +673,9 @@ export class DialogEdit {
                 this.parent.setRecordValue('endDate', null, ganttProp, true);
                 this.parent.setRecordValue('isMilestone', false, ganttProp, true);
             } else if (isScheduledTask(ganttProp) || !isNullOrUndefined(ganttProp.startDate)) {
+                if (ganttData.ganttProperties.isMilestone && ganttData.ganttProperties.duration !== 0) {
+                    this.parent.dateValidationModule.calculateStartDate(ganttData);
+                }
                 this.parent.dateValidationModule.calculateEndDate(ganttData);
             } else if (!isScheduledTask(ganttProp) && !isNullOrUndefined(ganttProp.endDate)) {
                 this.parent.dateValidationModule.calculateStartDate(ganttData);
@@ -1239,6 +1256,9 @@ export class DialogEdit {
     }
     private updatePredecessorTab(preElement: HTMLElement): void {
         let gridObj: Grid = <Grid>(<EJ2Instance>preElement).ej2_instances[0];
+        if (gridObj.isEdit) {
+            gridObj.endEdit();
+        }
         let dataSource: IPreData[] = <IPreData[]>gridObj.dataSource;
         let predecessorName: string[] = [];
         let newValues: IPredecessor[] = [];

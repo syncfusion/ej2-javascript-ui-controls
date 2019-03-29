@@ -28,7 +28,8 @@ export interface ToolbarSettingsModel {
 
     /**
      * An array of string or object that is used to configure items.
-     * @default predefinedItems
+     * @default ['Bold', 'Italic', 'Underline', '|', 'Formats', 'Alignments', 'OrderedList',
+     * 'UnorderedList', '|', 'CreateLink', 'Image', '|', 'SourceCode', 'Undo', 'Redo']
      */
     items?: (string | IToolbarItems)[];
 
@@ -89,7 +90,7 @@ export interface ImageSettingsModel {
 
     /**
      * Defines the minimum Width of the image.
-     * @default 0
+     * @default '0'
      */
     minWidth?: string | number;
 
@@ -101,7 +102,7 @@ export interface ImageSettingsModel {
 
     /**
      * Defines the minimum Height of the image.
-     * @default 0
+     * @default '0'
      */
     minHeight?: string | number;
 

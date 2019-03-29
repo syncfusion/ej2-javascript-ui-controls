@@ -33,6 +33,7 @@ export class Rte implements IComponent {
             let rteValue: string = this.compObj.contentModule.getEditPanel().innerHTML === '<p><br></p>' ?
                 '' : this.compObj.contentModule.getEditPanel().innerHTML;
             this.parent.setProperties({ value: rteValue }, true);
+            this.parent.extendModelValue(this.compObj.value);
         }
     }
 

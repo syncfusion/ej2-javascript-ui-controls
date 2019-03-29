@@ -17,7 +17,7 @@ import { BulletsAndNumberingDialog } from '../../../src/document-editor/implemen
  */
 function createDocument(editor: DocumentEditor) {
     editor.openBlank();
-    editor.editorModule.insertText('Adventure Works cycles', false);
+    editor.editorModule.insertText('Adventure Works cycles');
 }
 
 describe('Style dialog validation', () => {

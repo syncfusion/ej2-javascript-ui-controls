@@ -1,7 +1,7 @@
 $qrybldr-width: auto !default;
 $qrybldr-height: auto !default;
 $qrybldr-brdr: 1px solid !default;
-$qrybldr-btngrp-brdr: 1px solid !default;
+$qrybldr-btngrp-brdr: none !default;
 $grpcon-padding: 12px !default;
 $qrybldr-device-diaplay: inline-block !default;
 $group-action-margin: 12px !default;
@@ -96,3 +96,7 @@ $qrybldr-brdr-radius: 0 !default;
 $qrybldr-summary-line-height: 1.5em !default;
 $qrybldr-smrytxt-font-size: 14px !default;
 $qrybldr-bigger-smrytxt-font-size: 16px !default;
+$qrybldr-spinner-right: 5px !default;
+$qrybldr-spinner-left: auto !default;
+$qrybldr-rtl-spinner-right: auto !default;
+$qrybldr-rtl-spinner-left: 5px !default;

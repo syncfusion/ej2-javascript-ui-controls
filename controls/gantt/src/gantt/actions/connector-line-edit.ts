@@ -1,4 +1,4 @@
-import { isNullOrUndefined, isUndefined, addClass, removeClass, isObject, getValue } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, isUndefined, remove, addClass, removeClass, isObject, getValue } from '@syncfusion/ej2-base';
 import { Gantt } from '../base/gantt';
 import * as cls from '../base/css-constants';
 import { parentsUntil } from '../base/utils';
@@ -207,7 +207,7 @@ export class ConnectorLineEdit {
     private removeConnectorLineById(id: string): void {
         let element: Element = this.parent.connectorLineModule.dependencyViewContainer.querySelector('#ConnectorLine' + id);
         if (!isNullOrUndefined(element)) {
-            element.remove();
+            remove(element);
         }
     }
 

@@ -137,6 +137,14 @@ $rte-table-header-bg: #e0e0e0 !default;
 $rte-dropdown-active-border: 1px solid #8c8c8c !default;
 $rte-dropdown-active-bg: #e6e6e6 !default;
 
+$rte-insert-dialog-label-padding-top: 20px !default;
+$rte-insert-dialog-label-padding-bottom: 20px !default;
+$rte-big-quick-tbar-item-min-height: 34px !default;
+$rte-big-quick-tbar-item-min-width: 39px !default;
+$rte-content-font-size: 14px !default;
+$rte-dropdown-caret-icon-size: 12px !default;
+$rte-big-dropdown-caret-icon-size: 12px !default;
+
 @include export-module('richtexteditor-bootstrap') {
   #{&}.e-richtexteditor {
     & .e-rte-toolbar {

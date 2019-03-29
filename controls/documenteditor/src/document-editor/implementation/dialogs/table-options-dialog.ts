@@ -76,7 +76,9 @@ export class TableOptionsDialog {
         this.target = createElement('div', {
             id: this.owner.owner.containerId + '_insertCellMarginsDialog', className: 'e-de-table-options-dlg'
         });
-        let innerDiv: HTMLDivElement = <HTMLDivElement>createElement('div', { styles: 'width: 475px;position: relative;height: 180px;' });
+        let innerDiv: HTMLDivElement = <HTMLDivElement>createElement('div', {
+            styles: 'width: 504px;position: relative;height: auto;margin-bottom: 14px'
+        });
         let innerDivLabel: HTMLElement = createElement('Label', {
             id: this.target.id + '_innerDivLabel', className: 'e-de-cell-dia-options-label',
             innerHTML: localValue.getConstant('Default cell margins')
@@ -91,7 +93,7 @@ export class TableOptionsDialog {
         cellSpaceLabel.innerHTML = localValue.getConstant('Default cell spacing');
         div.appendChild(cellSpaceLabel);
         let table2: HTMLTableElement = <HTMLTableElement>createElement('TABLE', {
-            styles: 'height: 30px;padding-bottom: 15px;'
+            styles: 'height: 30px;'
         });
         let tr3: HTMLTableRowElement = <HTMLTableRowElement>createElement('tr');
         let td5: HTMLTableCellElement = <HTMLTableCellElement>createElement('td');
@@ -102,7 +104,7 @@ export class TableOptionsDialog {
         if (isRtl) {
             td6Padding = 'padding-right:15px;';
         } else {
-            td6Padding = 'padding-left:15px;';
+            td6Padding = 'padding-left:14px;';
         }
         let td6: HTMLTableCellElement = <HTMLTableCellElement>createElement('td', { styles: td6Padding, });
         this.cellspacingTextBox = <HTMLInputElement>createElement('input', {
@@ -116,7 +118,7 @@ export class TableOptionsDialog {
         this.target.appendChild(div);
         this.target.appendChild(divBtn);
         this.cellSpaceTextBox = new NumericTextBox({
-            value: 0, min: 0, max: 264.5, width: 150,
+            value: 0, min: 0, max: 264.5, width: 163,
             decimals: 2, enablePersistence: false
         });
         this.cellSpaceTextBox.appendTo(this.cellspacingTextBox);

@@ -281,6 +281,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enableToolbar: boolean;
 
     /**
+     * Enable or disables the Navigation toolbar of PdfViewer.
+     * @default true
+     */
+    @Property(true)
+    public enableNavigationToolbar: boolean;
+
+    /**
      * Enable or disables the download option of PdfViewer.
      * @default true
      */
@@ -395,7 +402,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     /**
      * Defines the settings of highlight annotation.
      */
-    @Property({ opacity: 1, color: '#ffff00', author: 'Guest', subject: 'Highlight', modifiedDate: '' })
+    @Property({ opacity: 1, color: '#FFDF56', author: 'Guest', subject: 'Highlight', modifiedDate: '' })
     public highlightSettings: HighlightSettingsModel;
 
     /**
@@ -735,9 +742,9 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Opacity': 'Opacity',
         'Color edit': 'Change Color',
         'Opacity edit': 'Change Opacity',
-        'highlight': 'Highlight',
-        'underline': 'Underline',
-        'strikethrough': 'Strike through',
+        'Highlight context': 'Highlight',
+        'Underline context': 'Underline',
+        'Strikethrough context': 'Strike through',
         // tslint:disable-next-line:max-line-length
         'Server error': 'Web-service is not listening. PDF Viewer depends on web-service for all it\'s features. Please start the web service to continue.',
         'Open text': 'Open',
@@ -750,7 +757,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         'Selection text': 'Selection',
         'Pan text': 'Pan',
         'Print text': 'Print',
-        'Seach text': 'Search',
+        'Search text': 'Search',
         'Annotation Edit text': 'Edit Annotation'
     };
 

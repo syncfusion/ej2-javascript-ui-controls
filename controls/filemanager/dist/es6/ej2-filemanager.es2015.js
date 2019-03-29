@@ -1,4 +1,4 @@
-import { Ajax, Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, closest, createElement, extend, formatUnit, getValue, isNullOrUndefined, isVisible, matches, removeClass, select, selectAll, setStyleAttribute, setValue } from '@syncfusion/ej2-base';
+import { Ajax, Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, closest, createElement, formatUnit, getValue, isNullOrUndefined, isVisible, matches, remove, removeClass, select, selectAll, setStyleAttribute, setValue } from '@syncfusion/ej2-base';
 import { Splitter } from '@syncfusion/ej2-layouts';
 import { Dialog, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { DataManager, Query } from '@syncfusion/ej2-data';
@@ -86,7 +86,7 @@ var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, 
 const columnArray = [
     {
         field: 'name', headerText: 'Name', minWidth: 120, width: 'auto',
-        template: '<span class="e-fe-text">${name}</span>', customAttributes: { class: 'e-fe-grid-name' }
+        template: '<span class="e-fe-text" title="${name}">${name}</span>', customAttributes: { class: 'e-fe-grid-name' }
     },
     {
         field: 'dateModified', headerText: 'DateModified',
@@ -157,6 +157,27 @@ __decorate$5([
     Property(true)
 ], NavigationPaneSettings.prototype, "visible", void 0);
 
+var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Specifies the Ajax settings of the File Manager.
+ */
+class UploadSettings extends ChildProperty {
+}
+__decorate$6([
+    Property(true)
+], UploadSettings.prototype, "autoUpload", void 0);
+__decorate$6([
+    Property(0)
+], UploadSettings.prototype, "minFileSize", void 0);
+__decorate$6([
+    Property(30000000)
+], UploadSettings.prototype, "maxFileSize", void 0);
+
 /**
  * FileExplorer common modules
  */
@@ -197,6 +218,8 @@ const CONTENT_ID = '_content';
 const BREADCRUMBBAR_ID = '_breadcrumbbar';
 /** @hidden */
 const UPLOAD_ID = '_upload';
+/** @hidden */
+const SEARCH_ID = '_search';
 /**
  * Specifies the File Manager internal class names
  */
@@ -369,6 +392,8 @@ const modelChanged = 'model-changed';
 /** @hidden */
 const initialEnd = 'initial-end';
 /** @hidden */
+const finalizeEnd = 'finalize-end';
+/** @hidden */
 const createEnd = 'create-end';
 /** @hidden */
 const deleteEnd = 'delete-end';
@@ -405,6 +430,8 @@ const selectAllInit = 'select-all-init';
 /** @hidden */
 const clearAllInit = 'clear-all-init';
 /** @hidden */
+const clearPathInit = 'clear-path-init';
+/** @hidden */
 const layoutChange = 'layout-change';
 /** @hidden */
 const sortByChange = 'sort-by-change';
@@ -430,6 +457,8 @@ const sortColumn = 'sort-column';
 const pathColumn = 'path-column';
 /** @hidden */
 const searchTextChange = 'search-change';
+/** @hidden */
+const downloadInit = 'download-init';
 
 /**
  * Utility file for common actions
@@ -511,7 +540,7 @@ function activeElement(action, isGrid, file) {
             }
             isFile$$1 = (file.activeModule === 'largeiconsview') ?
                 ((blurEle[i].querySelector('.' + LARGE_ICON_FOLDER)) ? false : true) : null;
-            id = (isFile$$1 === false) ? blurEle[i].closest('li').getAttribute('data-uid') : null;
+            id = (isFile$$1 === false) ? closest(blurEle[i], 'li').getAttribute('data-uid') : null;
             (blurEle[i].querySelector('.' + LIST_TEXT)) ?
                 nodeNames.push({ 'name': blurEle[i].querySelector('.' + LIST_TEXT).textContent, 'isFile': isFile$$1, 'id': id }) :
                 nodeNames = nodeNames;
@@ -557,7 +586,7 @@ function getModule(element, file) {
         if (element.classList.contains(ROWCELL)) {
             file.activeModule = 'detailsview';
         }
-        else if (element.closest('.' + LARGE_ICON)) {
+        else if (closest(element, '.' + LARGE_ICON)) {
             file.activeModule = 'largeiconsview';
         }
         else {
@@ -653,7 +682,7 @@ function getImageUrl(parent, item) {
     let baseUrl = parent.ajaxSettings.getImageUrl ? parent.ajaxSettings.getImageUrl : parent.ajaxSettings.url;
     let imgUrl;
     if (parent.breadcrumbbarModule.searchObj.element.value !== '') {
-        imgUrl = baseUrl + '?path=' + parent.path + getValue('filterPath', item);
+        imgUrl = baseUrl + '?path=' + getValue('filterPath', item);
     }
     else {
         imgUrl = baseUrl + '?path=' + parent.path + getValue('name', item);
@@ -668,8 +697,12 @@ function getSortedData(parent, items) {
     let lists = new DataManager(items).executeLocal(query);
     return getValue('records', lists);
 }
+/* istanbul ignore next */
 function getItemObject(parent, item) {
     let name = select('.' + LIST_TEXT, item).textContent;
+    return getObject(parent, name);
+}
+function getObject(parent, name) {
     let currFiles = getValue(parent.path, parent.feFiles);
     let query = new Query().where('name', 'equal', name);
     let lists = new DataManager(currFiles).executeLocal(query);
@@ -770,6 +803,28 @@ function getSortField(id) {
     }
     return field;
 }
+function setNextPath(parent, path) {
+    let currfolders = path.split('/');
+    let folders = parent.originalPath.split('/');
+    for (let i = currfolders.length - 1, len = folders.length - 1; i < len; i++) {
+        let eventName = (folders[i + 1] === '') ? finalizeEnd : initialEnd;
+        let newPath = (folders[i] === '') ? '/' : (parent.path + folders[i] + '/');
+        let data = getObject(parent, folders[i]);
+        let id = getValue('nodeId', data);
+        parent.setProperties({ path: newPath }, true);
+        parent.pathId.push(id);
+        parent.itemData = [data];
+        read(parent, eventName, parent.path);
+        break;
+    }
+}
+function openSearchFolder(parent, data) {
+    let fPath = getValue('filterPath', data) + '/';
+    fPath = fPath.replace(/\\/g, '/');
+    parent.notify(clearPathInit, { selectedNode: parent.pathId[parent.pathId.length - 1] });
+    parent.originalPath = fPath;
+    read(parent, (parent.path !== parent.originalPath) ? initialEnd : finalizeEnd, parent.path);
+}
 
 /**
  * Function to read the content from given path in File Manager.
@@ -815,7 +870,7 @@ parent, path, names, targetPath, pasteOperation, navigationPane, replaceItems) {
  * @private
  */
 function Delete(parent, items, path, operation, treeView) {
-    let data = { action: operation, targetPath: path, itemNames: items };
+    let data = { action: operation, path: path, itemNames: items };
     createAjax(parent, data, deleteSuccess, path, treeView);
 }
 /**
@@ -824,7 +879,7 @@ function Delete(parent, items, path, operation, treeView) {
  */
 /* istanbul ignore next */
 function GetDetails(parent, itemNames, path, operation) {
-    let data = { action: operation, targetPath: path, itemNames: itemNames };
+    let data = { action: operation, path: path, itemNames: itemNames };
     createAjax(parent, data, detailsSuccess, path, null, operation);
 }
 function createAjax(parent, data, fn, event, navigationPane, operation, targetPath) {
@@ -1271,12 +1326,12 @@ function getOptions(parent, text, e, details, replaceItems) {
             let intl = new Internationalization();
             let parseDate = intl.parseDate(details.modified, { format: 'MM/dd/yyy hh:mm:ss' });
             let formattedString = intl.formatDate(new Date(details.modified), { format: 'MMMM dd, yyyy HH:mm:ss' });
-            options.header = details.name.split('.')[0];
+            options.header = details.name;
             options.content = '<table>' +
                 '<tr><td>' + getLocaleText(parent, 'Type') + '</td><td class="' + VALUE + '" title="' +
                 (details.isFile ? 'File' : 'Folder') + '">' + (details.isFile ? 'File' : 'Folder') + '</td></tr>' +
-                '<tr><td>' + getLocaleText(parent, 'Size') + '</td><td>' + details.size
-                + '<span class="' + VALUE + '" title ="' + details.size + '"></span></td></tr>' +
+                '<tr><td>' + getLocaleText(parent, 'Size') + '</td><td><span class="' + VALUE + '" title ="' +
+                details.size + '">' + details.size + '</span></td></tr>' +
                 '<tr><td>' + getLocaleText(parent, 'Location') + '</td><td class="' + VALUE + '" title="' +
                 details.location + '">' + details.location + '</td></tr>' +
                 '<tr><td>' + getLocaleText(parent, 'Modified') + '</td><td class="' + VALUE + '" >'
@@ -1497,15 +1552,20 @@ function createImageDialog(parent, header, imageUrl) {
 }
 function openImage(parent) {
     setTimeout(() => {
-        parent.viewerObj.element.focus();
+        if (parent.viewerObj) {
+            parent.viewerObj.element.focus();
+        }
     });
     updateImage(parent);
 }
 function updateImage(parent) {
     let content = select('.e-dlg-content', parent.viewerObj.element);
     let imgWrap = select('.e-image-wrap', parent.viewerObj.element);
-    imgWrap.style.width = (content.offsetWidth - 36) + 'px';
-    imgWrap.style.height = (content.offsetHeight - 20) + 'px';
+    let cssObj = window.getComputedStyle(content, null);
+    let paddingWidth = cssObj ? (2 * parseFloat(cssObj.paddingRight)) : 36;
+    let paddingHeight = cssObj ? (2 * parseFloat(cssObj.paddingBottom)) : 20;
+    imgWrap.style.width = (content.offsetWidth - paddingWidth) + 'px';
+    imgWrap.style.height = (content.offsetHeight - paddingHeight) + 'px';
 }
 
 /**
@@ -1526,6 +1586,7 @@ class LargeIconsView {
         this.count = 0;
         this.isRendered = true;
         this.tapCount = 0;
+        this.isSetModel = false;
         this.parent = parent;
         this.element = select('#' + this.parent.element.id + LARGEICON_ID, this.parent.element);
         addClass([this.element], LARGE_ICONS);
@@ -1587,7 +1648,7 @@ class LargeIconsView {
             let iconsView = select('#' + this.parent.element.id + LARGEICON_ID, this.parent.element);
             let ul = select('ul', iconsView);
             if (ul) {
-                ul.remove();
+                remove(ul);
             }
             this.listObj = {
                 ariaAttributes: {
@@ -1627,17 +1688,18 @@ class LargeIconsView {
                     this.parent.uploadItem = [];
                 }
             }
-            this.parent.activeModule = 'largeiconsview';
+            let activeEle = this.element.querySelectorAll('.' + ACTIVE);
+            if (activeEle.length !== 0) {
+                this.parent.activeModule = 'largeiconsview';
+            }
             iconsView.classList.remove(DISPLAY_NONE);
-            let pane = select('#' + this.parent.element.id + CONTENT_ID, this.parent.element);
-            let bar = select('#' + this.parent.element.id + BREADCRUMBBAR_ID, this.parent.element);
-            this.element.style.height = (pane.offsetHeight - bar.offsetHeight) + 'px';
+            this.adjustHeight();
             this.element.style.maxHeight = '100%';
             this.getItemCount();
             this.addEventListener();
             this.wireEvents();
             this.isRendered = true;
-            if (this.parent.persistData) {
+            if (this.parent.selectedItems.length) {
                 this.checkItem();
             }
         }
@@ -1648,6 +1710,11 @@ class LargeIconsView {
      */
     getModuleName() {
         return 'largeiconsview';
+    }
+    adjustHeight() {
+        let pane = select('#' + this.parent.element.id + CONTENT_ID, this.parent.element);
+        let bar = select('#' + this.parent.element.id + BREADCRUMBBAR_ID, this.parent.element);
+        this.element.style.height = (pane.offsetHeight - bar.offsetHeight) + 'px';
     }
     onItemCreated(args) {
         if (!this.parent.showFileExtension && getValue('isFile', args.curData)) {
@@ -1677,11 +1744,11 @@ class LargeIconsView {
         checkElement.setAttribute('aria-checked', 'false');
         args.item.firstElementChild.insertBefore(checkElement, args.item.firstElementChild.childNodes[0]);
     }
-    /* istanbul ignore next */
     onLayoutChange(args) {
         if (this.parent.view === 'LargeIcons') {
             this.destroy();
             this.render(args);
+            /* istanbul ignore next */
             if (this.parent.cutNodes && this.parent.cutNodes.length !== 0) {
                 let indexes = this.getIndexes(args.files, this.parent.selectedNodes);
                 let length = 0;
@@ -1716,6 +1783,7 @@ class LargeIconsView {
         let items = JSON.parse(JSON.stringify(args.files));
         while (i < items.length) {
             let icon = fileType(items[i]);
+            /* istanbul ignore next */
             let pasteNodes = this.parent.pasteNodes;
             let className = ((this.parent.selectedItems &&
                 this.parent.selectedItems.indexOf(getValue('name', args.files[i])) !== -1) ||
@@ -1728,12 +1796,12 @@ class LargeIconsView {
             else {
                 setValue('icon', icon, items[i]);
             }
-            setValue('htmlAttributes', { class: className }, items[i]);
+            setValue('htmlAttributes', { class: className, title: getValue('name', args.files[i]) }, items[i]);
             i++;
         }
         return items;
     }
-    onInitialEnd(args) {
+    onFinalizeEnd(args) {
         this.render(args);
         this.parent.notify(searchTextChange, args);
     }
@@ -1745,6 +1813,8 @@ class LargeIconsView {
         this.clearSelect();
         this.selectItems(args.files, [getValue('name', this.parent.createdItem)]);
         this.parent.createdItem = null;
+        this.parent.largeiconsviewModule.element.focus();
+        this.parent.persistData = false;
     }
     /* istanbul ignore next */
     onDeleteEnd(args) {
@@ -1820,9 +1890,7 @@ class LargeIconsView {
         this.isRendered = false;
     }
     onAfterRequest(args) {
-        if (getValue('action', args) === 'failure') {
-            this.isRendered = true;
-        }
+        this.isRendered = true;
     }
     /* istanbul ignore next */
     onSearch(args) {
@@ -1833,7 +1901,7 @@ class LargeIconsView {
         if (this.parent.isDestroyed) {
             return;
         }
-        this.parent.off(initialEnd, this.onInitialEnd);
+        this.parent.off(finalizeEnd, this.onFinalizeEnd);
         this.parent.off(createEnd, this.onCreateEnd);
         this.parent.off(deleteEnd, this.onDeleteEnd);
         this.parent.off(refreshEnd, this.onRefreshEnd);
@@ -1854,7 +1922,7 @@ class LargeIconsView {
         this.parent.off(resizeEnd, this.resizeHandler);
     }
     addEventListener() {
-        this.parent.on(initialEnd, this.onInitialEnd, this);
+        this.parent.on(finalizeEnd, this.onFinalizeEnd, this);
         this.parent.on(createEnd, this.onCreateEnd, this);
         this.parent.on(deleteEnd, this.onDeleteEnd, this);
         this.parent.on(refreshEnd, this.onRefreshEnd, this);
@@ -1876,13 +1944,15 @@ class LargeIconsView {
     }
     onPropertyChanged(e) {
         if (e.module !== this.getModuleName() && e.module !== 'common') {
-            /* istanbul ignore next */
             return;
         }
         for (let prop of Object.keys(e.newProp)) {
             switch (prop) {
+                case 'height':
+                    this.adjustHeight();
+                    break;
                 case 'selectedItems':
-                    let activeEle = this.element.querySelectorAll('.' + ACTIVE);
+                    this.isSetModel = true;
                     if (this.parent.selectedItems.length !== 0) {
                         let currentDataSource = getValue(this.parent.path, this.parent.feFiles);
                         this.selectItems(currentDataSource, this.parent.selectedItems);
@@ -1892,6 +1962,7 @@ class LargeIconsView {
                             this.removeActive(this.element.querySelectorAll('.' + ACTIVE)[0]);
                         }
                     }
+                    this.isSetModel = false;
                     break;
                 case 'showThumbnail':
                     refresh(this.parent);
@@ -1946,10 +2017,11 @@ class LargeIconsView {
         this.wireClickEvent(false);
         EventHandler.remove(this.element, 'mouseover', this.onMouseOver);
         this.keyboardModule.destroy();
+        this.keyboardDownModule.destroy();
     }
     /* istanbul ignore next */
     onMouseOver(e) {
-        let targetEle = e.target.closest('.e-list-item');
+        let targetEle = closest(e.target, '.e-list-item');
         removeBlur(this.parent, 'hover');
         if (targetEle !== null) {
             targetEle.classList.add(HOVER);
@@ -1999,7 +2071,7 @@ class LargeIconsView {
     }
     doTapAction(eve) {
         let target = eve.originalEvent.target;
-        let item = target.closest('.' + LIST_ITEM);
+        let item = closest(target, '.' + LIST_ITEM);
         if (this.multiSelect || target.classList.contains(LIST_PARENT) || isNullOrUndefined(item)) {
             this.clickHandler(eve);
         }
@@ -2020,11 +2092,13 @@ class LargeIconsView {
     }
     clickHandler(e) {
         let target = e.originalEvent.target;
+        removeBlur(this.parent, 'hover');
         this.doSelection(target, e.originalEvent);
+        this.parent.activeModule = 'largeiconsview';
     }
     /** @hidden */
     doSelection(target, e) {
-        let item = target.closest('.' + LIST_ITEM);
+        let item = closest(target, '.' + LIST_ITEM);
         let fItem = this.getFocusedItem();
         let cList = target.classList;
         this.parent.isFile = false;
@@ -2083,6 +2157,7 @@ class LargeIconsView {
         this.parent.activeElements = this.element.querySelectorAll('.e-active');
     }
     dblClickHandler(e) {
+        this.parent.activeModule = 'largeiconsview';
         let target = e.originalEvent.target;
         this.doOpenAction(target);
     }
@@ -2099,7 +2174,7 @@ class LargeIconsView {
         if (isNullOrUndefined(target)) {
             return;
         }
-        let item = target.closest('.' + LIST_ITEM);
+        let item = closest(target, '.' + LIST_ITEM);
         this.parent.isFile = false;
         if (!isNullOrUndefined(item)) {
             this.updateType(item);
@@ -2111,11 +2186,17 @@ class LargeIconsView {
             }
             let text = select('.' + LIST_TEXT, item).textContent;
             if (!this.parent.isFile) {
-                let newPath = this.parent.path + text + '/';
-                this.parent.setProperties({ path: newPath }, true);
-                this.parent.pathId.push(getValue('nodeId', details));
-                this.parent.itemData = [details];
-                openAction(this.parent);
+                let val = this.parent.breadcrumbbarModule.searchObj.element.value;
+                if (val === '') {
+                    let newPath = this.parent.path + text + '/';
+                    this.parent.setProperties({ path: newPath }, true);
+                    this.parent.pathId.push(getValue('nodeId', details));
+                    this.parent.itemData = [details];
+                    openAction(this.parent);
+                }
+                else {
+                    openSearchFolder(this.parent, details);
+                }
                 this.parent.setProperties({ selectedItems: [] }, true);
             }
             else {
@@ -2196,12 +2277,11 @@ class LargeIconsView {
                 this.navigateItem(firstItem);
                 break;
             case 'tab':
-                if (!isNullOrUndefined(firstItem)) {
-                    this.startItem = firstItem;
-                    this.clearSelect();
+                if (!isNullOrUndefined(fItem)) {
+                    this.addFocus(fItem);
+                }
+                else if (!isNullOrUndefined(firstItem)) {
                     this.addFocus(firstItem);
-                    this.parent.notify(selectionChanged, {});
-                    this.triggerSelect('select', firstItem);
                 }
                 break;
             case 'moveDown':
@@ -2450,7 +2530,9 @@ class LargeIconsView {
     addActive(nextItem) {
         if (!isNullOrUndefined(nextItem)) {
             if (!nextItem.classList.contains(ACTIVE)) {
-                this.parent.selectedItems.push(nextItem.textContent);
+                if (!this.isSetModel) {
+                    this.parent.selectedItems.push(nextItem.textContent);
+                }
                 addClass([nextItem], [ACTIVE]);
                 this.checkState(nextItem, true);
             }
@@ -2483,13 +2565,13 @@ class LargeIconsView {
         if (toCheck) {
             if (!checkEle.classList.contains(CHECK)) {
                 addClass([checkEle], CHECK);
-                checkEle.closest('.' + CB_WRAP).setAttribute('aria-checked', 'true');
+                closest(checkEle, '.' + CB_WRAP).setAttribute('aria-checked', 'true');
             }
         }
         else {
             if (checkEle.classList.contains(CHECK)) {
                 removeClass([checkEle], CHECK);
-                checkEle.closest('.' + CB_WRAP).setAttribute('aria-checked', 'false');
+                closest(checkEle, '.' + CB_WRAP).setAttribute('aria-checked', 'false');
             }
         }
     }
@@ -2517,7 +2599,9 @@ class LargeIconsView {
         this.perRow = perRow;
     }
     triggerSelect(action, item) {
-        let eventArgs = { action: action, fileDetails: this.getItemObject(item) };
+        let data = this.getItemObject(item);
+        this.parent.visitedData = data;
+        let eventArgs = { action: action, fileDetails: data };
         this.parent.trigger('fileSelect', eventArgs);
     }
     selectItems(files, items) {
@@ -2577,7 +2661,7 @@ class BreadCrumbBar {
     render() {
         this.addEventListener();
     }
-    onPathChanged() {
+    onPathChange() {
         let rootName = getValue('name', getValue('/', this.parent.feParent));
         if (!this.addressBarLink) {
             this.addressPath = rootName + this.parent.path;
@@ -2605,13 +2689,13 @@ class BreadCrumbBar {
                 }
                 addressbarLI.setAttribute('data-utext', id);
                 addressbarLI.classList.add('e-address-list-item');
-                addressbarLI.setAttribute('tabindex', '0');
                 if (i !== 0) {
                     let icon = createElement('span', { className: ICONS });
                     addressbarLI.appendChild(icon);
                 }
                 if (countOfAddressBarPath - i !== 1) {
                     addressATag = createElement('a', { className: LIST_TEXT });
+                    addressbarLI.setAttribute('tabindex', '0');
                 }
                 else {
                     addressATag = createElement('span', { className: LIST_TEXT });
@@ -2638,9 +2722,6 @@ class BreadCrumbBar {
             this.updateBreadCrumbBar(addressbarUL);
         }
         this.addressBarLink = '';
-        if (this.searchObj.value !== '') {
-            this.searchObj.value = '';
-        }
     }
     /* istanbul ignore next */
     updateBreadCrumbBar(addresBarUL) {
@@ -2659,11 +2740,12 @@ class BreadCrumbBar {
             liElementsWidth = liElementsWidth + width;
         }
         if (!isNullOrUndefined(ulElement)) {
-            ulElement.remove();
+            remove(ulElement);
         }
         let searchContainer = this.parent.createElement('div');
         searchContainer.setAttribute('class', 'e-search-wrap');
-        let searchInput = createElement('input', { id: this.parent.element.id + '_search' });
+        let id = this.parent.element.id + SEARCH_ID;
+        let searchInput = createElement('input', { id: id, attrs: { autocomplete: 'off' } });
         searchContainer.appendChild(searchInput);
         let searchEle = this.parent.breadCrumbBarNavigation.querySelector('.e-search-wrap .e-input');
         if (isNullOrUndefined(searchEle)) {
@@ -2672,12 +2754,13 @@ class BreadCrumbBar {
             EventHandler.add(span, 'click', this.onShowInput, this);
             searchInput.parentElement.insertBefore(span, searchInput);
             this.searchObj = new TextBox({
+                value: '',
                 showClearButton: true,
                 placeholder: getLocaleText(this.parent, 'Search'),
                 focus: this.onFocus.bind(this),
                 blur: this.onBlur.bind(this),
             });
-            this.searchObj.appendTo('#' + this.parent.element.id + '_search');
+            this.searchObj.appendTo('#' + this.parent.element.id + SEARCH_ID);
             this.searchEventBind(this.parent.searchSettings.allowSearchOnTyping);
             let search$$1 = this.searchObj.element.nextElementSibling;
             EventHandler.add(search$$1, 'mousedown', this.searchChangeHandler.bind(this), this);
@@ -2727,7 +2810,7 @@ class BreadCrumbBar {
     }
     /* istanbul ignore next */
     onFocus() {
-        let wrap = this.searchObj.element.closest('.e-search-wrap');
+        let wrap = closest(this.searchObj.element, '.e-search-wrap');
         wrap.classList.add('e-focus');
     }
     /* istanbul ignore next */
@@ -2736,7 +2819,7 @@ class BreadCrumbBar {
     }
     /* istanbul ignore next */
     onBlur() {
-        let wrap = this.searchObj.element.closest('.e-search-wrap');
+        let wrap = closest(this.searchObj.element, '.e-search-wrap');
         wrap.classList.remove('e-focus');
     }
     /* istanbul ignore next */
@@ -2776,7 +2859,9 @@ class BreadCrumbBar {
                 searchWord = '*' + args.value + '*';
             }
             if (this.searchObj.element.value.length > 0) {
-                Search(this.parent, search, this.parent.path, searchWord, false, false);
+                let caseSensitive = this.parent.searchSettings.ignoreCase;
+                let hiddenItems = this.parent.showHiddenItems;
+                Search(this.parent, search, this.parent.path, searchWord, hiddenItems, !caseSensitive);
             }
             else {
                 read(this.parent, pathChanged, this.parent.path);
@@ -2820,27 +2905,33 @@ class BreadCrumbBar {
         let path = this.addressBarLink.substr(this.addressBarLink.indexOf('/'), this.addressBarLink.length);
         return path;
     }
-    onInitialEnd() {
-        this.onPathChanged();
-    }
-    onRefreshEnd() {
-        this.onPathChanged();
+    onUpdatePath() {
+        this.onPathChange();
+        this.removeSearchValue();
     }
     onCreateEnd(args) {
         let path = this.addressPath.substring(this.addressPath.indexOf('/'), this.addressPath.length);
         if (path !== this.parent.path) {
-            this.onPathChanged();
+            this.onPathChange();
         }
     }
     /* istanbul ignore next */
     onDeleteEnd() {
         let path = this.addressPath.substring(this.addressPath.indexOf('/'), this.addressPath.length);
         if (path !== this.parent.path) {
-            this.onPathChanged();
+            this.onUpdatePath();
         }
     }
-    onRenameEnd() {
-        this.onPathChanged();
+    /* istanbul ignore next */
+    removeSearchValue() {
+        if (this.searchObj.value !== '' || this.searchObj.element.value !== '') {
+            this.searchObj.value = '';
+            this.searchObj.element.value = '';
+            this.searchObj.dataBind();
+        }
+    }
+    onResize() {
+        this.onPathChange();
     }
     liClick(currentPath) {
         read(this.parent, pathChanged, currentPath);
@@ -2854,15 +2945,15 @@ class BreadCrumbBar {
         this.parent.on(modelChanged, this.onPropertyChanged, this);
         EventHandler.add(this.parent.breadCrumbBarNavigation, 'click', this.addressPathClickHandler, this);
         this.parent.on(destroy, this.destroy, this);
-        this.parent.on(pathChanged, this.onPathChanged, this);
-        this.parent.on(initialEnd, this.onInitialEnd, this);
-        this.parent.on(refreshEnd, this.onRefreshEnd, this);
-        this.parent.on(openEnd, this.onPathChanged, this);
+        this.parent.on(pathChanged, this.onUpdatePath, this);
+        this.parent.on(finalizeEnd, this.onUpdatePath, this);
+        this.parent.on(refreshEnd, this.onUpdatePath, this);
+        this.parent.on(openEnd, this.onUpdatePath, this);
         this.parent.on(createEnd, this.onCreateEnd, this);
-        this.parent.on(renameEnd, this.onRenameEnd, this);
+        this.parent.on(renameEnd, this.onUpdatePath, this);
         this.parent.on(deleteEnd, this.onDeleteEnd, this);
-        this.parent.on(splitterResize, this.onPathChanged, this);
-        this.parent.on(resizeEnd, this.onPathChanged, this);
+        this.parent.on(splitterResize, this.onResize, this);
+        this.parent.on(resizeEnd, this.onResize, this);
         this.parent.on(searchTextChange, this.onSearchTextChange, this);
     }
     keyActionHandler(e) {
@@ -2875,15 +2966,15 @@ class BreadCrumbBar {
     }
     removeEventListener() {
         this.keyboardModule.destroy();
-        this.parent.off(pathChanged, this.onPathChanged);
-        this.parent.off(initialEnd, this.onInitialEnd);
-        this.parent.off(refreshEnd, this.onRefreshEnd);
-        this.parent.off(openEnd, this.onPathChanged);
+        this.parent.off(pathChanged, this.onUpdatePath);
+        this.parent.off(finalizeEnd, this.onUpdatePath);
+        this.parent.off(refreshEnd, this.onUpdatePath);
+        this.parent.off(openEnd, this.onUpdatePath);
         this.parent.off(createEnd, this.onCreateEnd);
-        this.parent.off(renameEnd, this.onRenameEnd);
+        this.parent.off(renameEnd, this.onUpdatePath);
         this.parent.off(deleteEnd, this.onDeleteEnd);
-        this.parent.off(splitterResize, this.onPathChanged);
-        this.parent.off(resizeEnd, this.onPathChanged);
+        this.parent.off(splitterResize, this.onResize);
+        this.parent.off(resizeEnd, this.onResize);
         this.parent.off(searchTextChange, this.onSearchTextChange);
     }
     /**
@@ -2911,7 +3002,7 @@ class BreadCrumbBar {
         }
     }
     onSearchTextChange(args) {
-        this.searchObj.element.placeholder = getLocaleText(this.parent, 'Search ' + args.cwd.name);
+        this.searchObj.element.placeholder = getLocaleText(this.parent, 'Search') + ' ' + args.cwd.name;
     }
 }
 
@@ -2928,6 +3019,10 @@ class ContextMenu$2 {
         this.render();
     }
     render() {
+        this.keyConfigs = {
+            downarrow: 'downarrow',
+            uparrow: 'uparrown'
+        };
         this.contextMenu = new ContextMenu({
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
@@ -2944,12 +3039,14 @@ class ContextMenu$2 {
     onBeforeItemRender(args) {
         if (args.item.id === this.getMenuId('largeiconsview')) {
             let iconSpan = createElement('span');
-            args.element.insertBefore(iconSpan, args.element.childNodes[1]);
+            let element = args.element;
+            element.insertBefore(iconSpan, this.parent.view === 'LargeIcons' ? element.childNodes[1] : element.childNodes[0]);
             iconSpan.setAttribute('class', ICON_LARGE + ' ' + MENU_ICON);
         }
         if (args.item.id === this.getMenuId('detailsview')) {
             let iconSpan = createElement('span');
-            args.element.insertBefore(iconSpan, args.element.childNodes[1]);
+            let element = args.element;
+            element.insertBefore(iconSpan, this.parent.view === 'Details' ? element.childNodes[1] : element.childNodes[0]);
             iconSpan.setAttribute('class', ICON_GRID + ' ' + MENU_ICON);
         }
     }
@@ -2967,37 +3064,37 @@ class ContextMenu$2 {
         if (target.classList.contains(FULLROW)) {
             this.parent.selectedItems.length = 0;
         }
-        this.targetElement = this.parent.fileView === 'Details' ? target.closest('tr') : target;
+        this.targetElement = this.parent.view === 'Details' ? closest(target, 'tr') : target;
         let view = this.getTargetView(target);
         /* istanbul ignore next */
-        if (target.classList.contains(TREE_VIEW) || target.closest('th') ||
-            (target.closest('#' + this.parent.element.id + BREADCRUMBBAR_ID))) {
+        if (target.classList.contains(TREE_VIEW) || closest(target, 'th') ||
+            (closest(target, '#' + this.parent.element.id + BREADCRUMBBAR_ID))) {
             args.cancel = true;
             // tslint:disable-next-line
         }
-        else if (!(this.parent.fileView === 'LargeIcons') && this.targetElement &&
+        else if (!(this.parent.view === 'LargeIcons') && this.targetElement &&
             this.targetElement.classList.contains('e-emptyrow')) {
             this.setLayoutItem(target);
             //Paste
             // this.contextMenu.enableItems([this.getMenuId('Paste')], this.parent.enablePaste, true);
             /* istanbul ignore next */
         }
-        else if (target.closest('.' + EMPTY)) {
+        else if (closest(target, '.' + EMPTY)) {
             this.setLayoutItem(target);
             // tslint:disable-next-line
         }
         else if (!target.classList.contains(MENU_ITEM) && !target.classList.contains(MENU_ICON) && !target.classList.contains(SUBMENU_ICON)) {
             /* istanbul ignore next */
             // tslint:disable-next-line
-            if (this.parent.fileView === 'LargeIcons' && !isNullOrUndefined(target.closest('li')) && !target.closest('#' + this.parent.element.id + TREE_ID)) {
+            if (this.parent.view === 'LargeIcons' && !isNullOrUndefined(closest(target, 'li')) && !target.closest('#' + this.parent.element.id + TREE_ID)) {
                 let eveArgs = { ctrlKey: true, shiftKey: true };
-                data = getItemObject(this.parent, this.targetElement.closest('li'));
-                if (!target.closest('li').classList.contains('e-active')) {
+                data = this.parent.visitedData;
+                if (!closest(target, 'li').classList.contains('e-active')) {
                     this.parent.largeiconsviewModule.doSelection(target, eveArgs);
                 }
                 select$$1 = true;
             }
-            else if (!isNullOrUndefined(target.closest('tr'))) {
+            else if (!isNullOrUndefined(closest(target, 'tr'))) {
                 uid = this.targetElement.getAttribute('data-uid');
                 data = this.parent.detailsviewModule.gridObj.getRowObjectFromUID(uid).data;
                 if (isNullOrUndefined(this.targetElement.getAttribute('aria-selected'))) {
@@ -3008,16 +3105,17 @@ class ContextMenu$2 {
                 select$$1 = true;
                 /* istanbul ignore next */
             }
-            else if (target.closest('#' + this.parent.element.id + TREE_ID)) {
+            else if (closest(target, '#' + this.parent.element.id + TREE_ID)) {
+                uid = closest(target, 'li').getAttribute('data-uid');
                 treeFolder = true;
             }
             /* istanbul ignore next */
             if (select$$1) {
-                if (this.parent.fileView === 'LargeIcons') {
+                if (this.parent.view === 'LargeIcons') {
                     if (data.isFile === true) {
                         this.setFileItem(target);
-                        if (target.closest('li') &&
-                            (target.closest('li')).getElementsByClassName('e-list-img').length === 0) {
+                        if (closest(target, 'li') &&
+                            (closest(target, 'li')).getElementsByClassName('e-list-img').length === 0) {
                             this.contextMenu.enableItems([this.getMenuId('Open')], false, true);
                         }
                     }
@@ -3028,8 +3126,8 @@ class ContextMenu$2 {
                 }
                 else if (data['isFile'] === true) {
                     this.setFileItem(target);
-                    if (target.closest('tr') &&
-                        (target.closest('tr')).getElementsByClassName(ICON_IMAGE).length === 0) {
+                    if (closest(target, 'tr') &&
+                        (closest(target, 'tr')).getElementsByClassName(ICON_IMAGE).length === 0) {
                         this.contextMenu.enableItems([this.getMenuId('Open')], false, true);
                     }
                 }
@@ -3040,6 +3138,9 @@ class ContextMenu$2 {
             }
             else if (treeFolder) {
                 this.setFolderItem(true);
+                if (uid === this.parent.pathId[0]) {
+                    this.contextMenu.enableItems([this.getMenuId('Delete'), this.getMenuId('Rename')], false, true);
+                }
                 /* istanbul ignore next */
                 // tslint:disable-next-line
             }
@@ -3085,7 +3186,6 @@ class ContextMenu$2 {
         this.contextMenu.dataBind();
         if (isTree) {
             this.contextMenu.enableItems([this.getMenuId('Open')], false, true);
-            this.contextMenu.enableItems([this.getMenuId('Download')], false, true);
         }
         else if (this.parent.selectedItems.length !== 1) {
             this.contextMenu.enableItems([this.getMenuId('Rename')], false, true);
@@ -3104,10 +3204,10 @@ class ContextMenu$2 {
     setLayoutItem(target) {
         this.contextMenu.items = this.getItemData(this.parent.contextMenuSettings.layout);
         this.contextMenu.dataBind();
-        if ((this.parent.fileView === 'LargeIcons' &&
-            (target.closest('#' + this.parent.element.id + LARGEICON_ID).getElementsByClassName(EMPTY).length !== 0))
-            || (this.parent.fileView === 'Details' &&
-                (target.closest('#' + this.parent.element.id + GRID_ID).getElementsByClassName(EMPTY).length !== 0))) {
+        if ((this.parent.view === 'LargeIcons' &&
+            (closest(target, '#' + this.parent.element.id + LARGEICON_ID).getElementsByClassName(EMPTY).length !== 0))
+            || (this.parent.view === 'Details' &&
+                (closest(target, '#' + this.parent.element.id + GRID_ID).getElementsByClassName(EMPTY).length !== 0))) {
             this.contextMenu.enableItems([this.getMenuId('SelectAll')], false, true);
             this.contextMenu.dataBind();
         }
@@ -3141,7 +3241,7 @@ class ContextMenu$2 {
             let path;
             // tslint:disable-next-line
             let data;
-            if (this.parent.fileView === 'Details') {
+            if (this.parent.view === 'Details') {
                 let uid = this.targetElement.getAttribute('data-uid');
                 data = this.parent.detailsviewModule.gridObj.getRowObjectFromUID(uid).data;
                 /* istanbul ignore next */
@@ -3201,6 +3301,10 @@ class ContextMenu$2 {
                     for (let ele = 0; ele < elements.length; ele++) {
                         items[ele] = getItemObject(this.parent, elements[ele]);
                     }
+                }
+                else if (this.parent.activeModule === 'navigationpane' && this.parent.selectedItems.length === 0) {
+                    this.parent.notify(downloadInit, {});
+                    items = this.parent.itemData;
                 }
                 if (items.length > 0) {
                     Download(this.parent, items);
@@ -3282,10 +3386,23 @@ class ContextMenu$2 {
     addEventListener() {
         this.parent.on(destroy, this.destroy, this);
         this.parent.on(modelChanged, this.onPropertyChanged, this);
+        this.keyboardModule = new KeyboardEvents(this.contextMenu.element, {
+            keyAction: this.keyActionHandler.bind(this),
+            keyConfigs: this.keyConfigs,
+            eventName: 'keydown',
+        });
     }
     removeEventListener() {
         this.parent.off(destroy, this.destroy);
         this.parent.off(modelChanged, this.onPropertyChanged);
+        this.keyboardModule.destroy();
+    }
+    keyActionHandler(e) {
+        switch (e.action) {
+            case 'uparrow':
+            case 'downarrow':
+                e.preventDefault();
+        }
     }
     /**
      * For internal use only - Get the module name.
@@ -3306,7 +3423,7 @@ class ContextMenu$2 {
         this.removeEventListener();
         this.contextMenu.destroy();
         if (document.getElementById(this.parent.element.id + CONTEXT_MENU_ID)) {
-            document.getElementById(this.parent.element.id + CONTEXT_MENU_ID).remove();
+            remove(document.getElementById(this.parent.element.id + CONTEXT_MENU_ID));
         }
     }
     /* istanbul ignore next */
@@ -3353,24 +3470,24 @@ class ContextMenu$2 {
                         items: [
                             {
                                 id: this.getMenuId('Name'), text: getLocaleText(this.parent, 'Name'),
-                                iconCss: this.parent.sortBy === 'name' ? TB_OPTION_DOT : ''
+                                iconCss: this.parent.sortBy === 'name' ? TB_OPTION_DOT : null
                             },
                             {
                                 id: this.getMenuId('Size'), text: getLocaleText(this.parent, 'Size'),
-                                iconCss: this.parent.sortBy === 'size' ? TB_OPTION_DOT : ''
+                                iconCss: this.parent.sortBy === 'size' ? TB_OPTION_DOT : null
                             },
                             {
                                 id: this.getMenuId('Date'), text: getLocaleText(this.parent, 'DateModified'),
-                                iconCss: this.parent.sortBy === 'dateModified' ? TB_OPTION_DOT : ''
+                                iconCss: this.parent.sortBy === 'dateModified' ? TB_OPTION_DOT : null
                             },
                             { separator: true },
                             {
                                 id: this.getMenuId('Ascending'), text: getLocaleText(this.parent, 'Ascending'),
-                                iconCss: this.parent.sortOrder === 'Ascending' ? TB_OPTION_TICK : ''
+                                iconCss: this.parent.sortOrder === 'Ascending' ? TB_OPTION_TICK : null
                             },
                             {
                                 id: this.getMenuId('Descending'), text: getLocaleText(this.parent, 'Descending'),
-                                iconCss: this.parent.sortOrder === 'Descending' ? TB_OPTION_TICK : ''
+                                iconCss: this.parent.sortOrder === 'Descending' ? TB_OPTION_TICK : null
                             }
                         ]
                     };
@@ -3382,11 +3499,11 @@ class ContextMenu$2 {
                         items: [
                             {
                                 id: this.getMenuId('largeiconsview'), text: getLocaleText(this.parent, 'View-LargeIcons'),
-                                iconCss: this.parent.view === 'Details' ? '' : TB_OPTION_TICK
+                                iconCss: this.parent.view === 'Details' ? null : TB_OPTION_TICK
                             },
                             {
                                 id: this.getMenuId('detailsview'), text: getLocaleText(this.parent, 'View-Details'),
-                                iconCss: this.parent.view === 'Details' ? TB_OPTION_TICK : ''
+                                iconCss: this.parent.view === 'Details' ? TB_OPTION_TICK : null
                             }
                         ]
                     };
@@ -3429,7 +3546,8 @@ let defaultLocale = {
     'Paste': 'Paste',
     'SortBy': 'Sort by',
     'Refresh': 'Refresh',
-    'Selection': 'items selected',
+    'Item-Selection': 'item selected',
+    'Items-Selection': 'items selected',
     'View': 'View',
     'Details': 'Details',
     'SelectAll': 'Select all',
@@ -3493,7 +3611,7 @@ let defaultLocale = {
     'Search-Key': 'Try with different keywords'
 };
 
-var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+var __decorate$7 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
@@ -3528,7 +3646,6 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         this.persistData = false;
         this.isOpened = false;
         this.searchedItems = [];
-        FileManager_1.Inject(BreadCrumbBar, LargeIconsView, ContextMenu$2);
     }
     /**
      * Get component name.
@@ -3542,8 +3659,8 @@ let FileManager = FileManager_1 = class FileManager extends Component {
      * Initialize the event handler
      */
     preRender() {
-        this.pathId = ['fe_tree'];
-        this.itemData = [];
+        FileManager_1.Inject(BreadCrumbBar, LargeIconsView, ContextMenu$2);
+        this.ensurePath();
         this.feParent = [];
         this.feFiles = [];
         setStyleAttribute(this.element, { 'width': formatUnit(this.width), 'height': formatUnit(this.height) });
@@ -3552,7 +3669,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         if (this.isMobile) {
             this.setProperties({ navigationPaneSettings: { visible: false } }, true);
         }
-        let ele = this.element.closest('.e-bigger');
+        let ele = closest(this.element, '.e-bigger');
         this.isBigger = ele ? true : false;
         createSpinner({ target: this.element }, createElement);
         this.addWrapper();
@@ -3570,7 +3687,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
      * @hidden
      */
     getPersistData() {
-        let keyEntity = ['view'];
+        let keyEntity = ['view', 'path', 'selectedItems'];
         return this.addOnPersist(keyEntity);
     }
     /**
@@ -3624,7 +3741,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         this.fileView = this.view;
         this.setRtl(this.enableRtl);
         this.addEventListeners();
-        read(this, initialEnd, '/');
+        read(this, (this.path !== this.originalPath) ? initialEnd : finalizeEnd, this.path);
         this.adjustHeight();
         if (isNullOrUndefined(this.navigationpaneModule)) {
             this.splitterObj.collapse(0);
@@ -3632,6 +3749,22 @@ let FileManager = FileManager_1 = class FileManager extends Component {
             bar.classList.add(DISPLAY_NONE);
         }
         this.wireEvents();
+    }
+    ensurePath() {
+        let currentPath = this.path;
+        if (isNullOrUndefined(currentPath)) {
+            currentPath = '/';
+        }
+        if (currentPath.indexOf('/') !== 0) {
+            currentPath = '/' + currentPath;
+        }
+        if (currentPath.lastIndexOf('/') !== (currentPath.length - 1)) {
+            currentPath = currentPath + '/';
+        }
+        this.originalPath = currentPath;
+        this.setProperties({ path: '/' }, true);
+        this.pathId = ['fe_tree'];
+        this.itemData = [];
     }
     initialize() {
         if (this.isMobile) {
@@ -3701,6 +3834,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         let toolbar = select('#' + this.element.id + TOOLBAR_ID, this.element);
         let toolBarHeight = this.toolbarModule ? toolbar.offsetHeight : 0;
         this.splitterObj.height = (this.element.clientHeight - toolBarHeight).toString();
+        this.splitterObj.dataBind();
     }
     /* istanbul ignore next */
     splitterResize() {
@@ -3760,8 +3894,11 @@ let FileManager = FileManager_1 = class FileManager extends Component {
             close: this.onClose.bind(this),
         });
         this.uploadDialogObj.appendTo('#' + this.element.id + UPLOAD_DIALOG_ID);
+        this.renderUploadBox();
+    }
+    renderUploadBox() {
         let uploadUrl = this.ajaxSettings.uploadUrl ? this.ajaxSettings.uploadUrl : this.ajaxSettings.url;
-        let defaultModel = {
+        this.uploadObj = new Uploader({
             dropArea: select('#' + this.element.id + CONTENT_ID, this.element),
             asyncSettings: {
                 saveUrl: uploadUrl,
@@ -3775,11 +3912,17 @@ let FileManager = FileManager_1 = class FileManager extends Component {
             selected: this.onSelected.bind(this),
             success: this.onUploadSuccess.bind(this),
             failure: this.onUploadFailure.bind(this),
-        };
-        let uploadModel = {};
-        extend(uploadModel, this.uploadSettings, defaultModel);
-        this.uploadObj = new Uploader(uploadModel);
+            autoUpload: this.uploadSettings.autoUpload,
+            minFileSize: this.uploadSettings.minFileSize,
+            maxFileSize: this.uploadSettings.maxFileSize,
+        });
         this.uploadObj.appendTo('#' + this.element.id + UPLOAD_ID);
+    }
+    updateUploader() {
+        this.uploadObj.autoUpload = this.uploadSettings.autoUpload;
+        this.uploadObj.minFileSize = this.uploadSettings.minFileSize;
+        this.uploadObj.maxFileSize = this.uploadSettings.maxFileSize;
+        this.uploadObj.dataBind();
     }
     /* istanbul ignore next */
     onOpen() {
@@ -3821,9 +3964,13 @@ let FileManager = FileManager_1 = class FileManager extends Component {
     onUploadFailure(files) {
         this.trigger('onError', { action: 'Upload', error: files });
     }
+    onInitialEnd() {
+        setNextPath(this, this.path);
+    }
     addEventListeners() {
         this.on(beforeRequest, this.showSpinner, this);
         this.on(afterRequest, this.hideSpinner, this);
+        this.on(initialEnd, this.onInitialEnd, this);
         EventHandler.add(this.element, 'contextmenu', this.onContextMenu, this);
     }
     removeEventListeners() {
@@ -3832,6 +3979,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         }
         this.off(beforeRequest, this.showSpinner);
         this.off(afterRequest, this.hideSpinner);
+        this.off(initialEnd, this.onInitialEnd);
         EventHandler.remove(this.element, 'contextmenu', this.onContextMenu);
     }
     resizeHandler() {
@@ -3875,6 +4023,11 @@ let FileManager = FileManager_1 = class FileManager extends Component {
     unWireEvents() {
         this.keyboardModule.destroy();
     }
+    setPath() {
+        this.ensurePath();
+        this.notify(clearPathInit, { selectedNode: this.pathId[0] });
+        read(this, (this.path !== this.originalPath) ? initialEnd : finalizeEnd, this.path);
+    }
     /**
      * Called internally if any of the property value changed.
      * @param  {FileManager} newProp
@@ -3886,86 +4039,8 @@ let FileManager = FileManager_1 = class FileManager extends Component {
     onPropertyChanged(newProp, oldProp) {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
-                case 'cssClass':
-                    this.addCssClass(oldProp.cssClass, newProp.cssClass);
-                    this.notify(modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
-                    break;
-                case 'height':
-                    let height = !isNullOrUndefined(newProp.height) ? formatUnit(newProp.height) : newProp.height;
-                    setStyleAttribute(this.element, { 'height': height });
-                    this.notify(modelChanged, { module: 'toolbar', newProp: newProp, oldProp: oldProp });
-                    let header = document.getElementById('file_grid').querySelector('.e-gridheader');
-                    this.detailsviewModule.gridObj.height = this.setHeight() - header.offsetHeight;
-                    this.navigationpaneModule.treeObj.element.style.height = this.setHeight() + 'px';
-                    break;
-                case 'width':
-                    let width = !isNullOrUndefined(newProp.width) ? formatUnit(newProp.width) : newProp.width;
-                    setStyleAttribute(this.element, { 'width': width });
-                    this.notify(modelChanged, { module: 'toolbar', newProp: newProp, oldProp: oldProp });
-                    break;
                 case 'ajaxSettings':
-                    if (!isNullOrUndefined(newProp.ajaxSettings.url)) {
-                        this.setProperties({ ajaxSettings: { url: newProp.ajaxSettings.url } }, true);
-                    }
-                    if (!isNullOrUndefined(newProp.ajaxSettings.uploadUrl)) {
-                        this.setProperties({ ajaxSettings: { uploadUrl: newProp.ajaxSettings.uploadUrl } }, true);
-                    }
-                    if (!isNullOrUndefined(newProp.ajaxSettings.downloadUrl)) {
-                        this.setProperties({ ajaxSettings: { downloadUrl: newProp.ajaxSettings.downloadUrl } }, true);
-                    }
-                    if (!isNullOrUndefined(newProp.ajaxSettings.getImageUrl)) {
-                        this.setProperties({ ajaxSettings: { getImageUrl: newProp.ajaxSettings.getImageUrl } }, true);
-                    }
-                    refresh(this);
-                    break;
-                case 'toolbarSettings':
-                    this.adjustHeight();
-                    this.notify(modelChanged, { module: 'toolbar', newProp: newProp, oldProp: oldProp });
-                    break;
-                case 'searchSettings':
-                    if (!isNullOrUndefined(newProp.searchSettings.allowSearchOnTyping)) {
-                        this.setProperties({ searchSettings: { allowSearchOnTyping: newProp.searchSettings.allowSearchOnTyping } }, true);
-                    }
-                    if (isNullOrUndefined(newProp.searchSettings.ignoreCase)) {
-                        this.setProperties({ searchSettings: { ignoreCase: newProp.searchSettings.ignoreCase } }, true);
-                    }
-                    if (isNullOrUndefined(newProp.searchSettings.filterType)) {
-                        this.setProperties({ searchSettings: { filterType: newProp.searchSettings.filterType } }, true);
-                    }
-                    this.notify(modelChanged, { module: 'breadcrumbbar', newProp: newProp, oldProp: oldProp });
-                    break;
-                case 'selectedItems':
-                    if (this.fileView === 'Details') {
-                        this.notify(modelChanged, { module: 'detailsview', newProp: newProp, oldProp: oldProp });
-                    }
-                    else if (this.fileView === 'LargeIcons') {
-                        this.notify(modelChanged, { module: 'largeiconsview', newProp: newProp, oldProp: oldProp });
-                    }
-                    break;
-                case 'showThumbnail':
-                    this.notify(modelChanged, { module: 'largeiconsview', newProp: newProp, oldProp: oldProp });
-                    break;
-                case 'enableRtl':
-                    this.setRtl(newProp.enableRtl);
-                    this.notify(modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
-                    break;
-                case 'showFileExtension':
-                    this.notify(modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
-                    break;
-                case 'showHiddenItems':
-                    this.notify(modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
-                    break;
-                case 'navigationPaneSettings':
-                    this.splitterAdjust();
-                    this.notify(modelChanged, { module: 'navigationpane', newProp: newProp, oldProp: oldProp });
-                    break;
-                case 'view':
-                    if (newProp.view === 'Details') {
-                        this.notify(modelChanged, { module: 'detailsview', newProp: newProp, oldProp: oldProp });
-                    }
-                    else if (newProp.view === 'LargeIcons') {
-                        this.notify(modelChanged, { module: 'largeiconsview', newProp: newProp, oldProp: oldProp });
-                    }
+                    this.ajaxSettingSetModel(newProp);
                     break;
                 case 'allowMultiSelection':
                     if (this.allowMultiSelection) {
@@ -3982,8 +4057,110 @@ let FileManager = FileManager_1 = class FileManager extends Component {
                     }
                     this.notify(modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
                     break;
+                case 'cssClass':
+                    this.addCssClass(oldProp.cssClass, newProp.cssClass);
+                    this.notify(modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'detailsViewSettings':
+                    this.notify(modelChanged, { module: 'detailsview', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'enableRtl':
+                    this.setRtl(newProp.enableRtl);
+                    this.notify(modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'height':
+                    let height = !isNullOrUndefined(newProp.height) ? formatUnit(newProp.height) : newProp.height;
+                    setStyleAttribute(this.element, { 'height': height });
+                    this.adjustHeight();
+                    this.notify(modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'locale':
+                    if (!isNullOrUndefined(newProp.enableRtl)) {
+                        this.setProperties({ enableRtl: newProp.enableRtl }, true);
+                    }
+                    this.localeSetModelOption(newProp);
+                    break;
+                case 'navigationPaneSettings':
+                    this.splitterAdjust();
+                    this.notify(modelChanged, { module: 'navigationpane', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'path':
+                    this.setPath();
+                    break;
+                case 'searchSettings':
+                    if (!isNullOrUndefined(newProp.searchSettings.allowSearchOnTyping)) {
+                        this.setProperties({ searchSettings: { allowSearchOnTyping: newProp.searchSettings.allowSearchOnTyping } }, true);
+                    }
+                    if (isNullOrUndefined(newProp.searchSettings.ignoreCase)) {
+                        this.setProperties({ searchSettings: { ignoreCase: newProp.searchSettings.ignoreCase } }, true);
+                    }
+                    if (isNullOrUndefined(newProp.searchSettings.filterType)) {
+                        this.setProperties({ searchSettings: { filterType: newProp.searchSettings.filterType } }, true);
+                    }
+                    this.notify(modelChanged, { module: 'breadcrumbbar', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'selectedItems':
+                    if (this.view === 'Details') {
+                        this.notify(modelChanged, { module: 'detailsview', newProp: newProp, oldProp: oldProp });
+                    }
+                    else if (this.view === 'LargeIcons') {
+                        this.notify(modelChanged, { module: 'largeiconsview', newProp: newProp, oldProp: oldProp });
+                    }
+                    break;
+                case 'showFileExtension':
+                    this.notify(modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'showHiddenItems':
+                    this.notify(modelChanged, { module: 'common', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'showThumbnail':
+                    this.notify(modelChanged, { module: 'largeiconsview', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'toolbarSettings':
+                    this.adjustHeight();
+                    this.notify(modelChanged, { module: 'toolbar', newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'uploadSettings':
+                    this.updateUploader();
+                    break;
+                case 'view':
+                    if (newProp.view === 'Details') {
+                        this.notify(modelChanged, { module: 'detailsview', newProp: newProp, oldProp: oldProp });
+                    }
+                    else if (newProp.view === 'LargeIcons') {
+                        this.notify(modelChanged, { module: 'largeiconsview', newProp: newProp, oldProp: oldProp });
+                    }
+                    break;
+                case 'width':
+                    let width = !isNullOrUndefined(newProp.width) ? formatUnit(newProp.width) : newProp.width;
+                    setStyleAttribute(this.element, { 'width': width });
+                    this.notify(modelChanged, { module: 'toolbar', newProp: newProp, oldProp: oldProp });
+                    break;
             }
         }
+    }
+    /* istanbul ignore next */
+    ajaxSettingSetModel(newProp) {
+        if (!isNullOrUndefined(newProp.ajaxSettings.url)) {
+            this.setProperties({ ajaxSettings: { url: newProp.ajaxSettings.url } }, true);
+        }
+        if (!isNullOrUndefined(newProp.ajaxSettings.uploadUrl)) {
+            this.setProperties({ ajaxSettings: { uploadUrl: newProp.ajaxSettings.uploadUrl } }, true);
+        }
+        if (!isNullOrUndefined(newProp.ajaxSettings.downloadUrl)) {
+            this.setProperties({ ajaxSettings: { downloadUrl: newProp.ajaxSettings.downloadUrl } }, true);
+        }
+        if (!isNullOrUndefined(newProp.ajaxSettings.getImageUrl)) {
+            this.setProperties({ ajaxSettings: { getImageUrl: newProp.ajaxSettings.getImageUrl } }, true);
+        }
+        this.setProperties({ path: '/' }, true);
+        this.setProperties({ selectedItems: [] }, true);
+        super.refresh();
+    }
+    /* istanbul ignore next */
+    localeSetModelOption(newProp) {
+        this.uploadObj.locale = newProp.locale;
+        super.refresh();
     }
     /**
      * Triggers when the component is destroyed.
@@ -3993,18 +4170,26 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         if (this.isDestroyed) {
             return;
         }
-        this.notify(destroy, {});
+        if (!this.refreshing) {
+            this.notify(destroy, {});
+        }
         this.uploadObj.destroy();
+        this.uploadObj = null;
         this.uploadDialogObj.destroy();
+        this.uploadDialogObj = null;
         this.splitterObj.destroy();
+        this.splitterObj = null;
         if (this.dialogObj) {
             this.dialogObj.destroy();
+            this.dialogObj = null;
         }
         if (this.viewerObj) {
             this.viewerObj.destroy();
+            this.viewerObj = null;
         }
         if (this.extDialogObj) {
             this.extDialogObj.destroy();
+            this.extDialogObj = null;
         }
         this.element.removeAttribute('style');
         this.element.removeAttribute('tabindex');
@@ -4016,7 +4201,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         super.destroy();
     }
     /**
-     * Disables the specified toolbar items.
+     * Disables the specified toolbar items of the file manager.
      * @param {items: string[]} items - Specifies an array of items to be disabled.
      * @returns void
      */
@@ -4026,7 +4211,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         }
     }
     /**
-     * Enables the specified toolbar items.
+     * Enables the specified toolbar items of the file manager.
      * @param {items: string[]} items - Specifies an array of items to be enabled.
      * @returns void
      */
@@ -4036,10 +4221,10 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         }
     }
     /**
-     * Refresh the folder content.
+     * Refresh the folder files of the file manager.
      * @returns void
      */
-    refreshContent() {
+    refreshFiles() {
         refresh(this);
     }
     /**
@@ -4055,16 +4240,6 @@ let FileManager = FileManager_1 = class FileManager extends Component {
             (operation === 'Remove') ? this.deleteRecords.push(selectNodes[i].name) : this.deleteRecords = this.deleteRecords;
             i++;
         }
-    }
-    /**
-     * To set the height for navigationPane and DetailsView
-     * @hidden
-     */
-    setHeight() {
-        let toolbarHeight = this.toolbarModule ? this.toolbarModule.toolbarObj.element.offsetHeight : 0;
-        let fileHeight = this.element.clientHeight;
-        let height = fileHeight - toolbarHeight;
-        return height;
     }
     /**
      * Gets details of file's / folder's
@@ -4129,97 +4304,97 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         }
     }
 };
-__decorate$6([
+__decorate$7([
     Complex({}, AjaxSettings)
 ], FileManager.prototype, "ajaxSettings", void 0);
-__decorate$6([
+__decorate$7([
     Property(true)
 ], FileManager.prototype, "allowMultiSelection", void 0);
-__decorate$6([
+__decorate$7([
     Complex({}, ContextMenuSettings)
 ], FileManager.prototype, "contextMenuSettings", void 0);
-__decorate$6([
+__decorate$7([
     Property('')
 ], FileManager.prototype, "cssClass", void 0);
-__decorate$6([
+__decorate$7([
     Complex({}, DetailsViewSettings)
 ], FileManager.prototype, "detailsViewSettings", void 0);
-__decorate$6([
+__decorate$7([
     Property(false)
 ], FileManager.prototype, "enablePersistence", void 0);
-__decorate$6([
+__decorate$7([
     Property(false)
 ], FileManager.prototype, "enableRtl", void 0);
-__decorate$6([
+__decorate$7([
     Property('400px')
 ], FileManager.prototype, "height", void 0);
-__decorate$6([
+__decorate$7([
     Property('LargeIcons')
 ], FileManager.prototype, "view", void 0);
-__decorate$6([
+__decorate$7([
     Complex({}, NavigationPaneSettings)
 ], FileManager.prototype, "navigationPaneSettings", void 0);
-__decorate$6([
+__decorate$7([
     Property('/')
 ], FileManager.prototype, "path", void 0);
-__decorate$6([
+__decorate$7([
     Complex({}, SearchSettings)
 ], FileManager.prototype, "searchSettings", void 0);
-__decorate$6([
+__decorate$7([
     Property()
 ], FileManager.prototype, "selectedItems", void 0);
-__decorate$6([
+__decorate$7([
     Property(true)
 ], FileManager.prototype, "showFileExtension", void 0);
-__decorate$6([
+__decorate$7([
     Property(false)
 ], FileManager.prototype, "showHiddenItems", void 0);
-__decorate$6([
+__decorate$7([
     Property(true)
 ], FileManager.prototype, "showThumbnail", void 0);
-__decorate$6([
+__decorate$7([
     Complex({}, ToolbarSettings)
 ], FileManager.prototype, "toolbarSettings", void 0);
-__decorate$6([
-    Property()
+__decorate$7([
+    Complex({}, UploadSettings)
 ], FileManager.prototype, "uploadSettings", void 0);
-__decorate$6([
+__decorate$7([
     Property('100%')
 ], FileManager.prototype, "width", void 0);
-__decorate$6([
+__decorate$7([
     Event()
 ], FileManager.prototype, "beforeFileLoad", void 0);
-__decorate$6([
+__decorate$7([
     Event()
 ], FileManager.prototype, "beforeFileOpen", void 0);
-__decorate$6([
+__decorate$7([
     Event()
 ], FileManager.prototype, "beforeSend", void 0);
-__decorate$6([
+__decorate$7([
     Event()
 ], FileManager.prototype, "created", void 0);
-__decorate$6([
+__decorate$7([
     Event()
 ], FileManager.prototype, "destroyed", void 0);
-__decorate$6([
+__decorate$7([
     Event()
 ], FileManager.prototype, "fileSelect", void 0);
-__decorate$6([
+__decorate$7([
     Event()
 ], FileManager.prototype, "menuClick", void 0);
-__decorate$6([
+__decorate$7([
     Event()
 ], FileManager.prototype, "menuOpen", void 0);
-__decorate$6([
+__decorate$7([
     Event()
 ], FileManager.prototype, "onError", void 0);
-__decorate$6([
+__decorate$7([
     Event()
 ], FileManager.prototype, "onSuccess", void 0);
-__decorate$6([
+__decorate$7([
     Event()
 ], FileManager.prototype, "toolbarClick", void 0);
-FileManager = FileManager_1 = __decorate$6([
+FileManager = FileManager_1 = __decorate$7([
     NotifyPropertyChanges
 ], FileManager);
 
@@ -4282,6 +4457,12 @@ class Toolbar$1 {
             return;
         }
         switch (tool) {
+            case 'sortby':
+                let target = closest(args.originalEvent.target, '.' + TB_ITEM);
+                if (target && target.classList.contains('e-toolbar-popup')) {
+                    args.cancel = true;
+                }
+                break;
             case 'newfolder':
                 createDialog(this.parent, 'NewFolder');
                 break;
@@ -4318,7 +4499,7 @@ class Toolbar$1 {
             /* istanbul ignore next */
             case 'download':
                 if (this.parent.selectedItems.length > 0) {
-                    if (this.parent.fileView === 'LargeIcons') {
+                    if (this.parent.view === 'LargeIcons') {
                         let elementRecords = [];
                         let elements = selectAll('.e-active', this.parent.largeiconsviewModule.listElements);
                         for (let ele = 0; ele < elements.length; ele++) {
@@ -4427,7 +4608,6 @@ class Toolbar$1 {
         }
     }
     updateLayout(view) {
-        this.parent.fileView = view;
         this.parent.setProperties({ view: view }, true);
         let searchWord;
         if (this.parent.breadcrumbbarModule.searchObj.value && this.parent.breadcrumbbarModule.searchObj.value === '') {
@@ -4471,7 +4651,7 @@ class Toolbar$1 {
                     let spanElement = '<span class="e-tbar-btn-text e-tbar-ddb-text">' + itemText + '</span>';
                     item = {
                         id: itemId, tooltipText: itemTooltip,
-                        template: '<button id="' + itemId + '" class="e-tbar-btn e-tbtn-txt">' + spanElement + '</button>',
+                        template: '<button id="' + itemId + '" class="e-tbar-btn e-tbtn-txt" tabindex="-1">' + spanElement + '</button>',
                     };
                     break;
                 case 'Refresh':
@@ -4482,10 +4662,11 @@ class Toolbar$1 {
                     item = { id: itemId, tooltipText: itemTooltip, overflow: 'Show', align: 'Right', template: txt };
                     break;
                 case 'View':
+                    let id = this.parent.element.id + VIEW_ID;
                     item = {
                         id: itemId, tooltipText: itemTooltip, prefixIcon: this.parent.view === 'Details' ? ICON_GRID : ICON_LARGE,
                         overflow: 'Show', align: 'Right',
-                        template: '<button id="' + this.parent.element.id + VIEW_ID + '" class="e-tbar-btn e-tbtn-txt"></button>'
+                        template: '<button id="' + id + '" class="e-tbar-btn e-tbtn-txt" tabindex="-1"></button>'
                     };
                     break;
                 case 'Details':
@@ -4553,11 +4734,16 @@ class Toolbar$1 {
         else if (this.parent.selectedItems.length > 1) {
             this.hideItems(this.multiple, false);
             this.hideItems(this.selection, true);
-            let ele = select('.' + STATUS, this.toolbarObj.element);
-            if (ele) {
-                ele.textContent = this.parent.selectedItems.length + ' ' + getLocaleText(this.parent, 'Selection');
-                this.toolbarObj.hideItem(ele.parentElement, false);
+        }
+        let ele = select('.' + STATUS, this.toolbarObj.element);
+        if (this.parent.selectedItems.length > 0 && ele) {
+            if (this.parent.selectedItems.length === 1) {
+                ele.textContent = this.parent.selectedItems.length + ' ' + getLocaleText(this.parent, 'Item-Selection');
             }
+            else {
+                ele.textContent = this.parent.selectedItems.length + ' ' + getLocaleText(this.parent, 'Items-Selection');
+            }
+            this.toolbarObj.hideItem(ele.parentElement, false);
         }
     }
     hideItems(tools, toHide) {
@@ -4712,11 +4898,11 @@ class NavigationPane {
         };
     }
     onInit(args) {
+        if (!isNullOrUndefined(this.treeObj)) {
+            return;
+        }
         let rootData = getValue('/', this.parent.feParent);
-        setValue('selected', true, rootData);
         setValue('icon', 'e-fe-folder', rootData);
-        this.rootID = 'fe_tree';
-        setValue('nodeId', this.rootID, rootData);
         this.rootNode = getValue('name', getValue('/', this.parent.feParent));
         this.treeObj = new TreeView({
             fields: { dataSource: [rootData], id: 'nodeId', text: 'name', hasChildren: 'hasChild', iconCss: 'icon' },
@@ -4729,8 +4915,6 @@ class NavigationPane {
         });
         this.treeObj.appendTo('#' + this.parent.element.id + TREE_ID);
         this.treeObj.element.style.width = '25%';
-        this.addChild(args.files, this.rootID, false);
-        setValue(this.parent.path, args.files, this.parent.feFiles);
         this.parent.persistData = true;
         this.wireEvents();
     }
@@ -4790,7 +4974,6 @@ class NavigationPane {
             return;
         }
         let path = getPath(args.node, getValue('text', args.nodeData));
-        this.parent.expandedPath = path;
         if (args.node.querySelector('.' + LIST_ITEM) === null) {
             this.expandNodeTarget = args.node.getAttribute('data-uid');
             this.parent.expandedId = this.expandNodeTarget;
@@ -4824,13 +5007,16 @@ class NavigationPane {
     }
     updateTree(args) {
         let id = this.treeObj.selectedNodes[0];
+        let toExpand = this.treeObj.expandedNodes.indexOf(id) === -1 ? false : true;
+        this.removeChildNodes(id);
+        setValue(this.parent.path, args.files, this.parent.feFiles);
+        this.addChild(args.files, id, !toExpand);
+    }
+    removeChildNodes(id) {
         let sNode = select('[data-uid="' + id + '"]', this.treeObj.element);
         let parent = select('.' + LIST_PARENT, sNode);
         let childs = parent ? Array.prototype.slice.call(parent.children) : null;
-        let toExpand = this.treeObj.expandedNodes.indexOf(id) === -1 ? false : true;
         this.treeObj.removeNodes(childs);
-        setValue(this.parent.path, args.files, this.parent.feFiles);
-        this.addChild(args.files, id, !toExpand);
     }
     onOpenEnd(args) {
         let sleId = this.parent.pathId[this.parent.pathId.length - 1];
@@ -4848,6 +5034,12 @@ class NavigationPane {
     }
     onInitialEnd(args) {
         this.onInit(args);
+        this.addChild(args.files, getValue('nodeId', args.cwd), false);
+    }
+    onFinalizeEnd(args) {
+        this.onInit(args);
+        this.addChild(args.files, getValue('nodeId', args.cwd), false);
+        this.treeObj.selectedNodes = [this.parent.pathId[this.parent.pathId.length - 1]];
     }
     onCreateEnd(args) {
         this.updateTree(args);
@@ -4856,8 +5048,8 @@ class NavigationPane {
     onDeleteEnd(args) {
         if (this.parent.activeModule === 'navigationpane') {
             let selectedNode = this.treeObj.selectedNodes[0];
-            let selectedNodeEle = (select('[data-uid="' + selectedNode + '"]', this.treeObj.element))
-                .closest('.' + LIST_PARENT).parentElement;
+            let selcetedEle = select('[data-uid="' + selectedNode + '"]', this.treeObj.element);
+            let selectedNodeEle = closest(selcetedEle, '.' + LIST_PARENT).parentElement;
             this.treeObj.selectedNodes = [selectedNodeEle.getAttribute('data-uid')];
             this.treeObj.dataBind();
         }
@@ -4887,112 +5079,33 @@ class NavigationPane {
         for (let prop of Object.keys(e.newProp)) {
             switch (prop) {
                 case 'enableRtl':
-                    this.treeObj.enableRtl = e.newProp.enableRtl;
-                    this.treeObj.dataBind();
+                    if (this.treeObj) {
+                        this.treeObj.enableRtl = e.newProp.enableRtl;
+                        this.treeObj.dataBind();
+                    }
                     break;
                 case 'navigationPaneSettings':
                     let args = { files: getValue('/', this.parent.feFiles) };
-                    this.onInitialEnd(args);
+                    this.onFinalizeEnd(args);
                     break;
             }
         }
     }
     /* istanbul ignore next */
-    setPath(path) {
-        this.parent.notify(treeSelect, { module: 'navigationpane' });
-    }
-    /* istanbul ignore next */
-    onTreeSelect(e) {
-        if (e.module !== this.getModuleName() && e.module !== 'common') {
-            return;
-        }
-        let tPath = this.parent.path;
-        if (tPath === '') {
-            return;
-        }
-        if (!(tPath.charAt(tPath.length - 1) === '/')) {
-            tPath = tPath + '/';
-        }
-        this.parent.setProperties({ path: tPath }, true);
-        let expId = (this.rootNode + this.parent.path.replace(new RegExp(' ', 'g'), '*')).toLocaleLowerCase();
-        if (select('[data-uid="' + expId + '"]', this.treeObj.element)) {
-            let ele = select('[data-uid="' + expId + '"]', this.treeObj.element).parentNode.parentNode;
-            if (ele.classList.contains(COLLAPSED)) {
-                this.expand(expId);
-            }
-            else {
-                if (this.treeObj.selectedNodes[0] !== expId) {
-                    this.tapFunction(expId, 'select');
-                }
-            }
-        }
-        else {
-            this.expand(expId);
-        }
-    }
-    /* istanbul ignore next */
-    expand(expId) {
-        if (isNullOrUndefined(select('[data-uid="' + expId + '"]', this.treeObj.element))) {
-            while (isNullOrUndefined(select('[data-uid="' + expId + '"]', this.treeObj.element))) {
-                let elem = expId.substr(0, expId.lastIndexOf('/'));
-                expId = elem.substr(0, elem.lastIndexOf('/') + 1);
-            }
-            let ele = select('[data-uid="' + expId + '"]', this.treeObj.element);
-            if (isNullOrUndefined(ele.querySelector('.' + ICONS))) {
-                this.tapFunction(expId, 'select');
-            }
-            else if (ele.querySelector('.' + ICONS).classList.contains(ICON_COLLAPSIBLE)) {
-                this.tapFunction(expId, 'select');
-            }
-            else {
-                this.tapFunction(expId, 'expand');
-            }
-        }
-        else {
-            let ele = select('[data-uid="' + expId + '"]', this.treeObj.element).parentNode.parentNode;
-            if (ele.classList.contains(COLLAPSED)) {
-                let elem = expId.substr(0, expId.lastIndexOf('/'));
-                expId = elem.substr(0, elem.lastIndexOf('/') + 1);
-            }
-            this.tapFunction(expId, 'expand');
-        }
-    }
-    /* istanbul ignore next */
-    tapFunction(expId, process) {
-        /* tslint:disable-next-line */
-        let mouseEventArgs = {
-            /* tslint:disable:no-empty */
-            preventDefault: () => { },
-            stopImmediatePropagation: () => { },
-            target: null,
-            type: null,
-            shiftKey: false,
-            ctrlKey: false,
-            originalEvent: { target: null }
-        };
-        /* tslint:disable-next-line */
-        let tapEvent = {
-            originalEvent: mouseEventArgs,
-            tapCount: 1
-        };
-        /* tslint:disable-next-line */
-        let proxy = this.treeObj;
-        let list = select('[data-uid="' + expId + '"]', this.treeObj.element);
-        if (process === 'expand') {
-            mouseEventArgs.target = list.querySelector('.' + ICONS);
-        }
-        else if (process === 'select') {
-            mouseEventArgs.target = list.querySelector('.' + FULLROW);
-        }
-        proxy.touchClickObj.tap(tapEvent);
-        this.expandTree = true;
+    onDownLoadInit() {
+        this.updateActionData();
     }
     onSelectionChanged(e) {
         this.treeObj.selectedNodes = [e.selectedNode];
     }
+    onClearPathInit(e) {
+        this.removeChildNodes(e.selectedNode);
+    }
     addEventListener() {
         this.parent.on(modelChanged, this.onPropertyChanged, this);
+        this.parent.on(downloadInit, this.onDownLoadInit, this);
         this.parent.on(initialEnd, this.onInitialEnd, this);
+        this.parent.on(finalizeEnd, this.onFinalizeEnd, this);
         this.parent.on(pathChanged, this.onPathChanged, this);
         this.parent.on(nodeExpand, this.onNodeExpanded, this);
         this.parent.on(createEnd, this.onCreateEnd, this);
@@ -5004,10 +5117,12 @@ class NavigationPane {
         this.parent.on(destroy, this.destroy, this);
         this.parent.on(renameInit, this.onRenameInit, this);
         this.parent.on(renameEnd, this.onRenameEnd, this);
-        this.parent.on(treeSelect, this.onTreeSelect, this);
+        this.parent.on(clearPathInit, this.onClearPathInit, this);
     }
     removeEventListener() {
         this.parent.off(initialEnd, this.onInitialEnd);
+        this.parent.off(downloadInit, this.onDownLoadInit);
+        this.parent.off(finalizeEnd, this.onFinalizeEnd);
         this.parent.off(modelChanged, this.onPropertyChanged);
         this.parent.off(pathChanged, this.onPathChanged);
         this.parent.off(updateTreeSelection, this.onSelectionChanged);
@@ -5019,7 +5134,7 @@ class NavigationPane {
         this.parent.off(destroy, this.destroy);
         this.parent.off(renameInit, this.onRenameInit);
         this.parent.off(renameEnd, this.onRefreshEnd);
-        this.parent.off(treeSelect, this.onTreeSelect);
+        this.parent.off(clearPathInit, this.onClearPathInit);
         this.parent.off(deleteEnd, this.onDeleteEnd);
     }
     /**
@@ -5095,9 +5210,12 @@ class NavigationPane {
         }
     }
     updateRenameData() {
+        this.updateActionData();
+        this.parent.currentItemText = getValue('name', this.parent.itemData[0]);
+    }
+    updateActionData() {
         let data = this.treeObj.getTreeData(this.treeObj.selectedNodes[0])[0];
         this.parent.itemData = [data];
-        this.parent.currentItemText = getValue('name', data);
         this.parent.isFile = false;
     }
     /**
@@ -5172,6 +5290,13 @@ class DetailsView {
             removeClass([this.parent.element], MULTI_SELECT);
             let items = getSortedData(this.parent, args.files);
             let columns = this.getColumns();
+            let sortSettings;
+            if (this.parent.isMobile) {
+                sortSettings = [];
+            }
+            else {
+                sortSettings = [{ direction: this.parent.sortOrder, field: this.parent.sortBy }];
+            }
             this.gridObj = new Grid({
                 dataSource: items,
                 allowSorting: true,
@@ -5184,7 +5309,7 @@ class DetailsView {
                 },
                 enableRtl: this.parent.enableRtl,
                 pageSettings: { pageSize: 20 },
-                sortSettings: { allowUnsort: false, columns: [{ direction: this.parent.sortOrder, field: this.parent.sortBy }] },
+                sortSettings: { allowUnsort: false, columns: sortSettings },
                 columns: columns,
                 recordDoubleClick: this.DblClickEvents.bind(this),
                 beforeDataBound: this.onBeforeDataBound.bind(this),
@@ -5192,17 +5317,14 @@ class DetailsView {
                 rowDataBound: this.onRowDataBound.bind(this),
                 actionBegin: this.onActionBegin.bind(this),
                 headerCellInfo: this.onHeaderCellInfo.bind(this),
+                width: '100%'
             });
             this.gridObj.appendTo('#' + this.parent.element.id + GRID_ID);
             this.wireEvents();
-            let pane = select('#' + this.parent.element.id + CONTENT_ID, this.parent.element);
-            let bar = select('#' + this.parent.element.id + BREADCRUMBBAR_ID, this.parent.element);
-            let gridHeader = select('.' + GRID_HEADER, this.parent.element);
-            let height = (pane.offsetHeight - bar.offsetHeight - gridHeader.offsetHeight);
-            this.gridObj.height = height;
+            this.adjustHeight();
             // tslint:disable-next-line
             this.gridObj.defaultLocale.EmptyRecord = '';
-            this.checkEmptyDiv(args);
+            this.emptyArgs = args;
         }
     }
     getColumns() {
@@ -5222,7 +5344,7 @@ class DetailsView {
                 columns[i].headerText = getLocaleText(this.parent, columns[i].headerText);
             }
         }
-        let iWidth = (this.parent.isBigger ? '54' : '46');
+        let iWidth = ((this.parent.isMobile || this.parent.isBigger) ? '54' : '46');
         let icon = {
             field: 'type', width: iWidth, minWidth: iWidth, template: '<span class="e-fe-icon ${iconClass}"></span>',
             allowResizing: false, allowSorting: true, customAttributes: { class: 'e-fe-grid-icon' },
@@ -5243,6 +5365,17 @@ class DetailsView {
             }
         }
         return columns;
+    }
+    adjustHeight() {
+        if (!this.gridObj) {
+            return;
+        }
+        let pane = select('#' + this.parent.element.id + CONTENT_ID, this.parent.element);
+        let bar = select('#' + this.parent.element.id + BREADCRUMBBAR_ID, this.parent.element);
+        let gridHeader = select('.' + GRID_HEADER, this.parent.element);
+        let height = (pane.offsetHeight - bar.offsetHeight - gridHeader.offsetHeight);
+        this.gridObj.height = height;
+        this.gridObj.dataBind();
     }
     renderCheckBox() {
         this.gridObj.columns = this.getColumns();
@@ -5306,6 +5439,17 @@ class DetailsView {
         if (args.requestType === 'sorting') {
             this.parent.sortOrder = args.direction;
             this.parent.sortBy = args.columnName;
+            if (this.parent.selectedItems.length !== 0) {
+                this.sortItem = true;
+                let rows = this.gridObj.getSelectedRowIndexes();
+                let len = rows.length;
+                this.sortSelectedNodes = [];
+                while (len > 0) {
+                    let data = this.gridObj.getRowsObject()[rows[len - 1]].data;
+                    this.sortSelectedNodes.push(getValue('name', data));
+                    len--;
+                }
+            }
             this.parent.notify(sortByChange, {});
         }
     }
@@ -5378,6 +5522,7 @@ class DetailsView {
         if (this.gridObj.currentViewData.length * this.gridObj.getRowHeight() < this.gridObj.height) {
             let hdTable = this.gridObj.getHeaderContent();
             hdTable.style.paddingRight = '';
+            hdTable.style.paddingLeft = '';
             let hdContent = select('.e-headercontent', hdTable);
             hdContent.style.borderRightWidth = '0';
             let cnTable = this.gridObj.getContent().querySelector('.e-content');
@@ -5386,11 +5531,17 @@ class DetailsView {
         }
         else {
             let hdTable = this.gridObj.getHeaderContent();
-            hdTable.style.paddingRight = '16px';
+            if (!this.parent.enableRtl) {
+                hdTable.style.paddingRight = '16px';
+            }
+            else {
+                hdTable.style.paddingLeft = '16px';
+            }
             let cnTable = this.gridObj.getContent().querySelector('.e-content');
             cnTable.classList.remove('e-scrollShow');
         }
         this.isRendered = true;
+        this.checkEmptyDiv(this.emptyArgs);
     }
     selectRecords(nodes) {
         let gridRecords = this.gridObj.getCurrentViewRecords();
@@ -5405,17 +5556,6 @@ class DetailsView {
         }
     }
     onSortColumn(args) {
-        if (this.parent.selectedItems.length !== 0) {
-            this.sortItem = true;
-            let rows = this.gridObj.getSelectedRowIndexes();
-            let len = rows.length;
-            this.sortSelectedNodes = [];
-            while (len > 0) {
-                let data = this.gridObj.getRowsObject()[rows[len - 1]].data;
-                this.sortSelectedNodes.push(getValue('name', data));
-                len--;
-            }
-        }
         this.gridObj.sortModule.sortColumn(this.parent.sortBy, this.parent.sortOrder);
     }
     onPropertyChanged(e) {
@@ -5425,6 +5565,18 @@ class DetailsView {
         }
         for (let prop of Object.keys(e.newProp)) {
             switch (prop) {
+                case 'height':
+                    this.adjustHeight();
+                    break;
+                case 'detailsViewSettings':
+                    if (!isNullOrUndefined(this.gridObj)) {
+                        let columns = this.getColumns();
+                        this.gridObj.columns = columns;
+                        this.gridObj.allowResizing = this.parent.detailsViewSettings.columnResizing;
+                        this.gridObj.dataBind();
+                        this.gridObj.refreshColumns();
+                    }
+                    break;
                 case 'selectedItems':
                     if (this.parent.selectedItems.length !== 0) {
                         this.selectRecords(this.parent.selectedItems);
@@ -5487,7 +5639,7 @@ class DetailsView {
             this.gridObj.dataSource = getSortedData(this.parent, args.files);
             this.parent.notify(searchTextChange, args);
         }
-        this.checkEmptyDiv(args);
+        this.emptyArgs = args;
     }
     checkEmptyDiv(args) {
         let items = getSortedData(this.parent, args.files);
@@ -5537,11 +5689,17 @@ class DetailsView {
             }
         }
         else {
-            let newPath = this.parent.path + getValue('name', data) + '/';
-            this.parent.setProperties({ path: newPath }, true);
-            this.parent.pathId.push(getValue('nodeId', data));
-            this.parent.itemData = [data];
-            openAction(this.parent);
+            let val = this.parent.breadcrumbbarModule.searchObj.element.value;
+            if (val === '') {
+                let newPath = this.parent.path + getValue('name', data) + '/';
+                this.parent.setProperties({ path: newPath }, true);
+                this.parent.pathId.push(getValue('nodeId', data));
+                this.parent.itemData = [data];
+                openAction(this.parent);
+            }
+            else {
+                openSearchFolder(this.parent, data);
+            }
         }
     }
     /* istanbul ignore next */
@@ -5561,6 +5719,7 @@ class DetailsView {
             if (this.parent.breadcrumbbarModule.searchObj.element.value.trim() !== '') {
                 this.onSearchFiles(args);
             }
+            this.adjustHeight();
         }
     }
     /* istanbul ignore next */
@@ -5590,9 +5749,17 @@ class DetailsView {
             this.selectedItem = true;
         }
     }
-    onInitialEnd(args) {
-        this.render(args);
-        this.parent.notify(searchTextChange, args);
+    onFinalizeEnd(args) {
+        if (this.parent.view !== 'Details') {
+            return;
+        }
+        if (!this.gridObj) {
+            this.render(args);
+            this.parent.notify(searchTextChange, args);
+        }
+        else {
+            this.onPathChanged(args);
+        }
     }
     onCreateEnd(args) {
         if (this.parent.view !== 'Details') {
@@ -5647,12 +5814,10 @@ class DetailsView {
         this.isRendered = false;
     }
     onAfterRequest(args) {
-        if (getValue('action', args) === 'failure') {
-            this.isRendered = true;
-        }
+        this.isRendered = true;
     }
     addEventListener() {
-        this.parent.on(initialEnd, this.onInitialEnd, this);
+        this.parent.on(finalizeEnd, this.onFinalizeEnd, this);
         this.parent.on(destroy, this.destroy, this);
         this.parent.on(layoutChange, this.onLayoutChange, this);
         this.parent.on(pathChanged, this.onPathChanged, this);
@@ -5675,7 +5840,7 @@ class DetailsView {
         this.parent.on(afterRequest, this.onAfterRequest, this);
     }
     removeEventListener() {
-        this.parent.off(initialEnd, this.onInitialEnd);
+        this.parent.off(finalizeEnd, this.onFinalizeEnd);
         this.parent.off(destroy, this.destroy);
         this.parent.off(layoutChange, this.onLayoutChange);
         this.parent.off(pathChanged, this.onPathChanged);
@@ -5747,11 +5912,7 @@ class DetailsView {
         if (this.parent.isDevice && isNullOrUndefined(indexes) && args.target && !multiSelect && !args.target.closest('.e-headercell')) {
             this.parent.isFile = getValue('isFile', args.data);
             if (!this.parent.isFile) {
-                let newPath = this.parent.path + getValue('name', args.data) + '/';
-                this.parent.setProperties({ path: newPath }, true);
-                this.parent.pathId.push(getValue('nodeId', args.data));
-                this.parent.itemData = [args.data];
-                openAction(this.parent);
+                this.openContent(args.data);
             }
         }
         this.parent.visitedItem = args.row;
@@ -5842,7 +6003,7 @@ class DetailsView {
                         }
                         let target = e.originalEvent.target;
                         if (target) {
-                            let row = target.closest('.' + ROW);
+                            let row = closest(target, '.' + ROW);
                             let index = proxy.gridObj.getRows().indexOf(row);
                             proxy.gridObj.selectRow(index);
                         }
@@ -5860,6 +6021,7 @@ class DetailsView {
     removeSelection() {
         removeClass([this.parent.element], MULTI_SELECT);
         this.gridObj.clearSelection();
+        this.parent.setProperties({ selectedItems: [] }, true);
         this.parent.notify(selectionChanged, {});
     }
     /**
@@ -5971,5 +6133,5 @@ class DetailsView {
  * File Manager all modules
  */
 
-export { AjaxSettings, toolbarItems, ToolbarSettings, SearchSettings, columnArray, DetailsViewSettings, fileItems, folderItems, layoutItems, ContextMenuSettings, NavigationPaneSettings, TOOLBAR_ID, LAYOUT_ID, TREE_ID, GRID_ID, LARGEICON_ID, DIALOG_ID, ALT_DIALOG_ID, IMG_DIALOG_ID, EXTN_DIALOG_ID, UPLOAD_DIALOG_ID, CONTEXT_MENU_ID, SORTBY_ID, VIEW_ID, SPLITTER_ID, CONTENT_ID, BREADCRUMBBAR_ID, UPLOAD_ID, ROOT, CONTROL, CHECK_SELECT, ROOT_POPUP, MOBILE, MULTI_SELECT, FILTER, LAYOUT, LAYOUT_CONTENT, LARGE_ICONS, TB_ITEM, LIST_ITEM, LIST_TEXT, LIST_PARENT, TB_OPTION_TICK, TB_OPTION_DOT, BLUR, ACTIVE, HOVER, FOCUS, CHECK, FRAME, CB_WRAP, ROW, ROWCELL, EMPTY, EMPTY_CONTENT, EMPTY_INNER_CONTENT, FOLDER, ICON_IMAGE, ICON_MUSIC, ICON_VIDEO, LARGE_ICON, LARGE_EMPTY_FOLDER, LARGE_EMPTY_FOLDER_TWO, LARGE_ICON_FOLDER, SELECTED_ITEMS, TEXT_CONTENT, GRID_HEADER, TEMPLATE_CELL, TREE_VIEW, MENU_ITEM, MENU_ICON, SUBMENU_ICON, GRID_VIEW, ICON_VIEW, ICON_OPEN, ICON_UPLOAD, ICON_CUT, ICON_COPY, ICON_PASTE, ICON_DELETE, ICON_RENAME, ICON_NEWFOLDER, ICON_DETAILS, ICON_SHORTBY, ICON_REFRESH, ICON_SELECTALL, ICON_DOWNLOAD, ICON_OPTIONS, ICON_GRID, ICON_LARGE, ICON_BREADCRUMB, ICON_CLEAR, ICONS, DETAILS_LABEL, ERROR_CONTENT, STATUS, BREADCRUMBS, RTL, DISPLAY_NONE, COLLAPSED, FULLROW, ICON_COLLAPSIBLE, SPLIT_BAR, HEADER_CHECK, OVERLAY, VALUE, isFile, modelChanged, initialEnd, createEnd, deleteEnd, refreshEnd, resizeEnd, splitterResize, pathChanged, destroy, beforeRequest, upload, afterRequest, download, uiRefresh, search, openInit, openEnd, selectionChanged, selectAllInit, clearAllInit, layoutChange, sortByChange, nodeExpand, renameInit, renameEnd, showPaste, hidePaste, hideLayout, updateTreeSelection, treeSelect, sortColumn, pathColumn, searchTextChange, FileManager, Toolbar$1 as Toolbar, BreadCrumbBar, NavigationPane, DetailsView, LargeIconsView, createDialog, createImageDialog, ContextMenu$2 as ContextMenu };
+export { AjaxSettings, toolbarItems, ToolbarSettings, SearchSettings, columnArray, DetailsViewSettings, fileItems, folderItems, layoutItems, ContextMenuSettings, NavigationPaneSettings, UploadSettings, TOOLBAR_ID, LAYOUT_ID, TREE_ID, GRID_ID, LARGEICON_ID, DIALOG_ID, ALT_DIALOG_ID, IMG_DIALOG_ID, EXTN_DIALOG_ID, UPLOAD_DIALOG_ID, CONTEXT_MENU_ID, SORTBY_ID, VIEW_ID, SPLITTER_ID, CONTENT_ID, BREADCRUMBBAR_ID, UPLOAD_ID, SEARCH_ID, ROOT, CONTROL, CHECK_SELECT, ROOT_POPUP, MOBILE, MULTI_SELECT, FILTER, LAYOUT, LAYOUT_CONTENT, LARGE_ICONS, TB_ITEM, LIST_ITEM, LIST_TEXT, LIST_PARENT, TB_OPTION_TICK, TB_OPTION_DOT, BLUR, ACTIVE, HOVER, FOCUS, CHECK, FRAME, CB_WRAP, ROW, ROWCELL, EMPTY, EMPTY_CONTENT, EMPTY_INNER_CONTENT, FOLDER, ICON_IMAGE, ICON_MUSIC, ICON_VIDEO, LARGE_ICON, LARGE_EMPTY_FOLDER, LARGE_EMPTY_FOLDER_TWO, LARGE_ICON_FOLDER, SELECTED_ITEMS, TEXT_CONTENT, GRID_HEADER, TEMPLATE_CELL, TREE_VIEW, MENU_ITEM, MENU_ICON, SUBMENU_ICON, GRID_VIEW, ICON_VIEW, ICON_OPEN, ICON_UPLOAD, ICON_CUT, ICON_COPY, ICON_PASTE, ICON_DELETE, ICON_RENAME, ICON_NEWFOLDER, ICON_DETAILS, ICON_SHORTBY, ICON_REFRESH, ICON_SELECTALL, ICON_DOWNLOAD, ICON_OPTIONS, ICON_GRID, ICON_LARGE, ICON_BREADCRUMB, ICON_CLEAR, ICONS, DETAILS_LABEL, ERROR_CONTENT, STATUS, BREADCRUMBS, RTL, DISPLAY_NONE, COLLAPSED, FULLROW, ICON_COLLAPSIBLE, SPLIT_BAR, HEADER_CHECK, OVERLAY, VALUE, isFile, modelChanged, initialEnd, finalizeEnd, createEnd, deleteEnd, refreshEnd, resizeEnd, splitterResize, pathChanged, destroy, beforeRequest, upload, afterRequest, download, uiRefresh, search, openInit, openEnd, selectionChanged, selectAllInit, clearAllInit, clearPathInit, layoutChange, sortByChange, nodeExpand, renameInit, renameEnd, showPaste, hidePaste, hideLayout, updateTreeSelection, treeSelect, sortColumn, pathColumn, searchTextChange, downloadInit, FileManager, Toolbar$1 as Toolbar, BreadCrumbBar, NavigationPane, DetailsView, LargeIconsView, createDialog, createImageDialog, ContextMenu$2 as ContextMenu };
 //# sourceMappingURL=ej2-filemanager.es2015.js.map

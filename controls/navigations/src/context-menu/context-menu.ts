@@ -99,8 +99,7 @@ export class ContextMenu extends MenuBase implements INotifyPropertyChanged {
                     this.filter = newProp.filter;
                     break;
                 case 'target':
-                    this.unWireEvents();
-                    this.target = newProp.target;
+                    this.unWireEvents(oldProp.target);
                     this.wireEvents();
                     break;
             }

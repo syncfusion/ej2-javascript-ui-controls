@@ -19,6 +19,7 @@
                 <td> <button id="materialdark" class="e-btn">Material dark</button> </td>
                 <td> <button id="bootstrapdark" class="e-btn">Bootstrap Dark</button> </td>
                 <td> <button id="fabricdark" class="e-btn">Fabric Dark</button> </td>
+                <td> <button id="bootstrap4" class="e-btn">bootstrap4</button> </td>
             </tr>
         </tbody>
     </table>
@@ -311,6 +312,10 @@ document.getElementById("fabricdark").onclick = function () {
 document.getElementById("bootstrapdark").onclick = function () {
     document.body.classList.add("darkBG");
     document.getElementById("theme").setAttribute("href", "../theme-files/bootstrap-dark.css");
+};
+document.getElementById("bootstrap4").onclick = function () {
+    document.body.classList.remove("darkBG");
+    document.getElementById("theme").setAttribute("href", "../theme-files/bootstrap4.css");
 };
 </script>
 

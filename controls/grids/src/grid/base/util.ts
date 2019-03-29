@@ -78,10 +78,9 @@ export function updatecloneRow(grid: IGrid): void {
 let count: number = 0;
 export function getCollapsedRowsCount(val: Row<Column>, grid: IGrid): number {
     count = 0;
-    let field: string = 'field'; let gSummary: string = 'gSummary'; let total: string = 'count';
+    let gSummary: string = 'gSummary'; let total: string = 'count';
     let gLen: number = grid.groupSettings.columns.length;
     let records: string = 'records';
-    let rLevel: number = gLen - (grid.groupSettings.columns.indexOf(val.data[field]) + 1);
     let items: string = 'items';
     let value: number = val[gSummary];
     if (value === val.data[total]) {
@@ -91,14 +90,14 @@ export function getCollapsedRowsCount(val: Row<Column>, grid: IGrid): number {
             count += val[gSummary];
         }
         return count;
-    }
-    if (rLevel === 1) {
-        count += val.data[items].length + (!isNullOrUndefined(val.data[items][records]) ? val.data[items][records].length : 0);
     } else {
         for (let i: number = 0, len: number = val.data[items].length; i < len; i++) {
             let gLevel: Object[] = val.data[items][i];
-            count += gLevel[items].length + ((gLen !== grid.columns.length) ? gLevel[items][records].length : 0);
-            recursive(rLevel - 1, gLevel);
+            count += gLevel[items].length + ((gLen !== grid.columns.length) &&
+                !isNullOrUndefined(gLevel[items][records]) ? gLevel[items][records].length : 0);
+            if (gLevel[items].GroupGuid && gLevel[items].childLevels !== 0) {
+                recursive(gLevel);
+            }
         }
         count += val.data[items].length;
     }
@@ -108,15 +107,14 @@ export function getCollapsedRowsCount(val: Row<Column>, grid: IGrid): number {
 /**
  * @hidden
  */
-export function recursive(level: number, row: Object[]): void {
+export function recursive(row: Object[]): void {
     let items: string = 'items';
     let rCount: string = 'count';
-    if (level > 1) {
-        for (let j: number = 0, length: number = row[items].length; j < length; j++) {
-            let nLevel: Object[] = row[items][j];
-            count += nLevel[rCount];
-            level += level <= row[items].childLevels ? row[items].childLevels - 1 : 0;
-            recursive(--level, nLevel);
+    for (let j: number = 0, length: number = row[items].length; j < length; j++) {
+        let nLevel: Object[] = row[items][j];
+        count += nLevel[rCount];
+        if (nLevel[items].childLevels !== 0) {
+            recursive(nLevel);
         }
     }
 }

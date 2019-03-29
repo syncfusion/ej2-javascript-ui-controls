@@ -69,6 +69,13 @@ export class TreeMapTooltip {
                 }
                 location = getMousePosition(pageX, pageY, this.treemap.svgObject);
                 location.y = (this.tooltipSettings.template) ? location.y + 10 : location.y;
+                this.tooltipSettings.textStyle.fontFamily = this.treemap.theme === 'Bootstrap4' ? 'HelveticaNeue-Medium'
+                    : this.tooltipSettings.textStyle.fontFamily;
+                this.tooltipSettings.textStyle.color = this.treemap.themeStyle.tooltipFontColor
+                    || this.tooltipSettings.textStyle.color;
+                this.tooltipSettings.textStyle.opacity = this.treemap.themeStyle.tooltipTextOpacity
+                    || this.tooltipSettings.textStyle.opacity;
+
                 tootipArgs = {
                     cancel: false, name: tooltipRendering, item: item,
                     options: {
@@ -92,6 +99,7 @@ export class TreeMapTooltip {
                         areaBounds: this.treemap.areaRect,
                         textStyle: tootipArgs.options['textStyle']
                     });
+                    this.svgTooltip.opacity = this.treemap.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                     this.svgTooltip.appendTo(tooltipEle);
                 } else {
                     this.removeTooltip();
@@ -142,7 +150,7 @@ export class TreeMapTooltip {
         return 'treeMapTooltip';
     }
     /**
-     * To destroy the tooltip. 
+     * To destroy the tooltip.
      * @return {void}
      * @private
      */

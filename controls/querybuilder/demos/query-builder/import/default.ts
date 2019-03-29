@@ -1,7 +1,7 @@
 /**
  * CheckBox Default Sample
  */
-import { QueryBuilder, RuleModel, ColumnsModel } from './../../../src/query-builder/index';
+import { QueryBuilder, RuleModel, ColumnsModel , RuleChangeEventArgs} from './../../../src/query-builder/index';
 import { getComponent } from '@syncfusion/ej2-base';
 import { RadioButton, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { MultiSelect, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';
@@ -63,7 +63,7 @@ let queryBldrObj: QueryBuilder = new QueryBuilder({
     width: '850px',
     columns: columnData,
     rule: importRules,
-    change: updateRule,
+    ruleChange: updateRule
 });
 queryBldrObj.appendTo('#querybuilder');
 
@@ -84,20 +84,21 @@ radioButton = new RadioButton({
 });
 radioButton.appendTo('#radio2');
 let element: Element = document.getElementById('ruleContent');
-function updateRule(): void {
+function updateRule(args: RuleChangeEventArgs): void {
     if ((getComponent(radioButton.element as HTMLElement, 'radio') as RadioButton).checked) {
-        element.textContent = queryBldrObj.getSqlFromRules(queryBldrObj.rule);
+        element.textContent = queryBldrObj.getSqlFromRules(args.rule);
     } else {
-        element.textContent = JSON.stringify({ condition: queryBldrObj.rule.condition, rules: queryBldrObj.rule.rules }, null, 4);
+        element.textContent = JSON.stringify(args.rule, null, 4);
     }
 }
 element.textContent = JSON.stringify({ condition: queryBldrObj.rule.condition, rules: queryBldrObj.rule.rules }, null, 4);
 function changeValue(args: ChangeEventArgs): void {
     element = document.getElementById('ruleContent');
+    let validRule: RuleModel = queryBldrObj.getValidRules(queryBldrObj.rule);
     if (args.event.target['value'] === 'json') {
-        element.textContent = JSON.stringify({ condition: queryBldrObj.rule.condition, rules: queryBldrObj.rule.rules }, null, 4);
+        element.textContent = JSON.stringify(validRule, null, 4);
     } else {
-        element.textContent = queryBldrObj.getSqlFromRules(queryBldrObj.rule);
+        element.textContent = queryBldrObj.getSqlFromRules(validRule);
 
     }
 }

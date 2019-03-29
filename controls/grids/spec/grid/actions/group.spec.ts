@@ -1368,7 +1368,30 @@ describe('Grouping module => ', () => {
         });
     });
 
-
+    describe('EJ2-23852-Data row not renders properly , when grouping the all columns in grid => ', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    groupSettings: { showGroupedColumn: true, columns: ['OrderID', 'CustomerID', 'EmployeeID', 'Freight'] },
+                    columns: [{ field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' },
+                    { field: 'Freight', headerText: 'Freight' },
+                    { field: 'ShipCity', headerText: 'Ship City' }],
+                    allowSorting: true,
+                    allowPaging: true,
+                    allowGrouping: true
+                }, done);
+        });
+        it('Check whether data row is rendered while we grouping all columns in grid', () => {
+            expect(gridObj.element.querySelector('.e-row').querySelector('.e-rowcell').classList.contains('e-hide')).toBeFalsy();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
     //focus strategy script error
     // describe('expand and collapse on enter => ', () => {
     //     let gridObj: Grid;

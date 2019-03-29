@@ -218,11 +218,12 @@ export class CalculatedField implements IAction {
             beforeOpen: this.beforeMenuOpen.bind(this),
             select: this.selectContextMenu.bind(this)
         };
-        this.parent.element.appendChild(createElement('ul', {
+        let contextMenu: HTMLElement = createElement('ul', {
             id: this.parentID + 'contextmenu'
-        }));
+        });
+        this.parent.element.appendChild(contextMenu);
         this.menuObj = new Menu(menuOptions);
-        this.menuObj.appendTo('#' + this.parentID + 'contextmenu');
+        this.menuObj.appendTo(contextMenu);
     }
 
     /**

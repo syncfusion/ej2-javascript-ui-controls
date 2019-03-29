@@ -1,11 +1,11 @@
-import { Animation, Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, detach, extend, getComponent, getInstance, getValue, isNullOrUndefined, removeClass, rippleEffect } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, detach, extend, getComponent, getInstance, getValue, isNullOrUndefined, removeClass, rippleEffect } from '@syncfusion/ej2-base';
 import { Button, RadioButton } from '@syncfusion/ej2-buttons';
 import { CheckBoxSelection, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
 import { DataManager, Deferred, Predicate, Query } from '@syncfusion/ej2-data';
 import { NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { DatePicker } from '@syncfusion/ej2-calendars';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
-import { Tooltip } from '@syncfusion/ej2-popups';
+import { Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 
 var __extends = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -64,45 +64,32 @@ var Columns = /** @__PURE__ @class */ (function (_super) {
     ], Columns.prototype, "step", void 0);
     return Columns;
 }(ChildProperty));
-var Rules = /** @__PURE__ @class */ (function (_super) {
-    __extends(Rules, _super);
-    function Rules() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate([
-        Property('')
-    ], Rules.prototype, "condition", void 0);
-    __decorate([
-        Property()
-    ], Rules.prototype, "rules", void 0);
-    __decorate([
-        Property(null)
-    ], Rules.prototype, "field", void 0);
-    __decorate([
-        Property(null)
-    ], Rules.prototype, "label", void 0);
-    __decorate([
-        Property(null)
-    ], Rules.prototype, "type", void 0);
-    __decorate([
-        Property(null)
-    ], Rules.prototype, "operator", void 0);
-    __decorate([
-        Property(null)
-    ], Rules.prototype, "value", void 0);
-    return Rules;
-}(ChildProperty));
 var Rule = /** @__PURE__ @class */ (function (_super) {
     __extends(Rule, _super);
     function Rule() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate([
-        Property('and')
+        Property('')
     ], Rule.prototype, "condition", void 0);
     __decorate([
-        Property()
+        Collection([], Rule)
     ], Rule.prototype, "rules", void 0);
+    __decorate([
+        Property(null)
+    ], Rule.prototype, "field", void 0);
+    __decorate([
+        Property(null)
+    ], Rule.prototype, "label", void 0);
+    __decorate([
+        Property(null)
+    ], Rule.prototype, "type", void 0);
+    __decorate([
+        Property(null)
+    ], Rule.prototype, "operator", void 0);
+    __decorate([
+        Property(null)
+    ], Rule.prototype, "value", void 0);
     return Rule;
 }(ChildProperty));
 var ShowButtons = /** @__PURE__ @class */ (function (_super) {
@@ -206,6 +193,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         if (type === 'before') {
             this.trigger('beforeChange', args);
         }
+        else if (type === 'ruleChange') {
+            this.trigger('ruleChange', args);
+        }
         else {
             this.trigger('change', args);
         }
@@ -221,6 +211,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         }
         if (target.className.indexOf('e-collapse-rule') > -1) {
             var animation = new Animation({ duration: 1000, delay: 0 });
+            if (this.element.querySelectorAll('.e-summary-content').length < 1) {
+                this.renderSummary();
+            }
             var summaryElem = document.getElementById(this.element.id + '_summary_content');
             var txtareaElem = summaryElem.querySelector('.e-summary-text');
             animation.animate('.e-query-builder', { name: 'SlideLeftIn' });
@@ -262,6 +255,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         }
         else if (target.tagName === 'LABEL' && target.parentElement.className.indexOf('e-btn-group') > -1) {
             var element = closest(target, '.e-group-container');
+            var beforeRules = this.getValidRules(this.rule);
             groupID = element.id.replace(this.element.id + '_', '');
             args = { groupID: groupID, cancel: false, type: 'condition', value: target.textContent.toLowerCase() };
             args = this.triggerEvents(args, 'before');
@@ -271,6 +265,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             var rule = this.getGroup(element);
             rule.condition = args.value;
             this.triggerEvents({ groupID: groupID, type: 'condition', value: rule.condition });
+            this.filterRules(beforeRules, this.getValidRules(this.rule), 'condition');
         }
     };
     QueryBuilder.prototype.selectBtn = function (target, event) {
@@ -482,8 +477,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 obj = this.refreshLevel(obj);
             }
         }
-        var ruleListElem = groupElem.closest('.e-rule-list');
-        obj.groupElement = ruleListElem ? ruleListElem.closest('.e-group-container') : groupElem;
+        var ruleListElem = closest(groupElem, '.e-rule-list');
+        obj.groupElement = ruleListElem ? closest(ruleListElem, '.e-group-container') : groupElem;
         obj.level = this.levelColl[obj.groupElement.id].slice();
         return obj;
     };
@@ -618,7 +613,6 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             select: this.selectBtn.bind(this, groupBtn)
         });
         btnObj.appendTo(groupBtn);
-        rippleEffect(groupBtn, { selector: '.e-round' });
         this.triggerEvents({ groupID: target.id.replace(this.element.id + '_', ''), type: 'insertGroup' });
     };
     QueryBuilder.prototype.notifyChange = function (value, element) {
@@ -658,8 +652,13 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             element = dateElement.element;
         }
         var value;
+        var rbValue;
+        var dropDownObj;
         if (element.className.indexOf('e-radio') > -1) {
-            value = getComponent(element, 'radio').label;
+            rbValue = parseInt(element.id.split('valuekey')[1], 0);
+            dropDownObj =
+                getComponent(closest(element, '.e-rule-container').querySelector('.e-filter-input'), 'dropdownlist');
+            value = this.columns[dropDownObj.index].values[rbValue];
         }
         else if (element.className.indexOf('e-multiselect') > -1) {
             value = getComponent(element, 'multiselect').value;
@@ -883,18 +882,62 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         return result;
     };
     QueryBuilder.prototype.renderMultiSelect = function (rule, parentId, i, selectedValue) {
-        var ds = this.getDistinctValues(this.dataColl, rule.field);
+        var isFetched = false;
+        var ds;
+        if (this.dataColl[1]) {
+            if (Object.keys(this.dataColl[1]).indexOf(rule.field) > -1) {
+                isFetched = true;
+                ds = this.getDistinctValues(this.dataColl, rule.field);
+            }
+        }
         var multiSelectObj = new MultiSelect({
-            dataSource: new DataManager(ds),
+            dataSource: isFetched ? ds : this.dataManager,
             query: new Query([rule.field]),
             fields: { text: rule.field, value: rule.field },
             value: selectedValue,
             mode: 'CheckBox',
             width: '100%',
             change: this.changeValue.bind(this, i),
-            close: this.closePopup.bind(this, i)
+            close: this.closePopup.bind(this, i),
+            actionBegin: this.multiSelectOpen.bind(this, parentId + '_valuekey' + i)
         });
         multiSelectObj.appendTo('#' + parentId + '_valuekey' + i);
+    };
+    QueryBuilder.prototype.multiSelectOpen = function (parentId, args) {
+        var _this = this;
+        if (this.dataSource instanceof DataManager) {
+            var element_1 = document.getElementById(parentId);
+            var dropDownObj = getComponent(closest(element_1, '.e-rule-container').querySelector('.e-filter-input'), 'dropdownlist');
+            var value_1 = this.columns[dropDownObj.index].field;
+            var isFetched = false;
+            if (this.dataColl[1]) {
+                if (Object.keys(this.dataColl[1]).indexOf(value_1) > -1) {
+                    isFetched = true;
+                }
+            }
+            if (!isFetched) {
+                args.cancel = true;
+                var multiselectObj_1 = getComponent(element_1, 'multiselect');
+                multiselectObj_1.hideSpinner();
+                var data = this.dataManager.executeQuery(new Query().select(value_1));
+                var deferred_1 = new Deferred();
+                this.createSpinner(closest(element_1, '.e-multi-select-wrapper').parentElement);
+                showSpinner(closest(element_1, '.e-multi-select-wrapper').parentElement);
+                data.then(function (e) {
+                    _this.dataColl = extend(_this.dataColl, e.result, [], true);
+                    var ds = _this.getDistinctValues(_this.dataColl, value_1);
+                    multiselectObj_1.dataSource = ds;
+                    hideSpinner(closest(element_1, '.e-multi-select-wrapper').parentElement);
+                }).catch(function (e) {
+                    deferred_1.reject(e);
+                });
+            }
+        }
+    };
+    QueryBuilder.prototype.createSpinner = function (element) {
+        var spinnerElem = this.createElement('span', { attrs: { class: 'e-qb-spinner' } });
+        element.appendChild(spinnerElem);
+        createSpinner({ target: spinnerElem, width: Browser.isDevice ? '16px' : '14px' });
     };
     QueryBuilder.prototype.closePopup = function (i, args) {
         var element = document.getElementById(args.popup.element.id.replace('_popup', ''));
@@ -1041,10 +1084,11 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                                 var values = itemData.values && itemData.values.length ? itemData.values : ['True', 'False'];
                                 var isCheck = this.isImportRules ? Boolean(rule.value) : true;
                                 var radiobutton = new RadioButton({
-                                    label: values[i], name: parentId + 'default', checked: isCheck,
+                                    label: values[i].toString(), name: parentId + 'default', checked: isCheck, value: values[i],
                                     change: this.changeValue.bind(this, i)
                                 });
                                 radiobutton.appendTo('#' + parentId + '_valuekey' + i);
+                                this.updateRules(radiobutton.element, values[i], 0);
                             }
                             break;
                         case 'date':
@@ -1200,6 +1244,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var eventsArgs;
         var groupID = groupElem.id.replace(this.element.id + '_', '');
         var ruleID;
+        var beforeRules = this.getValidRules(this.rule);
         while (ruleElem && ruleElem.previousElementSibling !== null) {
             ruleElem = ruleElem.previousElementSibling;
             index++;
@@ -1225,6 +1270,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             if (this.allowValidation && rule.rules[index].field && target.parentElement.className.indexOf('e-tooltip') > -1) {
                 getComponent(target.parentElement, 'tooltip').destroy();
             }
+            this.filterRules(beforeRules, this.getValidRules(this.rule), 'field');
         }
         else if (closest(target, '.e-rule-operator')) {
             dropDownObj = getComponent(target, 'dropdownlist');
@@ -1243,9 +1289,18 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 this.updateValues(inputElem[i_1], rule.rules[index]);
             }
             this.triggerEvents(eventsArgs);
+            this.filterRules(beforeRules, this.getValidRules(this.rule), 'operator');
         }
         else if (closest(target, '.e-rule-value')) {
             this.ruleValueUpdate(target, selectedValue, rule, index, groupElem, ruleElem, i);
+            this.filterRules(beforeRules, this.getValidRules(this.rule), 'value');
+        }
+    };
+    QueryBuilder.prototype.filterRules = function (beforeRule, afterRule, type) {
+        var beforeRuleStr = JSON.stringify({ condition: beforeRule.condition, rule: beforeRule.rules });
+        var afetrRuleStr = JSON.stringify({ condition: afterRule.condition, rule: afterRule.rules });
+        if (beforeRuleStr !== afetrRuleStr) {
+            this.triggerEvents({ previousRule: beforeRule, rule: afterRule, type: type }, 'ruleChange');
         }
     };
     QueryBuilder.prototype.ruleValueUpdate = function (target, selectedValue, rule, index, groupElem, ruleElem, i) {
@@ -1449,8 +1504,13 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         else {
             this.displayMode = 'Horizontal';
         }
-        if (this.isImportRules && this.summaryView) {
-            this.renderSummary();
+        if (this.summaryView) {
+            if (this.isImportRules) {
+                this.renderSummary();
+            }
+            else {
+                this.renderSummaryCollapse();
+            }
         }
         else {
             if (this.columns.length && this.isImportRules) {
@@ -1700,7 +1760,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         this.groupElem = this.groupTemplate();
         if (this.dataSource instanceof DataManager) {
             this.dataManager = this.dataSource;
-            this.executeDataManager(new Query());
+            this.executeDataManager(new Query().take(1));
         }
         else {
             this.dataManager = new DataManager(this.dataSource);
@@ -1749,6 +1809,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var i;
         var len;
         var args = { groupID: groupId, cancel: false, type: 'deleteGroup' };
+        var beforeRules = this.getValidRules(this.rule);
         args = this.triggerEvents(args, 'before');
         if (args.cancel) {
             return;
@@ -1780,6 +1841,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         detach(target);
         this.refreshLevelColl();
         this.triggerEvents(args);
+        this.filterRules(beforeRules, this.getValidRules(this.rule), 'deleteGroup');
     };
     QueryBuilder.prototype.deleteRule = function (target) {
         var groupElem = closest(target, '.e-group-container');
@@ -1788,7 +1850,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var rule = this.getGroup(groupElem);
         var ruleElem = closest(target, '.e-rule-container');
         groupID = groupElem.id.replace(this.element.id + '_', '');
-        ruleID = target.closest('.e-rule-container').id.replace(this.element.id + '_', '');
+        ruleID = closest(target, '.e-rule-container').id.replace(this.element.id + '_', '');
+        var beforeRules = this.getValidRules(this.rule);
         var args = { groupID: groupID, ruleID: ruleID, cancel: false, type: 'deleteRule' };
         args = this.triggerEvents(args, 'before');
         if (args.cancel) {
@@ -1821,6 +1884,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         }
         detach(clnruleElem);
         this.triggerEvents(args);
+        this.filterRules(beforeRules, this.getValidRules(this.rule), 'deleteRule');
     };
     QueryBuilder.prototype.setGroupRules = function (rule) {
         this.reset();
@@ -1828,8 +1892,49 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         this.ruleIdCounter = 0;
         this.isImportRules = true;
         this.rule = rule;
+        rule = this.getRuleCollection(this.rule, false);
         this.importRules(this.rule, this.element.querySelector('.e-group-container'), true);
         this.isImportRules = false;
+    };
+    /**
+     * return the valid rule or rules collection.
+     * @returns RuleModel.
+     */
+    QueryBuilder.prototype.getValidRules = function (currentRule) {
+        var ruleCondtion = currentRule.condition;
+        var ruleColl = extend([], currentRule.rules, [], true);
+        var rule = this.getRuleCollection({ condition: ruleCondtion, rules: ruleColl }, true);
+        return rule;
+    };
+    QueryBuilder.prototype.getRuleCollection = function (rule, isValidRule) {
+        var orgRule;
+        if (rule.rules && rule.rules.length && (Object.keys(rule.rules[0]).length > 6 || isValidRule)) {
+            var jLen = rule.rules.length;
+            for (var j = 0; j < jLen; j++) {
+                orgRule = rule.rules[j];
+                orgRule = this.getRuleCollection(orgRule, isValidRule);
+                rule.rules[j] = orgRule;
+                if (Object.keys(orgRule).length < 1 && isValidRule) {
+                    rule.rules.splice(j, 1);
+                    j--;
+                    jLen--;
+                }
+            }
+        }
+        if (!rule.condition) {
+            if (rule.field !== '' && rule.operator !== '' && rule.value !== '') {
+                rule = {
+                    'label': rule.label, 'field': rule.field, 'operator': rule.operator, 'type': rule.type, 'value': rule.value
+                };
+            }
+            else {
+                rule = {};
+            }
+        }
+        else {
+            rule = { 'condition': rule.condition, 'rules': rule.rules };
+        }
+        return rule;
     };
     /**
      * Set the rule or rules collection.
@@ -1860,12 +1965,13 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * Gets the predicate from collection of rules.
-     * @returns object.
+     * return the Query from current rules collection.
+     * @returns Promise.
      */
     QueryBuilder.prototype.getFilteredRecords = function () {
-        var query = new Query().where(this.getPredicate(this.rule));
-        return new DataManager(this.dataSource).executeLocal(query);
+        var predicate = this.getPredicate(this.getValidRules(this.rule));
+        var dataManagerQuery = new Query().where(predicate);
+        return this.dataManager.executeQuery(dataManagerQuery);
     };
     /**
      * Deletes the rule or rules based on the rule ID.
@@ -2172,7 +2278,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
      * @returns object.
      */
     QueryBuilder.prototype.getSqlFromRules = function (rule) {
-        return this.getSqlString(rule).replace(/"/g, '\'');
+        rule = this.getRuleCollection(rule, false);
+        return this.getSqlString(this.getValidRules(rule)).replace(/"/g, '\'');
     };
     QueryBuilder.prototype.sqlParser = function (sqlString) {
         var st = 0;
@@ -2387,6 +2494,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         Event()
     ], QueryBuilder.prototype, "change", void 0);
     __decorate([
+        Event()
+    ], QueryBuilder.prototype, "ruleChange", void 0);
+    __decorate([
         Property({ ruleDelete: true, groupInsert: true, groupDelete: true })
     ], QueryBuilder.prototype, "showButtons", void 0);
     __decorate([
@@ -2442,5 +2552,5 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
  * QueryBuilder all modules
  */
 
-export { Columns, Rules, Rule, ShowButtons, QueryBuilder };
+export { Columns, Rule, ShowButtons, QueryBuilder };
 //# sourceMappingURL=ej2-querybuilder.es5.js.map

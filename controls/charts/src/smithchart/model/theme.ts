@@ -111,7 +111,7 @@ export function getThemeColor(theme: SmithchartTheme): ISmithchartThemeStyle {
                 tooltipHeaderLine: '#9A9A9A'
             };
             break;
-        case 'Bootstrap4':
+        case 'bootstrap4':
             style = {
                 axisLabel: '#212529',
                 axisLine: '#ADB5BD',
@@ -119,13 +119,18 @@ export function getThemeColor(theme: SmithchartTheme): ISmithchartThemeStyle {
                 minorGridLine: '#DEE2E6',
                 chartTitle: '#212529',
                 legendLabel: '#212529',
-                background: '#F8F9FA',
+                background: '#FFFFFF',
                 areaBorder: '#DEE2E6',
                 tooltipFill: '#000000',
                 dataLabel: '#212529',
                 tooltipBoldLabel: '#FFFFFF',
                 tooltipLightLabel: '#FFFFFF',
-                tooltipHeaderLine: '#FFFFFF'
+                tooltipHeaderLine: '#FFFFFF',
+                fontFamily: 'HelveticaNeue-Medium',
+                fontSize: '16px',
+                labelFontFamily: 'HelveticaNeue',
+                tooltipFillOpacity: 1,
+                tooltipTextOpacity: 0.9
             };
             break;
         default:

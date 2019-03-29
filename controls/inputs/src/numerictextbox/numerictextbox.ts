@@ -375,12 +375,12 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             if (!isNullOrUndefined(this.element.getAttribute(prop))) {
                 switch (prop) {
                     case 'disabled':
-                        let enabled: boolean = this.element.getAttribute(prop) === 'disabled' ||
+                        let enabled: boolean = this.element.getAttribute(prop) === 'disabled' || this.element.getAttribute(prop) === '' ||
                             this.element.getAttribute(prop) === 'true' ? false : true;
                         this.setProperties({ enabled: enabled }, true);
                         break;
                     case 'readonly':
-                        let readonly: boolean = this.element.getAttribute(prop) === 'readonly'
+                        let readonly: boolean = this.element.getAttribute(prop) === 'readonly' || this.element.getAttribute(prop) === ''
                             || this.element.getAttribute(prop) === 'true' ? true : false;
                         this.setProperties({ readonly: readonly }, true);
                         break;

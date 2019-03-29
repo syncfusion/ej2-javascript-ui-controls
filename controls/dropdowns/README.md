@@ -36,6 +36,10 @@ npm install @syncfusion/ej2-dropdowns
     * [GettingStarted](https://ej2.syncfusion.com/documentation/multi-select/getting-started.html?lang=typescript)
     * [View Online Demos](https://ej2.syncfusion.com/javascript/demos/#/material/multi-select/default.html)
     * [Product Page](https://www.syncfusion.com/products/javascript/multiselect)
+* ListBox - ListBox is a graphical user interface component used to display a list of items. Users can select one or more items in the list using a checkbox or by keyboard selection. It supports sorting, grouping, reordering, and drag and drop of items.
+    * [GettingStarted](https://ej2.syncfusion.com/documentation/list-box/getting-started.html?lang=typescript)
+    * [View Online Demos](https://ej2.syncfusion.com/javascript/demos/#/material/list-box/default.html)
+    * [Product Page](https://www.syncfusion.com/products/javascript/listbox)
 
 ## 3. Supported frameworks
 
@@ -92,6 +96,14 @@ Drop-down components also supports the following frameworks:
     * [Custom value](https://ej2.syncfusion.com/demos/#/material/multi-select/custom-value.html): Allows users to select a new custom value.
     * [Accessibility](https://ej2.syncfusion.com/documentation/multi-select/accessibility): Provided with built-in accessibility support that helps to access all the      DropDownList component features using the keyboard, screen readers, or other assistive technology devices.
 
+* ListBox
+    * **Data binding**: Binds and accesses the list of items from local or server-side data source.
+    * **Dual ListBox**: Allows transferring and reordering the list item between two ListBoxes.
+    * **Drag and Drop**: Allows drag and drop the list item with the same/multiple ListBox.
+    * **Grouping**: Groups the logically related items under a single or specific category.
+    * **Templates**: Customizes the list items.
+    * **Sorting**: Sorts the list items in alphabetical order (either ascending or descending).
+    * **Accessibility**: Provided with built-in accessibility support that helps to access all the ListBox component features using the keyboard, screen readers, or other assistive technology devices.
 
 ## 6. Support
 Product support can be obtained through the following mediums:

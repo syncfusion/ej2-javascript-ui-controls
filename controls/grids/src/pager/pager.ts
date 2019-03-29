@@ -35,19 +35,7 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     private templateFn: Function;
     /*** @hidden */
     public previousPageNo: number;
-    private defaultConstants: Object = {
-        currentPageInfo: '{0} of {1} pages',
-        totalItemsInfo: '({0} items)',
-        firstPageTooltip: 'Go to first page',
-        lastPageTooltip: 'Go to last page',
-        nextPageTooltip: 'Go to next page',
-        previousPageTooltip: 'Go to previous page',
-        nextPagerTooltip: 'Go to next pager',
-        previousPagerTooltip: 'Go to previous pager',
-        pagerDropDown: 'Items per page',
-        pagerAllDropDown: 'Items',
-        All: 'All'
-    };
+    private defaultConstants: Object;
 
     //Module declarations
     /*** @hidden */
@@ -55,11 +43,11 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
     /**
      * `containerModule` is used to manipulate numeric container behavior of Pager.
      */
-    public containerModule: NumericContainer = new NumericContainer(this);
+    public containerModule: NumericContainer;
     /**
      * `pagerMessageModule` is used to manipulate pager message of Pager.
      */
-    public pagerMessageModule: PagerMessage = new PagerMessage(this);
+    public pagerMessageModule: PagerMessage;
     /**
      * `externalMessageModule` is used to manipulate external message of Pager.
      */
@@ -207,6 +195,21 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
      */
     protected preRender(): void {
         //preRender
+        this.defaultConstants = {
+            currentPageInfo: '{0} of {1} pages',
+            totalItemsInfo: '({0} items)',
+            firstPageTooltip: 'Go to first page',
+            lastPageTooltip: 'Go to last page',
+            nextPageTooltip: 'Go to next page',
+            previousPageTooltip: 'Go to previous page',
+            nextPagerTooltip: 'Go to next pager',
+            previousPagerTooltip: 'Go to previous pager',
+            pagerDropDown: 'Items per page',
+            pagerAllDropDown: 'Items',
+            All: 'All'
+        };
+        this.containerModule = new NumericContainer(this);
+        this.pagerMessageModule = new PagerMessage(this);
     }
 
     /**

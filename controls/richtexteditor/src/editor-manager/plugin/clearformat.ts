@@ -14,7 +14,7 @@ export class ClearFormat {
     'noscript', 'ol', 'p', 'pre', 'section', 'table', 'tbody', 'td', 'tfoot', 'th',
     'thead', 'tr', 'ul' ];
 
-    private static NONVALID_PARENT_TAGS: string[] = ['thead', 'tbody', 'ul', 'ol', 'table', 'tfoot'  ];
+    private static NONVALID_PARENT_TAGS: string[] = ['thead', 'tbody', 'ul', 'ol', 'table', 'tfoot', 'tr'];
 
     private static NONVALID_TAGS: string[] = ['thead', 'tbody', 'figcaption', 'td', 'tr',
             'th',   'tfoot', 'figcaption', 'li'  ];
@@ -189,6 +189,10 @@ export class ClearFormat {
                 for (let index2: number = 0; index2 < childNodes.length; index2++) {
                     if (this.NONVALID_TAGS.indexOf(childNodes[index2].nodeName.toLowerCase()) > -1) {
                         this.unWrap(docElement, [childNodes[index2]], nodeCutter, nodeSelection);
+                    } else if (this.BLOCK_TAGS.indexOf(childNodes[index2].nodeName.toLocaleLowerCase()) > -1 &&
+                    childNodes[index2].nodeName.toLocaleLowerCase() !== 'p') {
+                        let blockNodes: Node[] = this.removeParent([childNodes[index2]]);
+                        this.unWrap(docElement, blockNodes, nodeCutter, nodeSelection);
                     }
                 }
             } else {

@@ -2,6 +2,10 @@
   /*! timepicker theme */
   .e-time-wrapper {
     & .e-input-group-icon.e-icons.e-active {
+      @if $skin-name == 'bootstrap4' {
+        background: $timepicker-icon-active-bg-color;
+        border-color: $timepicker-active-border-color;
+      }
       color: $timepicker-list-active-icon-color;
     }
 

@@ -2,12 +2,12 @@ import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Drop
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { Dialog, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { ColumnChooser, CommandColumn, ContextMenu, Edit, ExcelExport, Freeze, Grid, Page, PdfExport, Reorder, Resize, Selection, Toolbar, VirtualScroll, headerRefreshed, setStyleAndAttributes } from '@syncfusion/ej2-grids';
-import { Workbook } from '@syncfusion/ej2-excel-export';
-import { PdfBorders, PdfColor, PdfDocument, PdfFontFamily, PdfFontStyle, PdfGrid, PdfPageTemplateElement, PdfPen, PdfSolidBrush, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfVerticalAlignment, PointF, RectangleF } from '@syncfusion/ej2-pdf-export';
 import { Accordion, ContextMenu as ContextMenu$1, Menu, Tab, Toolbar as Toolbar$1, TreeView } from '@syncfusion/ej2-navigations';
-import { Animation, AreaSeries, AxisLine, BarSeries, Border, BubbleSeries, Category, Chart, ChartArea, ChartSegment, ColumnSeries, CornerRadius, Crosshair, CrosshairSettings, CrosshairTooltip, EmptyPointSettings, ErrorBarSettings, Export, Font, Indexes, LabelBorder, Legend, LineSeries, MajorGridLines, MajorTickLines, Margin, MarkerSettings, MinorGridLines, MinorTickLines, MultiColoredAreaSeries, MultiColoredLineSeries, MultiLevelLabel, ParetoSeries, PolarSeries, RadarSeries, RangeAreaSeries, RangeColumnSeries, ScatterSeries, ScrollBar, SplineAreaSeries, SplineSeries, StackingAreaSeries, StackingBarSeries, StackingColumnSeries, StepAreaSeries, StepLineSeries, StripLineSettings, Theme, Tooltip as Tooltip$1, Trendline, Zoom } from '@syncfusion/ej2-charts';
 import { ColorPicker, MaskedTextBox, NumericTextBox } from '@syncfusion/ej2-inputs';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
+import { Workbook } from '@syncfusion/ej2-excel-export';
+import { PdfBorders, PdfColor, PdfDocument, PdfFontFamily, PdfFontStyle, PdfGrid, PdfPageTemplateElement, PdfPen, PdfSolidBrush, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfVerticalAlignment, PointF, RectangleF } from '@syncfusion/ej2-pdf-export';
+import { Animation, AreaSeries, AxisLine, BarSeries, Border, BubbleSeries, Category, Chart, ChartArea, ChartSegment, ColumnSeries, CornerRadius, Crosshair, CrosshairSettings, CrosshairTooltip, EmptyPointSettings, ErrorBarSettings, Export, Font, Indexes, LabelBorder, Legend, LineSeries, MajorGridLines, MajorTickLines, Margin, MarkerSettings, MinorGridLines, MinorTickLines, MultiColoredAreaSeries, MultiColoredLineSeries, MultiLevelLabel, ParetoSeries, PolarSeries, RadarSeries, RangeAreaSeries, RangeColumnSeries, ScatterSeries, ScrollBar, SplineAreaSeries, SplineSeries, StackingAreaSeries, StackingBarSeries, StackingColumnSeries, StepAreaSeries, StepLineSeries, StripLineSettings, Theme, Tooltip as Tooltip$1, Trendline, Zoom } from '@syncfusion/ej2-charts';
 import { DateTimePicker } from '@syncfusion/ej2-calendars';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 
@@ -1870,7 +1870,7 @@ var PivotEngine = /** @__PURE__ @class */ (function () {
                     caption = textArray[textArray.length - 1];
                 }
             }
-            if (this.values.length > 1 && caption && this.fieldList[caption]) {
+            if (((this.values.length === 1 && this.columns.length === 0) || this.values.length > 1) && caption && this.fieldList[caption]) {
                 for (var i = 0; i < textArray.length - 1; i++) {
                     hText = hText === '' ? textArray[i] : (hText + this.valueSortSettings.headerDelimiter + textArray[i]);
                 }
@@ -3540,6 +3540,12 @@ var chartResized = 'chartResized';
 var chartAxisLabelRender = 'chartAxisLabelRender';
 /** @hidden */
 var chartSeriesCreated = 'chartSeriesCreated';
+/** @hidden */
+var aggregateCellInfo = 'aggregateCellInfo';
+/** @hidden */
+var contextMenuClick = 'contextMenuClick';
+/** @hidden */
+var contextMenuOpen = 'contextMenuOpen';
 /**
  * Specifies pivot internal events
  */
@@ -3906,6 +3912,8 @@ var PIVOT_CONTEXT_MENU_CLASS = 'e-pivot-context-menu';
 /** @hidden */
 var MENU_DISABLE = 'e-disabled';
 /** @hidden */
+var MENU_HIDE = 'e-menu-hide';
+/** @hidden */
 var EMPTY_MEMBER_CLASS = 'e-member-prompt';
 /** @hidden */
 var CALC_EDIT = 'e-edit';
@@ -4006,6 +4014,14 @@ var GRID_HEADER = 'e-gridheader';
 /** @hidden */
 var GRID_EXPORT = 'e-export';
 /** @hidden */
+var PIVOTVIEW_EXPORT = 'e-pivotview-export';
+/** @hidden */
+var PIVOTVIEW_GRID = 'e-pivotview-grid';
+/** @hidden */
+var PIVOTVIEW_EXPAND = 'e-pivotview-expand';
+/** @hidden */
+var PIVOTVIEW_COLLAPSE = 'e-pivotview-collapse';
+/** @hidden */
 var GRID_PDF_EXPORT = 'e-pivotview-pdf-export';
 /** @hidden */
 var GRID_EXCEL_EXPORT = 'e-pivotview-excel-export';
@@ -4065,6 +4081,397 @@ var GROUP_CHART_VALUE_DROPDOWN_DIV = 'e-group-chart-values-drodown-div';
 var GROUP_CHART_VALUE_DROPDOWN = 'e-group-chart-values-drodown';
 /** @hidden */
 var CHART_GROUPING_BAR_CLASS = 'e-chart-grouping-bar';
+/** @hidden */
+var PIVOT_DISABLE_ICON = 'e-pivotview-disable-icon';
+/** @hidden */
+var PIVOT_SELECT_ICON = 'e-pivotview-select-icon';
+/** @hidden */
+var VALUESHEADER = 'e-valuesheader';
+/** @hidden */
+var ICON_ASC = 'e-icon-ascending';
+/** @hidden */
+var ICON_DESC = 'e-icon-descending';
+/** @hidden */
+var CONTEXT_EXPAND_ID = '#expand';
+/** @hidden */
+var CONTEXT_COLLAPSE_ID = '#collapse';
+/** @hidden */
+var CONTEXT_DRILLTHROUGH_ID = '#drillthrough';
+/** @hidden */
+var CONTEXT_SORT_ASC_ID = '#sortasc';
+/** @hidden */
+var CONTEXT_SORT_DESC_ID = '#sortdesc';
+/** @hidden */
+var CONTEXT_CALC_ID = '#CalculatedField';
+/** @hidden */
+var CONTEXT_PDF_ID = '#pdf';
+/** @hidden */
+var CONTEXT_EXCEL_ID = '#excel';
+/** @hidden */
+var CONTEXT_CSV_ID = '#csv';
+/** @hidden */
+var CONTEXT_EXPORT_ID = '#exporting';
+/** @hidden */
+var CONTEXT_AGGREGATE_ID = '#aggregate';
+
+/**
+ * `AggregateMenu` module to create aggregate type popup.
+ */
+/** @hidden */
+var AggregateMenu = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for the rener action.
+     * @hidden
+     */
+    function AggregateMenu(parent) {
+        this.parent = parent;
+    }
+    /**
+     * Initialize the pivot table rendering
+     * @returns void
+     * @private
+     */
+    AggregateMenu.prototype.render = function (args, parentElement) {
+        this.parentElement = parentElement;
+        this.openContextMenu(args);
+    };
+    AggregateMenu.prototype.openContextMenu = function (args) {
+        if (this.menuInfo === undefined) {
+            this.createContextMenu();
+        }
+        this.currentMenu = args.currentTarget;
+        var pos = this.currentMenu.getBoundingClientRect();
+        if (this.parent.enableRtl) {
+            this.menuInfo.open(pos.top, pos.left - 105);
+        }
+        else {
+            this.menuInfo.open(pos.top, pos.left);
+        }
+    };
+    AggregateMenu.prototype.createContextMenu = function () {
+        var menuItems = [
+            { text: 'Sum', id: 'Sum' },
+            { text: 'Count', id: 'Count' },
+            { text: 'Distinct Count', id: 'DistinctCount' },
+            { text: 'Product', id: 'Product' },
+            { text: 'Avg', id: 'Avg' },
+            { text: 'Min', id: 'Min' },
+            { text: 'Max', id: 'Max' },
+            { text: 'More...', id: 'MoreOption' }
+        ];
+        var menuOptions = {
+            items: menuItems,
+            enableRtl: this.parent.enableRtl,
+            beforeOpen: this.beforeMenuOpen.bind(this),
+            select: this.selectOptionInContextMenu.bind(this)
+        };
+        var removeContextMenu = document.getElementById(this.parent.element.id + 'valueFieldContextMenu');
+        if (removeContextMenu !== null) {
+            removeContextMenu.innerHTML = '';
+        }
+        var contextMenu = createElement('ul', {
+            id: this.parent.element.id + 'valueFieldContextMenu'
+        });
+        this.parent.element.appendChild(contextMenu);
+        this.menuInfo = new ContextMenu$1(menuOptions);
+        this.menuInfo.appendTo(contextMenu);
+    };
+    AggregateMenu.prototype.beforeMenuOpen = function (args) {
+        args.element.style.zIndex = (this.menuInfo.element.style.zIndex + 3).toString();
+        args.element.style.display = 'inline';
+    };
+    /** @hidden */
+    AggregateMenu.prototype.createValueSettingsDialog = function (target, parentElement) {
+        var _this = this;
+        this.parentElement = parentElement;
+        var valueDialog = createElement('div', {
+            id: this.parentElement.id + '_ValueDialog',
+            className: 'e-value-field-settings',
+            attrs: { 'data-field': target.id }
+        });
+        this.parentElement.appendChild(valueDialog);
+        this.valueDialog = new Dialog({
+            animationSettings: { effect: 'Fade' },
+            allowDragging: true,
+            header: this.parent.localeObj.getConstant('valueFieldSettings'),
+            content: this.createFieldOptions(target),
+            isModal: true,
+            visible: true,
+            showCloseIcon: true,
+            enableRtl: this.parent.enableRtl,
+            width: 'auto',
+            height: 'auto',
+            position: { X: 'center', Y: 'center' },
+            buttons: [
+                {
+                    click: this.updateValueSettings.bind(this),
+                    buttonModel: { cssClass: OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true }
+                },
+                {
+                    click: function () { _this.valueDialog.hide(); },
+                    buttonModel: { cssClass: CANCEL_BUTTON_CLASS, content: this.parent.localeObj.getConstant('cancel') }
+                }
+            ],
+            closeOnEscape: true,
+            target: this.parentElement,
+            overlayClick: function () { _this.removeDialog(); },
+            close: this.removeDialog.bind(this)
+        });
+        this.valueDialog.appendTo(valueDialog);
+    };
+    /* tslint:disable:all */
+    AggregateMenu.prototype.createFieldOptions = function (buttonElement) {
+        var fieldCaption = buttonElement.getAttribute('data-caption');
+        var summaryType = buttonElement.getAttribute('data-type');
+        var baseField = buttonElement.getAttribute('data-basefield');
+        var baseItem = buttonElement.getAttribute('data-baseitem');
+        summaryType = (summaryType.toString() !== 'undefined' ? summaryType : 'Sum');
+        var summaryDataSource = [
+            { value: 'Sum', text: 'Sum' },
+            { value: 'Count', text: 'Count' },
+            { value: 'DistinctCount', text: 'Distinct Count' },
+            { value: 'Product', text: 'Product' },
+            { value: 'Avg', text: 'Avg' },
+            { value: 'Min', text: 'Min' },
+            { value: 'Max', text: 'Max' },
+            { value: 'Index', text: 'Index' },
+            { value: 'SampleStDev', text: 'Sample StDev' },
+            { value: 'PopulationStDev', text: 'Population StDev' },
+            { value: 'SampleVar', text: 'Sample Var' },
+            { value: 'PopulationVar', text: 'Population Var' },
+            { value: 'RunningTotals', text: 'Running Totals' },
+            { value: 'DifferenceFrom', text: 'Difference From' },
+            { value: 'PercentageOfDifferenceFrom', text: '% of Difference From' },
+            { value: 'PercentageOfGrandTotal', text: '% of Grand Total' },
+            { value: 'PercentageOfColumnTotal', text: '% of Column Total' },
+            { value: 'PercentageOfRowTotal', text: '% of Row Total' },
+            { value: 'PercentageOfParentTotal', text: '% of Parent Total' },
+            { value: 'PercentageOfParentColumnTotal', text: '% of Parent Column Total' },
+            { value: 'PercentageOfParentRowTotal', text: '% of Parent Row Total' },
+        ];
+        var baseItemTypes = ['DifferenceFrom', 'PercentageOfDifferenceFrom'];
+        var baseFieldTypes = ['DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentTotal'];
+        var dataFields = extend([], this.parent.dataSource.rows, null, true);
+        dataFields = dataFields.concat(this.parent.dataSource.columns);
+        var fieldDataSource = [];
+        var fieldItemDataSource = [];
+        // let summaryDataSource: { [key: string]: Object }[] = [];
+        // for (let type of summaryTypes) {
+        //     summaryDataSource.push({ value: type, text: type });
+        // }
+        for (var _i = 0, dataFields_1 = dataFields; _i < dataFields_1.length; _i++) {
+            var field = dataFields_1[_i];
+            var value = field.name;
+            var text = (field.caption ? field.caption : field.name);
+            fieldDataSource.push({ value: value, text: text });
+        }
+        baseField = (baseField.toString() !== 'undefined' ? baseField : fieldDataSource[0].value);
+        fieldItemDataSource = Object.keys(this.parent.engineModule.fieldList[(baseField.toString() !== 'undefined' ?
+            baseField : fieldDataSource[0].value)].formattedMembers);
+        baseItem = (baseItem.toString() !== 'undefined' ? baseItem : fieldItemDataSource[0]);
+        var mainDiv = createElement('div', {
+            className: 'e-value-field-div-content', id: this.parentElement.id + '_field_div_content',
+            attrs: { 'data-type': summaryType, 'data-caption': fieldCaption, 'data-basefield': baseField, 'data-baseitem': baseItem }
+        });
+        var textWrappper = createElement('div', { className: 'e-field-name-text-wrapper', });
+        var filterWrapperDiv1 = createElement('div', { className: 'e-field-option-wrapper' });
+        var optionWrapperDiv1 = createElement('div', { className: 'e-type-option-wrapper' });
+        var optionWrapperDiv2 = createElement('div', { className: 'e-base-field-option-wrapper' });
+        var optionWrapperDiv3 = createElement('div', { className: 'e-base-item-option-wrapper' });
+        var texttitle = createElement('div', { className: 'e-field-name-title', innerHTML: this.parent.localeObj.getConstant('sourceName') + '&nbsp;' });
+        var textContent = createElement('div', { className: 'e-field-name-content', innerHTML: buttonElement.id.toString() });
+        var inputTextDiv1 = createElement('div', {
+            className: 'e-type-option-text', innerHTML: this.parent.localeObj.getConstant('sourceCaption')
+        });
+        var optionTextDiv1 = createElement('div', {
+            className: 'e-base-field-option-text', innerHTML: this.parent.localeObj.getConstant('summarizeValuesBy')
+        });
+        var optionTextDiv2 = createElement('div', {
+            className: 'e-base-item-option-text', innerHTML: this.parent.localeObj.getConstant('baseField')
+        });
+        var optionTextDiv3 = createElement('div', {
+            className: 'e-type-option-text', innerHTML: this.parent.localeObj.getConstant('baseItem')
+        });
+        var inputDiv1 = createElement('div', { className: 'e-caption-input-wrapper' });
+        var dropOptionDiv1 = createElement('div', { id: this.parentElement.id + '_type_option' });
+        var dropOptionDiv2 = createElement('div', { id: this.parentElement.id + '_base_field_option' });
+        var dropOptionDiv3 = createElement('div', { id: this.parentElement.id + '_base_item_option' });
+        var inputField1 = createElement('input', {
+            id: this.parentElement.id + 'type_input_option',
+            className: 'e-caption-input-text',
+            attrs: { 'type': 'text' }
+        });
+        textWrappper.appendChild(texttitle);
+        textWrappper.appendChild(textContent);
+        inputDiv1.appendChild(inputTextDiv1);
+        inputDiv1.appendChild(inputField1);
+        optionWrapperDiv1.appendChild(optionTextDiv1);
+        optionWrapperDiv2.appendChild(optionTextDiv2);
+        optionWrapperDiv3.appendChild(optionTextDiv3);
+        optionWrapperDiv1.appendChild(dropOptionDiv1);
+        optionWrapperDiv2.appendChild(dropOptionDiv2);
+        optionWrapperDiv3.appendChild(dropOptionDiv3);
+        filterWrapperDiv1.appendChild(textWrappper);
+        filterWrapperDiv1.appendChild(inputDiv1);
+        filterWrapperDiv1.appendChild(optionWrapperDiv1);
+        filterWrapperDiv1.appendChild(optionWrapperDiv2);
+        filterWrapperDiv1.appendChild(optionWrapperDiv3);
+        mainDiv.appendChild(filterWrapperDiv1);
+        var popupInstance = this;
+        var optionWrapper1 = new DropDownList({
+            dataSource: summaryDataSource,
+            fields: { value: 'value', text: 'text' },
+            value: summaryType,
+            // popupWidth: 'auto',
+            cssClass: VALUE_OPTIONS_CLASS, width: '100%',
+            change: function (args) {
+                optionWrapper2.enabled = baseFieldTypes.indexOf(args.value) !== -1 ? true : false;
+                optionWrapper3.enabled = baseItemTypes.indexOf(args.value) !== -1 ? true : false;
+                if (optionWrapper3.enabled && optionWrapper3.dataSource.length === 1) {
+                    optionWrapper3.dataSource = fieldItemDataSource;
+                    optionWrapper3.dataBind();
+                }
+            }
+        });
+        optionWrapper1.appendTo(dropOptionDiv1);
+        var optionWrapper2 = new DropDownList({
+            dataSource: fieldDataSource, enableRtl: this.parent.enableRtl,
+            fields: { value: 'value', text: 'text' },
+            value: baseField,
+            // popupWidth: 'auto',
+            enabled: (baseFieldTypes.indexOf(summaryType) !== -1 ? true : false),
+            cssClass: VALUE_OPTIONS_CLASS, width: '100%',
+            change: function (args) {
+                fieldItemDataSource = Object.keys(popupInstance.parent.engineModule.fieldList[args.value].formattedMembers);
+                optionWrapper3.dataSource = fieldItemDataSource;
+                optionWrapper3.value = fieldItemDataSource[0];
+                optionWrapper3.filterBarPlaceholder = popupInstance.parent.localeObj.getConstant('example') + ' ' + fieldItemDataSource[0];
+                optionWrapper3.dataBind();
+            }
+        });
+        optionWrapper2.appendTo(dropOptionDiv2);
+        var optionWrapper3 = new DropDownList({
+            dataSource: [fieldItemDataSource[0]], enableRtl: this.parent.enableRtl,
+            value: baseItem,
+            // popupWidth: 'auto',
+            allowFiltering: true,
+            filterBarPlaceholder: this.parent.localeObj.getConstant('example') + ' ' + fieldItemDataSource[0],
+            enabled: (baseItemTypes.indexOf(summaryType) !== -1 ? true : false),
+            cssClass: FILTER_OPERATOR_CLASS, width: '100%',
+        });
+        optionWrapper3.appendTo(dropOptionDiv3);
+        var inputObj1 = new MaskedTextBox({
+            placeholder: 'Enter field caption',
+            // floatLabelType: 'Auto',
+            enableRtl: this.parent.enableRtl,
+            value: fieldCaption, width: '100%'
+        });
+        inputObj1.appendTo(inputField1);
+        return mainDiv;
+    };
+    /* tslint:enable:all */
+    AggregateMenu.prototype.selectOptionInContextMenu = function (menu) {
+        if (menu.item.text !== null) {
+            var buttonElement = this.currentMenu.parentElement;
+            if (menu.item.id === 'MoreOption') {
+                this.createValueSettingsDialog(buttonElement, this.parentElement);
+            }
+            else {
+                var field = buttonElement.getAttribute('data-uid');
+                var valuefields = this.parent.dataSource.values;
+                var contentElement = buttonElement.querySelector('.e-content');
+                var captionName = menu.item.text + ' ' + 'of' + ' ' + this.parent.engineModule.fieldList[field].caption;
+                contentElement.innerHTML = captionName;
+                contentElement.setAttribute('title', captionName);
+                buttonElement.setAttribute('data-type', menu.item.id);
+                for (var vCnt = 0; vCnt < this.parent.dataSource.values.length; vCnt++) {
+                    if (this.parent.dataSource.values[vCnt].name === field) {
+                        var dataSourceItem = valuefields[vCnt].properties ?
+                            valuefields[vCnt].properties : valuefields[vCnt];
+                        dataSourceItem.type = menu.item.id;
+                        this.parent.lastAggregationInfo = dataSourceItem;
+                        /* tslint:disable-next-line:no-any */
+                    }
+                }
+                this.updateDataSource();
+            }
+        }
+    };
+    AggregateMenu.prototype.updateDataSource = function (isRefreshed) {
+        if (!this.parent.allowDeferLayoutUpdate || this.parent.getModuleName() === 'pivotview') {
+            this.parent.updateDataSource(isRefreshed);
+        }
+        else {
+            if (this.parent.getModuleName() === 'pivotfieldlist' && this.parent.renderMode === 'Popup') {
+                this.parent.pivotGridModule.
+                    setProperties({ dataSource: this.parent.dataSource.properties }, true);
+                this.parent.pivotGridModule.notify(uiUpdate, this);
+                this.parent.pivotGridModule.engineModule = this.parent.engineModule;
+            }
+            else {
+                this.parent.triggerPopulateEvent();
+            }
+        }
+    };
+    AggregateMenu.prototype.updateValueSettings = function () {
+        var dialogElement = this.valueDialog.element;
+        var captionInstance = getInstance('#' + this.parentElement.id + 'type_input_option', MaskedTextBox);
+        var summaryInstance = getInstance('#' + this.parentElement.id + '_type_option', DropDownList);
+        var baseFieldInstance = getInstance('#' + this.parentElement.id + '_base_field_option', DropDownList);
+        var baseItemInstance = getInstance('#' + this.parentElement.id + '_base_item_option', DropDownList);
+        var fieldName = dialogElement.getAttribute('data-field');
+        var buttonElement;
+        if (this.parentElement.querySelector('.' + PIVOT_BUTTON_CLASS)) {
+            buttonElement = this.parentElement.querySelector('.' + PIVOT_BUTTON_CLASS + '#' + fieldName);
+        }
+        if (buttonElement) {
+            var contentElement = buttonElement.querySelector('.e-content');
+            var captionName = this.parent.localeObj.getConstant(summaryInstance.value) + ' ' + 'of' + ' ' + captionInstance.value;
+            contentElement.innerHTML = captionName;
+            contentElement.setAttribute('title', captionName);
+            buttonElement.setAttribute('data-type', summaryInstance.value);
+            buttonElement.setAttribute('data-caption', captionInstance.value);
+            buttonElement.setAttribute('data-basefield', baseFieldInstance.value);
+            buttonElement.setAttribute('data-baseitem', baseItemInstance.value);
+        }
+        var selectedField = this.parent.pivotCommon.eventBase.getFieldByName(fieldName, this.parent.dataSource.values);
+        selectedField = selectedField.properties ?
+            selectedField.properties : selectedField;
+        selectedField.caption = captionInstance.value;
+        selectedField.type = summaryInstance.value;
+        selectedField.baseField = baseFieldInstance.value;
+        selectedField.baseItem = baseItemInstance.value;
+        this.valueDialog.close();
+        // this.parent.axisFieldModule.render();
+        this.parent.lastAggregationInfo = selectedField;
+        this.updateDataSource(true);
+    };
+    AggregateMenu.prototype.removeDialog = function () {
+        if (this.valueDialog && !this.valueDialog.isDestroyed) {
+            this.valueDialog.destroy();
+        }
+        if (document.getElementById(this.parentElement.id + '_ValueDialog')) {
+            remove(document.getElementById(this.parentElement.id + '_ValueDialog'));
+        }
+    };
+    /**
+     * To destroy the pivot button event listener
+     * @return {void}
+     * @hidden
+     */
+    AggregateMenu.prototype.destroy = function () {
+        if (this.parent.isDestroyed) {
+            return;
+        }
+        if (this.menuInfo && !this.menuInfo.isDestroyed) {
+            this.menuInfo.destroy();
+        }
+        else {
+            return;
+        }
+    };
+    return AggregateMenu;
+}());
 
 /**
  * Module to render PivotGrid control
@@ -4076,11 +4483,12 @@ var Render = /** @__PURE__ @class */ (function () {
         this.colPos = 0;
         this.lastSpan = 0;
         this.parent = parent;
-        this.resColWidth = (this.parent.showGroupingBar && this.parent.groupingBarModule) ? (this.parent.isAdaptive ? 180 : 250) :
+        this.resColWidth = (this.parent.showGroupingBar && this.parent.groupingBarModule) ? (this.parent.isAdaptive ? 180 : 249) :
             (this.parent.isAdaptive ? 140 : 200);
         this.engine = parent.engineModule;
         this.gridSettings = parent.gridSettings;
         this.formatList = this.getFormatList();
+        this.aggMenu = new AggregateMenu(this.parent);
     }
     /** @hidden */
     /* tslint:disable */
@@ -4176,8 +4584,8 @@ var Render = /** @__PURE__ @class */ (function () {
             printMode: this.gridSettings.printMode,
             rowHeight: this.gridSettings.rowHeight,
             gridLines: this.gridSettings.gridLines,
-            contextMenuClick: this.gridSettings.contextMenuClick ? this.gridSettings.contextMenuClick.bind(this.parent) : undefined,
-            contextMenuOpen: this.gridSettings.contextMenuOpen ? this.gridSettings.contextMenuOpen.bind(this.parent) : undefined,
+            contextMenuClick: this.contextMenuClick.bind(this),
+            contextMenuOpen: this.contextMenuOpen.bind(this),
             beforeCopy: this.gridSettings.beforeCopy ? this.gridSettings.beforeCopy.bind(this.parent) : undefined,
             beforePrint: this.gridSettings.beforePrint ? this.gridSettings.beforePrint.bind(this.parent) : undefined,
             printComplete: this.gridSettings.printComplete ? this.gridSettings.printComplete.bind(this.parent) : undefined,
@@ -4264,6 +4672,297 @@ var Render = /** @__PURE__ @class */ (function () {
         }
         this.parent.grid.widthService.setWidthToTable();
         this.parent.notify(contentReady, {});
+    };
+    Render.prototype.contextMenuOpen = function (args) {
+        for (var _i = 0, _a = args.items; _i < _a.length; _i++) {
+            var item = _a[_i];
+            var cellTarget = this.parent.lastCellClicked;
+            var elem = null;
+            var bool = void 0;
+            if (cellTarget.classList.contains('e-stackedheadercelldiv') || cellTarget.classList.contains('e-cellvalue') ||
+                cellTarget.classList.contains('e-headercelldiv') || cellTarget.classList.contains('e-icons') || cellTarget.classList.contains('e-rhandler')) {
+                elem = cellTarget.parentElement;
+            }
+            else if (cellTarget.classList.contains('e-headercell') || cellTarget.classList.contains('e-rowcell') || cellTarget.classList.contains('e-columnsheader') ||
+                cellTarget.classList.contains('e-rowsheader') || cellTarget.classList.contains('e-valuescontent') || cellTarget.classList.contains('e-valuesheader')) {
+                elem = cellTarget;
+            }
+            else if (cellTarget.classList.contains('e-headertext')) {
+                elem = cellTarget.parentElement.parentElement;
+            }
+            if (elem.classList.contains('e-valuesheader') || elem.classList.contains('e-stot')) {
+                bool = true;
+            }
+            var rowIndex = Number(elem.getAttribute('index'));
+            var colIndex = Number(elem.getAttribute('aria-colindex'));
+            var pivotValue1 = this.parent.pivotValues[rowIndex][colIndex];
+            var select = item.id;
+            switch (select) {
+                case 'expand':
+                    if (elem.querySelectorAll('.' + EXPAND).length > 0) {
+                        if (args.element.querySelectorAll(CONTEXT_COLLAPSE_ID)) {
+                            args.element.querySelector(CONTEXT_COLLAPSE_ID).classList.add(MENU_DISABLE);
+                        }
+                        if (args.element.querySelector(CONTEXT_EXPAND_ID).classList.contains(MENU_DISABLE)) {
+                            args.element.querySelector(CONTEXT_EXPAND_ID).classList.remove(MENU_DISABLE);
+                        }
+                        if (args.element.querySelector(CONTEXT_EXPAND_ID).classList.contains(MENU_HIDE)) {
+                            args.element.querySelector(CONTEXT_EXPAND_ID).classList.remove(MENU_HIDE);
+                            args.element.querySelector(CONTEXT_COLLAPSE_ID).classList.remove(MENU_HIDE);
+                        }
+                    }
+                    else {
+                        if (bool) {
+                            args.element.querySelector(CONTEXT_EXPAND_ID).classList.add(MENU_HIDE);
+                        }
+                        else {
+                            args.element.querySelector(CONTEXT_EXPAND_ID).classList.add(MENU_DISABLE);
+                        }
+                    }
+                    break;
+                case 'collapse':
+                    if (elem.querySelectorAll('.' + COLLAPSE).length > 0) {
+                        if (args.element.querySelector(CONTEXT_EXPAND_ID)) {
+                            args.element.querySelector(CONTEXT_EXPAND_ID).classList.add(MENU_DISABLE);
+                        }
+                        if (args.element.querySelector(CONTEXT_COLLAPSE_ID).classList.contains(MENU_DISABLE)) {
+                            args.element.querySelector(CONTEXT_COLLAPSE_ID).classList.remove(MENU_DISABLE);
+                        }
+                        if (args.element.querySelector(CONTEXT_COLLAPSE_ID).classList.contains(MENU_HIDE)) {
+                            args.element.querySelector(CONTEXT_COLLAPSE_ID).classList.remove(MENU_HIDE);
+                            args.element.querySelector(CONTEXT_EXPAND_ID).classList.remove(MENU_HIDE);
+                        }
+                    }
+                    else {
+                        if (bool) {
+                            args.element.querySelector(CONTEXT_COLLAPSE_ID).classList.add(MENU_HIDE);
+                        }
+                        else {
+                            args.element.querySelector(CONTEXT_COLLAPSE_ID).classList.add(MENU_DISABLE);
+                        }
+                    }
+                    break;
+                case 'drillthrough':
+                    if (!this.parent.allowDrillThrough) {
+                        if (args.element.querySelector(CONTEXT_DRILLTHROUGH_ID)) {
+                            args.element.querySelector(CONTEXT_DRILLTHROUGH_ID).classList.add(MENU_DISABLE);
+                        }
+                    }
+                    else if (!(elem.classList.contains('e-summary'))) {
+                        if (elem.innerText === "") {
+                            if (args.element.querySelector(CONTEXT_DRILLTHROUGH_ID)) {
+                                args.element.querySelector(CONTEXT_DRILLTHROUGH_ID).classList.add(MENU_DISABLE);
+                            }
+                        }
+                    }
+                    else {
+                        if (args.element.querySelector(CONTEXT_DRILLTHROUGH_ID).classList.contains(MENU_DISABLE)) {
+                            args.element.querySelector(CONTEXT_DRILLTHROUGH_ID).classList.remove(MENU_DISABLE);
+                        }
+                    }
+                    break;
+                case 'sortasc':
+                    if (!this.parent.enableValueSorting) {
+                        if (args.element.querySelector(CONTEXT_SORT_ASC_ID)) {
+                            args.element.querySelector(CONTEXT_SORT_ASC_ID).classList.add(MENU_DISABLE);
+                        }
+                    }
+                    else if (elem.querySelectorAll('.e-icon-descending').length > 0) {
+                        if (args.element.querySelector(CONTEXT_SORT_DESC_ID)) {
+                            args.element.querySelector(CONTEXT_SORT_DESC_ID).classList.add(MENU_DISABLE);
+                        }
+                        else {
+                            args.element.querySelector(CONTEXT_SORT_DESC_ID).classList.remove(MENU_DISABLE);
+                        }
+                        if (args.element.querySelector(CONTEXT_SORT_ASC_ID).classList.contains(MENU_DISABLE)) {
+                            args.element.querySelector(CONTEXT_SORT_ASC_ID).classList.remove(MENU_DISABLE);
+                        }
+                    }
+                    else if (args.element.querySelector(CONTEXT_SORT_DESC_ID).classList.contains(MENU_DISABLE)) {
+                        args.element.querySelector(CONTEXT_SORT_DESC_ID).classList.remove(MENU_DISABLE);
+                    }
+                    break;
+                case 'sortdesc':
+                    if (!this.parent.enableValueSorting) {
+                        if (args.element.querySelector(CONTEXT_SORT_DESC_ID)) {
+                            args.element.querySelector(CONTEXT_SORT_DESC_ID).classList.add(MENU_DISABLE);
+                        }
+                    }
+                    else if (elem.querySelectorAll('.e-icon-ascending').length > 0) {
+                        if (args.element.querySelector(CONTEXT_SORT_ASC_ID)) {
+                            args.element.querySelector(CONTEXT_SORT_ASC_ID).classList.add(MENU_DISABLE);
+                        }
+                        else {
+                            args.element.querySelector(CONTEXT_SORT_ASC_ID).classList.remove(MENU_DISABLE);
+                        }
+                        if (args.element.querySelector(CONTEXT_SORT_DESC_ID).classList.contains(MENU_DISABLE)) {
+                            args.element.querySelector(CONTEXT_SORT_DESC_ID).classList.remove(MENU_DISABLE);
+                        }
+                    }
+                    else if (args.element.querySelector(CONTEXT_SORT_ASC_ID).classList.contains(MENU_DISABLE)) {
+                        args.element.querySelector(CONTEXT_SORT_ASC_ID).classList.remove(MENU_DISABLE);
+                    }
+                    break;
+                case 'CalculatedField':
+                    if (!this.parent.allowCalculatedField) {
+                        args.element.querySelector(CONTEXT_CALC_ID).classList.add(MENU_DISABLE);
+                    }
+                    break;
+                case 'pdf':
+                    if (!this.parent.allowPdfExport) {
+                        args.element.querySelector(CONTEXT_PDF_ID).classList.add(MENU_DISABLE);
+                    }
+                    break;
+                case 'excel':
+                    if (!this.parent.allowExcelExport) {
+                        args.element.querySelector(CONTEXT_EXCEL_ID).classList.add(MENU_DISABLE);
+                    }
+                    break;
+                case 'csv':
+                    if (!this.parent.allowExcelExport) {
+                        args.element.querySelector(CONTEXT_CSV_ID).classList.add(MENU_DISABLE);
+                    }
+                    break;
+                case 'exporting':
+                    if ((!this.parent.allowExcelExport) && (!this.parent.allowPdfExport)) {
+                        args.element.querySelector(CONTEXT_EXPORT_ID).classList.add(MENU_DISABLE);
+                    }
+                    break;
+                case 'aggregate':
+                    if (elem.innerText === "") {
+                        if (args.element.querySelector(CONTEXT_AGGREGATE_ID)) {
+                            args.element.querySelector(CONTEXT_AGGREGATE_ID).classList.add(MENU_DISABLE);
+                        }
+                    }
+                    else {
+                        if (args.element.querySelector(CONTEXT_AGGREGATE_ID).classList.contains(MENU_DISABLE)) {
+                            args.element.querySelector(CONTEXT_AGGREGATE_ID).classList.remove(MENU_DISABLE);
+                        }
+                    }
+                    break;
+            }
+        }
+        this.parent.trigger(contextMenuOpen, args);
+    };
+    Render.prototype.contextMenuClick = function (args) {
+        // this.parent.gridSettings.contextMenuClick();
+        var target = this.parent.lastCellClicked;
+        var selected$$1 = args.item.id;
+        var event = new MouseEvent('dblclick', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        var ele = null;
+        if (target.classList.contains('e-stackedheadercelldiv') || target.classList.contains('e-cellvalue') ||
+            target.classList.contains('e-headercelldiv') || target.classList.contains('e-icons') || target.classList.contains('e-rhandler')) {
+            ele = target.parentElement;
+        }
+        else if (target.classList.contains('e-headercell') || target.classList.contains('e-rowcell')) {
+            ele = target;
+        }
+        else if (target.classList.contains('e-headertext')) {
+            ele = target.parentElement.parentElement;
+        }
+        var rowIndx = Number(ele.getAttribute('index'));
+        var colIndx = Number(ele.getAttribute('aria-colindex'));
+        var pivotValue = this.parent.pivotValues[rowIndx][colIndx];
+        if (args.item.id === 'AggSum' || args.item.id === 'AggProduct' || args.item.id === 'AggCount' ||
+            args.item.id === 'AggDistinctCount' || args.item.id === 'AggAvg' || args.item.id === 'AggMin' ||
+            args.item.id === 'AggMax' || args.item.id === 'AggMoreOption') {
+            this.field = this.parent.engineModule.fieldList[pivotValue.actualText.toString()].caption;
+        }
+        switch (selected$$1) {
+            case 'pdf':
+                this.parent.pdfExport();
+                break;
+            case 'excel':
+                this.parent.excelExport();
+                break;
+            case 'csv':
+                this.parent.csvExport();
+                break;
+            case 'drillthrough':
+                ele.dispatchEvent(event);
+                break;
+            case 'sortasc':
+                this.parent.setProperties({
+                    dataSource: {
+                        valueSortSettings: {
+                            headerText: pivotValue.valueSort.levelName,
+                            headerDelimiter: this.parent.dataSource.valueSortSettings.headerDelimiter
+                        }
+                    }
+                });
+                this.parent.dataSource.valueSortSettings.sortOrder = 'Ascending';
+                break;
+            case 'sortdesc':
+                this.parent.setProperties({
+                    dataSource: {
+                        valueSortSettings: {
+                            headerText: pivotValue.valueSort.levelName,
+                            headerDelimiter: this.parent.dataSource.valueSortSettings.headerDelimiter
+                        }
+                    }
+                });
+                this.parent.dataSource.valueSortSettings.sortOrder = 'Descending';
+                break;
+            case 'expand':
+                if (ele.querySelectorAll('.' + EXPAND)) {
+                    var exp = ele.querySelectorAll('.' + EXPAND)[0];
+                    this.parent.onDrill(exp);
+                }
+                break;
+            case 'collapse':
+                if (ele.querySelectorAll('.' + COLLAPSE)) {
+                    var colp = ele.querySelectorAll('.' + COLLAPSE)[0];
+                    this.parent.onDrill(colp);
+                }
+                break;
+            case 'CalculatedField':
+                this.parent.calculatedFieldModule.createCalculatedFieldDialog();
+                break;
+            case 'AggSum':
+                this.updateAggregate('Sum');
+                break;
+            case 'AggProduct':
+                this.updateAggregate('Product');
+                break;
+            case 'AggCount':
+                this.updateAggregate('Count');
+                break;
+            case 'AggDistinctCount':
+                this.updateAggregate('DistinctCount');
+                break;
+            case 'AggAvg':
+                this.updateAggregate('Avg');
+                break;
+            case 'AggMin':
+                this.updateAggregate('Min');
+                break;
+            case 'AggMax':
+                this.updateAggregate('Max');
+                break;
+            case 'AggMoreOption':
+                ele.setAttribute('id', this.field);
+                ele.setAttribute('data-caption', this.field);
+                ele.setAttribute('data-field', this.field);
+                ele.setAttribute('data-type', this.parent.engineModule.fieldList[pivotValue.actualText.toString()].aggregateType);
+                ele.setAttribute('data-basefield', this.parent.engineModule.fieldList[pivotValue.actualText.toString()].baseField);
+                ele.setAttribute('data-baseItem', this.parent.engineModule.fieldList[pivotValue.actualText.toString()].baseItem);
+                this.aggMenu.createValueSettingsDialog(ele, this.parent.element);
+                break;
+        }
+        this.parent.trigger(contextMenuClick, args);
+    };
+    Render.prototype.updateAggregate = function (aggregate) {
+        var valuefields = this.parent.dataSource.values;
+        for (var valueCnt = 0; valueCnt < this.parent.dataSource.values.length; valueCnt++) {
+            if (this.parent.dataSource.values[valueCnt].name === this.field) {
+                var dataSourceItem = valuefields[valueCnt];
+                dataSourceItem.type = aggregate;
+            }
+        }
     };
     Render.prototype.injectGridModules = function (parent) {
         Grid.Inject(Freeze);
@@ -4584,6 +5283,12 @@ var Render = /** @__PURE__ @class */ (function () {
                         this.parent.gridHeaderCellInfo.push({ targetCell: tCell });
                     }
                 }
+                var len = this.parent.dataSource.values.length;
+                for (var vCnt = 0; vCnt < len; vCnt++) {
+                    if (this.parent.dataSource.values[vCnt].name === cell.actualText) {
+                        tCell.classList.add(VALUESHEADER);
+                    }
+                }
                 this.unWireEvents(tCell);
                 this.wireEvents(tCell);
             }
@@ -4644,6 +5349,7 @@ var Render = /** @__PURE__ @class */ (function () {
         }
         return dataContent;
     };
+    /** @hidden */
     Render.prototype.frameEmptyData = function () {
         var dataContent = [{
                 0: { formattedText: this.parent.localeObj.getConstant('grandTotal') },
@@ -4768,6 +5474,7 @@ var Render = /** @__PURE__ @class */ (function () {
         width = this.parent.resizeInfo[column] ? this.parent.resizeInfo[column] : width;
         return width;
     };
+    /** @hidden */
     Render.prototype.frameEmptyColumns = function () {
         var columns = [];
         var colWidth = this.calculateColWidth(2);
@@ -5216,6 +5923,9 @@ var DataSource = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property(false)
     ], DataSource.prototype, "alwaysShowValueHeader", void 0);
+    __decorate$1([
+        Property(true)
+    ], DataSource.prototype, "showAggregationOnValueField", void 0);
     __decorate$1([
         Collection([], FormatSettings)
     ], DataSource.prototype, "formatSettings", void 0);
@@ -6170,11 +6880,12 @@ var PivotContextMenu = /** @__PURE__ @class */ (function () {
             beforeOpen: this.onBeforeMenuOpen.bind(this),
             select: this.onSelectContextMenu.bind(this)
         };
-        this.parent.element.appendChild(createElement('ul', {
+        var cMenu = createElement('ul', {
             id: this.parent.element.id + '_PivotContextMenu'
-        }));
+        });
+        this.parent.element.appendChild(cMenu);
         this.menuObj = new ContextMenu$1(menuOptions);
-        this.menuObj.appendTo('#' + this.parent.element.id + '_PivotContextMenu');
+        this.menuObj.appendTo(cMenu);
     };
     PivotContextMenu.prototype.onBeforeMenuOpen = function (args) {
         var items = [].slice.call(args.element.querySelectorAll('li'));
@@ -8047,6 +8758,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         _this_1.isPopupClicked = false;
         _this_1.isMouseDown = false;
         _this_1.isMouseUp = false;
+        _this_1.defaultItems = {};
         _this_1.isCellBoxMultiSelection = false;
         /** @hidden */
         _this_1.gridHeaderCellInfo = [];
@@ -8065,6 +8777,8 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         _this_1.totColWidth = 0;
         /** @hidden */
         _this_1.posCount = 0;
+        /** @hidden */
+        _this_1.isModified = false;
         _this_1.needsID = true;
         _this_1.pivotView = _this_1;
         _this_1.engineModule = new PivotEngine();
@@ -8107,6 +8821,11 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         if (this.enableVirtualization) {
             modules.push({ args: [this], member: 'virtualscroll' });
         }
+        if (this.gridSettings) {
+            if (this.gridSettings.contextMenuItems) {
+                isCommonRequire = true;
+            }
+        }
         if (isCommonRequire) {
             modules.push({ args: [this], member: 'common' });
         }
@@ -8120,6 +8839,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         this.initProperties();
         this.isAdaptive = Browser.isDevice;
         this.renderToolTip();
+        this.renderContextMenu();
         this.keyboardModule = new KeyboardInteraction(this);
         this.contextMenuModule = new PivotContextMenu(this);
         this.globalize = new Internationalization(this.locale);
@@ -8320,6 +9040,124 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             this.tooltip.destroy();
         }
     };
+    /** @hidden */
+    PivotView.prototype.renderContextMenu = function () {
+        if (this.gridSettings.contextMenuItems) {
+            var conmenuItems = [];
+            var customItems = [];
+            var exportItems = [];
+            var aggItems = [];
+            var expItems = [];
+            var aggregateItems = [];
+            for (var _i = 0, _a = this.gridSettings.contextMenuItems; _i < _a.length; _i++) {
+                var item = _a[_i];
+                if (typeof item === 'string' && this.getDefaultItems().indexOf(item) !== -1) {
+                    if (item.toString().toLowerCase().indexOf('aggregate') !== -1) {
+                        aggregateItems = [
+                            { text: 'Sum', id: 'AggSum' },
+                            { text: 'Distinct Count', id: 'AggDistinctCount' },
+                            { text: 'Count', id: 'AggCount' },
+                            { text: 'Product', id: 'AggProduct' },
+                            { text: 'Avg', id: 'AggAvg' },
+                            { text: 'Max', id: 'AggMax' },
+                            { text: 'Min', id: 'AggMin' },
+                            { text: 'More...', id: 'AggMoreOption' }
+                        ];
+                    }
+                    else if (item.toString().toLowerCase().indexOf('export') !== -1) {
+                        exportItems.push(this.buildDefaultItems(item));
+                    }
+                    else {
+                        conmenuItems.push(this.buildDefaultItems(item));
+                    }
+                }
+                else if (typeof item !== 'string') {
+                    customItems.push(item);
+                }
+            }
+            if (aggregateItems.length > 0) {
+                var aggregateGroup = this.buildDefaultItems('Aggregate');
+                aggregateGroup.items = aggregateItems;
+                aggItems.push(aggregateGroup);
+            }
+            if (exportItems.length > 0) {
+                var exportGroupItems = this.buildDefaultItems('export');
+                exportGroupItems.items = exportItems;
+                expItems.push(exportGroupItems);
+            }
+            this.gridSettings.contextMenuItems = [];
+            Array.prototype.push.apply(this.gridSettings.contextMenuItems, aggItems);
+            Array.prototype.push.apply(this.gridSettings.contextMenuItems, conmenuItems);
+            Array.prototype.push.apply(this.gridSettings.contextMenuItems, expItems);
+            Array.prototype.push.apply(this.gridSettings.contextMenuItems, customItems);
+        }
+    };
+    PivotView.prototype.getDefaultItems = function () {
+        return ['Drillthrough', 'Expand',
+            'Collapse', 'Pdf Export', 'Excel Export', 'Csv Export', 'Sort Ascending', 'Sort Descending',
+            'Aggregate', 'CalculatedField'];
+    };
+    PivotView.prototype.buildDefaultItems = function (item) {
+        var menuItem;
+        switch (item) {
+            case 'Aggregate':
+                menuItem = { text: 'Aggregate', target: 'th.e-valuesheader,td.e-valuescontent,.e-stot', id: 'aggregate' };
+                break;
+            case 'CalculatedField':
+                menuItem = { text: 'Calculated Field', target: 'td.e-valuescontent', id: 'CalculatedField' };
+                break;
+            case 'Drillthrough':
+                menuItem = {
+                    text: 'Drill Through', target: 'td.e-valuescontent',
+                    id: 'drillthrough', iconCss: PIVOTVIEW_GRID + ' ' + ICON
+                };
+                break;
+            case 'export':
+                menuItem = {
+                    text: 'Export', target: 'td.e-valuescontent',
+                    id: 'exporting', iconCss: PIVOTVIEW_EXPORT + ' ' + ICON
+                };
+                break;
+            case 'Pdf Export':
+                menuItem = { text: 'PDF', id: 'pdf', iconCss: GRID_PDF_EXPORT + ' ' + ICON };
+                break;
+            case 'Excel Export':
+                menuItem = { text: 'Excel', id: 'excel', iconCss: GRID_EXCEL_EXPORT + ' ' + ICON };
+                break;
+            case 'Csv Export':
+                menuItem = { text: 'CSV', id: 'csv', iconCss: GRID_CSV_EXPORT + ' ' + ICON, };
+                break;
+            case 'Expand':
+                menuItem = {
+                    text: 'Expand', target: 'td.e-rowsheader,.e-columnsheader',
+                    id: 'expand', iconCss: PIVOTVIEW_EXPAND + ' ' + ICON
+                };
+                break;
+            case 'Collapse':
+                menuItem = {
+                    text: 'Collapse', target: 'td.e-rowsheader,.e-columnsheader',
+                    id: 'collapse', iconCss: PIVOTVIEW_COLLAPSE + ' ' + ICON
+                };
+                break;
+            case 'Sort Ascending':
+                menuItem = {
+                    text: 'Ascending', target: 'th.e-valuesheader,.e-stot',
+                    id: 'sortasc', iconCss: ICON_ASC + ' ' + ICON
+                };
+                break;
+            case 'Sort Descending':
+                menuItem = {
+                    text: 'Descending', target: 'th.e-valuesheader,.e-stot',
+                    id: 'sortdesc', iconCss: ICON_DESC + ' ' + ICON
+                };
+                break;
+        }
+        this.defaultItems[item] = {
+            text: menuItem.text, id: menuItem.id,
+            target: menuItem.target, iconCss: menuItem.iconCss
+        };
+        return this.defaultItems[item];
+    };
     /* tslint:disable:align */
     PivotView.prototype.initProperties = function () {
         this.setProperties({ pivotValues: [] }, true);
@@ -8347,6 +9185,8 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         this.chartLoad = this.chartSettings.load ? this.chartSettings.load : undefined;
         this.chartResized = this.chartSettings.resized ? this.chartSettings.resized : undefined;
         this.chartAxisLabelRender = this.chartSettings.axisLabelRender ? this.chartSettings.axisLabelRender : undefined;
+        this.contextMenuClick = this.gridSettings.contextMenuClick ? this.gridSettings.contextMenuClick : undefined;
+        this.contextMenuOpen = this.gridSettings.contextMenuOpen ? this.gridSettings.contextMenuOpen : undefined;
         if (this.gridSettings.rowHeight === null) {
             this.setProperties({ gridSettings: { rowHeight: this.isAdaptive ? 48 : 36 } }, true);
         }
@@ -8601,6 +9441,15 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         }
+        if (this.toolbarModule) {
+            if (this.toolbarModule && this.toolbarModule.action !== 'New' && this.toolbarModule.action !== 'Load'
+                && this.toolbarModule.action !== 'Remove') {
+                this.isModified = true;
+            }
+            else {
+                this.toolbarModule.action = '';
+            }
+        }
     };
     /**
      * Updates the PivotEngine using dataSource from Pivot View component.
@@ -8759,6 +9608,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             this.chart.print();
         }
     };
+    /** @hidden */
     PivotView.prototype.onDrill = function (target) {
         var fieldName = target.parentElement.getAttribute('fieldname');
         var memberName = this.engineModule.pivotValues[Number(target.parentElement.getAttribute('index'))][Number(target.parentElement.getAttribute('aria-colindex'))].actualText;
@@ -8960,10 +9810,23 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             EventHandler.add(this.element, 'mousedown', this.mouseDownHandler, this);
             EventHandler.add(this.element.querySelector('.' + GRID_HEADER), 'mousemove', this.mouseMoveHandler, this);
             EventHandler.add(this.element, 'mouseup', this.mouseUpHandler, this);
+            EventHandler.add(this.element, this.isAdaptive ? 'touchend' : 'contextmenu', this.mouseRclickHandler, this);
             window.addEventListener('resize', this.onWindowResize.bind(this), true);
         }
     };
+    PivotView.prototype.mouseRclickHandler = function (e) {
+        if (e.which === 3) {
+            this.lastCellClicked = e.target;
+        }
+        else if (e.which === 0) {
+            this.lastCellClicked = e.target;
+        }
+        this.lastCellClicked = e.target;
+    };
     PivotView.prototype.mouseDownHandler = function (e) {
+        if (e.which === 3) {
+            this.lastCellClicked = e.target;
+        }
         if (this.isCellBoxMultiSelection) {
             this.isMouseDown = true;
             this.isMouseUp = false;
@@ -9011,6 +9874,12 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         return target;
     };
     PivotView.prototype.mouseClickHandler = function (e) {
+        if (e.which === 3) {
+            this.lastCellClicked = e.target;
+        }
+        else if (e.which === 0) {
+            this.lastCellClicked = e.target;
+        }
         var target = e.target;
         if ((target.classList.contains('e-headercell') ||
             target.classList.contains('e-headercelldiv') ||
@@ -9035,7 +9904,8 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             this.CellClicked(target, e);
             if ((ele.parentElement.parentElement.parentElement.parentElement.classList.contains('e-movableheader')
                 && this.dataSource.valueAxis === 'column') || (ele.parentElement.classList.contains('e-row') &&
-                this.dataSource.valueAxis === 'row')) {
+                this.dataSource.valueAxis === 'row') && (ele.parentElement.classList.contains('e-rowsheader') ||
+                ele.classList.contains('e-stot'))) {
                 /* tslint:disable */
                 var colIndex = Number(ele.getAttribute('aria-colindex'));
                 var rowIndex = Number(ele.getAttribute('index'));
@@ -9188,7 +10058,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         /* tslint:enable */
     };
     PivotView.prototype.windowResize = function () {
-        if (this.element && this.element.classList.contains('e-pivotview') && this.engineModule) {
+        if (this.element && this.element.classList.contains('e-pivotview') && this.engineModule && this.engineModule.pivotValues) {
             var colWidth = this.renderModule.resizeColWidth(this.dataSource.values.length > 0 ?
                 this.engineModule.pivotValues[0].length : 2);
             this.grid.width = this.renderModule.calculateGridWidth();
@@ -9417,22 +10287,35 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                 EventHandler.remove(this.element.querySelector('.' + GRID_HEADER), 'mousemove', this.mouseMoveHandler);
             }
             EventHandler.remove(this.element, 'mouseup', this.mouseUpHandler);
+            EventHandler.remove(this.element, this.isAdaptive ? 'touchend' : 'contextmenu', this.mouseRclickHandler);
             window.removeEventListener('resize', this.onWindowResize.bind(this), true);
         }
     };
     PivotView.prototype.renderEmptyGrid = function () {
         this.isEmptyGrid = true;
-        if (this.element.querySelector('.' + GRID_CLASS)) {
-            remove(this.element.querySelector('.' + GRID_CLASS));
-        }
         this.renderModule = new Render(this);
-        this.renderModule.bindGrid(this, true);
-        /* tslint:disable:no-empty */
-        this.grid.showSpinner = function () { };
-        this.grid.hideSpinner = function () { };
-        /* tslint:enable:no-empty */
-        this.element.appendChild(createElement('div', { id: this.element.id + '_grid' }));
-        this.grid.appendTo('#' + this.element.id + '_grid');
+        if (this.grid) {
+            /* tslint:disable */
+            this.grid.setProperties({
+                columns: this.renderModule.frameEmptyColumns(),
+                dataSource: this.renderModule.frameEmptyData()
+            }, true);
+            /* tslint:enable */
+            this.grid.notify('datasource-modified', {});
+            this.grid.refreshColumns();
+        }
+        else {
+            if (this.element.querySelector('.' + GRID_CLASS)) {
+                remove(this.element.querySelector('.' + GRID_CLASS));
+            }
+            this.renderModule.bindGrid(this, true);
+            /* tslint:disable:no-empty */
+            this.grid.showSpinner = function () { };
+            this.grid.hideSpinner = function () { };
+            /* tslint:enable:no-empty */
+            this.element.appendChild(createElement('div', { id: this.element.id + '_grid' }));
+            this.grid.appendTo('#' + this.element.id + '_grid');
+        }
     };
     /* tslint:disable */
     PivotView.prototype.initEngine = function () {
@@ -9798,6 +10681,12 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], PivotView.prototype, "chartAxisLabelRender", void 0);
+    __decorate([
+        Event()
+    ], PivotView.prototype, "contextMenuClick", void 0);
+    __decorate([
+        Event()
+    ], PivotView.prototype, "contextMenuOpen", void 0);
     __decorate([
         Event()
     ], PivotView.prototype, "onPdfCellRender", void 0);
@@ -12065,357 +12954,6 @@ var AxisTableRenderer = /** @__PURE__ @class */ (function () {
 }());
 
 /**
- * `AggregateMenu` module to create aggregate type popup.
- */
-/** @hidden */
-var AggregateMenu = /** @__PURE__ @class */ (function () {
-    /**
-     * Constructor for the rener action.
-     * @hidden
-     */
-    function AggregateMenu(parent) {
-        this.parent = parent;
-    }
-    /**
-     * Initialize the pivot table rendering
-     * @returns void
-     * @private
-     */
-    AggregateMenu.prototype.render = function (args, parentElement) {
-        this.parentElement = parentElement;
-        this.openContextMenu(args);
-    };
-    AggregateMenu.prototype.openContextMenu = function (args) {
-        if (this.menuInfo === undefined) {
-            this.createContextMenu();
-        }
-        this.currentMenu = args.currentTarget;
-        var pos = this.currentMenu.getBoundingClientRect();
-        if (this.parent.enableRtl) {
-            this.menuInfo.open(pos.top, pos.left - 105);
-        }
-        else {
-            this.menuInfo.open(pos.top, pos.left);
-        }
-    };
-    AggregateMenu.prototype.createContextMenu = function () {
-        var menuItems = [
-            { text: 'Sum', id: 'Sum' },
-            { text: 'Count', id: 'Count' },
-            { text: 'Distinct Count', id: 'DistinctCount' },
-            { text: 'Product', id: 'Product' },
-            { text: 'Avg', id: 'Avg' },
-            { text: 'Min', id: 'Min' },
-            { text: 'Max', id: 'Max' },
-            { text: 'More...', id: 'MoreOption' }
-        ];
-        var menuOptions = {
-            items: menuItems,
-            enableRtl: this.parent.enableRtl,
-            beforeOpen: this.beforeMenuOpen.bind(this),
-            select: this.selectOptionInContextMenu.bind(this)
-        };
-        var removeContextMenu = document.getElementById(this.parent.element.id + 'valueFieldContextMenu');
-        if (removeContextMenu !== null) {
-            removeContextMenu.innerHTML = '';
-        }
-        this.parent.element.appendChild(createElement('ul', {
-            id: this.parent.element.id + 'valueFieldContextMenu'
-        }));
-        this.menuInfo = new ContextMenu$1(menuOptions);
-        this.menuInfo.appendTo('#' + this.parent.element.id + 'valueFieldContextMenu');
-    };
-    AggregateMenu.prototype.beforeMenuOpen = function (args) {
-        args.element.style.zIndex = (this.menuInfo.element.style.zIndex + 3).toString();
-        args.element.style.display = 'inline';
-    };
-    AggregateMenu.prototype.createValueSettingsDialog = function (target) {
-        var _this = this;
-        var valueDialog = createElement('div', {
-            id: this.parentElement.id + '_ValueDialog',
-            className: 'e-value-field-settings',
-            attrs: { 'data-field': target.id }
-        });
-        this.parentElement.appendChild(valueDialog);
-        this.valueDialog = new Dialog({
-            animationSettings: { effect: 'Fade' },
-            allowDragging: true,
-            header: this.parent.localeObj.getConstant('valueFieldSettings'),
-            content: this.createFieldOptions(target),
-            isModal: true,
-            visible: true,
-            showCloseIcon: true,
-            enableRtl: this.parent.enableRtl,
-            width: 'auto',
-            height: 'auto',
-            position: { X: 'center', Y: 'center' },
-            buttons: [
-                {
-                    click: this.updateValueSettings.bind(this),
-                    buttonModel: { cssClass: OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true }
-                },
-                {
-                    click: function () { _this.valueDialog.hide(); },
-                    buttonModel: { cssClass: CANCEL_BUTTON_CLASS, content: this.parent.localeObj.getConstant('cancel') }
-                }
-            ],
-            closeOnEscape: true,
-            target: this.parentElement,
-            overlayClick: function () { _this.removeDialog(); },
-            close: this.removeDialog.bind(this)
-        });
-        this.valueDialog.appendTo(valueDialog);
-    };
-    /* tslint:disable:all */
-    AggregateMenu.prototype.createFieldOptions = function (buttonElement) {
-        var fieldCaption = buttonElement.getAttribute('data-caption');
-        var summaryType = buttonElement.getAttribute('data-type');
-        var baseField = buttonElement.getAttribute('data-basefield');
-        var baseItem = buttonElement.getAttribute('data-baseitem');
-        summaryType = (summaryType.toString() !== 'undefined' ? summaryType : 'Sum');
-        var summaryDataSource = [
-            { value: 'Sum', text: 'Sum' },
-            { value: 'Count', text: 'Count' },
-            { value: 'DistinctCount', text: 'Distinct Count' },
-            { value: 'Product', text: 'Product' },
-            { value: 'Avg', text: 'Avg' },
-            { value: 'Min', text: 'Min' },
-            { value: 'Max', text: 'Max' },
-            { value: 'Index', text: 'Index' },
-            { value: 'SampleStDev', text: 'Sample StDev' },
-            { value: 'PopulationStDev', text: 'Population StDev' },
-            { value: 'SampleVar', text: 'Sample Var' },
-            { value: 'PopulationVar', text: 'Population Var' },
-            { value: 'RunningTotals', text: 'Running Totals' },
-            { value: 'DifferenceFrom', text: 'Difference From' },
-            { value: 'PercentageOfDifferenceFrom', text: '% of Difference From' },
-            { value: 'PercentageOfGrandTotal', text: '% of Grand Total' },
-            { value: 'PercentageOfColumnTotal', text: '% of Column Total' },
-            { value: 'PercentageOfRowTotal', text: '% of Row Total' },
-            { value: 'PercentageOfParentTotal', text: '% of Parent Total' },
-            { value: 'PercentageOfParentColumnTotal', text: '% of Parent Column Total' },
-            { value: 'PercentageOfParentRowTotal', text: '% of Parent Row Total' },
-        ];
-        var baseItemTypes = ['DifferenceFrom', 'PercentageOfDifferenceFrom'];
-        var baseFieldTypes = ['DifferenceFrom', 'PercentageOfDifferenceFrom', 'PercentageOfParentTotal'];
-        var dataFields = extend([], this.parent.dataSource.rows, null, true);
-        dataFields = dataFields.concat(this.parent.dataSource.columns);
-        var fieldDataSource = [];
-        var fieldItemDataSource = [];
-        // let summaryDataSource: { [key: string]: Object }[] = [];
-        // for (let type of summaryTypes) {
-        //     summaryDataSource.push({ value: type, text: type });
-        // }
-        for (var _i = 0, dataFields_1 = dataFields; _i < dataFields_1.length; _i++) {
-            var field = dataFields_1[_i];
-            var value = field.name;
-            var text = (field.caption ? field.caption : field.name);
-            fieldDataSource.push({ value: value, text: text });
-        }
-        baseField = (baseField.toString() !== 'undefined' ? baseField : fieldDataSource[0].value);
-        fieldItemDataSource = Object.keys(this.parent.engineModule.fieldList[(baseField.toString() !== 'undefined' ?
-            baseField : fieldDataSource[0].value)].formattedMembers);
-        baseItem = (baseItem.toString() !== 'undefined' ? baseItem : fieldItemDataSource[0]);
-        var mainDiv = createElement('div', {
-            className: 'e-value-field-div-content', id: this.parentElement.id + '_field_div_content',
-            attrs: { 'data-type': summaryType, 'data-caption': fieldCaption, 'data-basefield': baseField, 'data-baseitem': baseItem }
-        });
-        var textWrappper = createElement('div', { className: 'e-field-name-text-wrapper', });
-        var filterWrapperDiv1 = createElement('div', { className: 'e-field-option-wrapper' });
-        var optionWrapperDiv1 = createElement('div', { className: 'e-type-option-wrapper' });
-        var optionWrapperDiv2 = createElement('div', { className: 'e-base-field-option-wrapper' });
-        var optionWrapperDiv3 = createElement('div', { className: 'e-base-item-option-wrapper' });
-        var texttitle = createElement('div', { className: 'e-field-name-title', innerHTML: this.parent.localeObj.getConstant('sourceName') + '&nbsp;' });
-        var textContent = createElement('div', { className: 'e-field-name-content', innerHTML: buttonElement.id.toString() });
-        var inputTextDiv1 = createElement('div', {
-            className: 'e-type-option-text', innerHTML: this.parent.localeObj.getConstant('sourceCaption')
-        });
-        var optionTextDiv1 = createElement('div', {
-            className: 'e-base-field-option-text', innerHTML: this.parent.localeObj.getConstant('summarizeValuesBy')
-        });
-        var optionTextDiv2 = createElement('div', {
-            className: 'e-base-item-option-text', innerHTML: this.parent.localeObj.getConstant('baseField')
-        });
-        var optionTextDiv3 = createElement('div', {
-            className: 'e-type-option-text', innerHTML: this.parent.localeObj.getConstant('baseItem')
-        });
-        var inputDiv1 = createElement('div', { className: 'e-caption-input-wrapper' });
-        var dropOptionDiv1 = createElement('div', { id: this.parentElement.id + '_type_option' });
-        var dropOptionDiv2 = createElement('div', { id: this.parentElement.id + '_base_field_option' });
-        var dropOptionDiv3 = createElement('div', { id: this.parentElement.id + '_base_item_option' });
-        var inputField1 = createElement('input', {
-            id: this.parentElement.id + 'type_input_option',
-            className: 'e-caption-input-text',
-            attrs: { 'type': 'text' }
-        });
-        textWrappper.appendChild(texttitle);
-        textWrappper.appendChild(textContent);
-        inputDiv1.appendChild(inputTextDiv1);
-        inputDiv1.appendChild(inputField1);
-        optionWrapperDiv1.appendChild(optionTextDiv1);
-        optionWrapperDiv2.appendChild(optionTextDiv2);
-        optionWrapperDiv3.appendChild(optionTextDiv3);
-        optionWrapperDiv1.appendChild(dropOptionDiv1);
-        optionWrapperDiv2.appendChild(dropOptionDiv2);
-        optionWrapperDiv3.appendChild(dropOptionDiv3);
-        filterWrapperDiv1.appendChild(textWrappper);
-        filterWrapperDiv1.appendChild(inputDiv1);
-        filterWrapperDiv1.appendChild(optionWrapperDiv1);
-        filterWrapperDiv1.appendChild(optionWrapperDiv2);
-        filterWrapperDiv1.appendChild(optionWrapperDiv3);
-        mainDiv.appendChild(filterWrapperDiv1);
-        var popupInstance = this;
-        var optionWrapper1 = new DropDownList({
-            dataSource: summaryDataSource,
-            fields: { value: 'value', text: 'text' },
-            value: summaryType,
-            // popupWidth: 'auto',
-            cssClass: VALUE_OPTIONS_CLASS, width: '100%',
-            change: function (args) {
-                optionWrapper2.enabled = baseFieldTypes.indexOf(args.value) !== -1 ? true : false;
-                optionWrapper3.enabled = baseItemTypes.indexOf(args.value) !== -1 ? true : false;
-                if (optionWrapper3.enabled && optionWrapper3.dataSource.length === 1) {
-                    optionWrapper3.dataSource = fieldItemDataSource;
-                    optionWrapper3.dataBind();
-                }
-            }
-        });
-        optionWrapper1.appendTo(dropOptionDiv1);
-        var optionWrapper2 = new DropDownList({
-            dataSource: fieldDataSource, enableRtl: this.parent.enableRtl,
-            fields: { value: 'value', text: 'text' },
-            value: baseField,
-            // popupWidth: 'auto',
-            enabled: (baseFieldTypes.indexOf(summaryType) !== -1 ? true : false),
-            cssClass: VALUE_OPTIONS_CLASS, width: '100%',
-            change: function (args) {
-                fieldItemDataSource = Object.keys(popupInstance.parent.engineModule.fieldList[args.value].formattedMembers);
-                optionWrapper3.dataSource = fieldItemDataSource;
-                optionWrapper3.value = fieldItemDataSource[0];
-                optionWrapper3.filterBarPlaceholder = popupInstance.parent.localeObj.getConstant('example') + ' ' + fieldItemDataSource[0];
-                optionWrapper3.dataBind();
-            }
-        });
-        optionWrapper2.appendTo(dropOptionDiv2);
-        var optionWrapper3 = new DropDownList({
-            dataSource: [fieldItemDataSource[0]], enableRtl: this.parent.enableRtl,
-            value: baseItem,
-            // popupWidth: 'auto',
-            allowFiltering: true,
-            filterBarPlaceholder: this.parent.localeObj.getConstant('example') + ' ' + fieldItemDataSource[0],
-            enabled: (baseItemTypes.indexOf(summaryType) !== -1 ? true : false),
-            cssClass: FILTER_OPERATOR_CLASS, width: '100%',
-        });
-        optionWrapper3.appendTo(dropOptionDiv3);
-        var inputObj1 = new MaskedTextBox({
-            placeholder: 'Enter field caption',
-            // floatLabelType: 'Auto',
-            enableRtl: this.parent.enableRtl,
-            value: fieldCaption, width: '100%'
-        });
-        inputObj1.appendTo(inputField1);
-        return mainDiv;
-    };
-    /* tslint:enable:all */
-    AggregateMenu.prototype.selectOptionInContextMenu = function (menu) {
-        if (menu.item.text !== null) {
-            var buttonElement = this.currentMenu.parentElement;
-            if (menu.item.id === 'MoreOption') {
-                this.createValueSettingsDialog(buttonElement);
-            }
-            else {
-                var field = buttonElement.getAttribute('data-uid');
-                var valuefields = this.parent.dataSource.values;
-                var contentElement = buttonElement.querySelector('.e-content');
-                var captionName = menu.item.text + ' ' + 'of' + ' ' + this.parent.engineModule.fieldList[field].caption;
-                contentElement.innerHTML = captionName;
-                contentElement.setAttribute('title', captionName);
-                buttonElement.setAttribute('data-type', menu.item.id);
-                for (var vCnt = 0; vCnt < this.parent.dataSource.values.length; vCnt++) {
-                    if (this.parent.dataSource.values[vCnt].name === field) {
-                        var dataSourceItem = valuefields[vCnt].properties ?
-                            valuefields[vCnt].properties : valuefields[vCnt];
-                        dataSourceItem.type = menu.item.id;
-                        this.parent.lastAggregationInfo = dataSourceItem;
-                        /* tslint:disable-next-line:no-any */
-                    }
-                }
-                this.updateDataSource();
-            }
-        }
-    };
-    AggregateMenu.prototype.updateDataSource = function (isRefreshed) {
-        if (!this.parent.allowDeferLayoutUpdate || this.parent.getModuleName() === 'pivotview') {
-            this.parent.updateDataSource(isRefreshed);
-        }
-        else {
-            if (this.parent.getModuleName() === 'pivotfieldlist' && this.parent.renderMode === 'Popup') {
-                this.parent.pivotGridModule.
-                    setProperties({ dataSource: this.parent.dataSource.properties }, true);
-                this.parent.pivotGridModule.notify(uiUpdate, this);
-                this.parent.pivotGridModule.engineModule = this.parent.engineModule;
-            }
-            else {
-                this.parent.triggerPopulateEvent();
-            }
-        }
-    };
-    AggregateMenu.prototype.updateValueSettings = function () {
-        var dialogElement = this.valueDialog.element;
-        var captionInstance = getInstance('#' + this.parentElement.id + 'type_input_option', MaskedTextBox);
-        var summaryInstance = getInstance('#' + this.parentElement.id + '_type_option', DropDownList);
-        var baseFieldInstance = getInstance('#' + this.parentElement.id + '_base_field_option', DropDownList);
-        var baseItemInstance = getInstance('#' + this.parentElement.id + '_base_item_option', DropDownList);
-        var fieldName = dialogElement.getAttribute('data-field');
-        var buttonElement = this.parentElement.querySelector('.' + PIVOT_BUTTON_CLASS + '#' + fieldName);
-        var contentElement = buttonElement.querySelector('.e-content');
-        var captionName = this.parent.localeObj.getConstant(summaryInstance.value) + ' ' + 'of' + ' ' + captionInstance.value;
-        contentElement.innerHTML = captionName;
-        contentElement.setAttribute('title', captionName);
-        buttonElement.setAttribute('data-type', summaryInstance.value);
-        buttonElement.setAttribute('data-caption', captionInstance.value);
-        buttonElement.setAttribute('data-basefield', baseFieldInstance.value);
-        buttonElement.setAttribute('data-baseitem', baseItemInstance.value);
-        var selectedField = this.parent.pivotCommon.eventBase.getFieldByName(fieldName, this.parent.dataSource.values);
-        selectedField = selectedField.properties ?
-            selectedField.properties : selectedField;
-        selectedField.caption = captionInstance.value;
-        selectedField.type = summaryInstance.value;
-        selectedField.baseField = baseFieldInstance.value;
-        selectedField.baseItem = baseItemInstance.value;
-        this.valueDialog.close();
-        // this.parent.axisFieldModule.render();
-        this.parent.lastAggregationInfo = selectedField;
-        this.updateDataSource(true);
-    };
-    AggregateMenu.prototype.removeDialog = function () {
-        if (this.valueDialog && !this.valueDialog.isDestroyed) {
-            this.valueDialog.destroy();
-        }
-        if (document.getElementById(this.parentElement.id + '_ValueDialog')) {
-            remove(document.getElementById(this.parentElement.id + '_ValueDialog'));
-        }
-    };
-    /**
-     * To destroy the pivot button event listener
-     * @return {void}
-     * @hidden
-     */
-    AggregateMenu.prototype.destroy = function () {
-        if (this.parent.isDestroyed) {
-            return;
-        }
-        if (this.menuInfo && !this.menuInfo.isDestroyed) {
-            this.menuInfo.destroy();
-        }
-        else {
-            return;
-        }
-    };
-    return AggregateMenu;
-}());
-
-/**
  * Module to render Pivot button
  */
 /** @hidden */
@@ -12620,13 +13158,13 @@ var PivotButton = /** @__PURE__ @class */ (function () {
         var text = field[i].caption ? field[i].caption : field[i].name;
         buttonText = createElement('span', {
             attrs: {
-                title: axis === 'filters' ? (text + ' (' + filterMem + ')') : (((axis !== 'values' || aggregation === 'CalculatedField') ? text : this.parent.localeObj.getConstant(aggregation) + ' ' + 'of' + ' ' + text)),
+                title: axis === 'filters' ? (text + ' (' + filterMem + ')') : (((!this.parent.dataSource.showAggregationOnValueField || axis !== 'values' || aggregation === 'CalculatedField') ? text : this.parent.localeObj.getConstant(aggregation) + ' ' + 'of' + ' ' + text)),
                 'tabindex': '-1', 'aria-disabled': 'false', 'oncontextmenu': 'return false;',
                 'data-type': valuePos === i ? '' : aggregation
             },
             className: PIVOT_BUTTON_CONTENT_CLASS + ' ' +
                 (this.parent.getModuleName() === 'pivotview' && !this.parent.groupingBarSettings.allowDragAndDrop ? 'e-disable-drag' : ''),
-            innerHTML: axis === 'filters' ? (text + ' (' + filterMem + ')') : (axis !== 'values' || aggregation === 'CalculatedField' ? text : this.parent.localeObj.getConstant(aggregation) + ' ' + 'of' + ' ' + text)
+            innerHTML: axis === 'filters' ? (text + ' (' + filterMem + ')') : (!this.parent.dataSource.showAggregationOnValueField || axis !== 'values' || aggregation === 'CalculatedField' ? text : this.parent.localeObj.getConstant(aggregation) + ' ' + 'of' + ' ' + text)
         });
         return buttonText;
     };
@@ -14087,11 +14625,12 @@ var CalculatedField = /** @__PURE__ @class */ (function () {
             beforeOpen: this.beforeMenuOpen.bind(this),
             select: this.selectContextMenu.bind(this)
         };
-        this.parent.element.appendChild(createElement('ul', {
+        var contextMenu = createElement('ul', {
             id: this.parentID + 'contextmenu'
-        }));
+        });
+        this.parent.element.appendChild(contextMenu);
         this.menuObj = new ContextMenu$1(menuOptions);
-        this.menuObj.appendTo('#' + this.parentID + 'contextmenu');
+        this.menuObj.appendTo(contextMenu);
     };
     /**
      * Triggers while click OK button.
@@ -14980,6 +15519,11 @@ var Common = /** @__PURE__ @class */ (function () {
         if (this.parent.isDestroyed) {
             return;
         }
+        if (this.parent.gridSettings.contextMenuItems) {
+            if ((!this.parent.showFieldList) || (!this.parent.showGroupingBar)) {
+                this.parent.on(initialLoad, this.handlers.load, this);
+            }
+        }
         this.parent.on(uiUpdate, this.handlers.load, this);
     };
     /**
@@ -15073,7 +15617,7 @@ var GroupingBar = /** @__PURE__ @class */ (function () {
     function GroupingBar(parent) {
         this.parent = parent;
         this.parent.groupingBarModule = this;
-        this.resColWidth = (this.parent.isAdaptive ? 180 : 250);
+        this.resColWidth = (this.parent.isAdaptive ? 180 : 249);
         this.addEventListener();
         this.parent.axisFieldModule = new AxisFields(this.parent);
         this.touchObj = new Touch(this.parent.element, {
@@ -15996,6 +16540,7 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
         return 'toolbar';
     };
     Toolbar$$1.prototype.createToolbar = function () {
+        this.parent.isModified = false;
         this.renderDialog();
         if (document.querySelector('#' + this.parent.element.id + 'pivot-toolbar') !== null) {
             remove(document.querySelector('#' + this.parent.element.id + 'pivot-toolbar'));
@@ -16116,12 +16661,22 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
     };
     /* tslint:enable */
     Toolbar$$1.prototype.reportChange = function (args) {
+        this.dropArgs = args;
+        if (this.parent.isModified && this.currentReport !== '') {
+            this.createConfirmDialog(this.parent.localeObj.getConstant('alert'), this.parent.localeObj.getConstant('newReportConfirm'));
+        }
+        else {
+            this.reportLoad(args);
+        }
+    };
+    Toolbar$$1.prototype.reportLoad = function (args) {
         if (this.action !== 'Save' && this.action !== 'Rename' && this.action !== 'New') {
             var loadArgs = {
                 reportName: args.itemData.value
             };
             this.parent.trigger(loadReport, loadArgs);
             this.currentReport = loadArgs.reportName;
+            this.parent.isModified = false;
         }
     };
     Toolbar$$1.prototype.saveReport = function (args) {
@@ -16131,12 +16686,13 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
                 reportName: this.currentReport
             };
             this.parent.trigger(saveReport, saveArgs);
+            this.parent.isModified = false;
         }
         else {
-            this.dialogShow(args);
+            this.dialogShow(args, 'saveAs');
         }
     };
-    Toolbar$$1.prototype.dialogShow = function (args) {
+    Toolbar$$1.prototype.dialogShow = function (args, action) {
         this.dialog.header = args.item.tooltipText;
         var outerDiv = createElement('div', {
             className: GRID_REPORT_OUTER
@@ -16147,10 +16703,13 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
         });
         var input = createElement('input', {
             className: GRID_REPORT_INPUT + ' ' + INPUT,
+            innerHTML: (action && action === 'rename' ? this.currentReport : ''),
             attrs: {
-                'placeholder': this.parent.localeObj.getConstant('emptyReportName')
+                'placeholder': this.parent.localeObj.getConstant('emptyReportName'),
+                'value': (action && action === 'rename' ? this.currentReport : '')
             },
         });
+        input.setSelectionRange(input.textContent.length, input.textContent.length);
         outerDiv.appendChild(label);
         outerDiv.appendChild(input);
         this.dialog.content = outerDiv;
@@ -16160,7 +16719,7 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
     Toolbar$$1.prototype.renameReport = function (args) {
         this.parent.trigger(toolbarClick, args);
         if (this.currentReport && this.currentReport !== '') {
-            this.dialogShow(args);
+            this.dialogShow(args, 'rename');
         }
         else {
             this.parent.pivotCommon.errorDialog.createErrorDialog(this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('emptyReport'));
@@ -16187,7 +16746,12 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
                 break;
             case (this.parent.element.id + 'new'):
                 this.action = 'New';
-                this.createConfirmDialog(this.parent.localeObj.getConstant('alert'), this.parent.localeObj.getConstant('newReportConfirm'));
+                if (this.parent.isModified) {
+                    this.createConfirmDialog(this.parent.localeObj.getConstant('alert'), this.parent.localeObj.getConstant('newReportConfirm'));
+                }
+                else {
+                    this.createNewReport();
+                }
                 break;
             case (this.parent.element.id + 'load'):
                 this.action = 'Load';
@@ -16249,16 +16813,23 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
             reportInput.focus();
             return;
         }
+        var isNew = false;
         if ((this.dialog.header === this.parent.localeObj.getConstant('save') ||
             this.dialog.header === this.parent.localeObj.getConstant('saveAs')) &&
             reportInput.value && reportInput.value !== '') {
-            this.action = 'Save';
+            if (this.action === 'New') {
+                isNew = true;
+            }
+            else {
+                this.action = 'Save';
+            }
             this.currentReport = reportInput.value;
             var saveArgs = {
                 report: this.parent.getPersistData(),
                 reportName: reportInput.value
             };
             this.parent.trigger(saveReport, saveArgs);
+            this.parent.isModified = false;
         }
         else if (this.dialog.header === this.parent.localeObj.getConstant('rename') && reportInput.value && reportInput.value !== '') {
             this.action = 'Rename';
@@ -16271,6 +16842,17 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
         }
         this.updateReportList();
         this.dialog.hide();
+        if (isNew) {
+            this.createNewReport();
+        }
+    };
+    Toolbar$$1.prototype.createNewReport = function () {
+        this.currentReport = '';
+        this.reportList.value = '';
+        this.reportList.text = '';
+        this.reportList.refresh();
+        this.parent.trigger(newReport);
+        this.parent.isModified = false;
     };
     Toolbar$$1.prototype.cancelBtnClick = function () {
         this.dialog.hide();
@@ -16302,13 +16884,13 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
                 {
                     buttonModel: {
                         content: this.parent.localeObj.getConstant('ok'), isPrimary: true,
-                        cssClass: OK_BUTTON_CLASS + ' ' + OUTLINE_CLASS
+                        cssClass: OK_BUTTON_CLASS
                     },
                     click: this.okButtonClick.bind(this)
                 },
                 {
                     buttonModel: {
-                        content: this.parent.localeObj.getConstant('cancel'), isPrimary: true,
+                        content: this.parent.localeObj.getConstant('cancel'),
                         cssClass: CANCEL_BUTTON_CLASS
                     },
                     click: this.cancelButtonClick.bind(this)
@@ -16318,35 +16900,43 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
         this.confirmPopUp.appendTo(errorDialog);
     };
     Toolbar$$1.prototype.okButtonClick = function () {
-        if (this.action === 'New') {
+        if (this.action === 'Remove') {
+            var removeArgs = {
+                reportName: this.currentReport
+            };
+            this.parent.trigger(removeReport, removeArgs);
+            this.currentReport = '';
+            this.parent.isModified = false;
+            this.action = '';
+            this.updateReportList();
+        }
+        else if (this.action === 'New' || (this.action !== 'Save' && this.action !== 'Rename' && this.action !== 'New')) {
             if (this.currentReport && this.currentReport !== '') {
                 var saveArgs = {
                     report: this.parent.getPersistData(),
                     reportName: this.currentReport
                 };
                 this.parent.trigger(saveReport, saveArgs);
+                this.parent.isModified = false;
+                if (this.action === 'New') {
+                    this.createNewReport();
+                }
+                else {
+                    this.reportLoad(this.dropArgs);
+                }
             }
             else {
                 this.dialogShow({ item: { tooltipText: this.parent.localeObj.getConstant('save') } });
             }
         }
-        else if (this.action === 'Remove') {
-            var removeArgs = {
-                reportName: this.currentReport
-            };
-            this.parent.trigger(removeReport, removeArgs);
-            this.currentReport = '';
-            this.updateReportList();
-        }
         this.confirmPopUp.hide();
     };
     Toolbar$$1.prototype.cancelButtonClick = function () {
         if (this.action === 'New') {
-            this.currentReport = '';
-            this.reportList.value = '';
-            this.reportList.text = '';
-            this.reportList.refresh();
-            this.parent.trigger(newReport);
+            this.createNewReport();
+        }
+        else {
+            this.reportLoad(this.dropArgs);
         }
         this.confirmPopUp.hide();
     };
@@ -16417,48 +17007,56 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
                 items: [
                     {
                         text: this.parent.localeObj.getConstant('showSubTotals'),
-                        id: this.parent.element.id + 'subtotal'
+                        id: this.parent.element.id + 'subtotal',
+                        iconCss: PIVOT_SELECT_ICON + ' ' + ICON
                     },
                     {
                         text: this.parent.localeObj.getConstant('doNotShowSubTotals'),
-                        id: this.parent.element.id + 'notsubtotal'
+                        id: this.parent.element.id + 'notsubtotal',
+                        iconCss: PIVOT_SELECT_ICON + ' ' + ICON
                     },
                     {
                         text: this.parent.localeObj.getConstant('showSubTotalsRowsOnly'),
-                        id: this.parent.element.id + 'subtotalrow'
+                        id: this.parent.element.id + 'subtotalrow',
+                        iconCss: PIVOT_SELECT_ICON + ' ' + ICON
                     },
                     {
                         text: this.parent.localeObj.getConstant('showSubTotalsColumnsOnly'),
-                        id: this.parent.element.id + 'subtotalcolumn'
+                        id: this.parent.element.id + 'subtotalcolumn',
+                        iconCss: PIVOT_SELECT_ICON + ' ' + ICON
                     },
                 ]
             }
         ];
-        this.subTotalMenu = new Menu({ items: menu, enableRtl: this.parent.enableRtl, select: this.subTotalClick.bind(this) }, '#' + this.parent.element.id + '_summary');
+        this.subTotalMenu = new Menu({ items: menu, enableRtl: this.parent.enableRtl, select: this.subTotalClick.bind(this), beforeOpen: this.updateSubtotalSelection.bind(this) }, '#' + this.parent.element.id + '_summary');
         var menuTotal = [
             {
                 iconCss: GRID_GRAND_TOTAL + ' ' + ICON,
                 items: [
                     {
                         text: this.parent.localeObj.getConstant('showGrandTotals'),
-                        id: this.parent.element.id + 'grandtotal'
+                        id: this.parent.element.id + 'grandtotal',
+                        iconCss: PIVOT_SELECT_ICON + ' ' + ICON
                     },
                     {
                         text: this.parent.localeObj.getConstant('doNotShowGrandTotals'),
-                        id: this.parent.element.id + 'notgrandtotal'
+                        id: this.parent.element.id + 'notgrandtotal',
+                        iconCss: PIVOT_SELECT_ICON + ' ' + ICON
                     },
                     {
                         text: this.parent.localeObj.getConstant('showGrandTotalsRowsOnly'),
-                        id: this.parent.element.id + 'grandtotalrow'
+                        id: this.parent.element.id + 'grandtotalrow',
+                        iconCss: PIVOT_SELECT_ICON + ' ' + ICON
                     },
                     {
                         text: this.parent.localeObj.getConstant('showGrandTotalsColumnsOnly'),
-                        id: this.parent.element.id + 'grandtotalcolumn'
+                        id: this.parent.element.id + 'grandtotalcolumn',
+                        iconCss: PIVOT_SELECT_ICON + ' ' + ICON
                     },
                 ]
             }
         ];
-        this.grandTotalMenu = new Menu({ items: menuTotal, enableRtl: this.parent.enableRtl, select: this.grandTotalClick.bind(this) }, '#' + this.parent.element.id + '_grandtotal');
+        this.grandTotalMenu = new Menu({ items: menuTotal, enableRtl: this.parent.enableRtl, select: this.grandTotalClick.bind(this), beforeOpen: this.updateGrandtotalSelection.bind(this) }, '#' + this.parent.element.id + '_grandtotal');
         var reports = this.fetchReports();
         this.reportList = new DropDownList({
             dataSource: reports.reportName,
@@ -16471,6 +17069,58 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
             value: this.currentReport
         });
         this.reportList.appendTo('#' + this.parent.element.id + '_reportlist');
+    };
+    Toolbar$$1.prototype.updateSubtotalSelection = function (args) {
+        if (!args.element.querySelector('#' + this.parent.element.id + 'subtotal' + ' .' + PIVOT_SELECT_ICON).classList.contains(PIVOT_DISABLE_ICON)) {
+            args.element.querySelector('#' + this.parent.element.id + 'subtotal' + ' .' + PIVOT_SELECT_ICON).classList.add(PIVOT_DISABLE_ICON);
+        }
+        if (!args.element.querySelector('#' + this.parent.element.id + 'notsubtotal' + ' .' + PIVOT_SELECT_ICON).classList.contains(PIVOT_DISABLE_ICON)) {
+            args.element.querySelector('#' + this.parent.element.id + 'notsubtotal' + ' .' + PIVOT_SELECT_ICON).classList.add(PIVOT_DISABLE_ICON);
+        }
+        if (!args.element.querySelector('#' + this.parent.element.id + 'subtotalrow' + ' .' + PIVOT_SELECT_ICON).classList.contains(PIVOT_DISABLE_ICON)) {
+            args.element.querySelector('#' + this.parent.element.id + 'subtotalrow' + ' .' + PIVOT_SELECT_ICON).classList.add(PIVOT_DISABLE_ICON);
+        }
+        if (!args.element.querySelector('#' + this.parent.element.id + 'subtotalcolumn' + ' .' + PIVOT_SELECT_ICON).classList.contains(PIVOT_DISABLE_ICON)) {
+            args.element.querySelector('#' + this.parent.element.id + 'subtotalcolumn' + ' .' + PIVOT_SELECT_ICON).classList.add(PIVOT_DISABLE_ICON);
+        }
+        if (this.parent.dataSource.showSubTotals && this.parent.dataSource.showRowSubTotals && !this.parent.dataSource.showColumnSubTotals) {
+            args.element.querySelector('#' + this.parent.element.id + 'subtotalrow' + ' .' + PIVOT_SELECT_ICON).classList.remove(PIVOT_DISABLE_ICON);
+        }
+        else if (this.parent.dataSource.showSubTotals && !this.parent.dataSource.showRowSubTotals && this.parent.dataSource.showColumnSubTotals) {
+            args.element.querySelector('#' + this.parent.element.id + 'subtotalcolumn' + ' .' + PIVOT_SELECT_ICON).classList.remove(PIVOT_DISABLE_ICON);
+        }
+        else if (this.parent.dataSource.showSubTotals && this.parent.dataSource.showRowSubTotals && this.parent.dataSource.showColumnSubTotals) {
+            args.element.querySelector('#' + this.parent.element.id + 'subtotal' + ' .' + PIVOT_SELECT_ICON).classList.remove(PIVOT_DISABLE_ICON);
+        }
+        else if (!this.parent.dataSource.showSubTotals && !this.parent.dataSource.showRowSubTotals && !this.parent.dataSource.showColumnSubTotals) {
+            args.element.querySelector('#' + this.parent.element.id + 'notsubtotal' + ' .' + PIVOT_SELECT_ICON).classList.remove(PIVOT_DISABLE_ICON);
+        }
+    };
+    Toolbar$$1.prototype.updateGrandtotalSelection = function (args) {
+        if (!args.element.querySelector('#' + this.parent.element.id + 'grandtotal' + ' .' + PIVOT_SELECT_ICON).classList.contains(PIVOT_DISABLE_ICON)) {
+            args.element.querySelector('#' + this.parent.element.id + 'grandtotal' + ' .' + PIVOT_SELECT_ICON).classList.add(PIVOT_DISABLE_ICON);
+        }
+        if (!args.element.querySelector('#' + this.parent.element.id + 'notgrandtotal' + ' .' + PIVOT_SELECT_ICON).classList.contains(PIVOT_DISABLE_ICON)) {
+            args.element.querySelector('#' + this.parent.element.id + 'notgrandtotal' + ' .' + PIVOT_SELECT_ICON).classList.add(PIVOT_DISABLE_ICON);
+        }
+        if (!args.element.querySelector('#' + this.parent.element.id + 'grandtotalrow' + ' .' + PIVOT_SELECT_ICON).classList.contains(PIVOT_DISABLE_ICON)) {
+            args.element.querySelector('#' + this.parent.element.id + 'grandtotalrow' + ' .' + PIVOT_SELECT_ICON).classList.add(PIVOT_DISABLE_ICON);
+        }
+        if (!args.element.querySelector('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + PIVOT_SELECT_ICON).classList.contains(PIVOT_DISABLE_ICON)) {
+            args.element.querySelector('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + PIVOT_SELECT_ICON).classList.add(PIVOT_DISABLE_ICON);
+        }
+        if (this.parent.dataSource.showGrandTotals && this.parent.dataSource.showRowGrandTotals && !this.parent.dataSource.showColumnGrandTotals) {
+            args.element.querySelector('#' + this.parent.element.id + 'grandtotalrow' + ' .' + PIVOT_SELECT_ICON).classList.remove(PIVOT_DISABLE_ICON);
+        }
+        else if (this.parent.dataSource.showGrandTotals && !this.parent.dataSource.showRowGrandTotals && this.parent.dataSource.showColumnGrandTotals) {
+            args.element.querySelector('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + PIVOT_SELECT_ICON).classList.remove(PIVOT_DISABLE_ICON);
+        }
+        else if (this.parent.dataSource.showGrandTotals && this.parent.dataSource.showRowGrandTotals && this.parent.dataSource.showColumnGrandTotals) {
+            args.element.querySelector('#' + this.parent.element.id + 'grandtotal' + ' .' + PIVOT_SELECT_ICON).classList.remove(PIVOT_DISABLE_ICON);
+        }
+        else if (!this.parent.dataSource.showGrandTotals && !this.parent.dataSource.showRowGrandTotals && !this.parent.dataSource.showColumnGrandTotals) {
+            args.element.querySelector('#' + this.parent.element.id + 'notgrandtotal' + ' .' + PIVOT_SELECT_ICON).classList.remove(PIVOT_DISABLE_ICON);
+        }
     };
     Toolbar$$1.prototype.updateReportList = function () {
         var reports = this.fetchReports();
@@ -16649,5 +17299,5 @@ var Toolbar$2 = /** @__PURE__ @class */ (function () {
  * Export PivotGrid components
  */
 
-export { GroupingBarSettings, CellEditSettings, ConditionalSettings, HyperlinkSettings, DisplayOption, PivotView, Render, ExcelExport$1 as ExcelExport, PDFExport, KeyboardInteraction, VirtualScroll$1 as VirtualScroll, DrillThrough, PivotChart, PivotFieldList, TreeViewRenderer, AxisFieldRenderer, AxisTableRenderer, DialogRenderer, EventBase, NodeStateModified, DataSourceUpdate, FieldList, CommonKeyboardInteraction, GroupingBar, CalculatedField, ConditionalFormatting, PivotCommon, load, enginePopulating, enginePopulated, onFieldDropped, beforePivotTableRender, afterPivotTableRender, beforeExport, excelHeaderQueryCellInfo, pdfHeaderQueryCellInfo, excelQueryCellInfo, pdfQueryCellInfo, onPdfCellRender, dataBound, queryCellInfo, headerCellInfo, hyperlinkCellClick, resizing, resizeStop, cellClick, drillThrough, beforeColumnsRender, selected, cellSelected, cellDeselected, rowSelected, rowDeselected, beginDrillThrough, saveReport, fetchReport, loadReport, renameReport, removeReport, newReport, toolbarRender, toolbarClick, chartTooltipRender, chartLoaded, chartLoad, chartResized, chartAxisLabelRender, chartSeriesCreated, initialLoad, uiUpdate, scroll, contentReady, dataReady, initSubComponent, treeViewUpdate, pivotButtonUpdate, initCalculatedField, click, initToolbar, ErrorDialog, FilterDialog, PivotContextMenu, AggregateMenu, Toolbar$2 as Toolbar, PivotEngine, PivotUtil };
+export { GroupingBarSettings, CellEditSettings, ConditionalSettings, HyperlinkSettings, DisplayOption, PivotView, Render, ExcelExport$1 as ExcelExport, PDFExport, KeyboardInteraction, VirtualScroll$1 as VirtualScroll, DrillThrough, PivotChart, PivotFieldList, TreeViewRenderer, AxisFieldRenderer, AxisTableRenderer, DialogRenderer, EventBase, NodeStateModified, DataSourceUpdate, FieldList, CommonKeyboardInteraction, GroupingBar, CalculatedField, ConditionalFormatting, PivotCommon, load, enginePopulating, enginePopulated, onFieldDropped, beforePivotTableRender, afterPivotTableRender, beforeExport, excelHeaderQueryCellInfo, pdfHeaderQueryCellInfo, excelQueryCellInfo, pdfQueryCellInfo, onPdfCellRender, dataBound, queryCellInfo, headerCellInfo, hyperlinkCellClick, resizing, resizeStop, cellClick, drillThrough, beforeColumnsRender, selected, cellSelected, cellDeselected, rowSelected, rowDeselected, beginDrillThrough, saveReport, fetchReport, loadReport, renameReport, removeReport, newReport, toolbarRender, toolbarClick, chartTooltipRender, chartLoaded, chartLoad, chartResized, chartAxisLabelRender, chartSeriesCreated, aggregateCellInfo, contextMenuClick, contextMenuOpen, initialLoad, uiUpdate, scroll, contentReady, dataReady, initSubComponent, treeViewUpdate, pivotButtonUpdate, initCalculatedField, click, initToolbar, ErrorDialog, FilterDialog, PivotContextMenu, AggregateMenu, Toolbar$2 as Toolbar, PivotEngine, PivotUtil };
 //# sourceMappingURL=ej2-pivotview.es5.js.map

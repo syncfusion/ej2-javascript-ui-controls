@@ -28,8 +28,18 @@ export interface IThemes {
     tooltipFill: string;
     /** Defines the font color of the tooltip */
     tooltipFontColor: string;
+    /** Defines the background color of the sparkline */
+    background: string;
     /** Defines the color of the tracker line */
     trackerLineColor: string;
+    /** Defines the font style of the text */
+    fontFamily?: string;
+    /** Defines the tooltip fill color opacity */
+    tooltipFillOpacity?: number;
+    /** Defines the tooltip text opacity */
+    tooltipTextOpacity?: number;
+    /** Defines the label font style */
+    labelFontFamily?: string;
 }
 /**
  * Specifies the Loaded Event arguments.

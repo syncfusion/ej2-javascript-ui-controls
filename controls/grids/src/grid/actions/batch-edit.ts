@@ -180,6 +180,11 @@ export class BatchEdit {
     public closeEdit(): void {
         let gObj: IGrid = this.parent;
         let rows: Row<Column>[] = this.parent.getRowsObject();
+        let argument: BeforeBatchSaveArgs = { cancel: false, batchChanges: this.getBatchChanges()};
+        gObj.notify(events.beforeBatchCancel, argument);
+        if (argument.cancel) {
+            return;
+        }
         if (gObj.frozenColumns && rows.length < this.parent.currentViewData.length * 2) {
             rows.push.apply(rows, this.parent.getMovableRowsObject());
         }
@@ -716,6 +721,7 @@ export class BatchEdit {
                 gObj.selectRow(this.cellDetails.rowIndex, true);
             }
             this.renderer.update(args);
+            this.parent.notify(events.batchEditFormRendered, args);
             this.form = gObj.element.querySelector('#' + gObj.element.id + 'EditForm');
             gObj.editModule.applyFormValidation([col]);
             (this.parent.element.querySelector('.e-gridpopup') as HTMLElement).style.display = 'none';

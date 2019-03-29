@@ -1,6 +1,6 @@
 import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, isUndefined } from '@syncfusion/ej2-base';
 import { Collection, Draggable, isNullOrUndefined, DragEventArgs, append } from '@syncfusion/ej2-base';
-import { EmitType, Event, formatUnit, ChildProperty, compile } from '@syncfusion/ej2-base';
+import { EmitType, Event, formatUnit, ChildProperty, compile, closest } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, addClass, detach, removeClass, EventHandler } from '@syncfusion/ej2-base';
 import { DashboardLayoutModel, PanelModel } from './dashboardlayout-model';
 
@@ -296,7 +296,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     /** 
      * Defines the cell aspect ratio of the panel. 
      * @default 1
-     * @private
      */
     @Property(1)
     public cellAspectRatio: number;
@@ -728,7 +727,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     }
     protected downResizeHandler(e: MouseEvent): void {
         this.resizeCalled = false;
-        let el: HTMLElement = (<HTMLElement>(<HTMLElement>(e.currentTarget)).closest('.e-panel'));
+        let el: HTMLElement = (<HTMLElement>closest(<HTMLElement>(<HTMLElement>(e.currentTarget)), '.e-panel'));
         let args: ResizeArgs = { event: e, element: el };
         this.trigger('resizeStart', args);
         this.downTarget = (<HTMLElement>e.currentTarget);
@@ -755,7 +754,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     // tslint:disable-next-line:max-func-body-length
     protected moveResizeHandler(e: MouseEvent): void {
         this.moveTarget = this.downTarget;
-        let el: HTMLElement = <HTMLElement>this.moveTarget.closest('.e-panel');
+        let el: HTMLElement = (<HTMLElement>closest(<HTMLElement>(this.moveTarget), '.e-panel'));
         let args: ResizeArgs = { event: e, element: el };
         this.trigger('resize', args);
         if (this.lastMouseX === e.pageX || this.lastMouseY === e.pageY) {
@@ -863,7 +862,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             return;
         }
         this.upTarget = (<HTMLElement>this.downTarget);
-        let el: HTMLElement = <HTMLElement>this.upTarget.closest('.e-panel');
+        let el: HTMLElement = (<HTMLElement>closest(<HTMLElement>(this.upTarget), '.e-panel'));
         let args: ResizeArgs = { event: e, element: el };
         this.trigger('resizeStop', args);
         if (el) {
@@ -2422,7 +2421,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                 this.gridPanelCollection.splice(this.gridPanelCollection.indexOf(item), 1);
             }
         });
-
+        this.updateCloneArrayObject();
     }
 
     constructor(options?: DashboardLayoutModel, element?: string | HTMLInputElement) {

@@ -212,7 +212,16 @@
           max-height: $range-value-none;
         }
       }& .e-range-header {
+        @if $skin-name == 'bootstrap4' {
+          margin: $range-control-bigger-header-margin;
+        }
         width: $range-control-header-width;
+
+        & .e-change-icon {
+          @if $skin-name == 'bootstrap4' {
+            font-size: $range-bigger-change-icon-size;
+          }
+        }
 
         & .e-start-end {
           align-items: $range-align-center;

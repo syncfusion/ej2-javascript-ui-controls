@@ -34,6 +34,8 @@ export const CONTENT_ID: string = '_content';
 export const BREADCRUMBBAR_ID: string = '_breadcrumbbar';
 /** @hidden */
 export const UPLOAD_ID: string = '_upload';
+/** @hidden */
+export const SEARCH_ID: string = '_search';
 
 /**
  * Specifies the File Manager internal class names

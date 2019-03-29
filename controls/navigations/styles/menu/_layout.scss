@@ -104,7 +104,12 @@
     }
 
     & .e-menu-hscroll.e-hscroll:not(.e-scroll-device) {
-      padding: 0 $menu-hscroll-nav-size;
+      @if $skin-name == 'bootstrap4' {
+        padding: 4px $menu-hscroll-nav-size;
+      }
+      @else {
+        padding: 0 $menu-hscroll-nav-size;
+      }
 
       & .e-scroll-nav {
         width: $menu-hscroll-nav-size;

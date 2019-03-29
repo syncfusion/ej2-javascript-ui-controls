@@ -6,7 +6,7 @@ import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane
 import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement, Browser, EventHandler, isNullOrUndefined, select } from '@syncfusion/ej2-base';
-import { toolbarItems, toolbarItems1, toolbarItems3, data1, data2, data3, data4, data5, data6, data7, data8, data9, data12, data13, UploadData, rename, renameExist, renameExtension, renamed_ext, renamedwithout_ext, getMultipleDetails, pastesuccess, paste1 } from '../data';
+import { toolbarItems, toolbarItems1, toolbarItems3, data1, data2, data3, data4, data5, data6, data7, data8, data9, data12, data13, UploadData, rename, renameExist, renameExtension, renamed_ext, renamedwithout_ext, getMultipleDetails, pastesuccess, paste1, data17, data18, data19 } from '../data';
 import { extend } from '@syncfusion/ej2-grids';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
@@ -561,21 +561,110 @@ describe('FileManager control Grid view', () => {
                 done();
             }, 200);
         });
-        it('Search file testing', (done) => {
-            let searchObj: any = feObj.element.querySelector("#file_search");
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
+        it('Search file testing', (done: Function) => {
+            let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+            let treeLi: any = treeObj.element.querySelectorAll('li');
+            let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+            expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+            expect(treeLi.length).toEqual(5);
+            expect(gridLi.length).toEqual(5);
+            let searchEle: any = feObj.element.querySelector("#file_search");
+            let searchObj: any = searchEle.ej2_instances[0];
+            searchEle.value = 'doc';
+            searchObj.value = 'doc';
+            let eventArgs: any = { value: 'doc', container: searchEle };
+            searchObj.input(eventArgs);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data18)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
-                jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;
-                searchObj.ej2_instances[0].value = 'doc';
-                let eventArgs: any = { value: 'doc', container: searchObj };
-                searchObj.ej2_instances[0].input(eventArgs);
-                searchObj.ej2_instances[0].value = '';
-                eventArgs = { value: '', container: searchObj };
-                searchObj.ej2_instances[0].input(eventArgs);
-                done();
-            }.bind(searchObj), 500);
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+                expect(treeLi.length).toEqual(5);
+                expect(gridLi.length).toEqual(3);
+                searchEle.value = '';
+                searchObj.value = '';
+                eventArgs = { value: '', container: searchEle };
+                searchObj.input(eventArgs);
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                    let treeLi: any = treeObj.element.querySelectorAll('li');
+                    let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                    expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+                    expect(treeLi.length).toEqual(5);
+                    expect(gridLi.length).toEqual(5);
+                    done();
+                }, 500);
+            }, 500);
         });
-
+        it('Search folder navigation', (done: Function) => {
+            let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+            let treeLi: any = treeObj.element.querySelectorAll('li');
+            let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+            expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+            expect(treeLi.length).toEqual(5);
+            expect(gridLi.length).toEqual(5);
+            let searchEle: any = feObj.element.querySelector("#file_search");
+            let searchObj: any = searchEle.ej2_instances[0];
+            searchEle.value = 'doc';
+            searchObj.value = 'doc';
+            let eventArgs: any = { value: 'doc', container: searchEle };
+            searchObj.input(eventArgs);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data18)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+                expect(treeLi.length).toEqual(5);
+                expect(gridLi.length).toEqual(3);
+                let args = { rowData: { "name": "docs", "size": 0, "dateModified": "2019-03-14T09:27:45.346Z", "dateCreated": "2019-03-13T07:28:06.117Z", "hasChild": true, "isFile": false, "type": "", "filterPath": "\\Documents\\docs", "iconClass": "e-fe-folder" }, rowIndex: 0 };
+                feObj.detailsviewModule.gridObj.recordDoubleClick(args);
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data17)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data19)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                    let treeLi: any = treeObj.element.querySelectorAll('li');
+                    let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                    expect(treeObj.selectedNodes[0]).toEqual("fe_tree_0_0");
+                    expect(treeLi.length).toEqual(6);
+                    expect(gridLi.length).toEqual(1);
+                    done();
+                }, 500);
+            }, 500);
+        });
         it('Search field with value test case', (done) => {
             let searchObj: any = feObj.element.querySelector("#file_search");
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 500;

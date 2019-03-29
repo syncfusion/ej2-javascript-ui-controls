@@ -202,7 +202,7 @@ export class GanttChart {
             let target: EventTarget = e.target;
             let isOnTaskbarElement: boolean | Element = (e.target as HTMLElement).classList.contains(cls.taskBarMainContainer)
                 || closest(e.target as Element, '.' + cls.taskBarMainContainer);
-            if ((<HTMLElement>target).closest('.e-gantt-parent-taskbar')) {
+            if (closest((<HTMLElement>target), '.e-gantt-parent-taskbar')) {
                 this.chartExpandCollapseRequest(e);
             } else if (!isOnTaskbarElement && this.parent.autoFocusTasks) {
                 this.scrollToTarget(e); /** Scroll to task */
@@ -272,7 +272,7 @@ export class GanttChart {
      */
     private chartExpandCollapseRequest(e: PointerEvent): void {
         let target: EventTarget = e.target;
-        let parentElement: Element = (<HTMLElement>target).closest('.e-gantt-parent-taskbar');
+        let parentElement: Element = closest((<HTMLElement>target), '.e-gantt-parent-taskbar');
         let record: IGanttData = this.getRecordByTarget(e);
         let chartRow: Node = closest(target as Element, 'tr');
         let rowIndex: number = getValue('rowIndex', chartRow);

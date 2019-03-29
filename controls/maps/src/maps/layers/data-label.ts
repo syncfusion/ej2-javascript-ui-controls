@@ -74,6 +74,7 @@ export class DataLabel {
         let textLocation: Point = new Point(0, 0);
         /* tslint:disable:no-string-literal */
         let shapes: object = layerData[index];
+        style.fontFamily = this.maps.theme === 'Bootstrap4' ? 'HelveticaNeue-Medium' : style.fontFamily;
         shape = shapes['property'];
         let properties: string[] = (Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]' ?
             layer.shapePropertyPath : [layer.shapePropertyPath]) as string[];

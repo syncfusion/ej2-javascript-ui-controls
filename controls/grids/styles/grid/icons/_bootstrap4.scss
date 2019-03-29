@@ -2,18 +2,18 @@
   /*! component icons */
 
   .e-icon-check::before {
-    content:  '\e7ff';
+    content:  '\e718';
   }
 
   #{&}.e-grid,
   .e-grid-menu {
 
     .e-icon-ascending::before {
-      content: '\e831';
+      content: '\e7d1';
     }
 
     .e-icon-descending::before {
-      content: '\e819';
+      content: '\e7b9';
     }
 
     .e-icon-hide::before {
@@ -33,11 +33,11 @@
     }
 
     .e-icon-gdownarrow::before {
-      content: '\e705';
+      content: '\e744';
     }
 
     .e-icon-grightarrow::before {
-      content: '\e76a';
+      content: '\e70b';
     }
 
     .e-icon-filter::before {
@@ -45,7 +45,7 @@
     }
 
     .e-excl-filter-icon::before {
-      content: '\e2714';
+      content: '\e714';
     }
 
     .e-excl-filter-icon.e-filtered::before {
@@ -54,7 +54,7 @@
 
     &.e-rtl {
       .e-icon-grightarrow::before {
-        content: '\e76a';
+        content: '\e71f';
       }
     }
 

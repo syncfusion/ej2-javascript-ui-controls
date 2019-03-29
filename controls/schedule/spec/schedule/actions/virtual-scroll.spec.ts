@@ -303,7 +303,7 @@ describe('Virtual scroll', () => {
             let indicator: HTMLElement = schObj.element.querySelector('.e-resource-column-wrap table') as HTMLElement;
             expect(indicator.style.transform).toEqual('translateY(300px)');
         });
-        it('checking elements with enableAdaptiveRows property', (done: Function) => {
+        it('checking elements with rowAutoHeight property', (done: Function) => {
             let viewElement: HTMLElement = schObj.element.querySelector('.e-toolbar-item.e-timeline-month');
             viewElement.click();
             let dataBound: (args: Object) => void = (args: Object) => {
@@ -316,11 +316,11 @@ describe('Virtual scroll', () => {
                 done();
             };
             schObj.selectedDate = new Date(2018, 4, 1);
-            schObj.enableAdaptiveRows = true;
+            schObj.rowAutoHeight = true;
             schObj.dataBound = dataBound;
             schObj.dataBind();
         });
-        it('scroll checking with enableAdaptiveRows property', () => {
+        it('scroll checking with rowAutoHeight property', () => {
             let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
             triggerScrollEvent(contentArea, 400);
             expect(schObj.resourceBase.renderedResources.length).toEqual(13);
@@ -335,7 +335,7 @@ describe('Virtual scroll', () => {
             expect(schObj.resourceBase.renderedResources[0].groupIndex).toEqual(0);
             expect(moreIndicatorList.length).toEqual(0);
         });
-        it('checking more indicator enableAdaptiveRows false', (done: Function) => {
+        it('checking more indicator rowAutoHeight false', (done: Function) => {
             let dataBound: (args: Object) => void = (args: Object) => {
                 let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(3);
@@ -345,7 +345,7 @@ describe('Virtual scroll', () => {
                 expect(moreIndicatorList.length).toEqual(2);
                 done();
             };
-            schObj.enableAdaptiveRows = false;
+            schObj.rowAutoHeight = false;
             schObj.dataBound = dataBound;
             schObj.dataBind();
         });

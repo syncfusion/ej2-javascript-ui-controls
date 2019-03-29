@@ -118,15 +118,42 @@ export class HtmlEditor {
             let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
             let saveSelection: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(
                 range, this.parent.contentModule.getDocument());
-            let args: NotifyArgs = { url: e.text, text: '', selection: saveSelection, action: 'Paste' };
-            this.parent.formatter.editorManager.execCommand(
-                'Links',
-                'CreateLink',
-                null,
-                null,
-                args,
-                args
-            );
+            let firstElement: HTMLElement = this.parent.createElement('span');
+            let httpRegex: RegExp = new RegExp(/([^\S]|^)(((https?\:\/\/)))/gi);
+            let wwwRegex: RegExp = new RegExp(/([^\S]|^)(((www\.))(\S+))/gi);
+            let httpText: string = '';
+            if (e.text.match(httpRegex)) {
+                firstElement.innerHTML = e.text.split('http')[0];
+                httpText = 'http' + e.text.split('http')[1];
+            } else if (e.text.match(wwwRegex)) {
+                firstElement.innerHTML = e.text.split('www')[0];
+                httpText = 'www' + e.text.split('www')[1];
+            }
+            let httpSplitText: string[] = httpText.split(' ');
+            let splittedText: string = '';
+            for (let i: number = 1; i < httpSplitText.length; i++) {
+                splittedText =  splittedText + ' ' + httpSplitText[i];
+            }
+            let lastElement: HTMLElement = this.parent.createElement('span');
+            lastElement.innerHTML = splittedText;
+            let anchor: HTMLElement = this.parent.createElement('a', {
+                className: 'e-rte-anchor', attrs: {
+                    href: httpSplitText[0],
+                    title: httpSplitText[0]
+                }
+            });
+            anchor.innerHTML = httpSplitText[0];
+            let resultElement: HTMLElement = this.parent.createElement('span');
+            if (firstElement.innerHTML !== '') {
+                resultElement.appendChild(firstElement);
+            }
+            if (anchor.innerHTML !== '') {
+                resultElement.appendChild(anchor);
+            }
+            if (lastElement.innerHTML !== '') {
+                resultElement.appendChild(lastElement);
+            }
+            this.parent.executeCommand('insertHTML', resultElement);
         }
     }
     private spaceLink(e?: KeyboardEvent): void {

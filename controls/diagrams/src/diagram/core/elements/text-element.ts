@@ -27,6 +27,9 @@ export class TextElement extends DiagramElement {
     public canMeasure: boolean = true;
 
     /** @private */
+    public isLaneOrientation: boolean = false;
+
+    /** @private */
     public canConsiderBounds: boolean = true;
     /**
      * sets the constraints for the text element
@@ -114,7 +117,8 @@ export class TextElement extends DiagramElement {
     public measure(availableSize: Size): Size {
         let size: Size;
         if (this.isDirt && this.canMeasure) {
-            size = measureText(this, this.style, this.content, this.width || availableSize.width);
+            size = measureText(this, this.style, this.content, this.isLaneOrientation ?
+                availableSize.height : (this.width || availableSize.width));
         } else {
             size = this.desiredSize;
         }

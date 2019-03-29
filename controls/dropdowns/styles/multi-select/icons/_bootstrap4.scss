@@ -2,6 +2,11 @@
   .e-multiselect.e-input-group .e-ddl-icon::before {
     content: '\e744';
     font-family: 'e-icons';
+    font-size: 8px;
+  }
+
+  .e-bigger .e-multiselect.e-input-group .e-ddl-icon::before {
+    font-size: 10px;
   }
 
   .e-multi-select-wrapper .e-chips .e-chips-close::before {
@@ -18,6 +23,11 @@
     left: $ddl-overall-close-left;
     position: relative;
     top: $ddl-overall-close-top;
+  }
+
+  .e-bigger .e-multi-select-wrapper .e-chips .e-chips-close::before {
+    font-size: 12px;
+    top: $ddl-bigger-close-top;
   }
 
   .e-multiselect.e-input-group .e-ddl-disable-icon::before {

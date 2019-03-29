@@ -157,7 +157,7 @@ describe('Gantt spec for tooltip', () => {
         it('Predecessor Tooltip', () => {
             let predecessor: HTMLElement = ganttObj.element.querySelector('#ConnectorLineparent1child3 > div > div.e-connector-line-right-arrow') as HTMLElement;
             triggerMouseEvent(predecessor, 'mouseover', 10);
-            expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr><td class = "e-gantt-tooltip-label">From</td><td>:</td><td class = "e-gantt-tooltip-value">Start-Duration (1)</td></tr><tr><td class = "e-gantt-tooltip-label">To</td><td>:</td><td class = "e-gantt-tooltip-value">Duration-End (3)</td></tr><tr><td class = "e-gantt-tooltip-label">Task Link</td><td>:</td><td class = "e-gantt-tooltip-value"> Start-Start</td></tr><tr><td class = "e-gantt-tooltip-label">Lag</td><td>:</td><td class = "e-gantt-tooltip-value">4 days</td></tr></tbody></table>');
+            expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr><td class = "e-gantt-tooltip-label">From</td><td>:</td><td class = "e-gantt-tooltip-value">Start-Duration (1)</td></tr><tr><td class = "e-gantt-tooltip-label">To</td><td>:</td><td class = "e-gantt-tooltip-value">Duration-End (3)</td></tr><tr><td class = "e-gantt-tooltip-label">Task Link</td><td>:</td><td class = "e-gantt-tooltip-value"> Start-Start</td></tr><tr><td class = "e-gantt-tooltip-label">Lag</td><td>:</td><td class = "e-gantt-tooltip-value">0 days</td></tr></tbody></table>');
         });
         it('Timeline Tooltip', () => {
             let timeline: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttChart > div.e-timeline-header-container > table:nth-child(2) > thead > tr > th:nth-child(7) > div') as HTMLElement;
@@ -191,7 +191,7 @@ describe('Gantt spec for tooltip', () => {
             ganttObj.dataBind();
             let predecessor: HTMLElement = ganttObj.element.querySelector('#ConnectorLineparent1child3 > div > div.e-connector-line-right-arrow') as HTMLElement;
             triggerMouseEvent(predecessor, 'mouseover', 10);
-            expect((ganttObj.tooltipModule.toolTipObj.content as HTMLElement).textContent).toBe('Offset : 4 days');
+            expect((ganttObj.tooltipModule.toolTipObj.content as HTMLElement).textContent).toBe('Offset : 0 days');
         });
         it('Baseline Tooltip Template', () => {
             ganttObj.tooltipSettings.baseline = '#bLTooltip';

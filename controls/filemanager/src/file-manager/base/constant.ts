@@ -12,6 +12,8 @@ export const modelChanged: string = 'model-changed';
 /** @hidden */
 export const initialEnd: string = 'initial-end';
 /** @hidden */
+export const finalizeEnd: string = 'finalize-end';
+/** @hidden */
 export const createEnd: string = 'create-end';
 /** @hidden */
 export const deleteEnd: string = 'delete-end';
@@ -48,6 +50,8 @@ export const selectAllInit: string = 'select-all-init';
 /** @hidden */
 export const clearAllInit: string = 'clear-all-init';
 /** @hidden */
+export const clearPathInit: string = 'clear-path-init';
+/** @hidden */
 export const layoutChange: string = 'layout-change';
 /** @hidden */
 export const sortByChange: string = 'sort-by-change';
@@ -73,3 +77,5 @@ export const sortColumn: string = 'sort-column';
 export const pathColumn: string = 'path-column';
 /** @hidden */
 export const searchTextChange: string = 'search-change';
+/** @hidden */
+export const downloadInit: string = 'download-init';

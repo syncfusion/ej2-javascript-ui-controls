@@ -91,11 +91,16 @@ export class MDSelectionFormats {
         let splitText: string[] = splitAt(start)(textArea.value);
         let cmdB: string = this.syntax.Bold.substr(0, 1);
         let cmdI: string = this.syntax.Italic;
-        let beforeText: string = textArea.value.substr(splitText[0].length - 1, 1);
-        let afterText: string = splitText[1].substr(0, 1);
-        if ((beforeText !== '' && afterText !== '' && beforeText.match(/[a-z]/i)) &&
-            beforeText === beforeText.toUpperCase() && afterText === afterText.toUpperCase() && cmd === 'UpperCase') {
+        let selectedText: string = this.parent.markdownSelection.getSelectedText(textArea);
+        if (selectedText !== '' && selectedText === selectedText.toLocaleUpperCase() && cmd === 'UpperCase') {
             return true;
+        } else if (selectedText === '') {
+            let beforeText: string = textArea.value.substr(splitText[0].length - 1, 1);
+            let afterText: string = splitText[1].substr(0, 1);
+            if ((beforeText !== '' && afterText !== '' && beforeText.match(/[a-z]/i)) &&
+                beforeText === beforeText.toLocaleUpperCase() && afterText === afterText.toLocaleUpperCase() && cmd === 'UpperCase') {
+                return true;
+            }
         }
         if (!(this.isBold(splitText[0], cmdB)) && !(this.isItalic(splitText[0], cmdI)) && !(this.isBold(splitText[1], cmdB)) &&
             !(this.isItalic(splitText[1], cmdI))) {
@@ -171,7 +176,7 @@ export class MDSelectionFormats {
                 e.subCommand === 'SuperScript' ? '</sup>' : this.syntax[e.subCommand];
             let startLength: number = (e.subCommand === 'UpperCase' || e.subCommand === 'LowerCase') ? 0 : startCmd.length;
             let startNo: number = textArea.value.substr(0, selection.start as number).lastIndexOf(startCmd);
-            let endNo: number = textArea.value.substr(selection.end as number, selection.end as number).indexOf(endCmd);
+            let endNo: number = textArea.value.substr(selection.end as number, textArea.value.length).indexOf(endCmd);
             endNo = endNo + (selection.end as number);
             let repStartText: string = this.replaceAt(
                 textArea.value.substr(0, selection.start as number), startCmd, '', startNo, selection.start as number);

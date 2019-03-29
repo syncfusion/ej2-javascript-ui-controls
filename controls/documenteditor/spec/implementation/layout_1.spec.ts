@@ -18351,7 +18351,7 @@ describe('Tab Character width calculation', () => {
         expect(textElement.width + tabElement.width).toBe(HelperMethods.convertPointToPixel(tabStop.position));
         let elementWidth: number = textElement.width;
         editor.selection.moveToLineEnd();
-        editor.editor.insertText('Syncfusion', false);
+        editor.editor.insertText('Syncfusion');
         expect(textElement.width).toBe(elementWidth);
         expect(textElement.width + tabElement.width).toBe(HelperMethods.convertPointToPixel(tabStop.position));
     });
@@ -18399,7 +18399,7 @@ describe('Tab Character width calculation', () => {
         expect(textElement.width + tabElement.width).toBe(HelperMethods.convertPointToPixel(tabStop.position));
         let elementWidth: number = textElement.width;
         editor.selection.moveToLineEnd();
-        editor.editor.insertText('Syncfusion', false);
+        editor.editor.insertText('Syncfusion');
         expect(textElement.width).toBe(elementWidth);
         expect(textElement.width + tabElement.width).toBeLessThan(HelperMethods.convertPointToPixel(tabStop.position));
         let currentElement: ElementBox = editor.selection.start.currentWidget.children[editor.selection.start.currentWidget.children.length - 1]
@@ -18449,7 +18449,7 @@ describe('Tab Character width calculation', () => {
         expect(textElement.width + tabElement.width).toBe(HelperMethods.convertPointToPixel(tabStop.position));
         let elementWidth: number = textElement.width;
         editor.selection.moveToLineEnd();
-        editor.editor.insertText('Syncfusion', false);
+        editor.editor.insertText('Syncfusion');
         expect(textElement.width).toBe(elementWidth);
         expect(textElement.width + tabElement.width).toBeLessThan(HelperMethods.convertPointToPixel(tabStop.position));
         let currentElement: ElementBox = editor.selection.start.currentWidget.children[editor.selection.start.currentWidget.children.length - 1]

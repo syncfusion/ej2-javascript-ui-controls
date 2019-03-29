@@ -14,7 +14,7 @@ import { WCharacterFormat } from '../../../src/document-editor/implementation/fo
  */
 function createDocument(editor: DocumentEditor) {
     editor.openBlank();
-    editor.editorModule.insertText('Adventure Works cycles', false);
+    editor.editorModule.insertText('Adventure Works cycles');
 }
 describe('Font dialog validation bold,italic,underLine', () => {
     let editor: DocumentEditor;
@@ -149,7 +149,7 @@ describe('Font dialog validation bold,italic,underLine', () => {
     });
     it('Add modified property for character format  validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         let viewer: LayoutViewer = editor.viewer;
         let event: any;
         editor.selection.handleLeftKey();

@@ -1855,5 +1855,52 @@ describe('Checkbox Filter module => ', () => {
         });
     });  
 
+    describe('Filter operation after searching ', () => {
+        let gridObj: Grid;
+        let actionBegin: () => void;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData.slice(0),
+                    allowFiltering: true,
+                    filterSettings: { type: 'Excel' },
+                    toolbar: ['Search'],
+                    columns: [{ field: 'OrderID', type: 'number', visible: true },
+                    { field: 'CustomerID', type: 'string', filter: { type: 'CheckBox' } },
+                    { field: 'Freight', format: 'C2', type: 'number' }
+                    ],
+                    actionBegin: actionBegin,
+                    actionComplete: actionComplete,
+                }, done);
+        });
+        
+        it('Search', function(done) {
+            actionComplete = (args?: any): void => {
+                expect(gridObj.currentViewData.length).toBe(1);                         
+                gridObj.actionComplete =null;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.searchModule.search('32.38');      
+        });
+
+        it('Filter after search toolbar action', function (done) {
+            actionComplete = (args?: any): void => {
+                if(args.requestType === 'filterafteropen'){
+                expect(gridObj.element.querySelectorAll('.e-check').length).toBe(2);
+                expect(gridObj.element.querySelectorAll('.e-selectall').length).toBe(1);                          
+                gridObj.actionComplete =null;
+                done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
 
 });

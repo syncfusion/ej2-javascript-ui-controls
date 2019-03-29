@@ -54,6 +54,8 @@ export class MapsTooltip {
         if (istooltipRender) {
             if (targetId.indexOf('_shapeIndex_') > -1) {
                 option = layer.tooltipSettings;
+                option.textStyle.fontFamily = this.maps.themeStyle.fontFamily || option.textStyle.fontFamily;
+                option.textStyle.opacity = this.maps.themeStyle.tooltipTextOpacity || option.textStyle.opacity;
                 let shape: number = parseInt(targetId.split('_shapeIndex_')[1].split('_')[0], 10);
                 if (isNullOrUndefined(layer.layerData) || isNullOrUndefined(layer.layerData[shape])) {
                     return;
@@ -132,8 +134,8 @@ export class MapsTooltip {
             };
             this.maps.trigger(tooltipRender, tootipArgs);
             if (!tootipArgs.cancel && option.visible && !isNullOrUndefined(currentData)) {
-                tootipArgs.options['textStyle']['color'] = tootipArgs.options['textStyle']['color'] ||
-                    this.maps.themeStyle.tooltipFontColor;
+                tootipArgs.options['textStyle']['color'] = this.maps.themeStyle.tooltipFontColor
+                    || tootipArgs.options['textStyle']['color'];
                 this.svgTooltip = new Tooltip({
                     enable: true,
                     header: '',
@@ -147,6 +149,7 @@ export class MapsTooltip {
                     textStyle: tootipArgs.options['textStyle'],
                     fill: tootipArgs.fill || this.maps.themeStyle.tooltipFillColor
                 });
+                this.svgTooltip.opacity = this.maps.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                 this.svgTooltip.appendTo(tooltipEle);
             } else {
                 this.removeTooltip();

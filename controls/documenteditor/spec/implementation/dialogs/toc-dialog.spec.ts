@@ -374,7 +374,7 @@ describe('Toc test case validation - 1', () => {
         let fieldCode = updateToc(editor);
         expect(editor.selection.getFieldCode(fieldCode)).not.toBe('');
         editor.selection.handleControlEndKey();
-        editor.editorModule.insertText('s', true);
+        editor.editorModule.insertText('s');
         editor.selection.handleControlHomeKey();
         fieldCode = updateToc(editor);
         expect(editor.selection.getFieldCode(fieldCode)).not.toBe('');

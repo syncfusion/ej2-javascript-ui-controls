@@ -358,6 +358,42 @@ describe('Range navigator', () => {
             range.margin = { top: 10, left: 10, right: 10, bottom: 10 };
             range.refresh();
         });
+        it('checking materialdark', (done: Function) => {
+            range.loaded = (args: Object): void => {
+                let container: Element = document.getElementById('containerSeriesGroup0');
+                expect(
+                    container.getAttribute('transform') === 'translate(21.5,10)' ||
+                    container.getAttribute('transform') === 'translate(21,10)'
+                ).toBe(true);
+                done();
+            };
+            range.theme = 'MaterialDark';
+            range.refresh();
+        });
+        it('checking fabricdark', (done: Function) => {
+            range.loaded = (args: Object): void => {
+                let container: Element = document.getElementById('containerSeriesGroup0');
+                expect(
+                    container.getAttribute('transform') === 'translate(21.5,10)' ||
+                    container.getAttribute('transform') === 'translate(21,10)'
+                ).toBe(true);
+                done();
+            };
+            range.theme = 'FabricDark';
+            range.refresh();
+        });
+        it('checking Bootstrapdark', (done: Function) => {
+            range.loaded = (args: Object): void => {
+                let container: Element = document.getElementById('containerSeriesGroup0');
+                expect(
+                    container.getAttribute('transform') === 'translate(21.5,10)' ||
+                    container.getAttribute('transform') === 'translate(21,10)'
+                ).toBe(true);
+                done();
+            };
+            range.theme = 'BootstrapDark';
+            range.refresh();
+        });
     });
     it('memory leak', () => {
         profile.sample();

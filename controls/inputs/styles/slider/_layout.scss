@@ -11,7 +11,7 @@
 
     &.e-tab-handle {
       &::after {
-        @if $skin-name == 'material' {
+        @if ($skin-name == 'material' or $skin-name == 'material-dark') {
           background-color: transparent;
         }
       }
@@ -19,7 +19,7 @@
 
     &.e-handle-start.e-tab-handle {
       &::after {
-        @if $skin-name == 'material' {
+        @if ($skin-name == 'material' or $skin-name == 'material-dark') {
           background-color: transparent;
         }
       }
@@ -27,7 +27,7 @@
   }
 
   .e-slider-tooltip.e-tooltip-wrap.e-popup {
-    @if $skin-name == 'material' {
+    @if ($skin-name == 'material' or $skin-name == 'material-dark') {
       background-color: $slider-handle-bg-color;
       border: 0;
       border-radius: 8px;
@@ -188,7 +188,7 @@
       }
     }
     @else {
-      @if $skin-name == 'highcontrast' {
+      @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
         background-color: $slider-active-handle-bg-color;
         border: 1px solid $slider-hover-handle-color;
       }
@@ -197,7 +197,7 @@
         padding: $slider-tooltip-padding;
         text-align: center;
 
-        @if $skin-name == 'highcontrast' {
+        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
           color: $slider-button-icon-color;
         }
       }
@@ -205,7 +205,7 @@
   }
 
   .e-bigger {
-    @if $skin-name != 'material' {
+    @if ($skin-name != 'material' and $skin-name != 'material-dark') {
       .e-slider-tooltip.e-tooltip-wrap.e-popup {
         .e-tip-content {
           padding: $slider-tooltip-padding;
@@ -237,7 +237,7 @@
 
   .e-bigger .e-control-wrapper.e-slider-container,
   .e-control-wrapper.e-slider-container.e-bigger {
-    @if $skin-name != 'material' {
+    @if ($skin-name != 'material' and $skin-name != 'material-dark') {
       .e-slider {
         .e-handle {
           height: $slider-handle-mobile-height;
@@ -331,7 +331,7 @@
         &.e-scale-both {
           .e-slider {
             .e-handle {
-              @if $skin-name == 'highcontrast' {
+              @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
                 margin-left: -9px;
                 top: calc(50% - 8px);
               }
@@ -345,15 +345,23 @@
           .e-handle {
             left: calc(50% - 9px);
             margin-bottom: -9px;
+            @if $skin-name == 'bootstrap4' {
+              left: calc(50% - 8px);
+              margin-bottom: -8px;
+            }
           }
         }
 
         &.e-scale-both {
           .e-slider {
             .e-handle {
-              @if $skin-name == 'highcontrast' {
+              @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
                 left: calc(50% - 10px);
                 margin-bottom: -9px;
+              }
+              @if $skin-name == 'bootstrap4' {
+                left: calc(50% - 8px);
+                margin-bottom: -8px;
               }
             }
           }
@@ -398,13 +406,13 @@
         .e-slider {
           .e-handle {
             margin: $rtl-slider-h-handle-margin;
-            @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap4') {
+            @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4') {
               top: calc(50% - 8px);
             }
-            @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+            @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
               top: calc(50% - 8px);
             }
-            @if $skin-name == 'material' {
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
               top: calc(50% - 6px);
             }
           }
@@ -413,26 +421,26 @@
         .e-scale {
           &.e-h-scale {
             .e-tick.e-first-tick {
-              @if $skin-name == 'material' {
+              @if ($skin-name == 'material' or $skin-name == 'material-dark') {
                 background-position-x: right;
               }
 
-              @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+              @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
                 background-position: right center;
                 left: 0;
               }
 
-              @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap4') {
+              @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4') {
                 background-position: right center;
                 left: 0;
               }
             }
 
             .e-tick.e-last-tick {
-              @if $skin-name == 'material' {
+              @if ($skin-name == 'material' or $skin-name == 'material-dark') {
                 background-position-x: left;
               }
-              @if $skin-name != 'material' {
+              @if ($skin-name != 'material' and $skin-name != 'material-dark') {
                 background-position: left center;
               }
             }
@@ -440,10 +448,10 @@
         }
 
         .e-slider-button {
-          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
             margin-top: -8px;
           }
-          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap4') {
+          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4') {
             margin-top: -7px;
           }
         }
@@ -455,7 +463,7 @@
     }
 
     &.e-disabled {
-      @if $skin-name == 'material' {
+      @if ($skin-name == 'material' or $skin-name == 'material-dark') {
         &.e-material-slider .e-slider .e-handle.e-handle-first {
           background-color: $grey-600;
         }
@@ -502,7 +510,7 @@
         }
       }
 
-      @if $skin-name == 'highcontrast' {
+      @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
         .e-slider {
           .e-range {
             background: $slider-disabled-bg-color;
@@ -543,13 +551,40 @@
             background-color: $slider-disabled-track-color;
           }
         }
+
+        .e-scale .e-tick {
+          .e-tick-value {
+            color: $slider-button-bg-color;
+          }
+        }
+
+        .e-slider-button {
+          background-color: $slider-disabled-bg-color;
+          border-color: $white;
+        }
+      }
+    }
+
+    @if ($skin-name == 'bootstrap4') {
+      &:not(.e-disabled) {
+        .e-slider-button {
+          &:hover {
+            background-color: darken($gray-600, 7.5%);
+            border-color: darken($gray-600, 10%);
+          }
+
+          &:active {
+            background-color: darken($gray-600, 10%);
+            border-color: darken($gray-600, 12%);
+          }
+        }
       }
     }
 
     &.e-horizontal {
       height: 48px;
       width: 100%;
-      @if $skin-name == 'material' {
+      @if ($skin-name == 'material' or $skin-name == 'material-dark') {
         .e-first-button {
           left: 0;
           margin-top: $slider-btn-center-align;
@@ -586,7 +621,7 @@
           }
         }
       }
-      @else if $skin-name != 'highcontrast' {
+      @else if ($skin-name != 'highcontrast' and $skin-name != 'highcontrast-light') {
         .e-first-button {
           left: 0;
           margin-top: $slider-btn-center-align;
@@ -679,20 +714,20 @@
         left: 0;
         position: absolute;
         width: 100%;
-        @if $skin-name == 'material' {
+        @if ($skin-name == 'material' or $skin-name == 'material-dark') {
           background: $slider-handle-start-border-color;
           top: calc(50% - 1px);
         }
-        @if $skin-name == 'fabric' {
+        @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
           background: $slider-track-color;
           top: calc(50% - 2px);
         }
-        @if $skin-name == 'highcontrast' {
+        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
           background: $slider-track-color;
           border-radius: 4px;
           top: calc(50% - 4px);
         }
-        @if $skin-name == 'bootstrap' {
+        @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
           background: $slider-handle-start-border-color;
           border: 1px solid $slider-track-border-color;
           border-radius: 4px;
@@ -706,13 +741,13 @@
       }
 
       .e-handle {
-        @if $skin-name == 'material' {
+        @if ($skin-name == 'material' or $skin-name == 'material-dark') {
           margin-left: -6px;
           top: calc(50% - 6px);
         }
         @else if ($skin-name == 'bootstrap4') {
-          margin-left: -8px;
-          top: calc(50% - 8px);
+          margin-left: -7px;
+          top: calc(50% - 7px);
         }
         @else {
           margin-left: -8px;
@@ -722,7 +757,7 @@
 
       &.e-scale-both {
         .e-handle {
-          @if $skin-name == 'highcontrast' {
+          @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
             margin-left: -8px;
             top: calc(50% - 7px);
           }
@@ -730,7 +765,7 @@
 
         .e-range {
           height: $slider-range-height;
-          @if $skin-name == 'highcontrast' {
+          @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
             top: calc(50% - 2px);
           }
         }
@@ -738,16 +773,16 @@
 
       .e-range {
         height: $slider-range-height;
-        @if $skin-name == 'material' {
+        @if ($skin-name == 'material' or $skin-name == 'material-dark') {
           top: calc(50% - 1px);
         }
-        @if $skin-name == 'fabric' {
+        @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
           top: calc(50% - 2px);
         }
-        @if $skin-name == 'highcontrast' {
+        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
           top: calc(50% - 3px);
         }
-        @if ($skin-name == 'bootstrap') {
+        @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
           top: calc(50% - 4px);
         }
         @if ($skin-name == 'bootstrap4') {
@@ -779,25 +814,25 @@
       }
 
       .e-slider-track {
-        @if $skin-name == 'highcontrast' {
+        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
           background: $slider-track-color;
         }
-        @if $skin-name != 'highcontrast' {
+        @if ($skin-name != 'highcontrast' and $skin-name != 'highcontrast-light') {
           background: $slider-handle-start-border-color;
         }
         bottom: 0;
         height: 100%;
         position: absolute;
-        @if $skin-name == 'fabric' {
+        @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
           left: calc(50% - 2px);
           width: 4px;
         }
-        @if $skin-name == 'highcontrast' {
+        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
           border-radius: 4px;
           left: calc(50% - 4px);
           width: 8px;
         }
-        @if ($skin-name == 'bootstrap') {
+        @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
           border: 1px solid $slider-track-border-color;
           border-radius: 3px;
           left: calc(50% - 5px);
@@ -808,7 +843,7 @@
           left: calc(50% - 3px);
           width: 6px;
         }
-        @if $skin-name == 'material' {
+        @if ($skin-name == 'material' or $skin-name == 'material-dark') {
           left: calc(50% - 1px);
           width: 2px;
         }
@@ -826,7 +861,7 @@
         }
       }
 
-      @if $skin-name == 'material' {
+      @if ($skin-name == 'material' or $skin-name == 'material-dark') {
         .e-first-button {
           bottom: 0;
           margin-right: $slider-btn-center-align;
@@ -863,7 +898,7 @@
           }
         }
       }
-      @else if $skin-name != 'highcontrast' {
+      @else if ($skin-name != 'highcontrast' and $skin-name != 'highcontrast-light') {
         .e-first-button {
           bottom: 0;
           margin-right: $slider-btn-center-align;
@@ -948,7 +983,7 @@
         .e-slider {
           .e-handle {
             margin-bottom: $slider-v-handle-margin;
-            @if $skin-name == 'highcontrast' {
+            @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
               left: calc(50% - 9px);
             }
           }
@@ -958,11 +993,11 @@
       .e-slider {
         .e-handle {
           margin-bottom: $slider-v-handle-margin;
-          @if $skin-name == 'material' {
+          @if ($skin-name == 'material' or $skin-name == 'material-dark') {
             left: calc(50% - 6px);
           }
           @else if($skin-name == 'bootstrap4') {
-            left: calc(50% - 8px);
+            left: calc(50% - 7px);
           }
           @else {
             left: calc(50% - 8px);
@@ -970,7 +1005,7 @@
         }
 
         .e-range {
-          @if ($skin-name == 'bootstrap') {
+          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
             left: calc(50% - 4px);
             width: 8px;
           }
@@ -978,15 +1013,15 @@
             left: calc(50% - 3px);
             width: 6px;
           }
-          @if $skin-name == 'fabric' {
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
             left: calc(50% - 2px);
             width: 4px;
           }
-          @if $skin-name == 'highcontrast' {
+          @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
             left: calc(50% - 3px);
             width: 6px;
           }
-          @if $skin-name == 'material' {
+          @if ($skin-name == 'material' or $skin-name == 'material-dark') {
             left: calc(50% - 1px);
             width: 2px;
           }
@@ -1037,13 +1072,13 @@
         z-index: 10;
 
         &.e-handle-active {
-          @if $skin-name == 'highcontrast' {
+          @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
             background-color: $slider-active-handle-bg-color;
             border-color: $slider-hover-handle-color;
           }
         }
 
-        @if $skin-name == 'material' {
+        @if ($skin-name == 'material' or $skin-name == 'material-dark') {
           // sass-lint:disable-all
           cursor: -webkit-grab;
           cursor: grab;
@@ -1084,7 +1119,7 @@
         }
 
         &.e-tab-handle {
-          @if $skin-name == 'material' {
+          @if ($skin-name == 'material' or $skin-name == 'material-dark') {
             &.e-handle-start::after {
               background-color: $slider-tab-background;
               opacity: .38;
@@ -1098,12 +1133,12 @@
             }
           }
 
-          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
             border-color: $slider-tab-border-color;
           }
 
           // sass-lint:disable-all
-          @if $skin-name == 'bootstrap' {
+          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
             background-color: $slider-tab-background;
             border-color: $slider-tab-border-color;
             box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(102, 175, 233, .6);
@@ -1118,7 +1153,7 @@
       }
 
       .e-tab-track {
-        @if $skin-name == 'fabric' {
+        @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
           background-color: $slider-tab-track-color;
         }
       }
@@ -1128,7 +1163,7 @@
       &.e-scale {
         &.e-h-scale {
           .e-tick {
-            @if $skin-name != 'material' {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
               height: $tick-after-height;
               top: $tick-after-top;
             }
@@ -1140,7 +1175,7 @@
           }
 
           .e-large {
-            @if $skin-name != 'material' {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
               height: $largetick-before-height;
               top: $largetick-before-top;
             }
@@ -1149,7 +1184,7 @@
 
         &.e-v-scale {
           .e-tick {
-            @if $skin-name != 'material' {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
               left: $tick-after-left;
               width: $tick-after-height;
             }
@@ -1161,7 +1196,7 @@
           }
 
           .e-large {
-            @if $skin-name != 'material' {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
               left: $largetick-before-left;
               width: $largetick-before-height;
             }
@@ -1174,7 +1209,7 @@
       &.e-scale {
         &.e-h-scale {
           .e-tick {
-            @if $skin-name != 'material' {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
               height: $tick-before-height;
               top: $tick-before-top;
             }
@@ -1186,7 +1221,7 @@
           }
 
           .e-large {
-            @if $skin-name != 'material' {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
               height: $largetick-after-height;
               top: $largetick-after-top;
             }
@@ -1195,7 +1230,7 @@
 
         &.e-v-scale {
           .e-tick {
-            @if $skin-name != 'material' {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
               left: $tick-before-left;
               width: $tick-before-height;
             }
@@ -1207,7 +1242,7 @@
           }
 
           .e-large {
-            @if $skin-name != 'material' {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
               left: $largetick-after-left;
               width: $largetick-after-height;
             }
@@ -1219,10 +1254,10 @@
     &.e-scale-before {
       .e-scale {
         &.e-v-scale {
-          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap4') {
+          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4') {
             right: 9px;
           }
-          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
             right: 9px;
           }
         }
@@ -1232,10 +1267,10 @@
     &.e-scale-after {
       .e-scale {
         &.e-v-scale {
-          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap4') {
+          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4') {
             right: 9px;
           }
-          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
             right: 9px;
           }
         }
@@ -1246,7 +1281,7 @@
       &.e-scale {
         &.e-h-scale {
           .e-tick {
-            @if ($skin-name == 'bootstrap') {
+            @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
               height: calc(100% - 6px);
               top: -11px;
             }
@@ -1254,22 +1289,22 @@
               height: 16px;
               top: -8px;
             }
-            @if $skin-name == 'fabric' {
+            @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
               height: calc(100% - 3px);
               top: -12.5px;
             }
-            @if $skin-name == 'highcontrast' {
+            @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
               height: calc(100% - 6px);
               top: -12px;
             }
-            @if $skin-name == 'material' {
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
               background-position: center;
               height: 99%;
             }
           }
 
           .e-large {
-            @if ($skin-name == 'bootstrap') {
+            @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
               height: 100%;
               top: -8px;
             }
@@ -1277,11 +1312,11 @@
               height: 22px;
               top: -5px;
             }
-            @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+            @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
               height: calc(100% + 3px);
               top: -9px;
             }
-            @if $skin-name == 'highcontrast' {
+            @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
               height: calc(100% + 2px);
               top: -8px;
             }
@@ -1290,7 +1325,7 @@
 
         &.e-v-scale {
           .e-tick {
-            @if ($skin-name == 'bootstrap') {
+            @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
               background-position: center;
               width: 100%;
             }
@@ -1299,32 +1334,32 @@
               left: 6px;
               width: calc(100% - 12px);
             }
-            @if $skin-name == 'material' {
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
               background-position: center;
               width: 100%;
             }
-            @if $skin-name == 'fabric' {
+            @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
               left: 0;
               width: calc(100% - 2px);
             }
-            @if $skin-name == 'highcontrast' {
+            @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
               left: 2px;
               width: calc(100% - 6px);
             }
           }
 
           .e-large {
-            @if ($skin-name == 'bootstrap') {
+            @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
               width: 100%;
             }
             @if ($skin-name == 'bootstrap4') {
               left: 3px;
               width: calc(100% - 6px);
             }
-            @if $skin-name == 'material' {
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
               width: 100%;
             }
-            @if $skin-name == 'highcontrast' {
+            @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
               left: -2px;
               width: calc(100% + 3px);
             }
@@ -1346,16 +1381,16 @@
       top: $slider-scale-top;
       width: 100%;
       z-index: 1;
-      @if $skin-name != 'material' {
+      @if ($skin-name != 'material' and $skin-name != 'material-dark') {
         font-size: $slider-scale-font-size;
         margin-top: $slider-center-align;
       }
 
-      @if $skin-name == 'highcontrast' {
+      @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
         z-index: -1;
       }
 
-      @if $skin-name == 'highcontrast' {
+      @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
         &.e-tick-both {
           top: 12px;
         }
@@ -1367,8 +1402,14 @@
         outline: none;
         position: relative;
         user-select: none;
-        @if $skin-name != 'material' {
+        @if ($skin-name != 'material' and $skin-name != 'material-dark') {
           background-position: center center;
+        }
+
+        @if $skin-name == 'bootstrap4' {
+          &.e-large {
+            background-image: $slider-small-scale-tick-image;
+          }
         }
 
         .e-tick-value {
@@ -1390,34 +1431,34 @@
         left: calc(50% - 14px);
         top: 0;
         width: 28px;
-        @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap4') {
+        @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4') {
           margin-top: -2px;
         }
 
         .e-tick {
-          @if $skin-name == 'material' {
+          @if ($skin-name == 'material' or $skin-name == 'material-dark') {
             background-repeat: no-repeat;
           }
 
-          @if $skin-name != 'material' {
+          @if ($skin-name != 'material' and $skin-name != 'material-dark') {
             background-repeat: repeat-x;
           }
 
           &.e-first-tick {
-            @if $skin-name != 'material' {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
               background-position-y: center;
             }
-            @if $skin-name == 'material' {
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
               background-position-y: top;
             }
           }
 
           &.e-last-tick {
-            @if $skin-name != 'material' {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
               background-position-y: bottom;
               margin-top: 2px;
             }
-            @if $skin-name == 'material' {
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
               background-position-y: bottom;
             }
           }
@@ -1427,11 +1468,11 @@
       &.e-h-scale {
         .e-tick {
           display: inline-block;
-          @if $skin-name == 'material' {
+          @if ($skin-name == 'material' or $skin-name == 'material-dark') {
             background-repeat: no-repeat;
           }
 
-          @if $skin-name != 'material' {
+          @if ($skin-name != 'material' and $skin-name != 'material-dark') {
             background-repeat: repeat-y;
             height: 100%;
             top: 0;
@@ -1456,19 +1497,19 @@
           }
 
           &.e-first-tick {
-            @if $skin-name != 'material' {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
               background-position: left center;
             }
-            @if $skin-name == 'material' {
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
               background-position-x: left;
             }
           }
 
           &.e-last-tick {
-            @if $skin-name != 'material' {
+            @if ($skin-name != 'material' and $skin-name != 'material-dark') {
               background-position: right center;
             }
-            @if $skin-name == 'material' {
+            @if ($skin-name == 'material' or $skin-name == 'material-dark') {
               background-position-x: right;
             }
           }
@@ -1479,16 +1520,16 @@
     &.e-horizontal {
       &.e-scale-both {
         .e-scale {
-          @if $skin-name == 'fabric' {
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
             top: 12px;
           }
-          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap4') {
+          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4') {
             top: 15px;
           }
         }
 
         .e-slider-track {
-          @if $skin-name == 'fabric' {
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
             border-color: $slider-track-border-color;
             border-radius: 1px;
             border-style: solid;
@@ -1497,7 +1538,7 @@
             margin-top: -4px;
             top: calc(50% - 3px);
           }
-          @if $skin-name == 'highcontrast' {
+          @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
             border-color: $slider-tack-ticks-border-color;
             border-radius: 4px;
             border-style: solid;
@@ -1512,16 +1553,16 @@
     &.e-vertical {
       &.e-scale-both {
         .e-scale {
-          @if $skin-name == 'fabric' {
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
             right: 12px;
           }
-          @if $skin-name == 'highcontrast' {
+          @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
             right: 11px;
           }
         }
 
         .e-slider-track {
-          @if $skin-name == 'fabric' {
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
             border-color: $slider-track-border-color;
             border-radius: 1px;
             border-style: solid;
@@ -1530,7 +1571,7 @@
             margin-left: -7px;
             width: 14px;
           }
-          @if $skin-name == 'highcontrast' {
+          @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
             border-color: $slider-tack-ticks-border-color;
             border-radius: 1px;
             border-style: solid;
@@ -1542,7 +1583,7 @@
         }
 
         .e-range {
-          @if $skin-name == 'fabric' {
+          @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
             margin-left: -1px;
           }
         }
@@ -1553,7 +1594,7 @@
       &.e-vertical {
         .e-scale {
           &.e-h-scale {
-            @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+            @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' {
               margin-left: -7px;
             }
           }
@@ -1562,7 +1603,7 @@
         &.e-small-size {
           .e-scale {
             &.e-h-scale {
-              @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+              @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' {
                 margin-left: -7px;
               }
             }
@@ -1576,7 +1617,7 @@
     &.e-vertical {
       &.e-scale-both {
         .e-scale.e-v-scale {
-          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap4') {
+          @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4') {
             right: 10px;
           }
         }
@@ -1586,7 +1627,7 @@
     .e-scale.e-v-scale {
       .e-tick {
         .e-tick-value {
-          @if $skin-name == 'material' {
+          @if ($skin-name == 'material' or $skin-name == 'material-dark') {
             &.e-tick-before {
               right: 26px;
             }
@@ -1637,12 +1678,12 @@
 
   .e-control-wrapper.e-slider-container {
     .e-scale .e-tick {
-      @if $skin-name == 'material' {
+      @if ($skin-name == 'material' or $skin-name == 'material-dark') {
         visibility: hidden;
       }
 
       .e-tick-value {
-        @if $skin-name == 'material' {
+        @if ($skin-name == 'material' or $skin-name == 'material-dark') {
           visibility: visible;
         }
       }
@@ -1651,7 +1692,7 @@
 
   .e-control-wrapper.e-slider-container:hover {
     .e-scale .e-tick {
-      @if $skin-name == 'material' {
+      @if ($skin-name == 'material' or $skin-name == 'material-dark') {
         visibility: visible;
       }
     }
@@ -1659,21 +1700,21 @@
 
   .e-control-wrapper.e-slider-container:active {
     .e-scale .e-tick {
-      @if $skin-name == 'material' {
+      @if ($skin-name == 'material' or $skin-name == 'material-dark') {
         visibility: visible;
       }
     }
   }
 
   .e-slider-hover .e-scale .e-tick {
-    @if $skin-name == 'material' {
+    @if ($skin-name == 'material' or $skin-name == 'material-dark') {
       visibility: visible;
     }
   }
 
   .e-control-wrapper.e-slider-container .e-slider {
     .e-handle.e-handle-active {
-      @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap4') {
+      @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark' or $skin-name == 'bootstrap4') {
         background-color: $slider-handle-active-bg-color;
         border-color: $slider-handle-active-border-color;
       }

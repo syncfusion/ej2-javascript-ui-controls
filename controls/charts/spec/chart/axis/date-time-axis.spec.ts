@@ -452,7 +452,6 @@ describe('Chart Control', () => {
                 label = document.getElementById('container0_AxisLabel_1');
                 expect(label.childElementCount == 2).toBe(true);
                 let x: number = parseInt(label.getAttribute("x"));
-                console.log('datetime-default x: ' + x);
                 //expect(x == 120 || x == 119).toBe(true);
                 done();
             };
@@ -464,7 +463,6 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 let label: HTMLElement = document.getElementById('container0_AxisLabel_1');
                 let x: number = parseInt(label.getAttribute("x"));
-                console.log('inversed axis x: ' + x);
                 //expect(x == 796).toBe(true);
                 expect(label.childElementCount == 2).toBe(true);
                 done();
@@ -480,7 +478,6 @@ describe('Chart Control', () => {
                 label = document.getElementById('container0_AxisLabel_1');
                 expect(label.childElementCount == 2).toBe(true);
                 let x: number = parseInt(label.getAttribute("x"));
-                console.log('opposed position x: ' + x);
                 //expect(x == 120 || x == 119).toBe(true);
                 done();
             };

@@ -170,7 +170,8 @@ export class PeriodSelector {
                     }));
                     getElement('customRange').insertAdjacentElement('afterbegin', (createElement('span', {
                         id: 'dateIcon', className: 'e-input-group-icon e-range-icon e-btn-icon e-icons',
-                        styles: (this.rootControl.theme === 'Material') ? 'padding-top: 4px' : 'padding-top: 5px'
+                        styles: 'font-size: 16px; min-height: 0px; margin: -3px 0 0 0; outline: none; min-width: 30px'
+						// fix for date range icon alignment issue.
                     })));
                     document.getElementById('customRange').onclick = () => {
                         this.datePicker.show(<HTMLElement>getElement('customRange'));

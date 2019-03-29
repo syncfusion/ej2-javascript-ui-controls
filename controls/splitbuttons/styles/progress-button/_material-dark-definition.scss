@@ -2,6 +2,7 @@
 $progress-btn-color: rgba($grey-black, .87) !default;
 $progress-btn-bgcolor: rgba($grey-black, .2) !default;
 $progress-btn-bgcolor-normal: rgba($grey-black, .2) !default;
+$progress-btn-warning-progress-color: $progress-btn-bgcolor !default;
 $progress-btn-circle-opacity: 0 !default;
 
 $progress-btn-transition: all .3s linear !default;

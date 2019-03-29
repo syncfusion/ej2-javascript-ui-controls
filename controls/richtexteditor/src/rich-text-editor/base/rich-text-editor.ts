@@ -1,7 +1,7 @@
 import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, select, detach } from '@syncfusion/ej2-base';
 import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';
 import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';
-import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, compile, append, extend, debounce, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { getScrollableParent } from '@syncfusion/ej2-popups';
 import { RichTextEditorModel } from './rich-text-editor-model';
 import * as events from '../base/constant';
@@ -346,7 +346,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public enableHtmlEncode: boolean;
     /**    
      * Specifies the height of the RichTextEditor component.    
-     * @default auto    
+     * @default "auto"    
      */
     @Property('auto')
     public height: string | number;
@@ -604,6 +604,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public valueContainer: HTMLTextAreaElement;
     private originalElement: HTMLElement;
     private clickPoints: { [key: string]: number };
+    private initialValue: string;
 
     constructor(options?: RichTextEditorModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
@@ -687,6 +688,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     protected preRender(): void {
         this.clickPoints = { clientX: 0, clientY: 0 };
+        this.initialValue = this.value;
         this.serviceLocator = new ServiceLocator;
         this.initializeServices();
         this.setContainer();
@@ -698,8 +700,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.originalElement = this.element.cloneNode(true) as HTMLElement;
         if (this.value === null || this.valueTemplate !== null) {
             this.setValue();
-            this.element.innerHTML = '';
         }
+        this.element.innerHTML = '';
         let invalidAttr: string[] = ['class', 'style', 'id', 'ejs-for'];
         let htmlAttr: { [key: string]: string; } = {};
         for (let a: number = 0; a < this.element.attributes.length; a++) {
@@ -997,6 +999,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             detach(this.element);
             if (this.originalElement.innerHTML.trim() !== '') {
                 this.valueContainer.value = this.originalElement.innerHTML.trim();
+                this.setProperties({ value: (!isNullOrUndefined(this.initialValue) ? this.initialValue : null) }, true);
             } else {
                 this.valueContainer.value = '';
             }
@@ -1004,6 +1007,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         } else {
             if (this.originalElement.innerHTML.trim() !== '') {
                 this.element.innerHTML = this.originalElement.innerHTML.trim();
+                this.setProperties({ value: (!isNullOrUndefined(this.initialValue) ? this.initialValue : null) }, true);
             } else {
                 this.element.innerHTML = '';
             }

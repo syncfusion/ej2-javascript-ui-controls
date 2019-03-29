@@ -2,8 +2,8 @@
  * FileManager spec document
  */
 import { FileManager } from '../../../src/file-manager/base/file-manager';
-import {NavigationPane} from '../../../src/file-manager/layout/navigation-pane';
-import {DetailsView} from '../../../src/file-manager/layout/details-view';
+import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane';
+import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement, Browser, Instance } from '@syncfusion/ej2-base';
 import { toolbarItems, toolbarItems1, data1, data2, data3, data4, data5, data10, data11, data12 } from '../data';
@@ -38,10 +38,10 @@ describe('FileManager control LargeIcons view', () => {
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             keyboardEventArgs = {
-                preventDefault: (): void => {},
+                preventDefault: (): void => { },
                 action: null,
                 target: null,
-                stopImmediatePropagation: (): void => {},
+                stopImmediatePropagation: (): void => { },
             };
             mouseEventArgs = {
                 preventDefault: (): void => { },
@@ -147,6 +147,7 @@ describe('FileManager control LargeIcons view', () => {
     });
     describe('for LargeIcons View', () => {
         let keyboardEventArgs: any;
+        let tapEvent: any;
         let feObj: any;
         let ele: HTMLElement;
         let originalTimeout: any;
@@ -172,11 +173,15 @@ describe('FileManager control LargeIcons view', () => {
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             keyboardEventArgs = {
-                preventDefault: (): void => {},
+                preventDefault: (): void => { },
                 action: null,
                 target: null,
-                stopImmediatePropagation: (): void => {},
-            };            
+                stopImmediatePropagation: (): void => { },
+            };
+            tapEvent = {
+                originalEvent: keyboardEventArgs,
+                tapCount: 1
+            };
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 done();
@@ -1067,7 +1072,7 @@ describe('FileManager control LargeIcons view', () => {
             let neli: any = document.getElementById('file_largeicons').querySelectorAll('li');
             expect(neli[0].classList.contains('e-active')).toBe(true);
             expect(neli[0].classList.contains('e-focus')).toBe(false);
-            expect(neli[0].querySelector('.e-frame').classList.contains('e-check')).toBe(true);            
+            expect(neli[0].querySelector('.e-frame').classList.contains('e-check')).toBe(true);
             expect(neli[1].classList.contains('e-active')).toBe(false);
             expect(neli[1].classList.contains('e-focus')).toBe(true);
             expect(neli[1].querySelector('.e-frame').classList.contains('e-check')).toBe(false);
@@ -1113,7 +1118,7 @@ describe('FileManager control LargeIcons view', () => {
             let neli: any = document.getElementById('file_largeicons').querySelectorAll('li');
             expect(neli[0].classList.contains('e-active')).toBe(true);
             expect(neli[0].classList.contains('e-focus')).toBe(false);
-            expect(neli[0].querySelector('.e-frame').classList.contains('e-check')).toBe(true);            
+            expect(neli[0].querySelector('.e-frame').classList.contains('e-check')).toBe(true);
             expect(neli[1].classList.contains('e-active')).toBe(false);
             expect(neli[1].classList.contains('e-focus')).toBe(true);
             expect(neli[1].querySelector('.e-frame').classList.contains('e-check')).toBe(false);
@@ -1159,7 +1164,7 @@ describe('FileManager control LargeIcons view', () => {
             let neli: any = document.getElementById('file_largeicons').querySelectorAll('li');
             expect(neli[0].classList.contains('e-active')).toBe(true);
             expect(neli[0].classList.contains('e-focus')).toBe(false);
-            expect(neli[0].querySelector('.e-frame').classList.contains('e-check')).toBe(true);            
+            expect(neli[0].querySelector('.e-frame').classList.contains('e-check')).toBe(true);
             expect(neli[1].classList.contains('e-active')).toBe(false);
             expect(neli[1].classList.contains('e-focus')).toBe(true);
             expect(neli[1].querySelector('.e-frame').classList.contains('e-check')).toBe(false);
@@ -1207,7 +1212,7 @@ describe('FileManager control LargeIcons view', () => {
             let neli: any = document.getElementById('file_largeicons').querySelectorAll('li');
             expect(neli[0].classList.contains('e-active')).toBe(true);
             expect(neli[0].classList.contains('e-focus')).toBe(false);
-            expect(neli[0].querySelector('.e-frame').classList.contains('e-check')).toBe(true);            
+            expect(neli[0].querySelector('.e-frame').classList.contains('e-check')).toBe(true);
             expect(neli[1].classList.contains('e-active')).toBe(false);
             expect(neli[1].classList.contains('e-focus')).toBe(true);
             expect(neli[1].querySelector('.e-frame').classList.contains('e-check')).toBe(false);
@@ -1304,6 +1309,28 @@ describe('FileManager control LargeIcons view', () => {
                 expect((li4[1] as Element).classList.contains('e-active')).toBe(true);
                 done();
             }, 500);
+        });
+        it('layout context menu with up and down arrow test case', (done: Function) => {
+            let el: any = document.getElementById(feObj.element.id + '_contextmenu');
+            let li: any = document.getElementById('file_largeicons');
+            keyboardEventArgs.target = li;
+            tapEvent.tapCount = 1;
+            feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+            let sourceElement: any = el.ej2_instances[0];
+            let evt = document.createEvent('MouseEvents')
+            evt.initEvent('contextmenu', true, true);
+            li.dispatchEvent(evt);         
+            setTimeout( function (){
+                keyboardEventArgs.action = "uparrow";
+                feObj.contextmenuModule.keyActionHandler(keyboardEventArgs);
+                expect(el.offsetHeight !== 0).toBe(true)
+                expect(el.offsetWidth !== 0).toBe(true)
+                keyboardEventArgs.action = "downarrow";
+                feObj.contextmenuModule.keyActionHandler(keyboardEventArgs);
+                expect(el.offsetHeight !== 0).toBe(true)
+                expect(el.offsetWidth !== 0).toBe(true)
+                done();
+            });          
         });
     });
 });

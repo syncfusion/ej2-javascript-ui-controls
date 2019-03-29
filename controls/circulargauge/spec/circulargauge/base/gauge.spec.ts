@@ -346,7 +346,7 @@ describe('Circular-Gauge Control', () => {
                 svg = document.getElementById('container_CircularGaugeTitle');
                 expect(svg != null).toBe(true);
                 svg = document.getElementById('container_Axis_Major_TickLine_0_20');
-                expect(svg.getAttribute('stroke')).toEqual('#FFFFFF');
+                expect(svg.getAttribute('stroke')).toEqual('#C8C8C8');
                 done();
             };
             gauge.axes[0].pointers[0].type = 'Needle';

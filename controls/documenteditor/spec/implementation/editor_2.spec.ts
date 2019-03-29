@@ -238,8 +238,8 @@ describe('Delete with history preservation-2', () => {
     });
     it('single delete at field begin', () => {
         editor.openBlank();
-        editor.editorModule.insertText('www.google.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('www.google.com');
+        editor.editorModule.insertText(' ');
         editor.selection.handleHomeKey();
         let start = editor.selection.start.location;
         editor.editorModule.onDelete();
@@ -283,18 +283,18 @@ describe('Delete with history preservation-3', () => {
     it('selected content removal containing paragraph,field,table using delete', () => {
         editor.viewer.onDocumentChanged([createDocument()]);
         editor.selection.moveToLineEnd();
-        editor.editorModule.insertText('www.google.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('www.google.com');
+        editor.editorModule.insertText(' ');
         editor.editor.insertTable(2, 3);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText(' ');
         editor.selection.selectAll();
         expect(() => { editor.editorModule.onDelete(); }).not.toThrowError();
     });
     it('delete at paragraph end', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Adventure Work Cycles', false);
+        editor.editorModule.insertText('Adventure Work Cycles');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('www.google.com', false);
+        editor.editorModule.insertText('www.google.com');
         editor.selection.handleUpKey();
         editor.selection.handleEndKey();
         editor.selection.handleLeftKey();
@@ -306,7 +306,7 @@ describe('Delete with history preservation-3', () => {
     it('delete at paragraph end', () => {
         editor.openBlank();
         editor.editorModule.insertTable(2, 2);
-        editor.editorModule.insertText('Adventure Work Cycles', false);
+        editor.editorModule.insertText('Adventure Work Cycles');
         editor.selection.handleHomeKey();
         editor.selection.handleShiftEndKey();
         expect(() => { editor.editorModule.onDelete(); }).not.toThrowError();
@@ -352,9 +352,9 @@ describe('Delete with history preservation-4', () => {
     });
     it('delete with different inline ', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Adv', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Adv', false);
+        editor.editorModule.insertText('Adv');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Adv');
         editor.selection.handleControlShiftLeftKey();
         editor.selection.toggleBold();
         editor.selection.handleLeftKey();
@@ -385,9 +385,9 @@ describe('Delete and paste with history preservation', () => {
     });
     it('paste testing inside paragraph', () => {
         editor.openBlank()
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('Adventure');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('Adventure');
         editor.editorModule.onEnter();
         editor.enableLocalPaste = true;
         editor.selection.selectAll();
@@ -401,9 +401,9 @@ describe('Delete and paste with history preservation', () => {
     });
     it('paste testing inside paragraph', () => {
         editor.openBlank()
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('Adventure');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('Adventure');
         editor.editorModule.onEnter();
         editor.enableLocalPaste = true;
         editor.selection.selectAll();
@@ -414,7 +414,7 @@ describe('Delete and paste with history preservation', () => {
     it('MultiSelection in insert text testing', () => {
         editor.openBlank()
         let viewer: LayoutViewer = editor.viewer;
-        editor.editorModule.insertText('Adventure Work Cycles', false);
+        editor.editorModule.insertText('Adventure Work Cycles');
         let event: any;
         event = { offsetX: 238, offsetY: 123, preventDefault: function () { }, ctrlKey: true, which: 1 };
         viewer.onMouseDownInternal(event);
@@ -432,7 +432,7 @@ describe('Delete and paste with history preservation', () => {
         viewer.onMouseMoveInternal(event);
         event = { offsetX: 374, offsetY: 125, preventDefault: function () { }, ctrlKey: true, which: 1 };
         viewer.onMouseUpInternal(event);
-        expect(() => { editor.editorModule.insertText('A', false); }).not.toThrowError();
+        expect(() => { editor.editorModule.insertText('A'); }).not.toThrowError();
         editor.editorHistory.undo();
         editor.editorHistory.redo();
     });
@@ -473,7 +473,7 @@ describe('Delete and paste with history preservation', () => {
     it('Skipbackspace testing if nextblock is table', () => {
         editor.openBlank()
         let viewer: LayoutViewer = editor.viewer;
-        editor.editorModule.insertText('Adventure Work Cycles', false);
+        editor.editorModule.insertText('Adventure Work Cycles');
         editor.editorModule.onEnter();
         editor.editor.insertTable(2, 2);
         let event: any;
@@ -491,7 +491,7 @@ describe('Delete and paste with history preservation', () => {
     it('insert text skip testing if selection end is inside table', () => {
         editor.openBlank()
         let viewer: LayoutViewer = editor.viewer;
-        editor.editorModule.insertText('Adventure Work Cycles', false);
+        editor.editorModule.insertText('Adventure Work Cycles');
         editor.editorModule.onEnter();
         editor.editor.insertTable(2, 2);
         let event: any;
@@ -500,12 +500,12 @@ describe('Delete and paste with history preservation', () => {
         //center alignment Property
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
         editor.viewer.onKeyDownInternal(event);
-        expect(() => { editor.editorModule.insertText('A', false); }).not.toThrowError();
+        expect(() => { editor.editorModule.insertText('A'); }).not.toThrowError();
     });
     it('insert text skip testing if selection end is inside table', () => {
         editor.openBlank()
         let viewer: LayoutViewer = editor.viewer;
-        editor.editorModule.insertText('Adventure Work Cycles', false);
+        editor.editorModule.insertText('Adventure Work Cycles');
         editor.editorModule.onEnter();
         editor.editor.insertTable(2, 2);
         let event: any;
@@ -521,7 +521,7 @@ describe('Delete and paste with history preservation', () => {
     it('insert text  testing at different format', () => {
         editor.openBlank()
         let viewer: LayoutViewer = editor.viewer;
-        editor.editorModule.insertText('Adventure Work Cycles', false);
+        editor.editorModule.insertText('Adventure Work Cycles');
         editor.selection.selectAll();
         let event: any;
         event = { keyCode: 66, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
@@ -538,7 +538,7 @@ describe('Delete and paste with history preservation', () => {
         inline.characterFormat.bold = false;
         inline.characterFormat.italic = false;
         inline.characterFormat.underline = 'None';
-        expect(() => { editor.editorModule.insertText('A', false); }).not.toThrowError();
+        expect(() => { editor.editorModule.insertText('A'); }).not.toThrowError();
     });
 });
 describe('Delete Validation ', () => {
@@ -574,9 +574,9 @@ describe('Delete Validation ', () => {
         editor.selection.handleDownKey();
         editor.selection.handleDownKey();
         editor.editorModule.onDelete();
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('Sample');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('Sample');
         editor.selection.moveUp();
         expect(() => { editor.editorModule.onDelete(); }).not.toThrowError();
         editor.editorHistory.undo();
@@ -587,7 +587,7 @@ describe('Delete Validation ', () => {
         editor.viewer.onKeyDownInternal(event);
         event = { keyCode: 74, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
-        editor.editorModule.insertText('s', false);
+        editor.editorModule.insertText('s');
         event = { keyCode: 9, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
         event = { keyCode: 9, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -672,7 +672,7 @@ describe('Delete Validation ', () => {
         let cell: TableCellWidget = row.childWidgets[(0)] as TableCellWidget;
         let value = (editorModule as any).getCharacterFormatValueOfCell(cell, editor.selection, true, 'bold');
         expect(value).toBe(true);
-        editor.editorModule.insertText('s', false);
+        editor.editorModule.insertText('s');
         (editorModule as any).getCharacterFormatValueOfCell(cell, editor.selection, true, 'bold');
         expect(value).toBe(true);
         (editorModule as any).getParaFormatValueInCell(cell, editor.selection, 'leftIndent', true);
@@ -705,7 +705,7 @@ describe('backspace with history preservation-1', () => {
     });
     it('single backspace at inline start', () => {
         editor.openBlank();
-        editor.editorModule.insertText('s', false)
+        editor.editorModule.insertText('s')
         editor.editorModule.onBackSpace();
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
@@ -719,8 +719,8 @@ describe('backspace with history preservation-1', () => {
     });
     it('single backspace at field end', () => {
         editor.openBlank();
-        editor.editorModule.insertText('www.google.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('www.google.com');
+        editor.editorModule.insertText(' ');
         editor.editorModule.onBackSpace();
         editor.editorModule.onBackSpace();
         editor.editorModule.onBackSpace();
@@ -759,8 +759,8 @@ describe('backspace with history preservation-2', () => {
     it('selected content removal containing paragraph,field,table using onBackSpace', () => {
         editor.openBlank();
         editor.selection.moveToLineEnd();
-        editor.editorModule.insertText('www.google.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('www.google.com');
+        editor.editorModule.insertText(' ');
         editor.editor.insertTable(2, 3);
         editor.selection.selectAll();
         expect(() => { editor.editorModule.onBackSpace(); }).not.toThrowError();
@@ -790,9 +790,9 @@ describe('backspace with history preservation-3', () => {
     });
     it('backspace at paragraph start', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Adventure Work Cycles', false);
+        editor.editorModule.insertText('Adventure Work Cycles');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('www.google.com', false);
+        editor.editorModule.insertText('www.google.com');
         editor.selection.handleHomeKey();
         editor.editorModule.onBackSpace();
         editor.selection.handleHomeKey();
@@ -803,7 +803,7 @@ describe('backspace with history preservation-3', () => {
     });
     it('backspace at end paragraph is inside table', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Adventure Work Cycles', false);
+        editor.editorModule.insertText('Adventure Work Cycles');
         editor.editor.insertTable(2, 2);
         editor.selection.handleUpKey();
         let event: any = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
@@ -850,7 +850,7 @@ describe('backspace with history preservation in table', () => {
     it('backspace of nested table cell', () => {
         editor.openBlank();
         editor.editorModule.insertTable(2, 2);
-        editor.editorModule.insertText('s', false);
+        editor.editorModule.insertText('s');
         editor.editorModule.insertTable(2, 2);
         let event: any = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
         editor.viewer.onKeyDownInternal(event);
@@ -863,7 +863,7 @@ describe('backspace with history preservation in table', () => {
         editor.openBlank();
         editor.editorHistory.isUndoing = false;
         editor.editorModule.insertTable(2, 2);
-        editor.editorModule.insertText('s', false);
+        editor.editorModule.insertText('s');
         let event: any = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
         editor.viewer.onKeyDownInternal(event);
         editor.editorModule.onBackSpace();
@@ -913,8 +913,8 @@ describe('Enter validation with history preservation-1', () => {
     });
     it('Enter inside hyperlink', () => {
         editor.openBlank()
-        editor.editorModule.insertText('www.google.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('www.google.com');
+        editor.editorModule.insertText(' ');
         editor.selection.handleLeftKey();
         editor.selection.handleControlLeftKey();
         editor.editorModule.onEnter();
@@ -973,8 +973,8 @@ describe('shift Enter and tab key validation with history preservation-1', () =>
         editor.selection.handleControlLeftKey();
         let event: any = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
         editor.viewer.onKeyDownInternal(event);
-        editor.editorModule.insertText('s', false);
-        expect(() => { editor.editorModule.insertText('s', false); }).not.toThrowError();
+        editor.editorModule.insertText('s');
+        expect(() => { editor.editorModule.insertText('s'); }).not.toThrowError();
     });
 });
 describe('shift Enter and tab key validation with history preservation-2', () => {
@@ -1084,7 +1084,7 @@ describe('Enter & insert Image validation with history preservation-2', () => {
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
         editor.selection.characterFormat.fontFamily = "Verdana";
-        editor.editorModule.insertText('s', false);
+        editor.editorModule.insertText('s');
         expect(viewer.pages.length).not.toBe(0);
     });
 });
@@ -1115,20 +1115,20 @@ describe('enter and tab key behaviour validation', () => {
         }, 1000);
     });
     it('Enter key character format validation', () => {
-        editor.editorModule.insertText('Adfff', false);
+        editor.editorModule.insertText('Adfff');
         editor.selection.handleShiftHomeKey();
         editor.selection.toggleBold();
         editor.selection.toggleItalic();
         let inline1 = editor.selection.characterFormat;
         editor.selection.handleEndKey()
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Adfff', false);
+        editor.editorModule.insertText('Adfff');
         editor.selection.handleShiftHomeKey();
         let inline2 = editor.selection.characterFormat;
         expect(inline1).toEqual(inline2);
     });
     it('Shift Enter cursor validation', () => {
-        editor.editorModule.insertText('x', false);
+        editor.editorModule.insertText('x');
         let x = editor.selection.start.location.x;
         editor.editorModule.handleShiftEnter();
         let y = editor.selection.start.location.x;
@@ -1219,7 +1219,7 @@ describe('Text insert behaviour validation with history preservation-1', () => {
 
         editor.openBlank();
         let start = editor.selection.start.location;
-        editor.editorModule.insertText('s', false);
+        editor.editorModule.insertText('s');
         let end = editor.selection.start.location;
         editor.editorHistory.undo();
         editor.editorHistory.redo();
@@ -1228,7 +1228,7 @@ describe('Text insert behaviour validation with history preservation-1', () => {
     it('text insert at start of inline', () => {
         editor.viewer.onDocumentChanged([createDocument()]);
         let start = editor.selection.start.location;
-        editor.editorModule.insertText('s', false);
+        editor.editorModule.insertText('s');
         let end = editor.selection.start.location;
         editor.editorHistory.undo();
         editor.editorHistory.redo();
@@ -1238,7 +1238,7 @@ describe('Text insert behaviour validation with history preservation-1', () => {
         editor.viewer.onDocumentChanged([createDocument()]);
         editor.selection.moveToLineEnd();
         let start = editor.selection.start.location;
-        editor.editorModule.insertText('s', false);
+        editor.editorModule.insertText('s');
         let end = editor.selection.start.location;
         editor.editorHistory.undo();
         editor.editorHistory.redo();
@@ -1270,28 +1270,28 @@ describe('Text insert behaviour validation with history preservation-2', () => {
     it('insert Text at field end validation', () => {
         editor.openBlank();
         let event: any;
-        editor.editorModule.insertText('www.syncfusion.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('www.syncfusion.com');
+        editor.editorModule.insertText(' ');
         let viewer: LayoutViewer = editor.viewer;
         event = { keyCode: 37, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
         let inline = editor.selection.start.paragraph.getInline(editor.selection.start.offset, 0).element;
         inline = inline.clone();
-        editor.editorModule.insertText('s', false);
+        editor.editorModule.insertText('s');
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
     });
     it('insert Text at field begin validation', () => {
         editor.openBlank();
         let event: any;
-        editor.editorModule.insertText('www.syncfusion.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('www.syncfusion.com');
+        editor.editorModule.insertText(' ');
         let viewer: LayoutViewer = editor.viewer;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
         let inline = editor.selection.start.paragraph.getInline(editor.selection.start.offset, 0).element;
         inline = inline.clone();
-        editor.editorModule.insertText('s', false);
+        editor.editorModule.insertText('s');
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
         expect(viewer.pages.length).not.toBe(0);
@@ -1299,8 +1299,8 @@ describe('Text insert behaviour validation with history preservation-2', () => {
     it('insert Text at field seperator  validation', () => {
         editor.openBlank();
         let event: any;
-        editor.editorModule.insertText('www.syncfusion.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('www.syncfusion.com');
+        editor.editorModule.insertText(' ');
         let viewer: LayoutViewer = editor.viewer;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
@@ -1310,7 +1310,7 @@ describe('Text insert behaviour validation with history preservation-2', () => {
         viewer.onKeyDownInternal(event);
         let inline = editor.selection.start.paragraph.getInline(editor.selection.start.offset, 0).element;
         inline = inline.clone();
-        editor.editorModule.insertText('s', false);
+        editor.editorModule.insertText('s');
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
         expect(viewer.pages.length).not.toBe(0);
@@ -1341,7 +1341,7 @@ describe('Insert Text and Insert table undo redo', () => {
         }, 1000);
     });
     it('In backward selection insert hyperlink validation in Multiple paragraph', () => {
-        editor.editorModule.insertText('Syncfusion', true);
+        editor.editorModule.insertTextInternal('Syncfusion', true);
         editor.editorModule.insertTable(2, 3);
         editor.viewer.pages[0].bodyWidgets[0].childWidgets.length
         expect(editor.viewer.pages[0].bodyWidgets[0].childWidgets.length).toBe(3);
@@ -1399,8 +1399,8 @@ describe('Auto format URL on space', (): void => {
     });
     it('format URL on space at end', (): void => {
         editor.openBlank()
-        editor.editorModule.insertText('http://syncfusion.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('http://syncfusion.com');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.start.currentWidget.children.length).toBe(6);
     });
     it('undo validation', () => {
@@ -1422,7 +1422,7 @@ describe('Auto format URL on space', (): void => {
     });
     it('format URL without text validation', (): void => {
         editor.openBlank()
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText(' ');
         expect(editor.selection.start.currentWidget.children.length).toBe(1);
     });
     it('format URL without text with multiple text validation', (): void => {
@@ -1432,7 +1432,7 @@ describe('Auto format URL on space', (): void => {
         editor.selection.start.currentWidget.children.push(text);
         text.line = editor.selection.start.currentWidget;
         editor.selection.moveNextPosition();
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText(' ');
         expect(editor.selection.start.currentWidget.children.length).toBe(2);
     });
 });
@@ -1459,32 +1459,32 @@ describe('Auto format URL on space', (): void => {
     });
     it('format URL on space with out hyperlink', (): void => {
         editor.openBlank()
-        editor.editorModule.insertText('syncfusion.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('syncfusion.com');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.start.currentWidget.children.length).toBe(1);
     });
     it('Format url on space with https', (): void => {
         editor.openBlank()
-        editor.editorModule.insertText('https://syncfusion.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('https://syncfusion.com');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.start.currentWidget.children.length).toBe(6);
     });
     it('Format url on space key without https', (): void => {
         editor.openBlank()
-        editor.editorModule.insertText('www.syncfusion.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('www.syncfusion.com');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.start.currentWidget.children.length).toBe(6);
     });
     it('Format url on space key with mailto', (): void => {
         editor.openBlank()
-        editor.editorModule.insertText('mailto:support@syncfusion.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('mailto:support@syncfusion.com');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.start.currentWidget.children.length).toBe(6);
     });
     it('Format mail on space without mailto', (): void => {
         editor.openBlank()
-        editor.editorModule.insertText('support@syncfusion.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('support@syncfusion.com');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.start.currentWidget.children.length).toBe(6);
     });
 });
@@ -1511,8 +1511,8 @@ describe('Auto format URL on Enter ,tab, shift & enter', () => {
     });
     it('Format url on tab key at end', (): void => {
         editor.openBlank()
-        editor.editorModule.insertText('https://syncfusion.com', false);
-        editor.editorModule.insertText('\t', false);
+        editor.editorModule.insertText('https://syncfusion.com');
+        editor.editorModule.insertText('\t');
         expect('').toBe('');
         //expect(editor.selection.start.paragraph.inlines.length).toBe(6);
     });
@@ -1521,25 +1521,25 @@ describe('Auto format URL on Enter ,tab, shift & enter', () => {
         editor.selection.selectAll();
         editor.selection.toggleBold();
         editor.selection.handleEndKey();
-        editor.editorModule.insertText('s', false);
+        editor.editorModule.insertText('s');
         editor.selection.handleLeftKey();
         editor.selection.handleControlShiftRightKey();
         editor.selection.toggleBold();
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('https://syncfusion.com', false);
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('https://syncfusion.com');
         editor.selection.handleControlShiftLeftKey();
         editor.selection.handleControlShiftLeftKey();
         editor.selection.handleControlShiftLeftKey();
         editor.selection.handleControlShiftLeftKey();
         editor.selection.handleControlShiftLeftKey();
         editor.selection.handleEndKey();
-        editor.editorModule.insertText('\t', false);
+        editor.editorModule.insertText('\t');
         expect('').toBe('');
         //expect(editor.selection.start.paragraph.inlines.length).toBe(6);
     });
     it('Format url on enter key', (): void => {
         editor.openBlank();
-        editor.editorModule.insertText('http://syncfusion.com', false);
+        editor.editorModule.insertText('http://syncfusion.com');
         editor.editorModule.onEnter();
         expect(editor.selection.start.currentWidget.children.length).toBe(0);
     });
@@ -1567,13 +1567,13 @@ describe('Auto format URL on Enter ,tab, shift & enter', () => {
     });
     it('Format url on enter key with https', (): void => {
         editor.openBlank()
-        editor.editorModule.insertText('https://syncfusion.com', false);
+        editor.editorModule.insertText('https://syncfusion.com');
         editor.editorModule.onEnter();
         expect(editor.selection.start.currentWidget.children.length).toBe(0);
     });
     it('Format url on enter key without https', (): void => {
         editor.openBlank()
-        editor.editorModule.insertText('www.syncfusion.com', false);
+        editor.editorModule.insertText('www.syncfusion.com');
         editor.editorModule.onEnter();
         expect(editor.selection.start.currentWidget.children.length).toBe(0);
     });
@@ -1601,20 +1601,20 @@ describe('Auto format URL on Enter ,tab, shift & enter', () => {
     });
     it('Format url on enter key with mailto', (): void => {
         editor.openBlank()
-        editor.editorModule.insertText('mailto:support@syncfusion.com', false);
+        editor.editorModule.insertText('mailto:support@syncfusion.com');
         editor.editorModule.onEnter();
         expect(editor.selection.start.currentWidget.children.length).toBe(0);
     });
     it('Format mail on enter key without mailto', (): void => {
         editor.openBlank()
-        editor.editorModule.insertText('support@syncfusion.com', false);
+        editor.editorModule.insertText('support@syncfusion.com');
         editor.editorModule.onEnter();
         expect(editor.selection.start.currentWidget.children.length).toBe(0);
     });
     // it('Format url on shift + enter', (): void => {
     //     editor.openBlank()
-    //     editor.editorModule.insertText('http://syncfusion.com', false);
-    //     editor.editorModule.insertText('\v', false);
+    //     editor.editorModule.insertText('http://syncfusion.com');
+    //     editor.editorModule.insertText('\v');
     //     expect(editor.selection.start.currentWidget.children.length).toBe(6);
     // });
 });
@@ -1642,8 +1642,8 @@ describe('HyperLink Navigation validation', () => {
     it('Hyperlink navigation on enter testing', () => {
         editor.openBlank()
         let event: any;
-        editor.editorModule.insertText('www.google.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('www.google.com');
+        editor.editorModule.insertText(' ');
         let viewer: LayoutViewer = editor.viewer;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
@@ -1661,8 +1661,8 @@ describe('HyperLink Navigation validation', () => {
     it('Hyperlink navigation on enter testing with mailto', () => {
         editor.openBlank()
         let event: any;
-        editor.editorModule.insertText('mailto:document@gmail.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('mailto:document@gmail.com');
+        editor.editorModule.insertText(' ');
         let viewer: LayoutViewer = editor.viewer;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
@@ -1753,8 +1753,8 @@ describe('HyperLink Navigation validation', () => {
     it('remove hyperlink validation', () => {
         editor.openBlank()
         let event: any;
-        editor.editorModule.insertText('www.google.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('www.google.com');
+        editor.editorModule.insertText(' ');
         let viewer: LayoutViewer = editor.viewer;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         viewer.onKeyDownInternal(event);
@@ -1871,7 +1871,7 @@ describe('insert column testing with selection is not empty', () => {
     // });
     it('insert text with different format validation', () => {
         editor.openBlank()
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('Adventure');
         editor.selection.selectAll();
         editor.selection.toggleBold();
         editor.selection.toggleItalic();
@@ -1884,20 +1884,20 @@ describe('insert column testing with selection is not empty', () => {
         editor.viewer.onKeyDownInternal(event);
         editor.selection.characterFormat.italic = false;
         editor.selection.characterFormat.bold = false;
-        editor.editorModule.insertText('A', false);
+        editor.editorModule.insertText('A');
     });
     it('Empty line selection testing', () => {
         editor.openBlank()
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('Adventure');
         editor.editorModule.onEnter();
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('Adventure');
         editor.editorModule.onEnter();
         editor.editorModule.onEnter();
         editor.editorModule.onEnter();
         editor.editorModule.onEnter();
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('Adventure');
         let event: any;
         event = { keyCode: 36, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
@@ -1941,10 +1941,10 @@ describe('insert column testing with selection is not empty', () => {
     it('editaction 2 validation', () => {
         editor.openBlank()
         editor.editorModule.insertTable(2, 2);
-        editor.editorModule.insertText('s', false);
+        editor.editorModule.insertText('s');
         let event: any = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
         editor.viewer.onKeyDownInternal(event);
-        editor.editorModule.insertText('s', false);
+        editor.editorModule.insertText('s');
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
     });
@@ -2429,7 +2429,7 @@ describe('paragraph format apply and removal onsingle backspace', () => {
         event = { keyCode: 35, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Adventure Works Cycles', false);
+        editor.editorModule.insertText('Adventure Works Cycles');
         editor.selection.selectAll();
         editor.editor.applyNumbering('1%', 'Arabic');
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
@@ -2462,39 +2462,39 @@ describe('Selected content replace tesing-1', () => {
     });
     it('text insert at empty line widget', () => {
         editor.openBlank();
-        editor.editorModule.insertText('s', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('www.google.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('s');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('www.google.com');
+        editor.editorModule.insertText(' ');
         editor.selection.handleHomeKey();
         editor.selection.handleRightKey();
         editor.selection.handleRightKey();
         editor.selection.handleRightKey();
         editor.selection.handleShiftHomeKey();
-        editor.editorModule.insertText('s', false);
+        editor.editorModule.insertText('s');
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
         expect(() => { editor.editorHistory.redo(); }).not.toThrowError();
     });
     it('text insert at empty line widget', () => {
         editor.openBlank();
-        editor.editorModule.insertText('www.google.com', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('s', false);
+        editor.editorModule.insertText('www.google.com');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('s');
         editor.selection.handleLeftKey();
         editor.selection.handleLeftKey();
         editor.selection.handleLeftKey();
         editor.selection.handleLeftKey();
         editor.selection.handleShiftEndKey();
-        editor.editorModule.insertText('s', false);
+        editor.editorModule.insertText('s');
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
     });
     it('selection containing table and paragraph', () => {
         editor.openBlank();
         editor.editorModule.insertTable(2, 2);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('s', false);
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('s');
         editor.selection.selectAll();
-        editor.editorModule.insertText('s', false);
+        editor.editorModule.insertText('s');
         expect(() => { editor.editorHistory.undo(); }).not.toThrowError();
     });
 });

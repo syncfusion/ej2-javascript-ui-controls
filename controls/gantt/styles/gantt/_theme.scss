@@ -4,6 +4,12 @@
   .e-gantt {
     .e-gantt-splitter {
       border-color: $gantt-header-border-color;
+      border-radius: $gantt-header-border-radius;
+    }
+
+    .e-gantt-toolbar + .e-gantt-splitter {
+      border-top-left-radius: $gantt-splitter-border-top-left-radius;
+      border-top-right-radius: $gantt-splitter-border-top-right-radius;
     }
 
     .e-gantt-dialog {
@@ -33,23 +39,43 @@
             background: $gantt-tab-selection-indicator-color;
           }
 
-          .e-toolbar-item .e-tab-wrap:hover {
+          .e-toolbar-item.e-active {
+            background-color: $gantt-dialog-active-tab-background;
+
+            .e-tab-wrap {
+              .e-tab-text {
+                color: $gantt-tab-header-active-font-color;
+              }
+            }
+
+          }
+
+          .e-toolbar-item {
+
+            .e-tab-wrap {
+              border-color: $gantt-dialog-tab-header-border-no-color;
+
+              .e-tab-text {
+                color: $gantt-tab-header-font-color;
+              }
+
+            }
+
+          }
+
+          .e-toolbar-item:not(.e-active) .e-tab-wrap:hover {
             background: $gantt-tab-header-hover-color;
+            border-bottom: $gantt-dialog-tab-hover-border-bottom;
+            border-bottom-left-radius: $gantt-dialog-tab-hover-border-bottom-radius;
+            border-bottom-right-radius: $gantt-dialog-tab-hover-border-bottom-radius;
+            border-color: $gantt-dialog-tab-hover-border-color;
+
+            .e-tab-text {
+              color: $gantt-tab-header-hover-font-color;
+            }
+
           }
 
-        }
-
-        .e-active {
-          background-color: $gantt-dialog-active-tab-background;
-
-          .e-tab-text {
-            color: $gantt-tab-header-active-font-color;
-          }
-
-        }
-
-        .e-tab-text {
-          color: $gantt-tab-header-font-color;
         }
 
       }
@@ -341,6 +367,7 @@
       .e-active {
        background: $gantt-active-background;
        color: $gantt-active-color;
+       opacity: $gantt-active-color-opacity;
       }
       .e-active .e-label {
        color: $gantt-active-color;

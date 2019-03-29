@@ -48,8 +48,20 @@ describe('DateTimePicker Control', () => {
             expect(document.activeElement.tagName === 'INPUT').toEqual(true);
         });
         it('Clear icon availability testing', () => {
-            expect(editorObj.componentObj.showClearButton === true).toEqual(true);
-            expect(selectAll('.e-clear-icon', ele).length === 1).toEqual(true);
+            expect(editorObj.componentObj.showClearButton).toBe(true);
+            expect(selectAll('.e-clear-icon', ele).length).toBe(1);
+        });
+        it('Clear icon availability testing for false', () => {
+            editorObj.componentObj.showClearButton = false;
+            editorObj.componentObj.dataBind();
+            expect(editorObj.componentObj.showClearButton).toBe(false);
+            expect(selectAll('.e-clear-icon', ele).length).toBe(0);
+        });
+        it('Clear icon availability testing for true', () => {
+            editorObj.componentObj.showClearButton = true;
+            editorObj.componentObj.dataBind();
+            expect(editorObj.componentObj.showClearButton).toBe(true);
+            expect(selectAll('.e-clear-icon', ele).length).toBe(1);
         });
         it('save method with value property testing', () => {
             let date: Date = new Date();
@@ -586,6 +598,47 @@ describe('DateTimePicker Control', () => {
             expect(selectAll('.e-datetimepicker', document.body).length === 1).toEqual(true);
             editorObj.save();
             expect(dateString).toEqual(date.toISOString());
+        });
+    });
+
+    describe('Model - value child property update testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Default value with initial render testing', () => {
+            let date: Date = new Date('4/9/2018 12:30 AM');
+            editorObj = renderEditor({
+                type: 'DateTime',
+                mode: 'Inline',
+                value: date
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(date);
+            expect(valueEle.innerHTML).toEqual('4/9/2018 12:30 AM');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datetimepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(date);
+            expect(editorObj.model.value).toEqual(date);
+            expect((<HTMLInputElement>select('.e-datetimepicker', document.body)).value).toEqual('4/9/2018 12:30 AM');
+            (<HTMLInputElement>select('.e-datetimepicker', document.body)).value = '';
+            editorObj.setProperties({ value: null }, true);
+            editorObj.componentObj.value = null;
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(editorObj.model.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-datetimepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect((<HTMLInputElement>select('.e-datetimepicker', document.body)).value).toEqual('');
         });
     });
 

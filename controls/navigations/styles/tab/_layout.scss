@@ -12,7 +12,7 @@
         height: auto;
         min-height: auto;
 
-        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
           height: $tab-big-height;
           min-height: $tab-big-height;
         }
@@ -35,7 +35,7 @@
         }
 
         .e-indicator + .e-toolbar-item:nth-last-child(1).e-active {
-          @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+          @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
             margin: 1px 2px 0 0;
           }
         }
@@ -57,7 +57,7 @@
 
         .e-scroll-nav {
           width: 50px;
-          @if $skin-name == 'bootstrap4' {
+          @if $tab-skin == 'bootstrap4' {
             border-radius: 4px;
             width: 38px;
           }
@@ -96,17 +96,17 @@
         .e-text-wrap {
           height: $tab-big-height;
 
-          @if $skin-name == 'fabric' {
+          @if $tab-skin == 'fabric' {
             height: $tab-big-height - 2;
           }
-          @else if $skin-name == 'highcontrast' {
+          @else if $tab-skin == 'highcontrast' {
             height: $tab-big-height - 4;
           }
         }
 
         .e-tab-text {
           font-size: $tab-big-font-size;
-          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+          @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
             align-self: auto;
           }
         }
@@ -119,7 +119,7 @@
             margin: $tab-mob-boot-item-margin;
           }
 
-          @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+          @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
             &.e-ileft:not(.e-icon) .e-tab-icon::before {
               position: relative;
               top: -.5px;
@@ -130,10 +130,10 @@
             height: $tab-big-active-text-container-height;
             margin-top: $tab-active-text-container-margin;
 
-            @if $skin-name == 'fabric' {
+            @if $tab-skin == 'fabric' {
               height: $tab-big-height - 2;
             }
-            @else if $skin-name == 'highcontrast' {
+            @else if $tab-skin == 'highcontrast' {
               height: $tab-big-height - 4;
             }
           }
@@ -142,10 +142,10 @@
           &.e-iright .e-text-wrap {
             height: $tab-big-active-it-text-container-height;
 
-            @if $skin-name == 'fabric' {
+            @if $tab-skin == 'fabric' {
               height: $tab-big-height - 2;
             }
-            @else if $skin-name == 'highcontrast' {
+            @else if $tab-skin == 'highcontrast' {
               height: $tab-big-height - 4;
             }
           }
@@ -153,7 +153,7 @@
           &.e-ileft .e-text-wrap {
             padding: $tab-big-ileft-active-text-wrap-padding;
 
-            @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+            @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
               padding: 0;
             }
           }
@@ -182,7 +182,7 @@
           min-width: $tab-big-icon-container-size;
           width: $tab-big-icon-container-size;
 
-          @if $skin-name == 'bootstrap4' {
+          @if $tab-skin == 'bootstrap4' {
             line-height: $tab-big-icon-container-size;
           }
         }
@@ -231,7 +231,7 @@
             right: $tab-big-close-icon-top-bottom-right;
           }
 
-          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+          @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
 
             .e-text-wrap {
               height: auto;
@@ -278,10 +278,10 @@
           .e-text-wrap {
             height: $tab-big-pop-item-height;
 
-            @if $skin-name == 'fabric' {
+            @if $tab-skin == 'fabric' {
               height:  $tab-big-pop-item-height - 2;
             }
-            @else if $skin-name == 'highcontrast' {
+            @else if $tab-skin == 'highcontrast' {
               height:  $tab-big-pop-item-height - 4;
             }
           }
@@ -385,7 +385,7 @@
             top: 0;
             vertical-align: initial;
 
-            @if $skin-name == 'highcontrast' {
+            @if $tab-skin == 'highcontrast' {
               top: -2px;
             }
           }
@@ -425,25 +425,32 @@
               font-size: $tab-mob-nav-icon-size;
             }
 
-            @if $skin-name == 'highcontrast' {
+            @if $tab-skin == 'highcontrast' {
               top: -2px;
             }
           }
 
           &:hover {
-            @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+            @if $tab-skin == 'bootstrap' {
               line-height: 42px;
+            }
+            @if $tab-skin == 'bootstrap4' {
+              line-height: 38px;
             }
 
             &::before {
               top: $tab-big-hover-nav-pop-icon-top;
 
-              @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+              @if $tab-skin == 'bootstrap' {
                 line-height: 42px;
                 top: .5px;
               }
+              @if $tab-skin == 'bootstrap4' {
+                line-height: 38px;
+                top: .5px;
+              }
 
-              @if $skin-name == 'highcontrast' {
+              @if $tab-skin == 'highcontrast' {
                 top: -2px;
               }
             }
@@ -454,25 +461,35 @@
 
           .e-popup-up-icon,
           .e-popup-down-icon {
-            @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+            @if $tab-skin == 'bootstrap' {
               line-height: 42px;
+            }
+            @if $tab-skin == 'bootstrap4' {
+              line-height: 38px;
             }
 
             &::before {
               top: $tab-big-hover-nav-pop-icon-top;
 
-              @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+              @if $tab-skin == 'bootstrap' {
                 line-height: 42px;
               }
+              @if $tab-skin == 'bootstrap4' {
+                line-height: 38px;
+              }
 
-              @if $skin-name == 'highcontrast' {
+              @if $tab-skin == 'highcontrast' {
                 top: -2px;
               }
             }
 
             &:hover {
-              @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+              @if $tab-skin == 'bootstrap' {
                 line-height: 42px;
+                top: -2px;
+              }
+              @if $tab-skin == 'bootstrap4' {
+                line-height: 38px;
                 top: -2px;
               }
             }
@@ -514,7 +531,7 @@
               padding-top: $tab-big-even-boot-active-item-padding-bottom;
             }
 
-            @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+            @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
               .e-close-icon::before {
                 top: .5px;
               }
@@ -539,7 +556,7 @@
               margin: $tab-mob-even-last-item-margin;
             }
 
-            @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+            @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
 
               .e-tab-text {
                 padding-top: .5px;
@@ -560,7 +577,7 @@
           &.e-itop.e-active .e-tab-wrap:focus,
           &.e-ibottom.e-active .e-tab-wrap:focus {
 
-            @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+            @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
 
               .e-icon-close::before {
                 top: -1px;
@@ -576,10 +593,10 @@
             height: $tab-big-even-active-text-container-height;
             padding: 0;
 
-            @if $skin-name == 'fabric' {
+            @if $tab-skin == 'fabric' {
               height: $tab-big-height - 2;
             }
-            @else if $skin-name == 'highcontrast' {
+            @else if $tab-skin == 'highcontrast' {
               height: $tab-big-height - 4;
             }
           }
@@ -588,7 +605,7 @@
           &.e-active.e-ibottom .e-text-wrap {
             height: $tab-big-height;
 
-            @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+            @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
               height: auto;
             }
           }
@@ -600,10 +617,10 @@
 
           &.e-ileft.e-active {
 
-            @if $skin-name == 'fabric' {
+            @if $tab-skin == 'fabric' {
               height: $tab-big-height - 2;
             }
-            @else if $skin-name == 'highcontrast' {
+            @else if $tab-skin == 'highcontrast' {
               height: $tab-big-height - 4;
             }
           }
@@ -652,7 +669,7 @@
             }
           }
 
-          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+          @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
 
             &.e-ileft.e-icon {
               min-height: $tab-big-height;
@@ -713,7 +730,7 @@
         .e-toolbar-item.e-active,
         .e-toolbar-item:not(.e-separator):last-child.e-active {
 
-          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+          @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
 
             .e-text-wrap::before {
               bottom: -10px;
@@ -739,7 +756,7 @@
         }
       }
 
-      @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+      @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
         &.e-rtl .e-toolbar-item.e-active {
           margin: 0 0 0 2px;
         }
@@ -773,10 +790,10 @@
           .e-tab-wrap:focus .e-text-wrap {
             height: $tab-big-height;
 
-            @if $skin-name == 'fabric' {
+            @if $tab-skin == 'fabric' {
               height: $tab-big-height - 2;
             }
-            @else if $skin-name == 'highcontrast' {
+            @else if $tab-skin == 'highcontrast' {
               height: $tab-big-height - 4;
             }
           }
@@ -808,10 +825,10 @@
               .e-text-wrap {
                 height: $tab-big-pop-item-height;
 
-                @if $skin-name == 'fabric' {
+                @if $tab-skin == 'fabric' {
                   height:  $tab-big-pop-item-height - 2;
                 }
-                @else if $skin-name == 'highcontrast' {
+                @else if $tab-skin == 'highcontrast' {
                   height:  $tab-big-pop-item-height - 4;
                 }
               }
@@ -834,20 +851,20 @@
                 height: $tab-big-height;
                 padding: 0;
 
-                @if $skin-name == 'fabric' {
+                @if $tab-skin == 'fabric' {
                   height: $tab-big-height - 2;
                 }
-                @else if $skin-name == 'highcontrast' {
+                @else if $tab-skin == 'highcontrast' {
                   height: $tab-big-height - 4;
                 }
               }
 
               &.e-ileft {
 
-                @if $skin-name == 'fabric' {
+                @if $tab-skin == 'fabric' {
                   height: $tab-big-height - 2;
                 }
-                @else if $skin-name == 'highcontrast' {
+                @else if $tab-skin == 'highcontrast' {
                   height: $tab-big-height - 4;
                 }
               }
@@ -914,7 +931,7 @@
 
     &.e-rtl {
 
-      @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+      @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
 
         .e-tab-header {
 
@@ -998,11 +1015,11 @@
               height: $tab-mob-fill-height;
             }
 
-            @if $skin-name == 'fabric' {
+            @if $tab-skin == 'fabric' {
               height: $tab-big-fill-height - 2;
             }
 
-            @if $skin-name == 'highcontrast' {
+            @if $tab-skin == 'highcontrast' {
               height: $tab-big-fill-height - 4;
             }
           }
@@ -1021,11 +1038,11 @@
                 height: $tab-mob-fill-height;
               }
 
-              @if $skin-name == 'fabric' {
+              @if $tab-skin == 'fabric' {
                 height: $tab-big-fill-height - 2;
               }
 
-              @if $skin-name == 'highcontrast' {
+              @if $tab-skin == 'highcontrast' {
                 height: $tab-big-fill-height - 4;
               }
             }
@@ -1038,10 +1055,10 @@
                 height: $tab-fill-big-active-it-text-container-height;
               }
 
-              @if $skin-name == 'fabric' {
+              @if $tab-skin == 'fabric' {
                 height: $tab-big-fill-height - 2;
               }
-              @else if $skin-name == 'highcontrast' {
+              @else if $tab-skin == 'highcontrast' {
                 height: $tab-big-fill-height - 4;
               }
             }
@@ -1079,11 +1096,11 @@
           .e-toolbar-item.e-active .e-text-wrap {
             height: $tab-fill-big-even-active-text-height;
 
-            @if $skin-name == 'fabric' {
+            @if $tab-skin == 'fabric' {
               height: $tab-big-fill-height - 2;
             }
 
-            @if $skin-name == 'highcontrast' {
+            @if $tab-skin == 'highcontrast' {
               height: $tab-big-fill-height - 4;
             }
           }
@@ -1113,11 +1130,11 @@
             .e-tab-wrap:focus .e-text-wrap {
               height: $tab-focus-big-fill-height;
 
-              @if $skin-name == 'fabric' {
+              @if $tab-skin == 'fabric' {
                 height: $tab-big-fill-height - 2;
               }
 
-              @if $skin-name == 'highcontrast' {
+              @if $tab-skin == 'highcontrast' {
                 height: $tab-big-fill-height - 4;
               }
             }
@@ -1125,17 +1142,17 @@
             &.e-active .e-tab-wrap:focus {
 
               .e-text-wrap {
-                @if $skin-name == 'fabric' {
+                @if $tab-skin == 'fabric' {
                   height: $tab-big-fill-height - 2;
                 }
-                @else if $skin-name == 'highcontrast' {
+                @else if $tab-skin == 'highcontrast' {
                   height: $tab-big-fill-height - 4;
                 }
               }
 
               .e-close-icon::before {
 
-                @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+                @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
                   top: 1px;
                 }
               }
@@ -1158,11 +1175,11 @@
           &:nth-child(even) {
 
             .e-tab-wrap:focus .e-text-wrap {
-              @if $skin-name == 'fabric' {
+              @if $tab-skin == 'fabric' {
                 height: $tab-big-fill-height - 2;
               }
 
-              @if $skin-name == 'highcontrast' {
+              @if $tab-skin == 'highcontrast' {
                 height: $tab-big-fill-height - 4;
               }
             }
@@ -1220,18 +1237,18 @@
             .e-text-wrap {
               height: $tab-big-height;
 
-              @if $skin-name == 'fabric' {
+              @if $tab-skin == 'fabric' {
                 height: $tab-big-height - 2;
               }
 
-              @if $skin-name == 'highcontrast' {
+              @if $tab-skin == 'highcontrast' {
                 height: $tab-big-height - 4;
               }
             }
           }
 
           &:hover {
-            @if $skin-name == 'highcontrast' {
+            @if $tab-skin == 'highcontrast' {
               &.e-itop,
               &.e-ibottom {
 
@@ -1415,7 +1432,7 @@
         content: '';
         position: absolute;
 
-        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
           display: block;
         }
       }
@@ -1435,7 +1452,7 @@
         min-height: $tab-nrml-height;
         position: relative;
 
-        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
           height: $tab-nrml-height;
           min-height: $tab-nrml-height;
         }
@@ -1469,14 +1486,14 @@
           }
         }
 
-        @if $skin-name == 'bootstrap'or $skin-name == 'bootstrap4' {
+        @if $tab-skin == 'bootstrap'or $tab-skin == 'bootstrap4' {
 
           &[style*= 'overflow: hidden'] .e-toolbar-item:not(.e-separator).e-active {
             margin-bottom: 0;
           }
         }
 
-        @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+        @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
           .e-hscroll-bar {
             padding: 0 1px;
           }
@@ -1484,7 +1501,7 @@
 
         .e-scroll-nav {
           width: 40px;
-          @if $skin-name == 'bootstrap4' {
+          @if $tab-skin == 'bootstrap4' {
             border-radius: 4px;
             width: 32px;
           }
@@ -1565,10 +1582,10 @@
             height: $tab-big-height;
           }
 
-          @if $skin-name == 'fabric' {
+          @if $tab-skin == 'fabric' {
             height: $tab-nrml-height - 2;
           }
-          @else if $skin-name == 'highcontrast' {
+          @else if $tab-skin == 'highcontrast' {
             height: $tab-nrml-height - 4;
           }
         }
@@ -1585,7 +1602,7 @@
           }
         }
 
-        @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+        @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
           .e-tab-text {
             align-self: auto;
           }
@@ -1607,29 +1624,35 @@
               height: $tab-big-active-text-container-height;
             }
 
-            @if $skin-name == 'fabric' {
+            @if $tab-skin == 'fabric' {
               height: $tab-nrml-height - 2;
             }
-            @else if $skin-name == 'highcontrast' {
+            @else if $tab-skin == 'highcontrast' {
               height: $tab-nrml-height - 4;
             }
           }
 
           .e-tab-wrap {
             margin-bottom: $tab-nrml-active-item-wrap-margin-bottom;
+
+            @if $tab-skin == 'bootstrap4' {
+              &:hover {
+                border: 0;
+              }
+            }
           }
 
           .e-tab-text {
             font-weight: $tab-semi-font-weight;
           }
 
-          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+          @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
             .e-tab-text {
               align-self: auto;
             }
           }
 
-          @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+          @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
             .e-tab-icon::before {
               top: -1px;
             }
@@ -1646,17 +1669,17 @@
                 height: $tab-big-active-it-text-container-height;
               }
 
-              @if $skin-name == 'fabric' {
+              @if $tab-skin == 'fabric' {
                 height: $tab-nrml-height - 2;
                 padding: 0;
               }
-              @else if $skin-name == 'highcontrast' {
+              @else if $tab-skin == 'highcontrast' {
                 height: $tab-nrml-height - 4;
                 padding: 0;
               }
             }
 
-            @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+            @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
               .e-tab-wrap .e-tab-text {
                 align-self: auto;
               }
@@ -1688,7 +1711,7 @@
         }
 
         .e-close-icon::before {
-          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+          @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
             top: 1px;
           }
 
@@ -1703,7 +1726,7 @@
           min-width: $tab-nrml-icon-container-size;
           width: $tab-nrml-icon-container-size;
 
-          @if $skin-name == 'bootstrap4' {
+          @if $tab-skin == 'bootstrap4' {
             line-height: $tab-nrml-icon-container-size;
           }
 
@@ -1776,7 +1799,7 @@
           &.e-active {
 
             .e-tab-wrap {
-              @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+              @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
                 height: 62px;
               }
 
@@ -1863,10 +1886,10 @@
             height: $tab-nrml-pop-item-height;
             width: 100%;
 
-            @if $skin-name == 'fabric' {
+            @if $tab-skin == 'fabric' {
               height:  $tab-nrml-pop-item-height - 2;
             }
-            @else if $skin-name == 'highcontrast' {
+            @else if $tab-skin == 'highcontrast' {
               height:  $tab-nrml-pop-item-height - 4;
             }
           }
@@ -2012,11 +2035,11 @@
           top: 0;
           vertical-align: initial;
 
-          @if $skin-name == 'fabric' {
+          @if $tab-skin == 'fabric' {
             top: -1px;
           }
 
-          @if $skin-name == 'highcontrast' {
+          @if $tab-skin == 'highcontrast' {
             top: -2px;
           }
         }
@@ -2070,11 +2093,11 @@
             top: 0;
             vertical-align: initial;
 
-            @if $skin-name == 'fabric' {
+            @if $tab-skin == 'fabric' {
               top: -1px;
             }
 
-            @if $skin-name == 'highcontrast' {
+            @if $tab-skin == 'highcontrast' {
               top: -2px;
             }
 
@@ -2084,18 +2107,21 @@
           }
 
           &:hover {
-            @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+            @if $tab-skin == 'bootstrap' {
               line-height: 34px;
+            }
+            @if $tab-skin == 'bootstrap4' {
+              line-height: 32px;
             }
 
             &::before {
               top: $tab-nrml-hover-nav-pop-icon-top;
 
-              @if $skin-name == 'fabric' {
+              @if $tab-skin == 'fabric' {
                 top: -1px;
               }
 
-              @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+              @if $tab-skin == 'bootstrap' {
                 line-height: 34px;
                 top: 0;
 
@@ -2103,8 +2129,16 @@
                   line-height: 43px;
                 }
               }
+              @if $tab-skin == 'bootstrap4' {
+                line-height: 32px;
+                top: 0;
 
-              @if $skin-name == 'highcontrast' {
+                @media screen and (max-width: 480px) {
+                  line-height: 43px;
+                }
+              }
+
+              @if $tab-skin == 'highcontrast' {
                 top: -2px;
               }
             }
@@ -2135,18 +2169,18 @@
 
           .e-popup-up-icon,
           .e-popup-down-icon {
-            @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+            @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
               line-height: 32px;
             }
 
             &::before {
               top: $tab-nrml-hover-nav-pop-icon-top;
 
-              @if $skin-name == 'fabric' {
+              @if $tab-skin == 'fabric' {
                 top: -1px;
               }
 
-              @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+              @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
                 line-height: 32px;
                 top: 0;
 
@@ -2155,13 +2189,13 @@
                 }
               }
 
-              @if $skin-name == 'highcontrast' {
+              @if $tab-skin == 'highcontrast' {
                 top: -2px;
               }
             }
 
             &:hover {
-              @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+              @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
                 line-height: 32px;
                 top: -.5px;
               }
@@ -2176,7 +2210,7 @@
           bottom: auto;
         }
 
-        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
           .e-hscroll-bar {
             margin-top: -1px;
           }
@@ -2212,17 +2246,17 @@
               height: $tab-nrml-height;
               padding: $tab-even-active-text-container-padding;
 
-              @if $skin-name == 'fabric' {
+              @if $tab-skin == 'fabric' {
                 height: $tab-nrml-height - 2;
                 padding: 0;
               }
-              @else if $skin-name == 'highcontrast' {
+              @else if $tab-skin == 'highcontrast' {
                 height: $tab-nrml-height - 4;
                 padding: 0;
               }
             }
 
-            @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+            @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
               .e-text-wrap::before,
               &:not(.e-separator):last-child .e-text-wrap::before {
                 top: 0;
@@ -2230,7 +2264,7 @@
 
               &.e-itop {
 
-                @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+                @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
                   .e-tab-wrap:focus .e-close-icon::before {
                     top: 0;
                   }
@@ -2244,7 +2278,7 @@
 
             &.e-ileft {
 
-              @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+              @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
                 .e-tab-wrap .e-tab-text {
                   align-self: auto;
                 }
@@ -2306,7 +2340,7 @@
           transition: top .125s cubic-bezier(.35, 0, .25, 1), bottom .25s cubic-bezier(.35, 0, .25, 1);
           width: 2px;
 
-          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+          @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
             transition: initial;
           }
         }
@@ -2359,7 +2393,7 @@
 
           &.e-ileft.e-icon {
 
-            @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+            @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
               min-height: $tab-nrml-height;
               min-width: $tab-nrml-height;
 
@@ -2588,7 +2622,7 @@
 
         .e-toolbar-item.e-active,
         .e-toolbar-item:not(.e-separator):last-child.e-active {
-          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+          @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
             .e-text-wrap {
               position: static;
 
@@ -2604,10 +2638,10 @@
               top: 96%;
               width: calc(100% - 16px);
 
-              @if $skin-name == 'fabric' {
+              @if $tab-skin == 'fabric' {
                 border: 1px solid $theme-primary;
               }
-              @else if $skin-name == 'highcontrast' {
+              @else if $tab-skin == 'highcontrast' {
                 border: 1px solid $selection-bg;
               }
             }
@@ -2634,7 +2668,7 @@
 
           .e-indicator {
 
-            @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+            @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
               width: 3px;
             }
           }
@@ -2660,7 +2694,7 @@
 
           .e-toolbar-item.e-active,
           .e-toolbar-item:not(.e-separator):last-child.e-active {
-            @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+            @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
               .e-tab-wrap::before {
                 top: 0;
               }
@@ -2669,7 +2703,7 @@
         }
       }
 
-      @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+      @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
         &.e-rtl .e-tab-header .e-toolbar-item.e-active {
           margin: 0 0 0 2px;
         }
@@ -2693,10 +2727,10 @@
           .e-text-wrap {
             height: $tab-nrml-height;
 
-            @if $skin-name == 'fabric' {
+            @if $tab-skin == 'fabric' {
               height: $tab-nrml-height - 2;
             }
-            @else if $skin-name == 'highcontrast' {
+            @else if $tab-skin == 'highcontrast' {
               height: $tab-nrml-height - 4;
             }
           }
@@ -2729,10 +2763,10 @@
             .e-text-wrap {
               height: $tab-nrml-pop-item-height;
 
-              @if $skin-name == 'fabric' {
+              @if $tab-skin == 'fabric' {
                 height:  $tab-nrml-pop-item-height - 2;
               }
-              @else if $skin-name == 'highcontrast' {
+              @else if $tab-skin == 'highcontrast' {
                 height:  $tab-nrml-pop-item-height - 4;
               }
             }
@@ -2755,17 +2789,17 @@
               height: $tab-nrml-height;
               padding: 0;
 
-              @if $skin-name == 'fabric' {
+              @if $tab-skin == 'fabric' {
                 height: $tab-nrml-height - 2;
               }
-              @else if $skin-name == 'highcontrast' {
+              @else if $tab-skin == 'highcontrast' {
                 height: $tab-nrml-height - 4;
               }
             }
 
             &.e-ileft {
 
-              @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+              @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
                 .e-tab-wrap:focus .e-tab-text {
                   align-self: auto;
                 }
@@ -2949,7 +2983,7 @@
           min-height: $tab-mob-fill-height;
         }
 
-        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
           &::before {
             display: none;
           }
@@ -3010,11 +3044,11 @@
               height: $tab-mob-fill-height;
             }
 
-            @if $skin-name == 'fabric' {
+            @if $tab-skin == 'fabric' {
               height: $tab-nrml-fill-height - 2;
             }
 
-            @if $skin-name == 'highcontrast' {
+            @if $tab-skin == 'highcontrast' {
               height: $tab-nrml-fill-height - 4;
             }
           }
@@ -3033,11 +3067,11 @@
                 height: $tab-mob-fill-height;
               }
 
-              @if $skin-name == 'fabric' {
+              @if $tab-skin == 'fabric' {
                 height: $tab-nrml-fill-height - 2;
               }
 
-              @if $skin-name == 'highcontrast' {
+              @if $tab-skin == 'highcontrast' {
                 height: $tab-nrml-fill-height - 4;
               }
             }
@@ -3054,10 +3088,10 @@
                 height: $tab-fill-big-active-it-text-container-height;
               }
 
-              @if $skin-name == 'fabric' {
+              @if $tab-skin == 'fabric' {
                 height: $tab-nrml-fill-height - 2;
               }
-              @else if $skin-name == 'highcontrast' {
+              @else if $tab-skin == 'highcontrast' {
                 height: $tab-nrml-fill-height - 4;
               }
             }
@@ -3114,11 +3148,11 @@
                   height: $tab-mob-fill-height;
                 }
 
-                @if $skin-name == 'fabric' {
+                @if $tab-skin == 'fabric' {
                   height: $tab-nrml-fill-height - 2;
                 }
 
-                @if $skin-name == 'highcontrast' {
+                @if $tab-skin == 'highcontrast' {
                   height: $tab-nrml-fill-height - 4;
                 }
               }
@@ -3163,11 +3197,11 @@
             .e-text-wrap {
               height: $tab-focus-nrml-fill-height;
 
-              @if $skin-name == 'fabric' {
+              @if $tab-skin == 'fabric' {
                 height: $tab-nrml-fill-height - 2;
               }
 
-              @if $skin-name == 'highcontrast' {
+              @if $tab-skin == 'highcontrast' {
                 height: $tab-nrml-fill-height - 4;
               }
             }
@@ -3175,12 +3209,12 @@
 
           &.e-active .e-tab-wrap:focus {
 
-            @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+            @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
               .e-text-wrap {
-                @if $skin-name == 'fabric' {
+                @if $tab-skin == 'fabric' {
                   height: $tab-nrml-fill-height - 2;
                 }
-                @else if $skin-name == 'highcontrast' {
+                @else if $tab-skin == 'highcontrast' {
                   height: $tab-nrml-fill-height - 4;
                 }
               }
@@ -3226,7 +3260,7 @@
 
       .e-tab-header {
 
-        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
           &::before {
             display: none;
           }
@@ -3245,7 +3279,7 @@
           }
 
           &:hover {
-            @if $skin-name == 'highcontrast' {
+            @if $tab-skin == 'highcontrast' {
               &.e-itop .e-text-wrap,
               &.e-ibottom .e-text-wrap {
                 height: auto;
@@ -3271,11 +3305,11 @@
             .e-text-wrap {
               height: $tab-nrml-height;
 
-              @if $skin-name == 'fabric' {
+              @if $tab-skin == 'fabric' {
                 height: $tab-nrml-height - 2;
               }
 
-              @if $skin-name == 'highcontrast' {
+              @if $tab-skin == 'highcontrast' {
                 height: $tab-nrml-height - 4;
               }
             }
@@ -3288,7 +3322,7 @@
 
         &.e-vertical {
 
-          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+          @if $tab-skin == 'fabric' or $tab-skin == 'highcontrast' {
 
             .e-indicator {
               display: none;
@@ -3328,10 +3362,10 @@
               .e-text-wrap {
                 height: $tab-nrml-pop-item-height;
 
-                @if $skin-name == 'fabric' {
+                @if $tab-skin == 'fabric' {
                   height:  $tab-nrml-pop-item-height - 2;
                 }
-                @else if $skin-name == 'highcontrast' {
+                @else if $tab-skin == 'highcontrast' {
                   height:  $tab-nrml-pop-item-height - 4;
                 }
               }
@@ -3360,7 +3394,7 @@
           margin: $tab-nrml-rtl-item-margin;
         }
 
-        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
           .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:last-child.e-active {
             margin: $tab-nrml-rtl-item-margin;
           }
@@ -3393,7 +3427,7 @@
           }
         }
 
-        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+        @if $tab-skin == 'bootstrap' or $tab-skin == 'bootstrap4' {
           &:nth-child(even) {
 
             .e-toolbar-items:not(.e-tbar-pos) .e-toolbar-item:not(.e-separator) {

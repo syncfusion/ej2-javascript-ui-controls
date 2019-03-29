@@ -38,16 +38,23 @@
 
       @if $treeview-skin-name == 'bootstrap4' {
         color: $treeview-big-text-color;
-        font-family: $treeview-big-font-face;
       }
     }
 
     .e-icon-collapsible::before,
     .e-icon-expandable::before {
       font-size: $treeview-big-icon-font-size;
+
     }
 
     &.e-drag-item {
+      .e-icon-collapsible,
+      .e-icon-expandable {
+        @if $treeview-skin-name == 'bootstrap4' {
+          padding: $treeview-big-drag-icon-padding;
+    }
+  }
+
       .e-list-text {
         @if $treeview-skin-name == 'bootstrap4' {
           padding: $treeview-big-drag-text-padding;
@@ -67,9 +74,6 @@
     .e-list-text {
       color: $treeview-text-color;
       font-size: $treeview-font-size;
-      @if $treeview-skin-name == 'bootstrap4' {
-        font-family: $treeview-font-face;
-      }
 
       .e-input {
         @include active-font-weight;
@@ -127,6 +131,11 @@
           background-color: $treeview-checkmark-bgcolor;
           border-color: $treeview-checkmark-border-color;
           color: $treeview-checkmark-color;
+        }
+        @else if $treeview-skin-name == 'bootstrap4' {
+          background-color: $treeview-bootstrap4-checkmark-bgcolor;
+          border-color: $treeview-bootstrap4-checkmark-border-color;
+          color: $treeview-bootstrap4-checkmark-color;
         }
       }
     }
@@ -279,6 +288,8 @@
 
       .e-text-content {
         @if $treeview-skin-name == 'bootstrap4' {
+          -webkit-box-shadow: $treeview-drag-item-box-shadow;
+          border-radius: .5em;
           box-shadow:  $treeview-drag-item-box-shadow;
         }
       }

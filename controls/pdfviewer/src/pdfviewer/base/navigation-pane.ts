@@ -21,13 +21,12 @@ export class NavigationPane {
     private bookmarkButton: HTMLElement;
     private mainContainerWidth: number;
     private closeDiv: HTMLElement;
+    private resizeIcon: HTMLElement;
     private isDown: boolean;
     private offset: number[];
     private sideBarTitle: HTMLElement;
     private contentContainerScrollWidth: number = 33;
     private closeButtonLeft: number = 170;
-    private isBookmarkOpen: boolean = false;
-    private isThumbnailOpen: boolean = false;
     private previousX: number;
     private toolbarElement: HTMLElement;
     private toolbar: Tool;
@@ -59,6 +58,18 @@ export class NavigationPane {
      * @private
      */
     public sideBarContentContainer: HTMLElement;
+    /**
+     * @private
+     */
+    public sideBarToolbarSplitter: HTMLElement;
+    /**
+     * @private
+     */
+    public isBookmarkOpen: boolean = false;
+    /**
+     * @private
+     */
+    public isThumbnailOpen: boolean = false;
 
 
     constructor(viewer: PdfViewer, base: PdfViewerBase) {
@@ -84,12 +95,12 @@ export class NavigationPane {
             this.sideBarToolbar.style.position = 'relative';
         }
         // tslint:disable-next-line:max-line-length
-        let sideBarToolbarSplitter: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_sideBarToolbarSplitter', className: 'e-pv-sidebar-toolbar-splitter' });
-        this.pdfViewerBase.mainContainer.appendChild(sideBarToolbarSplitter);
+        this.sideBarToolbarSplitter = createElement('div', { id: this.pdfViewer.element.id + '_sideBarToolbarSplitter', className: 'e-pv-sidebar-toolbar-splitter' });
+        this.pdfViewerBase.mainContainer.appendChild(this.sideBarToolbarSplitter);
         if (this.pdfViewer.enableRtl) {
-            sideBarToolbarSplitter.classList.add('e-right');
+            this.sideBarToolbarSplitter.classList.add('e-right');
         } else {
-            sideBarToolbarSplitter.classList.add('e-left');
+            this.sideBarToolbarSplitter.classList.add('e-left');
         }
         // tslint:disable-next-line:max-line-length
         this.sideBarContentContainer = createElement('div', { id: this.pdfViewer.element.id + '_sideBarContentContainer', className: 'e-pv-sidebar-content-container' });
@@ -158,6 +169,10 @@ export class NavigationPane {
         let splitterElement: HTMLElement = this.pdfViewerBase.getElement('_sideBarToolbarSplitter');
         let toolbarContainer: HTMLElement = this.pdfViewerBase.getElement('_toolbarContainer');
         let toolbarHeight: number = toolbarContainer.getBoundingClientRect().height;
+        if (toolbarHeight === 0) {
+            // tslint:disable-next-line
+            toolbarHeight = parseFloat(window.getComputedStyle(toolbarContainer)['height']) + 1;
+        }
         // tslint:disable-next-line:max-line-length
         this.sideBarToolbar.style.top = toolbarHeight + 'px';
         this.sideBarContentContainer.style.top = toolbarHeight + 'px';
@@ -437,12 +452,22 @@ export class NavigationPane {
 
     private createResizeIcon(): void {
         // tslint:disable-next-line:max-line-length
-        let resizeIcon: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_resize', className: 'e-pv-resize-icon e-pv-icon' });
-        resizeIcon.style.top = (this.sideBarToolbar.clientHeight) / 2 + 'px';
-        resizeIcon.style.position = 'absolute';
-        resizeIcon.addEventListener('click', this.sideToolbarOnClose);
-        resizeIcon.addEventListener('mouseover', this.resizeIconMouseOver);
-        this.sideBarResizer.appendChild(resizeIcon);
+        this.resizeIcon = createElement('div', { id: this.pdfViewer.element.id + '_resize', className: 'e-pv-resize-icon e-pv-icon' });
+        this.setResizeIconTop();
+        this.resizeIcon.style.position = 'absolute';
+        this.resizeIcon.addEventListener('click', this.sideToolbarOnClose);
+        this.resizeIcon.addEventListener('mouseover', this.resizeIconMouseOver);
+        this.sideBarResizer.appendChild(this.resizeIcon);
+    }
+
+    /**
+     * @private
+     */
+    public setResizeIconTop(): void {
+        // tslint:disable-next-line:max-line-length
+        if (this.sideBarToolbar && this.sideBarToolbar.clientHeight && this.resizeIcon.style.top === '') {
+            this.resizeIcon.style.top = (this.sideBarToolbar.clientHeight) / 2 + 'px';
+        }
     }
 
     private resizeIconMouseOver = (event: MouseEvent): void => {
@@ -616,7 +641,6 @@ export class NavigationPane {
     private sideToolbarOnClick = (event: MouseEvent): void => {
         this.sideBarTitle.textContent = this.pdfViewer.localeObj.getConstant('Page Thumbnails');
         this.sideBarContent.setAttribute('aria-label', 'Thumbnail View Panel');
-        this.sideBarContent.focus();
         let proxy: NavigationPane = this;
         let bookmarkPane: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_bookmark_view');
         if (bookmarkPane) {
@@ -636,6 +660,7 @@ export class NavigationPane {
                     this.updateViewerContainerOnClose();
                 }
             } else {
+                this.sideBarContent.focus();
                 proxy.isThumbnailOpen = true;
                 proxy.setThumbnailSelectionIconTheme();
                 this.updateViewerContainerOnExpand();
@@ -692,7 +717,6 @@ export class NavigationPane {
         this.removeThumbnailSelectionIconTheme();
         this.sideBarTitle.textContent = this.pdfViewer.localeObj.getConstant('Bookmarks');
         this.sideBarContent.setAttribute('aria-label', 'Bookmark View Panel');
-        this.sideBarContent.focus();
         this.pdfViewer.bookmarkViewModule.renderBookmarkcontent();
         if (this.sideBarContentContainer) {
             if (proxy.sideBarContentContainer.style.display !== 'none') {
@@ -706,6 +730,7 @@ export class NavigationPane {
                     this.updateViewerContainerOnClose();
                 }
             } else {
+                this.sideBarContent.focus();
                 this.setBookmarkSelectionIconTheme();
                 this.isBookmarkOpen = true;
                 this.updateViewerContainerOnExpand();

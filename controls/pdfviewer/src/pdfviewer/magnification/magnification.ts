@@ -356,15 +356,15 @@ export class Magnification {
             this.pdfViewer.textSelectionModule.resizeTouchElements();
         }
         if (this.pdfViewerBase.pageSize.length > 0) {
-        // tslint:disable-next-line:max-line-length
-        this.pdfViewerBase.pageContainer.style.height = this.topValue + this.pdfViewerBase.getPageHeight(this.pdfViewerBase.pageSize.length - 1) + 'px';
-        // tslint:disable-next-line 
-        let proxy: any = this;
-        this.pdfViewerBase.renderedPagesList = [];
-        this.pdfViewerBase.pinchZoomStorage = [];
-        this.pdfViewerBase.viewerContainer.scrollTop = scrollValue;
-        this.magnifyPageRerenderTimer = setTimeout(
-            () => { proxy.rerenderMagnifiedPages(); }, 800);
+            // tslint:disable-next-line:max-line-length
+            this.pdfViewerBase.pageContainer.style.height = this.topValue + this.pdfViewerBase.getPageHeight(this.pdfViewerBase.pageSize.length - 1) + 'px';
+            // tslint:disable-next-line 
+            let proxy: any = this;
+            this.pdfViewerBase.renderedPagesList = [];
+            this.pdfViewerBase.pinchZoomStorage = [];
+            this.pdfViewerBase.viewerContainer.scrollTop = scrollValue;
+            this.magnifyPageRerenderTimer = setTimeout(
+                () => { proxy.rerenderMagnifiedPages(); }, 800);
         }
     }
 
@@ -416,13 +416,13 @@ export class Magnification {
 
     private clearRendering(): void {
         if (this.imageObjects) {
-        for (let j: number = 0; j < this.imageObjects.length; j++) {
-            if (this.imageObjects[j]) {
-                this.imageObjects[j].onload = null;
+            for (let j: number = 0; j < this.imageObjects.length; j++) {
+                if (this.imageObjects[j]) {
+                    this.imageObjects[j].onload = null;
+                }
             }
+            this.imageObjects = [];
         }
-        this.imageObjects = [];
-    }
     }
 
     private rerenderMagnifiedPages(): void {
@@ -720,6 +720,7 @@ export class Magnification {
      */
     public fitPageScrollMouseWheel(event: MouseWheelEvent): void {
         if (this.fitType === 'fitToPage') {
+            this.isMagnified = false;
             event.preventDefault();
             if (event.wheelDelta > 0) {
                 this.upwardScrollFitPage(this.pdfViewerBase.currentPageNumber - 1);

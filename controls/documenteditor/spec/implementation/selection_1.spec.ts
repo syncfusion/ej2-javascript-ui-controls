@@ -180,10 +180,10 @@ describe('Selection Based on client Coordinated validation', () => {
     }, 1000);
   });
   it('Selection content based on cilent coordinated corresponding to View port', () => {
-    editor.editorModule.insertText('Syncfusion', true);
+    editor.editorModule.insertTextInternal('Syncfusion', true);
     for (let i: number = 0; i < 9; i++) {
       editor.editorModule.onEnter();
-      editor.editorModule.insertText('Syncfusion', true);
+      editor.editorModule.insertTextInternal('Syncfusion', true);
     }
     editor.selection.select({ x: 97.5 + editor.selection.start.paragraph.bodyWidget.page.boundingRectangle.x, y: 108 });
     expect(editor.selection.start.paragraph.index).toBe(0);

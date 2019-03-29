@@ -38,13 +38,13 @@ describe('Text insert validation of selection context type is List Text with und
     });
     it('Text Insert at list text', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Sample');
         editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
-        editor.editor.insertText('s', false);
+        editor.editor.insertText('s');
         expect(editor.selection.paragraphFormat.getList()).toBe(undefined);
     });
     it('undo after Text Insert at list text', () => {
@@ -96,10 +96,10 @@ describe('Backspace validation of selection context type is List Text with undo 
     });
     it('Backspace at list text', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Sample');
         editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.editor.onBackSpace();
@@ -154,10 +154,10 @@ describe('Delete validation of selection context type is List Text with undo and
     });
     it('Delete at list text', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Sample');
         editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.editor.onDelete();
@@ -212,10 +212,10 @@ describe('Apply Character Format -bold validation of selection context type is L
     });
     it('Bold Apply validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Sample');
         editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.selection.characterFormat.bold=true;
@@ -269,10 +269,10 @@ describe('Apply Character Format -Italic validation of selection context type is
     });
     it('italic Apply validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Sample');
         editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.selection.characterFormat.italic=true;
@@ -326,10 +326,10 @@ describe('Apply Character Format -Underline validation of selection context type
     });
     it('Underline Apply validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Sample');
         editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.selection.characterFormat.underline='Single';
@@ -383,10 +383,10 @@ describe('Apply Character Format -Strikethrough validation of selection context 
     });
     it('Strikethrough Apply validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Sample');
         editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.selection.characterFormat.strikethrough='SingleStrike';
@@ -440,10 +440,10 @@ describe('Apply Character Format -BaselineAlignment validation of selection cont
     });
     it('BaselineAlignment Apply validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Sample');
         editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.selection.characterFormat.baselineAlignment='Superscript';
@@ -497,10 +497,10 @@ describe('Apply Character Format -Fontsize validation of selection context type 
     });
     it('FontSize Apply validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Sample');
         editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.selection.characterFormat.fontSize=20;
@@ -555,10 +555,10 @@ describe('Apply Character Format -FontFamily validation of selection context typ
     });
     it('FontFamily Apply validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Sample');
         editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.selection.characterFormat.fontFamily='Arial';
@@ -612,10 +612,10 @@ describe('Apply Character Format -FontColor validation of selection context type
     });
     it('Fontcolor Apply validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Sample');
         editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.selection.characterFormat.fontColor='Pink';
@@ -669,10 +669,10 @@ describe('Apply Character Format -FontColor validation of selection context type
     });
     it('Fontcolor Apply validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Sample');
         editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.selection.characterFormat.fontColor='Pink';
@@ -726,10 +726,10 @@ describe('Apply Character Format -Highlight Color validation of selection contex
     });
     it('Fontcolor Apply validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Sample');
         editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.selection.characterFormat.highlightColor='Yellow';
@@ -783,16 +783,16 @@ describe('Restart Numbering with undo and redo', () => {
     });
     it('Restart Numbering Apply validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('I', false);
-        editor.editorModule.insertText(')', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('I');
+        editor.editorModule.insertText(')');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Sample');
         editor.editor.onEnter();
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('Sample');
         editor.editor.onEnter();
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('Sample');
         editor.editor.onEnter();
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('Sample');
         editor.selection.handleUpKey();        
         editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
@@ -850,15 +850,15 @@ describe('Restart Numbering at level number 1', () => {
     });
     it('Restart Numbering Apply validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('I', false);
-        editor.editorModule.insertText(')', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('I');
+        editor.editorModule.insertText(')');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Sample');
         editor.editor.onEnter();
         editor.selection.handleTabKey(true,false);
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('Sample');
         editor.editor.onEnter();
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('Sample');
         editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.editor.applyRestartNumbering(editor.selection);
@@ -912,20 +912,20 @@ describe('Continue Numbering validation with same level pattern with undo and re
     });
     it('Restart Numbering Apply validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Sample');
         editor.editor.onEnter();
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('Sample');
         editor.editor.onEnter();
         editor.editor.onEnter();
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('Sample');
         editor.editor.onEnter();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Sample');
         editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.editor.applyContinueNumbering(editor.selection);
@@ -978,13 +978,13 @@ describe('Continue Numbering at level number 1', () => {
     });
     it('Continue Numbering Apply validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('I', false);
-        editor.editorModule.insertText(')', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('I');
+        editor.editorModule.insertText(')');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Sample');
         editor.editor.onEnter();
         editor.selection.handleTabKey(true,false);
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('Sample');
         editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.editor.applyContinueNumbering(editor.selection);
@@ -1036,13 +1036,13 @@ describe('Continue Numbering at level number 1', () => {
         }, 1000);
     });
     it('Continue Numbering Apply validation', () => {
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Sample');
         editor.editor.onEnter();
         editor.selection.handleTabKey(true,false);
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('Sample');
         editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.editor.applyContinueNumbering(editor.selection);
@@ -1078,20 +1078,20 @@ describe('Continue Numbering validation with different level pattern with undo a
     });
     it('Restart Numbering Apply validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('a', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('a');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Sample');
         editor.editor.onEnter();
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('Sample');
         editor.editor.onEnter();
         editor.editor.onEnter();
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('Sample');
         editor.editor.onEnter();
-        editor.editorModule.insertText('A', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Sample', false);    
+        editor.editorModule.insertText('A');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Sample');    
         editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.editor.applyContinueNumbering(editor.selection);
@@ -1145,14 +1145,14 @@ describe('without history Restart Numbering and continue numbering validation', 
     });
     it('Restart Numbering Apply validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('I', false);
-        editor.editorModule.insertText(')', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('I');
+        editor.editorModule.insertText(')');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Sample');
         editor.editor.onEnter();
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('Sample');
         editor.editor.onEnter();
-        editor.editorModule.insertText('Sample', false);        
+        editor.editorModule.insertText('Sample');        
         editor.viewer.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.editor.applyRestartNumbering(editor.selection);

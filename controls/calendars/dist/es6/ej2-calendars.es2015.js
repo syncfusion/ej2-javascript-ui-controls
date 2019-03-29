@@ -12,6 +12,7 @@ var __decorate = (undefined && undefined.__decorate) || function (decorators, ta
 };
 //class constant defination.
 const OTHERMONTH = 'e-other-month';
+const OTHERDECADE = 'e-other-year';
 const ROOT = 'e-calendar';
 const DEVICE = 'e-device';
 const HEADER = 'e-header';
@@ -777,7 +778,7 @@ let CalendarBase = class CalendarBase extends Component {
             let dayLink = this.createElement('span');
             dayLink.textContent = this.globalize.formatDate(localDate, { type: 'dateTime', skeleton: 'y' });
             if ((year < startFullYr) || (year > endFullYr)) {
-                addClass([tdEle], OTHERMONTH);
+                addClass([tdEle], OTHERDECADE);
             }
             else if (year < new Date(this.checkValue(this.min)).getFullYear() ||
                 year > new Date(this.checkValue(this.max)).getFullYear()) {
@@ -810,7 +811,8 @@ let CalendarBase = class CalendarBase extends Component {
         return this.createElement('td', attrs);
     }
     firstDay(date) {
-        let collection = this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERMONTH + '');
+        let collection = this.currentView() !== 'Decade' ? this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERMONTH + '') :
+            this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERDECADE + '');
         if (collection.length) {
             for (let i = 0; i < collection.length; i++) {
                 if (!collection[i].classList.contains(DISABLED)) {
@@ -839,7 +841,8 @@ let CalendarBase = class CalendarBase extends Component {
         return (!isNullOrUndefined(value) && value instanceof Date && !isNaN(+value)) ? value : null;
     }
     findLastDay(date) {
-        let collection = this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERMONTH + '');
+        let collection = this.currentView() === 'Decade' ? this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERDECADE + '') :
+            this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERMONTH + '');
         if (collection.length) {
             for (let i = collection.length - 1; i >= 0; i--) {
                 if (!collection[i].classList.contains(DISABLED)) {
@@ -1696,13 +1699,13 @@ let CalendarBase = class CalendarBase extends Component {
     }
     checkView() {
         if (this.start !== 'Decade' && this.start !== 'Year') {
-            this.start = 'Month';
+            this.setProperties({ start: 'Month' }, true);
         }
         if (this.depth !== 'Decade' && this.depth !== 'Year') {
-            this.depth = 'Month';
+            this.setProperties({ depth: 'Month' }, true);
         }
         if (this.getViewNumber(this.depth) > this.getViewNumber(this.start)) {
-            this.depth = 'Month';
+            this.setProperties({ depth: 'Month' }, true);
         }
     }
 };
@@ -3087,6 +3090,7 @@ let DatePicker = class DatePicker extends Calendar {
     dateIconHandler(e) {
         if (Browser.isDevice) {
             this.element.setAttribute('readonly', '');
+            this.inputElement.blur();
         }
         e.preventDefault();
         if (!this.readonly) {
@@ -3612,10 +3616,7 @@ let DatePicker = class DatePicker extends Calendar {
         if (document.activeElement !== this.inputElement && this.enabled) {
             this.inputElement.focus();
             addClass([this.inputWrapper.container], [INPUTFOCUS]);
-            let focusArguments = {
-                model: this
-            };
-            this.trigger('focus', focusArguments);
+            
         }
     }
     /**
@@ -7614,10 +7615,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         if (document.activeElement !== this.inputElement && this.enabled) {
             addClass([this.inputWrapper.container], [INPUTFOCUS$1]);
             this.inputElement.focus();
-            let focusArguments = {
-                model: this
-            };
-            this.trigger('focus', focusArguments);
+            
         }
     }
     /**
@@ -9912,10 +9910,7 @@ let TimePicker = class TimePicker extends Component {
     focusIn() {
         if (document.activeElement !== this.inputElement && this.enabled) {
             this.inputElement.focus();
-            let focusArguments = {
-                model: this
-            };
-            this.trigger('focus', focusArguments);
+            
         }
     }
     /**

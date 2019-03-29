@@ -40,7 +40,8 @@
           &::after {
             background-color: $navigation-icon-background-hover;
             opacity: 0;
-            transition: transform 350ms ease-in-out 0s, opacity 300ms ease-in-out 100ms, background 200ms ease-in-out 200ms;
+            transition-duration: .3s;
+            transition-timing-function: cubic-bezier(.25, .1, .25, 1);
           }
         }
 
@@ -167,13 +168,14 @@
           background-color: transparent;
           border-color: transparent;
           color: transparent;
-          transition: background-color 500ms ease-out;
+          transition: background-color 300ms ease-out;
 
           &::before,
           &::after {
             background-color: $navigation-icon-background-hover;
             opacity: 0;
-            transition: transform 350ms ease-in-out 0s, opacity 300ms ease-in-out 100ms, background 200ms ease-in-out 200ms;
+            transition-duration: .3s;
+            transition-timing-function: cubic-bezier(.25, .1, .25, 1);
           }
         }
 

@@ -2877,6 +2877,43 @@ describe('MultiSelect', () => {
             listObj.selectAll(true);
         });
     });
+    describe('EJ2-23849 - Multiselect total count template width specification', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let datasource: { [key: string]: Object }[] = [
+            { Name: 'Australia', Code: 'AU' },
+            { Name: 'Bermuda', Code: 'BM' },
+            { Name: 'Canada', Code: 'CA' },
+            { Name: 'Cameroon', Code: 'CM' },
+            { Name: 'Denmark', Code: 'DK' },
+            { Name: 'France', Code: 'FR' },
+            { Name: 'Finland', Code: 'FI' },
+        ];
+        let originalTimeout: number;
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: datasource,
+                fields: { text: 'Name', value: 'Code' },
+                popupHeight: 50,
+                width: 50,
+                showDropDownIcon: true,
+                mode: 'CheckBox',
+                value: ['AU']
+            });
+            listObj.appendTo(element);
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+
+        it('check total count width', () => {
+            expect(!isNullOrUndefined((<any>listObj).viewWrapper.style.width)).toBe(true);
+        });
+    });
     it('memory leak', () => {     
         profile.sample();
         let average: any = inMB(profile.averageChange)

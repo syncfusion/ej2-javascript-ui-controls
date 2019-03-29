@@ -49,8 +49,20 @@ describe('DateRangePicker module', () => {
             expect(document.activeElement.tagName === 'INPUT').toEqual(true);
         });
         it('Clear icon availability testing', () => {
-            expect(editorObj.dateRangeModule.compObj.showClearButton === true).toEqual(true);
-            expect(selectAll('.e-clear-icon', ele).length === 1).toEqual(true);
+            expect(editorObj.dateRangeModule.compObj.showClearButton).toBe(true);
+            expect(selectAll('.e-clear-icon', ele).length).toBe(1);
+        });
+        it('Clear icon availability testing for false', () => {
+            editorObj.dateRangeModule.compObj.showClearButton = false;
+            editorObj.dateRangeModule.compObj.dataBind();
+            expect(editorObj.dateRangeModule.compObj.showClearButton).toBe(false);
+            expect(selectAll('.e-clear-icon', ele).length).toBe(0);
+        });
+        it('Clear icon availability testing for true', () => {
+            editorObj.dateRangeModule.compObj.showClearButton = true;
+            editorObj.dateRangeModule.compObj.dataBind();
+            expect(editorObj.dateRangeModule.compObj.showClearButton).toBe(true);
+            expect(selectAll('.e-clear-icon', ele).length).toBe(1);
         });
         it('Value property testing', () => {
             expect(editorObj.dateRangeModule.compObj.value === editorObj.value).toEqual(true);
@@ -74,6 +86,27 @@ describe('DateRangePicker module', () => {
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect((<HTMLInputElement>select('.e-daterangepicker', ele)).value === '').toEqual(true);
+        });
+        it('Value array as string with value property testing', () => {
+            editorObj.value = ['01/02/2018 10:10 AM', '01/05/2018 10:10 AM'];
+            editorObj.dataBind();
+            expect(editorObj.value).toEqual([new Date('01/02/2018 10:10 AM'), new Date('01/05/2018 10:10 AM')]);
+        });
+        it('Without compObj data to update value method testing', () => {
+            editorObj.value = [new Date('01/02/2018 10:10 AM'), new Date('01/05/2018 10:10 AM')];
+            editorObj.dataBind();
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-daterangepicker', ele).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual([new Date('01/02/2018 10:10 AM'), new Date('01/05/2018 10:10 AM')]);
+            expect(editorObj.dateRangeModule.compObj.value).toEqual([new Date('01/02/2018 10:10 AM'), new Date('01/05/2018 10:10 AM')]);
+            editorObj.dateRangeModule.compObj.value = [new Date('01/03/2018 10:10 AM'), new Date('01/06/2018 10:10 AM')];
+            expect(editorObj.dateRangeModule.compObj.value).toEqual([new Date('01/03/2018 10:10 AM'), new Date('01/06/2018 10:10 AM')]);
+            editorObj.dateRangeModule.compObj = undefined;
+            editorObj.save();
+            expect(editorObj.value).toEqual([new Date('01/02/2018 10:10 AM'), new Date('01/05/2018 10:10 AM')]);
         });
     });
     describe('Value as "" with testing', () => {
@@ -692,6 +725,42 @@ describe('DateRangePicker module', () => {
             expect(selectAll('.e-daterangepicker', document.body).length === 1).toEqual(true);
             editorObj.save();
             expect(dateString).toEqual(date[0].toISOString() + ' - ' + date[1].toISOString());
+        });
+    });
+
+    describe('Model - value child property update testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Default value with initial render testing', () => {
+            let date: Date[] = [new Date('01/01/2019'), new Date('01/10/2019')];
+            editorObj = renderEditor({
+                type: 'DateRange',
+                mode: 'Inline',
+                value: date
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(date);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-daterangepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(date);
+            expect(editorObj.model.value).toEqual(date);
+            editorObj.setProperties({ value: null }, true);
+            editorObj.dateRangeModule.compObj.value = null;
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(editorObj.model.value).toEqual(null);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-daterangepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
         });
     });
 

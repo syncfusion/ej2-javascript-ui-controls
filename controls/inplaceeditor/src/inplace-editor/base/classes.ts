@@ -43,6 +43,10 @@ export const BTN_SAVE: string = 'e-btn-save';
 /** @hidden */
 export const BTN_CANCEL: string = 'e-btn-cancel';
 /** @hidden */
+export const RTE_SPIN_WRAP: string = 'e-rte-spin-wrap';
+/** @hidden */
+export const CTRL_OVERLAY: string = 'e-control-overlay';
+/** @hidden */
 export const DISABLE: string = 'e-disable';
 /** @hidden */
 export const ICONS: string = 'e-icons';
@@ -56,3 +60,5 @@ export const HIDE: string = 'e-hide';
 export const RTL: string = 'e-rtl';
 /** @hidden */
 export const ERROR: string = 'e-error';
+/** @hidden */
+export const LOAD: string = 'e-loading';

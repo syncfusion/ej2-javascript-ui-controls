@@ -92,13 +92,13 @@ describe('Load Paragraph Format Dialog Test Case Validation', function () {
     });
     it('Apply Paragraph format', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion software', false);
+        editor.editorModule.insertText('Syncfusion software');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Syncfusion software', false);
+        editor.editorModule.insertText('Syncfusion software');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Syncfusion software', false);
+        editor.editorModule.insertText('Syncfusion software');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Syncfusion software', false);
+        editor.editorModule.insertText('Syncfusion software');
         editor.editorModule.onEnter();
         editor.selection.selectAll();
         dialog.loadParagraphDialog();
@@ -582,7 +582,7 @@ describe('Paragraph format-before spacing Applying validation via dialog in empt
         }, 2000);
     });
     it('Before spacing applying validation', function () {
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         let height = editor.selection.start.paragraph.height;
         dialog.show();
         (dialog as any).beforeSpacingIn.value = 48;
@@ -640,7 +640,7 @@ describe('Paragraph format-before spacing and left Indent Applying validation vi
         }, 2000);
     });
     it('Before spacing applying validation', function () {
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         let height = editor.selection.start.paragraph.height;
         dialog.show();
         let event = { value: 48, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
@@ -698,7 +698,7 @@ describe('Paragraph format-after spacing and left Indent Applying validation via
         }, 2000);
     });
     it('after spacing applying validation', function () {
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         let height = editor.selection.start.paragraph.height;
         dialog.show();
         let event = { value: 48, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
@@ -759,9 +759,9 @@ describe('Paragraph format using paragraph dialog- right to left changes in empt
         }, 2000);
     });
     it('apply bidi true', function () {
-        editor.editor.insertText('Sample', false);
-        editor.editor.insertText('سشةحمث', false);
-        editor.editor.insertText('سشةحمث', false);
+        editor.editor.insertText('Sample');
+        editor.editor.insertText('سشةحمث');
+        editor.editor.insertText('سشةحمث');
         expect(editor.selection.paragraphFormat.bidi).toBe(false);
         dialog.show();
         if (isNullOrUndefined((dialog as any).textAlignment)) {
@@ -827,9 +827,9 @@ describe('Paragraph format using paragraph dialog- right to left changes in empt
         }, 2000);
     });
     it('apply bidi true at center alignment', function () {
-        editor.editor.insertText('Sample', false);
-        editor.editor.insertText('سشةحمث', false);
-        editor.editor.insertText('سشةحمث', false);
+        editor.editor.insertText('Sample');
+        editor.editor.insertText('سشةحمث');
+        editor.editor.insertText('سشةحمث');
         editor.selection.paragraphFormat.textAlignment = 'Center';
         dialog.show();
         event = { value: 'rtl' };
@@ -889,13 +889,13 @@ describe('Paragraph format using paragraph dialog- right to left changes in non-
         }, 2000);
     });
     it('apply bidi true in non-empty selection', function () {
-        editor.editor.insertText('Sample', false);
-        editor.editor.insertText('سشةحمث', false);
-        editor.editor.insertText('سشةحمث', false);
+        editor.editor.insertText('Sample');
+        editor.editor.insertText('سشةحمث');
+        editor.editor.insertText('سشةحمث');
         editor.editor.onEnter();
-        editor.editor.insertText('Sample', false);
-        editor.editor.insertText('سشةحمث', false);
-        editor.editor.insertText('سشةحمث', false);
+        editor.editor.insertText('Sample');
+        editor.editor.insertText('سشةحمث');
+        editor.editor.insertText('سشةحمث');
         editor.selection.selectAll();
         dialog.show();
         if (isNullOrUndefined((dialog as any).textAlignment)) {
@@ -958,13 +958,13 @@ describe('Paragraph format using paragraph dialog- right to left changes in non-
         }, 2000);
     });
     it('apply bidi true in non-empty selection- alignment left', function () {
-        editor.editor.insertText('Sample', false);
-        editor.editor.insertText('سشةحمث', false);
-        editor.editor.insertText('سشةحمث', false);
+        editor.editor.insertText('Sample');
+        editor.editor.insertText('سشةحمث');
+        editor.editor.insertText('سشةحمث');
         editor.editor.onEnter();
-        editor.editor.insertText('Sample', false);
-        editor.editor.insertText('سشةحمث', false);
-        editor.editor.insertText('سشةحمث', false);
+        editor.editor.insertText('Sample');
+        editor.editor.insertText('سشةحمث');
+        editor.editor.insertText('سشةحمث');
         editor.selection.selectAll();
         editor.selection.paragraphFormat.bidi = true;
         dialog.show();
@@ -980,13 +980,13 @@ describe('Paragraph format using paragraph dialog- right to left changes in non-
 
     it('apply bidi true in non-empty selection- aligment justify', function () {
         editor.openBlank();
-        editor.editor.insertText('Sample', false);
-        editor.editor.insertText('سشةحمث', false);
-        editor.editor.insertText('سشةحمث', false);
+        editor.editor.insertText('Sample');
+        editor.editor.insertText('سشةحمث');
+        editor.editor.insertText('سشةحمث');
         editor.editor.onEnter();
-        editor.editor.insertText('Sample', false);
-        editor.editor.insertText('سشةحمث', false);
-        editor.editor.insertText('سشةحمث', false);
+        editor.editor.insertText('Sample');
+        editor.editor.insertText('سشةحمث');
+        editor.editor.insertText('سشةحمث');
         editor.selection.selectAll();
         editor.selection.paragraphFormat.textAlignment = 'Justify';
         dialog.show();

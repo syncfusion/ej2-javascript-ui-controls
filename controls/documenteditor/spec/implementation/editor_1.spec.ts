@@ -38,9 +38,9 @@ describe('Auto convert list using space key possible cases and level pattern ara
     });
     it('Starting numerical text 1 and followed by .', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listLevelNumber).toBe(0);
         expect(editor.selection.paragraphFormat.leftIndent).toBe(36);
         editor.editorHistory.undo();
@@ -51,9 +51,9 @@ describe('Auto convert list using space key possible cases and level pattern ara
     });
     it('Starting numerical text 1 and followed by -', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('-', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('-');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
         expect(editor.selection.paragraphFormat.leftIndent).toBe(36);
         editor.editorHistory.undo();
@@ -64,14 +64,14 @@ describe('Auto convert list using space key possible cases and level pattern ara
     });
     it('Starting numerical text 1 and followed by >', () => {
         editor.openBlank();
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('>', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('>');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listLevelNumber).toBe(0);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -80,9 +80,9 @@ describe('Auto convert list using space key possible cases and level pattern ara
     });
     it('Starting numerical text 1 and followed by )', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText(')', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText(')');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -91,9 +91,9 @@ describe('Auto convert list using space key possible cases and level pattern ara
     });
     it('Starting numerical text 1 and followed by &', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('&', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('&');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -102,11 +102,11 @@ describe('Auto convert list using space key possible cases and level pattern ara
     });
     it('Starting numerical text 1 and followed by . and also paragraph is not empty', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('Adventure');
         viewer.selection.handleHomeKey();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -143,8 +143,8 @@ describe('Auto convert list using tab key possible cases with  level pattern low
     });
     it('Starting numerical text a and followed by .', () => {
         editor.openBlank();
-        editor.editorModule.insertText('a', false);
-        editor.editorModule.insertText('.', false);
+        editor.editorModule.insertText('a');
+        editor.editorModule.insertText('.');
         viewer.selection.handleTabKey(false, false);
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
         expect(editor.selection.paragraphFormat.leftIndent).toBe(36);
@@ -156,8 +156,8 @@ describe('Auto convert list using tab key possible cases with  level pattern low
     });
     it('Starting numerical text a and followed by -', () => {
         editor.openBlank();
-        editor.editorModule.insertText('a', false);
-        editor.editorModule.insertText('-', false);
+        editor.editorModule.insertText('a');
+        editor.editorModule.insertText('-');
         viewer.selection.handleTabKey(false, false);
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
         editor.editorHistory.undo();
@@ -167,8 +167,8 @@ describe('Auto convert list using tab key possible cases with  level pattern low
     });
     it('Starting numerical text a and followed by )', () => {
         editor.openBlank();
-        editor.editorModule.insertText('a', false);
-        editor.editorModule.insertText(')', false);
+        editor.editorModule.insertText('a');
+        editor.editorModule.insertText(')');
         viewer.selection.handleTabKey(false, false);
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
         editor.editorHistory.undo();
@@ -178,9 +178,9 @@ describe('Auto convert list using tab key possible cases with  level pattern low
     });
     it('Starting numerical text a and followed by & with not possible cases', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('&', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('&');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -189,11 +189,11 @@ describe('Auto convert list using tab key possible cases with  level pattern low
     });
     it('Starting numerical text 1 and followed by . and also paragraph is not empty', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('Adventure');
         viewer.selection.handleHomeKey();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -231,9 +231,9 @@ describe('Auto convert list using space and tab key possible cases with  level p
     });
     it('Starting numerical text i and followed by .', () => {
         editor.openBlank();
-        editor.editorModule.insertText('i', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('i');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -242,8 +242,8 @@ describe('Auto convert list using space and tab key possible cases with  level p
     });
     it('Starting numerical text I and followed by -', () => {
         editor.openBlank();
-        editor.editorModule.insertText('I', false);
-        editor.editorModule.insertText('-', false);
+        editor.editorModule.insertText('I');
+        editor.editorModule.insertText('-');
         viewer.selection.handleTabKey(false, false);
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
         editor.editorHistory.undo();
@@ -253,9 +253,9 @@ describe('Auto convert list using space and tab key possible cases with  level p
     });
     it('Starting numerical text i and followed by >', () => {
         editor.openBlank();
-        editor.editorModule.insertText('i', false);
-        editor.editorModule.insertText('>', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('i');
+        editor.editorModule.insertText('>');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -264,8 +264,8 @@ describe('Auto convert list using space and tab key possible cases with  level p
     });
     it('Starting numerical text I and followed by )', () => {
         editor.openBlank();
-        editor.editorModule.insertText('I', false);
-        editor.editorModule.insertText(')', false);
+        editor.editorModule.insertText('I');
+        editor.editorModule.insertText(')');
         viewer.selection.handleTabKey(false, false);
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
         editor.editorHistory.undo();
@@ -275,9 +275,9 @@ describe('Auto convert list using space and tab key possible cases with  level p
     });
     it('Starting numerical text I and followed by &', () => {
         editor.openBlank();
-        editor.editorModule.insertText('I', false);
-        editor.editorModule.insertText('&', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('I');
+        editor.editorModule.insertText('&');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -286,10 +286,10 @@ describe('Auto convert list using space and tab key possible cases with  level p
     });
     it('Starting numerical text i and followed by . and also paragraph is not empty', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('Adventure');
         viewer.selection.handleHomeKey();
-        editor.editorModule.insertText('i', false);
-        editor.editorModule.insertText('.', false);
+        editor.editorModule.insertText('i');
+        editor.editorModule.insertText('.');
         viewer.selection.handleTabKey(false, false);
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
         editor.editorHistory.undo();
@@ -328,9 +328,9 @@ describe('Auto convert list using space and tab key with not possible cases and 
     });
     it('Starting numerical text 2 and followed by .', () => {
         editor.openBlank();
-        editor.editorModule.insertText('2', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('2');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -339,8 +339,8 @@ describe('Auto convert list using space and tab key with not possible cases and 
     });
     it('Starting numerical text I and followed by ,', () => {
         editor.openBlank();
-        editor.editorModule.insertText('I', false);
-        editor.editorModule.insertText(',', false);
+        editor.editorModule.insertText('I');
+        editor.editorModule.insertText(',');
         viewer.selection.handleTabKey(false, false);
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
         editor.editorHistory.undo();
@@ -353,9 +353,9 @@ describe('Auto convert list using space and tab key with not possible cases and 
     });
     it('Starting numerical text z and followed by >', () => {
         editor.openBlank();
-        editor.editorModule.insertText('z', false);
-        editor.editorModule.insertText('>', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('z');
+        editor.editorModule.insertText('>');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -364,8 +364,8 @@ describe('Auto convert list using space and tab key with not possible cases and 
     });
     it('Starting numerical text 0 and followed by )', () => {
         editor.openBlank();
-        editor.editorModule.insertText('0', false);
-        editor.editorModule.insertText(')', false);
+        editor.editorModule.insertText('0');
+        editor.editorModule.insertText(')');
         viewer.selection.handleTabKey(false, false);
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
         editor.editorHistory.undo();
@@ -375,9 +375,9 @@ describe('Auto convert list using space and tab key with not possible cases and 
     });
     it('Starting numerical text i and followed by . and also paragraph is not empty', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Adventure', false);
-        editor.editorModule.insertText('i', false);
-        editor.editorModule.insertText('.', false);
+        editor.editorModule.insertText('Adventure');
+        editor.editorModule.insertText('i');
+        editor.editorModule.insertText('.');
         viewer.selection.handleTabKey(false, false);
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
         editor.editorHistory.undo();
@@ -387,34 +387,34 @@ describe('Auto convert list using space and tab key with not possible cases and 
     });
     it('Apply list to already list contain paragraph', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('Adventure');
         editor.editorModule.applyBulletOrNumbering('%1.', 'Arabic', 'Verdana');
         viewer.selection.handleHomeKey();
-        editor.editorModule.insertText('i', false);
-        editor.editorModule.insertText('.', false);
+        editor.editorModule.insertText('i');
+        editor.editorModule.insertText('.');
         viewer.selection.handleTabKey(false, false);
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
     });
     it('Apply list to already list contain paragraph', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('Adventure');
         editor.editorModule.applyBulletOrNumbering('%1.', 'Arabic', 'Verdana');
         viewer.selection.handleEndKey();
         editor.editorModule.onEnter();
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('I', false);
-        editor.editorModule.insertText('.', false);
+        editor.editorModule.insertText('I');
+        editor.editorModule.insertText('.');
         viewer.selection.handleTabKey(false, false);
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
     });
     it('Previous span is field', () => {
         editor.openBlank();
-        editor.editorModule.insertText('www.google.com', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('I', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('www.google.com');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('I');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
     });
 
@@ -448,9 +448,9 @@ describe('Auto convert list using space key possible cases with level pattern as
     });
     it('Starting numerical text 01 and followed by .', () => {
         editor.openBlank();
-        editor.editorModule.insertText('01', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('01');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listLevelNumber).toBe(0);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -459,9 +459,9 @@ describe('Auto convert list using space key possible cases with level pattern as
     });
     it('Starting numerical text 01 and followed by -', () => {
         editor.openBlank();
-        editor.editorModule.insertText('01', false);
-        editor.editorModule.insertText('-', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('01');
+        editor.editorModule.insertText('-');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -470,14 +470,14 @@ describe('Auto convert list using space key possible cases with level pattern as
     });
     it('Starting numerical text 01 and followed by >', () => {
         editor.openBlank();
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('01', false);
-        editor.editorModule.insertText('>', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('01');
+        editor.editorModule.insertText('>');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listLevelNumber).toBe(0);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -486,9 +486,9 @@ describe('Auto convert list using space key possible cases with level pattern as
     });
     it('Starting numerical text 00 and followed by )', () => {
         editor.openBlank();
-        editor.editorModule.insertText('00', false);
-        editor.editorModule.insertText(')', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('00');
+        editor.editorModule.insertText(')');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -497,9 +497,9 @@ describe('Auto convert list using space key possible cases with level pattern as
     });
     it('Starting numerical text 01 and followed by &', () => {
         editor.openBlank();
-        editor.editorModule.insertText('01', false);
-        editor.editorModule.insertText('&', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('01');
+        editor.editorModule.insertText('&');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -508,11 +508,11 @@ describe('Auto convert list using space key possible cases with level pattern as
     });
     it('Starting numerical text 01 and followed by . and also paragraph is not empty', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('Adventure');
         viewer.selection.handleHomeKey();
-        editor.editorModule.insertText('01', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('01');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -554,9 +554,9 @@ describe('Different left indent with paragraph contains only space , tab and com
         viewer.owner.editorModule.handleTextInput('\t');
         viewer.owner.editorModule.handleTextInput('\t');
         viewer.owner.editorModule.handleTextInput('\t');
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText(')', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText(')');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listId).not.toBe(-1);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -565,15 +565,15 @@ describe('Different left indent with paragraph contains only space , tab and com
     });
     it('combination of space and tab followed by text A and followed by >', () => {
         editor.openBlank();
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText(' ');
         viewer.owner.editorModule.handleTextInput('\t');
-        editor.editorModule.insertText('A', false);
-        editor.editorModule.insertText('>', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('A');
+        editor.editorModule.insertText('>');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listLevelNumber).toBe(0);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -616,14 +616,14 @@ describe('Different left indent with paragraph contains only space , tab and com
     it('combination of tab and space followed by text I and followed by >', () => {
         editor.openBlank();
         viewer.owner.editorModule.handleTextInput('\t');
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('I', false);
-        editor.editorModule.insertText('>', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('I');
+        editor.editorModule.insertText('>');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listLevelNumber).toBe(0);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -632,16 +632,16 @@ describe('Different left indent with paragraph contains only space , tab and com
     });
     it('combination of text, tab and space followed by text I and followed by >', () => {
         editor.openBlank();
-        editor.editorModule.insertText('sample', false);
+        editor.editorModule.insertText('sample');
         viewer.owner.editorModule.handleTextInput('\t');
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('I', false);
-        editor.editorModule.insertText('>', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('I');
+        editor.editorModule.insertText('>');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
         editor.editorHistory.undo();
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
@@ -652,16 +652,16 @@ describe('Different left indent with paragraph contains only space , tab and com
         editor.openBlank();
         editor.editor.insertImage(imageString, 100, 100);
         viewer.selection.handleRightKey();
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
     });
     it('span is image validation and previous span is image', () => {
         editor.openBlank();
         editor.editor.insertImage(imageString, 100, 100);
         viewer.selection.handleRightKey();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
         expect(editor.selection.paragraphFormat.listId).toBe(-1);
     });
 });
@@ -751,10 +751,10 @@ describe('Numbering apply validation in different scenario', () => {
     });
     it('Numbering list with previous Paragrph contains list and next paragraph is table and next paragraph is empty', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Adventure');
         let listId = editor.selection.paragraphFormat.listId;
         editor.editorModule.onEnter();
         editor.editorModule.onEnter();
@@ -766,24 +766,24 @@ describe('Numbering apply validation in different scenario', () => {
     });
     it('Numbering list with previous Paragrph contains list and next paragraph is table and next paragraph is not empty', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Adventure');
         let listId = editor.selection.paragraphFormat.listId;
         editor.editorModule.onEnter();
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('Adventure');
         editor.editorModule.onEnter();
         editor.editor.applyNumbering('%1.', 'Arabic');
         expect(editor.selection.paragraphFormat.listId).not.toBe(listId);
     });
     it('Numbering list with previous Paragrph contains list and next paragraph is table and next paragraph is not empty', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Adventure');
         let listId = editor.selection.paragraphFormat.listId;
         editor.editorModule.onEnter();
         editor.editorModule.onEnter();
@@ -792,10 +792,10 @@ describe('Numbering apply validation in different scenario', () => {
     });
     it('Numbering list with previous Paragrph contains list and next paragraph is table and next paragraph is not empty', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Adventure');
         let listId = editor.selection.paragraphFormat.listId;
         editor.editorModule.onEnter();
         editor.editorModule.onEnter();
@@ -837,10 +837,10 @@ describe('Bullet list Apply validation', () => {
     });
     it('Bullet List validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Adventure');
         let listId = editor.selection.paragraphFormat.listId;
         editor.editorModule.onEnter();
         editor.editorModule.onEnter();
@@ -851,10 +851,10 @@ describe('Bullet list Apply validation', () => {
     });
     it('Bullet List validation with back ward selection', () => {
         editor.openBlank();
-        editor.editorModule.insertText('1', false);
-        editor.editorModule.insertText('.', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Adventure');
         let listId = editor.selection.paragraphFormat.listId;
         editor.selection.extendToLineStart();
         editor.editor.applyBullet('\uf0b7', 'Symbol');
@@ -895,14 +895,14 @@ describe('Bullet list Apply validation', () => {
         });
         it('Asterisk List validation', () => {
             editor.openBlank();
-            editor.editorModule.insertText('*', false);
-            editor.editorModule.insertText(' ', false);
+            editor.editorModule.insertText('*');
+            editor.editorModule.insertText(' ');
             expect(editor.selection.paragraphFormat.listId).toBe(0);
         });
         it('Hyphen list validation', () => {
             editor.openBlank();
-            editor.editorModule.insertText('-', false);
-            editor.editorModule.insertText(' ', false);
+            editor.editorModule.insertText('-');
+            editor.editorModule.insertText(' ');
             expect(editor.selection.paragraphFormat.listId).toBe(1);
         });
     });
@@ -937,7 +937,7 @@ describe('Table relayouting validation', () => {
     it('Table with 30 column editing', () => {
         editor.editorModule.insertTable(2, 30);
         for (let i: number = 0; i < 20; i++) {
-            editor.editorModule.insertText('efefefefef', false);
+            editor.editorModule.insertText('efefefefef');
         }
         expect(editor.viewer.pages.length).toBeGreaterThan(1);
     });

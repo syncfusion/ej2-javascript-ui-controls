@@ -96,11 +96,11 @@ export interface DownloadArgs {
 
 export interface FileBeforeSendEventArgs {
     /**
-     * Return the name of the Ajax action will be performed.
+     * Return the name of the AJAX action will be performed.
      */
     action?: string;
     /**
-     * Return the Ajax details which are send to server.
+     * Return the AJAX details which are send to server.
      */
     ajaxSettings?: Object;
     /**
@@ -111,22 +111,22 @@ export interface FileBeforeSendEventArgs {
 
 export interface FileOnSuccessEventArgs {
     /**
-     * Return the name of the Ajax action will be performed.
+     * Return the name of the AJAX action will be performed.
      */
     action?: string;
     /**
-     * Return the Ajax details which are send to server.
+     * Return the AJAX details which are send to server.
      */
     result?: Object;
 }
 
 export interface FileOnErrorEventArgs {
     /**
-     * Return the name of the Ajax action will be performed.
+     * Return the name of the AJAX action will be performed.
      */
     action?: string;
     /**
-     * Return the Ajax details which are send to server.
+     * Return the AJAX details which are send to server.
      */
     error?: Object;
 }
@@ -204,9 +204,10 @@ export interface FileMenuClickEventArgs {
 
 export interface IFileManager extends Component<HTMLElement> {
     pathId: string[];
-    expandedPath: string;
+    originalPath: string;
     expandedId: string;
     itemData: Object[];
+    visitedData: Object;
     visitedItem: Element;
     feParent: Object[];
     feFiles: Object;
@@ -250,7 +251,6 @@ export interface IFileManager extends Component<HTMLElement> {
     isBigger: Boolean;
     isFile: boolean;
     allowMultiSelection: boolean;
-    setHeight: Function;
     selectedItems: string[];
     nodeNames: Object[];
     sortOrder: SortOrder;

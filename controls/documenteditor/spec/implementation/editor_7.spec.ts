@@ -36,7 +36,7 @@ describe('Cell content alignment validation in empty selection- Align Center Lef
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onCellContentAlignment('Center', 'Left');
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Center');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
@@ -90,7 +90,7 @@ describe('Cell content alignment validation in empty selection- Align Center Cen
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onCellContentAlignment('Center', 'Center');
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Center');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Center');
@@ -143,7 +143,7 @@ describe('Cell content alignment validation in empty selection- Align Center Rig
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onCellContentAlignment('Center', 'Right');
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Center');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Right');
@@ -198,7 +198,7 @@ describe('Cell content alignment validation in empty selection- Align Bottom Rig
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onCellContentAlignment('Bottom', 'Right');
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Bottom');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Right');
@@ -252,7 +252,7 @@ describe('Cell content alignment validation in empty selection- Align Bottom Cen
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onCellContentAlignment('Bottom', 'Center');
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Bottom');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Center');
@@ -306,7 +306,7 @@ describe('Cell content alignment validation in empty selection- Align Bottom Lef
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onCellContentAlignment('Bottom', 'Center');
         editor.editor.onCellContentAlignment('Bottom', 'Left');
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Bottom');
@@ -361,7 +361,7 @@ describe('Cell content alignment validation in empty selection- Align Top Left',
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onCellContentAlignment('Bottom', 'Center');
         editor.editor.onCellContentAlignment('Top', 'Left');
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Top');
@@ -415,7 +415,7 @@ describe('Cell content alignment validation in empty selection- Align Top Center
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onCellContentAlignment('Bottom', 'Left');
         editor.selection.handleRightKey();
         editor.editor.onCellContentAlignment('Top', 'Center');
@@ -471,7 +471,7 @@ describe('Cell content alignment validation in empty selection- Align Top Right'
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onCellContentAlignment('Bottom', 'Left');
         editor.selection.handleRightKey();
         editor.editor.onCellContentAlignment('Top', 'Right');
@@ -527,13 +527,13 @@ describe('Cell content alignment validation in Non-empty selection-Top Right and
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.handleTabKey(true, false);
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.handleTabKey(true, false);
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.handleTabKey(true, false);
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.selectTable();
         editor.editor.onCellContentAlignment('Top', 'Right');
         editor.editor.onCellContentAlignment('Center', 'Left');
@@ -590,13 +590,13 @@ describe('Cell content alignment validation in Non-empty selection-Top Center an
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.handleTabKey(true, false);
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.handleTabKey(true, false);
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.handleTabKey(true, false);
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.selectTable();
         editor.editor.onCellContentAlignment('Top', 'Center');
         editor.editor.onCellContentAlignment('Center', 'Right');
@@ -653,13 +653,13 @@ describe('Cell content alignment validation in Non-empty selection-Bottom Center
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.handleTabKey(true, false);
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.handleTabKey(true, false);
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.handleTabKey(true, false);
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.selectTable();
         editor.editor.onCellContentAlignment('Bottom', 'Center');
         editor.editor.onCellContentAlignment('Top', 'Left');
@@ -717,13 +717,13 @@ describe('Cell content alignment validation in Non-empty selection-Center Right 
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.handleTabKey(true, false);
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.handleTabKey(true, false);
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.handleTabKey(true, false);
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.selectTable();
         editor.editor.onCellContentAlignment('Center', 'Right');
         editor.editor.onCellContentAlignment('Bottom', 'Left');
@@ -781,13 +781,13 @@ describe('Cell content alignment validation in Non-empty selection-Align Bottom 
         editor.editor.insertTable(2, 2);
         editor.selection.rowFormat.heightType = 'Exactly';
         editor.selection.rowFormat.height = 30;
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.handleTabKey(true, false);
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.handleTabKey(true, false);
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.handleTabKey(true, false);
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.selectTable();
         editor.editor.onCellContentAlignment('Bottom', 'Right');
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Bottom');
@@ -841,9 +841,9 @@ describe('Cell content alignment validation Without History', () => {
     });
     it('Align Bottom Right without history in empty selection', () => {
         editor.editor.insertTable(2, 2);
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onEnter()
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onCellContentAlignment('Bottom', 'Right');
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Bottom');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Right');
@@ -885,10 +885,10 @@ describe('Cell content alignment validation invalid cases', () => {
         }, 1000);
     });
     it('Align Bottom Right selection including paragraph and table', () => {
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onEnter();
         editor.editor.insertTable(2, 2);
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.selectAll();
         editor.editor.onCellContentAlignment('Bottom', 'Right');
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Top');
@@ -896,7 +896,7 @@ describe('Cell content alignment validation invalid cases', () => {
     });
     it('Align Bottom Right selection in empty selection and not in Table', () => {
         editor.openBlank();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onCellContentAlignment('Bottom', 'Right');
         expect(editor.selection.cellFormat.verticalAlignment).toBe('Top');
         expect(editor.selection.start.paragraph.paragraphFormat.textAlignment).toBe('Left');
@@ -930,7 +930,7 @@ describe('Table center alignment validation', () => {
         editor.editorModule.insertTable(2, 2);
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.x).toBeLessThan(100);
         editor.selection.start.paragraph.associatedCell.ownerTable.tableFormat.tableAlignment = 'Center';
-        editor.editorModule.insertText('SYncfusion', false);
+        editor.editorModule.insertText('SYncfusion');
         expect(editor.selection.start.paragraph.associatedCell.ownerTable.x).toBeLessThan(100);
     });
 });

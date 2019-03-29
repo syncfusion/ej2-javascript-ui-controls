@@ -77,6 +77,8 @@
 
 - Console error is thrown in IE browser with angular routing, that issue has been fixed.
 
+- Unable to maintain the RichTextEditor color picker pop-up position when scrolling the browser has been fixed.
+
 ## 16.4.46 (2019-01-08)
 
 ### RichTextEditor
@@ -90,6 +92,8 @@
 - The change event is triggered on clicking into HTML source code view in Edge browser, that issue has been fixed.
 
 - Blur event is not triggered when we change focus directly from one RTE to another RTE, that issue has been fixed.
+
+- RichTextEditor full screen not working properly when render inside the overflow element has been fixed.
 
 ## 16.4.44 (2018-12-24)
 

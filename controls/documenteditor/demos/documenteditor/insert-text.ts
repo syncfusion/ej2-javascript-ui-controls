@@ -12,4 +12,4 @@ let documenteditor: DocumentEditor = new DocumentEditor({
 
 documenteditor.appendTo('#container');
 
-documenteditor.editor.insertText('Adventure Works Cycles', false);
+documenteditor.editor.insertText('Adventure Works Cycles');

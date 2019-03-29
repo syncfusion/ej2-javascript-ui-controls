@@ -122,6 +122,30 @@ export class Toolbar {
         }
     }
     /**
+     * Shows/hides the Navigation toolbar in the PdfViewer
+     * @param  {boolean} enableNavigationToolbar - If set true , its show the Navigation Toolbar
+     * @returns void
+     */
+    public showNavigationToolbar(enableNavigationToolbar: boolean): void {
+        if (!Browser.isDevice) {
+            let navigationToolbar: HTMLElement = this.pdfViewerBase.navigationPane.sideBarToolbar;
+            let navigationToolbarSplitter: HTMLElement = this.pdfViewerBase.navigationPane.sideBarToolbarSplitter;
+            if (enableNavigationToolbar) {
+                navigationToolbar.style.display = 'block';
+                navigationToolbarSplitter.style.display = 'block';
+                if (this.pdfViewerBase.navigationPane.isBookmarkOpen || this.pdfViewerBase.navigationPane.isThumbnailOpen) {
+                    this.pdfViewerBase.navigationPane.clear();
+                }
+            } else {
+                navigationToolbar.style.display = 'none';
+                navigationToolbarSplitter.style.display = 'none';
+                if (this.pdfViewerBase.navigationPane.isBookmarkOpen || this.pdfViewerBase.navigationPane.isThumbnailOpen) {
+                    this.pdfViewerBase.navigationPane.updateViewerContainerOnClose();
+                }
+            }
+        }
+    }
+    /**
      * Shows /hides the the toolbar items in the PdfViewer
      * @param  {string[]} items - Defines the toolbar items in the toolbar
      * @param  {boolean} isVisible - If set true, then its show the toolbar Items
@@ -589,7 +613,7 @@ export class Toolbar {
         items.push({ prefixIcon: 'e-pv-undo-icon e-pv-icon', cssClass: 'e-pv-undo-container', id: this.pdfViewer.element.id + '_undo', text: this.pdfViewer.localeObj.getConstant('Undo'), align: 'Left'});
         items.push({ prefixIcon: 'e-pv-redo-icon e-pv-icon', cssClass: 'e-pv-redo-container', id: this.pdfViewer.element.id + '_redo', text: this.pdfViewer.localeObj.getConstant('Redo'), align: 'Left'});
         // tslint:disable-next-line:max-line-length
-        items.push({ prefixIcon: 'e-pv-text-search-icon e-pv-icon', cssClass: 'e-pv-text-search-container', id: this.pdfViewer.element.id + '_search', text: this.pdfViewer.localeObj.getConstant('Seach text'), align: 'Right' });
+        items.push({ prefixIcon: 'e-pv-text-search-icon e-pv-icon', cssClass: 'e-pv-text-search-container', id: this.pdfViewer.element.id + '_search', text: this.pdfViewer.localeObj.getConstant('Search text'), align: 'Right' });
         items.push({ prefixIcon: 'e-pv-annotation-icon e-pv-icon', cssClass: 'e-pv-annotation-container', id: this.pdfViewer.element.id + '_annotation', text: this.pdfViewer.localeObj.getConstant('Annotation Edit text'), align: 'Right'});
         // tslint:disable-next-line:max-line-length
         items.push({ prefixIcon: 'e-pv-print-document-icon e-pv-icon', cssClass: 'e-pv-print-document-container', id: this.pdfViewer.element.id + '_print', text: this.pdfViewer.localeObj.getConstant('Print text'), align: 'Right' });
@@ -876,6 +900,8 @@ export class Toolbar {
     public onToolbarResize(viewerWidth: number): void {
         if (Browser.isDevice) {
             this.pdfViewerBase.navigationPane.toolbarResize();
+        } else {
+            this.toolbar.refreshOverflow();
         }
     }
 
@@ -1179,10 +1205,17 @@ export class Toolbar {
         if (this.annotationToolbarModule) {
             if (this.pdfViewerBase.isPanMode && this.annotationToolbarModule.isToolbarHidden) {
                 this.pdfViewerBase.initiateTextSelectMode();
-                this.updateInteractionTools(true);
             }
+            this.DisableInteractionTools();
             this.annotationToolbarModule.showAnnotationToolbar(this.annotationItem);
         }
+    }
+    /**
+     * @private
+     */
+    public DisableInteractionTools(): void {
+        this.deSelectItem(this.textSelectItem);
+        this.deSelectItem(this.panItem);
     }
 
     /**
@@ -1198,8 +1231,10 @@ export class Toolbar {
     public deSelectItem(element: HTMLElement): void {
         element.classList.remove('e-pv-select');
     }
-
-    private updateInteractionTools(isTextSelect: boolean): void {
+    /**
+     * @private
+     */
+    public updateInteractionTools(isTextSelect: boolean): void {
         if (isTextSelect) {
             this.selectItem(this.textSelectItem);
             this.deSelectItem(this.panItem);
@@ -1214,6 +1249,11 @@ export class Toolbar {
             this.showToolbar(true);
         } else {
             this.showToolbar(false);
+        }
+        if (this.pdfViewer.enableNavigationToolbar) {
+            this.showNavigationToolbar(true);
+        } else {
+            this.showNavigationToolbar(false);
         }
         if (this.isPrintBtnVisible) {
             this.showPrintOption(true);

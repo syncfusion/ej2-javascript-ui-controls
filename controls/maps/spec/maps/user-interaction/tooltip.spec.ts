@@ -109,7 +109,7 @@ describe('Map layer testing', () => {
                 trigger.mousemoveEvent(spec, 0, 0, 345, 310);
                 tooltipElement = document.getElementById('mapst_mapsTooltip_path');
                 let fill: string = tooltipElement.getAttribute('fill');
-                expect(fill).toBe('#363F4C');
+                expect(fill).toBe('#ffffff');
                 done();
             };
             tooltip.theme = 'Highcontrast';

@@ -93,6 +93,10 @@ function getSeriesColor(theme) {
             palette = ['#4472c4', '#ed7d31', '#ffc000', '#70ad47', '#5b9bd5',
                 '#c1c1c1', '#6f6fe2', '#e269ae', '#9e480e', '#997300'];
             break;
+        case 'Bootstrap4':
+            palette = ['#a16ee5', '#f7ce69', '#55a5c2', '#7ddf1e', '#ff6ea6',
+                '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
+            break;
         case 'Bootstrap':
             palette = ['#a16ee5', '#f7ce69', '#55a5c2', '#7ddf1e', '#ff6ea6',
                 '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
@@ -104,11 +108,20 @@ function getSeriesColor(theme) {
                 '#FA83C3', '#00C27A', '#43ACEF', '#D681EF', '#D8BC6E'];
             break;
         case 'MaterialDark':
-        case 'FabricDark':
-        case 'BootstrapDark':
-            palette = ['#B586FF', '#71F9A3', '#FF9572', '#5BD5FF', '#F9F871',
-                '#B6F971', '#8D71F9', '#FF6F91', '#FFC75F', '#D55DB1'];
+            palette = ['#00bdae', '#404041', '#357cd2', '#e56590', '#f8b883',
+                '#70ad47', '#dd8abd', '#7f84e8', '#7bb4eb', '#ea7a57'];
             break;
+        case 'FabricDark':
+            palette = ['#4472c4', '#ed7d31', '#ffc000', '#70ad47', '#5b9bd5',
+                '#c1c1c1', '#6f6fe2', '#e269ae', '#9e480e', '#997300'];
+            break;
+        case 'BootstrapDark':
+            palette = ['#a16ee5', '#f7ce69', '#55a5c2', '#7ddf1e', '#ff6ea6',
+                '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
+            break;
+        // palette = ['#B586FF', '#71F9A3', '#FF9572', '#5BD5FF', '#F9F871',
+        //     '#B6F971', '#8D71F9', '#FF6F91', '#FFC75F', '#D55DB1'];
+        // break;
         default:
             palette = ['#00bdae', '#404041', '#357cd2', '#e56590', '#f8b883',
                 '#70ad47', '#dd8abd', '#7f84e8', '#7bb4eb', '#ea7a57'];
@@ -172,8 +185,8 @@ function getThemeColor(theme) {
                 tooltipBoldLabel: '#282727',
                 tooltipLightLabel: '#333232',
                 tooltipHeaderLine: '#9A9A9A',
-                markerShadow: '#BFBFBF',
-                selectionRectFill: 'rgba(255, 217, 57, 0.3)',
+                markerShadow: null,
+                selectionRectFill: 'rgba(56,169,255, 0.1)',
                 selectionRectStroke: '#38A9FF',
                 selectionCircleStroke: '#282727'
             };
@@ -182,9 +195,9 @@ function getThemeColor(theme) {
             style = {
                 axisLabel: '#212529', axisTitle: '#ffffff', axisLine: '#CED4DA', majorGridLine: '#CED4DA',
                 minorGridLine: '#DEE2E6', majorTickLine: '#ADB5BD', minorTickLine: '#CED4DA', chartTitle: '#212529', legendLabel: '#212529',
-                background: '#FFFFFF', areaBorder: '#DEE2E6', errorBar: '#ffffff', crosshairLine: '#6C757D', crosshairFill: '#495057',
+                background: '#FFFFFF', areaBorder: '#DEE2E6', errorBar: '#000000', crosshairLine: '#6C757D', crosshairFill: '#495057',
                 crosshairLabel: '#FFFFFF', tooltipFill: 'rgba(0, 0, 0, 0.9)', tooltipBoldLabel: 'rgba(255,255,255)',
-                tooltipLightLabel: 'rgba(255,255,255, 0.9)', tooltipHeaderLine: 'rgba(255,255,255, 0.2)', markerShadow: '#BFBFBF',
+                tooltipLightLabel: 'rgba(255,255,255, 0.9)', tooltipHeaderLine: 'rgba(255,255,255, 0.2)', markerShadow: null,
                 selectionRectFill: 'rgba(255,255,255, 0.1)', selectionRectStroke: 'rgba(0, 123, 255)', selectionCircleStroke: '#495057'
             };
             break;
@@ -4941,7 +4954,7 @@ var DataLabelSettings = /** @__PURE__ @class */ (function (_super) {
         Complex({ left: 5, right: 5, top: 5, bottom: 5 }, Margin)
     ], DataLabelSettings.prototype, "margin", void 0);
     __decorate$4([
-        Complex({ size: '11px', color: null }, Font)
+        Complex({ size: '11px', color: '', fontStyle: 'Normal', fontWeight: 'Normal', fontFamily: 'Segoe UI' }, Font)
     ], DataLabelSettings.prototype, "font", void 0);
     __decorate$4([
         Property(null)
@@ -5256,7 +5269,7 @@ var SeriesBase = /** @__PURE__ @class */ (function (_super) {
         this.points[i] = new Points();
         point = this.points[i];
         var currentViewData = this.currentViewData;
-        var getObjectValueByMappingString = this.improveChartPerformance ? this.getObjectValue : getValue;
+        var getObjectValueByMappingString = this.enableComplexProperty ? getValue : this.getObjectValue;
         point.x = getObjectValueByMappingString(xName, currentViewData[i]);
         point.high = getObjectValueByMappingString(this.high, currentViewData[i]);
         point.low = getObjectValueByMappingString(this.low, currentViewData[i]);
@@ -5526,8 +5539,8 @@ var SeriesBase = /** @__PURE__ @class */ (function (_super) {
         Property('X')
     ], SeriesBase.prototype, "segmentAxis", void 0);
     __decorate$4([
-        Property(true)
-    ], SeriesBase.prototype, "improveChartPerformance", void 0);
+        Property(false)
+    ], SeriesBase.prototype, "enableComplexProperty", void 0);
     return SeriesBase;
 }(ChildProperty));
 /**
@@ -6658,6 +6671,9 @@ var BaseLegend = /** @__PURE__ @class */ (function () {
             var previousLegend = this.legendCollections[firstLegend];
             for (var _i = 0, _a = this.legendCollections; _i < _a.length; _i++) {
                 var legendOption = _a[_i];
+                if (this.chart.getModuleName() === 'accumulationchart') {
+                    legendOption.fill = this.chart.visibleSeries[0].points[legendOption.pointIndex].color;
+                }
                 if (legendOption.render && legendOption.text !== '') {
                     legendSeriesGroup = chart.renderer.createGroup({
                         id: this.legendID + this.generateId(legendOption, '_g_', count)
@@ -10347,7 +10363,7 @@ var LineBase = /** @__PURE__ @class */ (function () {
      * @return {void}
      * @private
      */
-    LineBase.prototype.improveChartPerformance = function (series) {
+    LineBase.prototype.enableComplexProperty = function (series) {
         var tempPoints = [];
         var xVisibleRange = series.xAxis.visibleRange;
         var yVisibleRange = series.yAxis.visibleRange;
@@ -10537,7 +10553,7 @@ var LineSeries = /** @__PURE__ @class */ (function (_super) {
         var isPolar = (series.chart && series.chart.chartAreaType === 'PolarRadar');
         var isDrop = (series.emptyPointSettings && series.emptyPointSettings.mode === 'Drop');
         var getCoordinate = isPolar ? TransformToVisible : getPoint;
-        var visiblePoints = this.improveChartPerformance(series);
+        var visiblePoints = this.enableComplexProperty(series);
         for (var _i = 0, visiblePoints_1 = visiblePoints; _i < visiblePoints_1.length; _i++) {
             var point = visiblePoints_1[_i];
             point.regions = [];
@@ -12491,7 +12507,7 @@ var StepLineSeries = /** @__PURE__ @class */ (function (_super) {
         var lineLength;
         var point1;
         var point2;
-        var visiblePoints = this.improveChartPerformance(series);
+        var visiblePoints = this.enableComplexProperty(series);
         if (xAxis.valueType === 'Category' && xAxis.labelPlacement === 'BetweenTicks') {
             lineLength = 0.5;
         }
@@ -13568,7 +13584,7 @@ var RangeAreaSeries = /** @__PURE__ @class */ (function (_super) {
         var direction = '';
         var command = 'M';
         var closed = undefined;
-        var visiblePoints = this.improveChartPerformance(series);
+        var visiblePoints = this.enableComplexProperty(series);
         for (var i = 0, length_1 = visiblePoints.length; i < length_1; i++) {
             point = visiblePoints[i];
             point.symbolLocations = [];
@@ -17325,10 +17341,15 @@ var Tooltip$1 = /** @__PURE__ @class */ (function (_super) {
 var Toolkit = /** @__PURE__ @class */ (function () {
     /** @private */
     function Toolkit(chart) {
+        this.iconRectOverFill = 'transparent';
+        this.iconRectSelectionFill = 'transparent';
         this.chart = chart;
         this.elementId = chart.element.id;
-        this.selectionColor = '#ff4081';
-        this.fillColor = '#737373';
+        this.selectionColor = chart.theme === 'Bootstrap4' ? '#FFFFFF' : '#ff4081';
+        this.fillColor = chart.theme === 'Bootstrap4' ? '#495057' : '#737373';
+        this.iconRectOverFill = chart.theme === 'Bootstrap4' ? '#5A6268' : this.iconRectOverFill;
+        this.iconRectSelectionFill = chart.theme === 'Bootstrap4' ? '#5B6269' : this.iconRectSelectionFill;
+        this.iconRect = chart.theme === 'Bootstrap4' ? new Rect(-5, -5, 26, 26) : new Rect(0, 0, 16, 16);
     }
     /**
      * To create the pan button.
@@ -17343,7 +17364,7 @@ var Toolkit = /** @__PURE__ @class */ (function () {
         childElement.id = this.elementId + '_Zooming_Pan';
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('Pan'));
         this.panElements = childElement;
-        childElement.appendChild(render.drawRectangle(new RectOption(this.elementId + '_Zooming_Pan_1', 'transparent', {}, 1, new Rect(0, 0, 16, 16))));
+        childElement.appendChild(render.drawRectangle(new RectOption(this.elementId + '_Zooming_Pan_1', 'transparent', {}, 1, this.iconRect)));
         childElement.appendChild(render.drawPath(new PathOption(this.elementId + '_Zooming_Pan_2', fillColor, null, null, 1, null, direction)));
         parentElement.appendChild(childElement);
         this.wireEvents(childElement, this.pan);
@@ -17356,13 +17377,15 @@ var Toolkit = /** @__PURE__ @class */ (function () {
     Toolkit.prototype.createZoomButton = function (childElement, parentElement, chart) {
         var render = this.chart.renderer;
         var fillColor = this.chart.zoomModule.isPanning ? this.fillColor : this.selectionColor;
+        var rectColor = this.chart.zoomModule.isPanning ? 'transparent' : this.iconRectSelectionFill;
         var direction = 'M0.001,14.629L1.372,16l4.571-4.571v-0.685l0.228-0.274c1.051,0.868,2.423,1.417,3.885,1.417c3.291,0,';
         direction += '5.943-2.651,5.943-5.943S13.395,0,10.103,0S4.16,2.651,4.16,5.943c0,1.508,0.503,2.834,1.417,3.885l-0.274,0.228H4.571';
         direction = direction + 'L0.001,14.629L0.001,14.629z M5.943,5.943c0-2.285,1.828-4.114,4.114-4.114s4.114,1.828,4.114,';
         childElement.id = this.elementId + '_Zooming_Zoom';
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('Zoom'));
         this.zoomElements = childElement;
-        childElement.appendChild(render.drawRectangle(new RectOption(this.elementId + '_Zooming_Zoom_1', 'transparent', {}, 1, new Rect(0, 0, 16, 16))));
+        this.selectedID = this.chart.zoomModule.isPanning ? this.chart.element.id + '_Zooming_Pan_1' : this.elementId + '_Zooming_Zoom_1';
+        childElement.appendChild(render.drawRectangle(new RectOption(this.elementId + '_Zooming_Zoom_1', rectColor, {}, 1, this.iconRect)));
         childElement.appendChild(render.drawPath(new PathOption(this.elementId + '_Zooming_Zoom_3', fillColor, null, null, 1, null, direction + '4.114s-1.828,4.114-4.114,4.114S5.943,8.229,5.943,5.943z')));
         parentElement.appendChild(childElement);
         this.wireEvents(childElement, this.zoom);
@@ -17381,7 +17404,7 @@ var Toolkit = /** @__PURE__ @class */ (function () {
         childElement.id = this.elementId + '_Zooming_ZoomIn';
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('ZoomIn'));
         var polygonDirection = '12.749,5.466 10.749,5.466 10.749,3.466 9.749,3.466 9.749,5.466 7.749,5.466 7.749,6.466';
-        childElement.appendChild(render.drawRectangle(new RectOption(this.elementId + '_Zooming_ZoomIn_1', 'transparent', {}, 1, new Rect(0, 0, 16, 16))));
+        childElement.appendChild(render.drawRectangle(new RectOption(this.elementId + '_Zooming_ZoomIn_1', 'transparent', {}, 1, this.iconRect)));
         childElement.appendChild(render.drawPath(new PathOption(this.elementId + '_Zooming_ZoomIn_2', fillColor, null, null, 1, null, direction + '4.114-4.114c2.286,0,4.114,1.828,4.114,4.114C14.172,8.229,12.344,10.058,10.058,10.058z')));
         childElement.appendChild(render.drawPolygon(new PolygonOption(this.elementId + '_Zooming_ZoomIn_3', polygonDirection + ' 9.749,6.466 9.749,8.466 10.749,8.466 10.749,6.466 12.749,6.466', fillColor)));
         this.zoomInElements = childElement;
@@ -17403,7 +17426,7 @@ var Toolkit = /** @__PURE__ @class */ (function () {
         direction += '1.422,3.866l-0.266,0.266H4.578L0,14.622L0,14.622z M5.911,5.911c0-2.311,1.822-4.133,4.133-4.133s4.133,1.822,4.133,';
         childElement.id = this.elementId + '_Zooming_ZoomOut';
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('ZoomOut'));
-        childElement.appendChild(render.drawRectangle(new RectOption(this.elementId + '_Zooming_ZoomOut_1', 'transparent', {}, 1, new Rect(0, 0, 16, 16))));
+        childElement.appendChild(render.drawRectangle(new RectOption(this.elementId + '_Zooming_ZoomOut_1', 'transparent', {}, 1, this.iconRect)));
         childElement.appendChild(render.drawPath(new PathOption(this.elementId + '_Zooming_ZoomOut_2', fillColor, null, null, 1, null, direction + '4.133s-1.866,4.133-4.133,4.133S5.911,8.222,5.911,5.911z M12.567,6.466h-5v-1h5V6.466z')));
         this.zoomOutElements = childElement;
         this.elementOpacity = chart.zoomModule.isPanning ? '0.2' : '1';
@@ -17426,7 +17449,7 @@ var Toolkit = /** @__PURE__ @class */ (function () {
         childElement.id = this.elementId + '_Zooming_Reset';
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('Reset'));
         if (!isDevice) {
-            childElement.appendChild(render.drawRectangle(new RectOption(this.elementId + '_Zooming_Reset_1', 'transparent', {}, 1, new Rect(0, 0, 16, 16))));
+            childElement.appendChild(render.drawRectangle(new RectOption(this.elementId + '_Zooming_Reset_1', 'transparent', {}, 1, this.iconRect)));
             childElement.appendChild(render.drawPath(new PathOption(this.elementId + '_Zooming_Reset_2', fillColor, null, null, 1, null, direction + '3.575,2.618,6.5,5.818,6.5C9.128,14.5,10.219,14.134,11.091,13.484L11.091,13.484z')));
         }
         else {
@@ -17455,12 +17478,40 @@ var Toolkit = /** @__PURE__ @class */ (function () {
     Toolkit.prototype.showTooltip = function (event) {
         var text = event.currentTarget.id.split('_Zooming_')[1];
         var left = (event.pageX - (measureText(text, { size: '10px' }).width + 5));
+        var rect = getElement(event.currentTarget.id + '_1');
+        var icon2 = getElement(event.currentTarget.id + '_2');
+        var icon3 = getElement(event.currentTarget.id + '_3');
+        if (rect) {
+            this.hoveredID = rect.id;
+            rect.setAttribute('fill', this.iconRectOverFill);
+        }
+        if (icon2) {
+            icon2.setAttribute('fill', this.selectionColor);
+        }
+        if (icon3) {
+            icon3.setAttribute('fill', this.selectionColor);
+        }
         if (!this.chart.isTouch) {
             createTooltip('EJ2_Chart_ZoomTip', this.chart.getLocalizedLabel(text), (event.pageY + 10), left, '10px');
         }
     };
     /** @private */
+    // tslint:disable
     Toolkit.prototype.removeTooltip = function () {
+        if (getElement(this.hoveredID)) {
+            var rectColor = this.chart.zoomModule.isPanning ? (this.hoveredID.indexOf('_Pan_') > -1) ? this.iconRectSelectionFill : 'transparent' : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.iconRectSelectionFill : 'transparent';
+            getElement(this.hoveredID).setAttribute('fill', rectColor);
+        }
+        var icon2 = this.hoveredID ? getElement(this.hoveredID.replace('_1', '_2')) : null;
+        var icon3 = this.hoveredID ? getElement(this.hoveredID.replace('_1', '_3')) : null;
+        if (icon2) {
+            var iconColor = this.chart.zoomModule.isPanning ? (this.hoveredID.indexOf('_Pan_') > -1) ? this.selectionColor : this.fillColor : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.selectionColor : this.fillColor;
+            icon2.setAttribute('fill', iconColor);
+        }
+        if (icon3) {
+            var iconColor = this.chart.zoomModule.isPanning ? this.fillColor : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.selectionColor : this.fillColor;
+            icon3.setAttribute('fill', iconColor);
+        }
         removeElement('EJ2_Chart_ZoomTip');
     };
     // Toolkit events function calculation here.
@@ -17516,6 +17567,11 @@ var Toolkit = /** @__PURE__ @class */ (function () {
         this.zoomOutElements.setAttribute('opacity', this.elementOpacity);
         this.applySelection(this.zoomElements.childNodes, this.selectionColor);
         this.applySelection(this.panElements.childNodes, '#737373');
+        if (getElement(this.selectedID)) {
+            getElement(this.selectedID).setAttribute('fill', 'transparent');
+        }
+        this.selectedID = this.chart.element.id + '_Zooming_Zoom_1';
+        getElement(this.selectedID).setAttribute('fill', this.iconRectSelectionFill);
         return false;
     };
     /** @private */
@@ -17528,6 +17584,11 @@ var Toolkit = /** @__PURE__ @class */ (function () {
         element = this.zoomOutElements ? this.zoomOutElements.setAttribute('opacity', this.elementOpacity) : null;
         element = this.panElements ? this.applySelection(this.panElements.childNodes, this.selectionColor) : null;
         element = this.zoomElements ? this.applySelection(this.zoomElements.childNodes, '#737373') : null;
+        if (getElement(this.selectedID)) {
+            getElement(this.selectedID).setAttribute('fill', 'transparent');
+        }
+        this.selectedID = this.chart.element.id + '_Zooming_Pan_1';
+        getElement(this.selectedID).setAttribute('fill', this.iconRectSelectionFill);
         return false;
     };
     Toolkit.prototype.zoomInOutCalculation = function (scale, chart, axes, mode) {
@@ -21007,7 +21068,7 @@ var MultiColoredLineSeries = /** @__PURE__ @class */ (function (_super) {
     MultiColoredLineSeries.prototype.render = function (series, xAxis, yAxis, isInverted) {
         var previous = null;
         var startPoint = 'M';
-        var visiblePoints = this.improveChartPerformance(series);
+        var visiblePoints = this.enableComplexProperty(series);
         var options = [];
         var direction = '';
         var segments = this.sortSegments(series, series.segments);
@@ -22594,7 +22655,7 @@ var AccumulationDataLabelSettings = /** @__PURE__ @class */ (function (_super) {
         Complex({ width: null, color: null }, Border)
     ], AccumulationDataLabelSettings.prototype, "border", void 0);
     __decorate$8([
-        Complex({ size: '11px', color: null }, Font)
+        Complex({ size: '11px', color: '', fontStyle: 'Normal', fontWeight: 'Normal', fontFamily: 'Segoe UI' }, Font)
     ], AccumulationDataLabelSettings.prototype, "font", void 0);
     __decorate$8([
         Complex({}, Connector)
@@ -25010,18 +25071,24 @@ function getThemeColor$1(theme) {
                 dataLabelColor: '#ffffff',
                 rangeBandColor: '#ffffff',
                 tooltipFill: '#ffffff',
+                background: '#000000',
                 tooltipFontColor: '#363F4C',
                 trackerLineColor: '#ffffff'
             };
             break;
-        case 'Bootstrap4':
+        case 'bootstrap4':
             themeColors = {
                 axisLineColor: '#6C757D',
                 dataLabelColor: '#212529',
                 rangeBandColor: '#212529',
                 tooltipFill: '#000000',
+                background: '#FFFFFF',
                 tooltipFontColor: '#FFFFFF',
-                trackerLineColor: '#212529'
+                trackerLineColor: '#212529',
+                fontFamily: 'HelveticaNeue-Medium',
+                tooltipFillOpacity: 1,
+                tooltipTextOpacity: 0.9,
+                labelFontFamily: 'HelveticaNeue'
             };
             break;
         default: {
@@ -25029,6 +25096,7 @@ function getThemeColor$1(theme) {
                 axisLineColor: '#000000',
                 dataLabelColor: '#424242',
                 rangeBandColor: '#000000',
+                background: '#FFFFFF',
                 tooltipFill: '#363F4C',
                 tooltipFontColor: '#ffffff',
                 trackerLineColor: '#000000'
@@ -27683,14 +27751,14 @@ var RangeNavigatorTheme;
     };
 })(RangeNavigatorTheme || (RangeNavigatorTheme = {}));
 /** @private */
+// tslint:disable-next-line:max-func-body-length
 function getRangeThemeColor(theme, range) {
     var thumbSize = range.navigatorStyleSettings.thumb;
     var thumbWidth = isNullOrUndefined(thumbSize.width) ? (Browser.isDevice ? 15 : 20) : thumbSize.width;
     var thumbHeight = isNullOrUndefined(thumbSize.height) ? (Browser.isDevice ? 15 : 20) : thumbSize.height;
     var darkAxisColor = (theme === 'Highcontrast' || theme === 'HighContrast') ? '#969696' : '#6F6C6C';
     var darkGridlineColor = (theme === 'Highcontrast' || theme === 'HighContrast') ? '#4A4848' : '#414040';
-    var darkBackground = theme === 'MaterialDark' ? '#303030' : (theme === 'FabricDark' ? '#201F1F' :
-        (theme === 'BootstrapDark') ? '1A1A1A' : '#000000');
+    var darkBackground = theme === 'MaterialDark' ? '#303030' : (theme === 'FabricDark' ? '#201F1F' : '1A1A1A');
     var style = {
         gridLineColor: '#E0E0E0',
         axisLineColor: '#000000',
@@ -27732,9 +27800,6 @@ function getRangeThemeColor(theme, range) {
                 thumbHeight: thumbHeight
             };
             break;
-        case 'MaterialDark':
-        case 'FabricDark':
-        case 'BootstrapDark':
         case 'Highcontrast':
         case 'HighContrast':
             style = {
@@ -27754,18 +27819,39 @@ function getRangeThemeColor(theme, range) {
                 thumbHeight: thumbHeight
             };
             break;
+        case 'MaterialDark':
+        case 'FabricDark':
+        case 'BootstrapDark':
+            style = {
+                labelFontColor: '#DADADA',
+                axisLineColor: ' #6F6C6C',
+                gridLineColor: '#414040',
+                tooltipBackground: '#F4F4F4',
+                tooltipFontColor: '#333232',
+                unselectedRectColor: range.series.length ? 'rgba(43, 43, 43, 0.6)' : '#514F4F',
+                thumpLineColor: '#969696',
+                thumbBackground: '#333232',
+                gripColor: '#DADADA',
+                background: darkBackground,
+                thumbHoverColor: '#BFBFBF',
+                selectedRegionColor: range.series.length ? 'rgba(22, 22, 22, 0.6)' :
+                    theme === 'FabricDark' ? '#007897' : theme === 'BootstrapDark' ? '#428BCA' : '#FF4081',
+                thumbWidth: thumbWidth,
+                thumbHeight: thumbHeight
+            };
+            break;
         case 'Bootstrap4':
             style = {
-                gridLineColor: darkGridlineColor,
+                gridLineColor: '#E0E0E0',
                 axisLineColor: '#CED4DA',
                 labelFontColor: '#212529',
                 unselectedRectColor: range.series.length ? 'rgba(255, 255, 255, 0.6)' : '#514F4F',
-                thumpLineColor: '#495057',
+                thumpLineColor: 'rgba(189, 189, 189, 1)',
                 thumbBackground: '#FFFFFF',
                 gripColor: '#495057',
                 background: 'rgba(255, 255, 255, 0.6)',
-                thumbHoverColor: '#BFBFBF',
-                selectedRegionColor: range.series.length ? '#FFFFFF' : '#FFD939',
+                thumbHoverColor: '#EEEEEE',
+                selectedRegionColor: range.series.length ? 'transparent' : '#FFD939',
                 tooltipBackground: 'rgba(0, 0, 0, 0.9)',
                 tooltipFontColor: 'rgba(255, 255, 255)',
                 thumbWidth: thumbWidth,
@@ -29147,7 +29233,8 @@ var PeriodSelector = /** @__PURE__ @class */ (function () {
                     }));
                     getElement('customRange').insertAdjacentElement('afterbegin', (createElement('span', {
                         id: 'dateIcon', className: 'e-input-group-icon e-range-icon e-btn-icon e-icons',
-                        styles: (_this.rootControl.theme === 'Material') ? 'padding-top: 4px' : 'padding-top: 5px'
+                        styles: 'font-size: 16px; min-height: 0px; margin: -3px 0 0 0; outline: none; min-width: 30px'
+                        // fix for date range icon alignment issue.
                     })));
                     document.getElementById('customRange').onclick = function () {
                         _this.datePicker.show(getElement('customRange'));
@@ -29669,7 +29756,8 @@ var CartesianChart = /** @__PURE__ @class */ (function () {
         stockChart.chart.series.forEach(function (series) {
             series.dataSource = data ? data : (stockChart.tempDataSource[series.index] ||
                 stockChart.dataSource).filter(function (data) {
-                return (data[series.xName].getTime() >= start && data[series.xName].getTime() <= end);
+                return (new Date(Date.parse(data[series.xName])).getTime() >= start &&
+                    new Date(Date.parse(data[series.xName])).getTime() <= end);
             });
             series.animation.enable = false;
             if (series.trendlines.length !== 0) {
@@ -29726,6 +29814,7 @@ var RangeSelector = /** @__PURE__ @class */ (function () {
             value: [new Date(stockChart.startValue), new Date(stockChart.endValue)],
             margin: this.findMargin(stockChart),
             tooltip: { enable: stockChart.tooltip.enable, displayMode: 'Always' },
+            dataSource: stockChart.dataSource,
             changed: function (args) {
                 var arg = {
                     name: 'rangeChange',
@@ -29790,10 +29879,13 @@ var RangeSelector = /** @__PURE__ @class */ (function () {
 /** @private */
 var ToolBarSelector = /** @__PURE__ @class */ (function () {
     function ToolBarSelector(chart) {
-        this.intervalTypes = ['Years', 'Quarter', 'Months', 'Weeks', 'Days', 'Hours', 'Minutes', 'Seconds'];
+        this.selectedSeries = '';
+        this.selectedIndicator = '';
+        this.selectedTrendLine = '';
         this.indicators = [];
         this.secondayIndicators = [];
         this.stockChart = chart;
+        this.selectedSeries = this.stockChart.series[0].type;
     }
     ToolBarSelector.prototype.initializePeriodSelector = function () {
         var periods = this.stockChart.periods.length ? this.stockChart.periods : this.calculateAutoPeriods();
@@ -29867,6 +29959,7 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
         var seriesType = new DropDownButton({
             items: this.getDropDownItems(this.stockChart.seriesType),
             select: function (args) {
+                _this.selectedSeries = args.item.text;
                 var text = _this.tickMark(args);
                 _this.addedSeries(text);
                 _this.stockChart.cartesianChart.initializeChart();
@@ -29926,6 +30019,7 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
                 text = text.split(' ')[0].toLocaleLowerCase() + (text.split(' ')[1] ? text.split(' ')[1] : '');
                 text = text.substr(0, 1).toUpperCase() + text.substr(1);
                 var type = text;
+                _this.selectedTrendLine = _this.selectedTrendLine === '' ? type : _this.selectedTrendLine + ',' + type;
                 if (_this.trendline !== type) {
                     _this.trendline = type;
                     for (var i = 0; i < _this.stockChart.series.length; i++) {
@@ -29975,6 +30069,8 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
                 text = text.split(' ')[0].toLocaleLowerCase() + (text.split(' ')[1] ? text.split(' ')[1] : '');
                 text = text.substr(0, 1).toUpperCase() + text.substr(1);
                 var type = text;
+                _this.selectedIndicator = _this.selectedIndicator.indexOf(type) === -1 ? _this.selectedIndicator + ' ' + type :
+                    _this.selectedIndicator.replace(type, '');
                 if (type === 'Tma' || type === 'BollingerBands' || type === 'Sma' || type === 'Ema') {
                     if (_this.indicators.indexOf(type) === -1) {
                         args.item.text = '&#10004&nbsp;' + args.item.text.replace('&nbsp;&nbsp;&nbsp;', '');
@@ -30121,8 +30217,24 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
             select: function (args) {
                 var type = args.item.text;
                 var stockChart = _this.stockChart;
+                var stockID = stockChart.element.id + '_stockChart_';
+                var additionalRect;
+                var svgHeight = stockChart.svgObject.getBoundingClientRect();
                 if (stockChart.chart.exportModule) {
+                    _this.stockChart.svgObject.insertAdjacentElement('afterbegin', _this.addExportSettings());
+                    additionalRect = stockChart.svgObject.firstElementChild.getBoundingClientRect();
+                    _this.stockChart.svgObject.setAttribute('height', (svgHeight.height + additionalRect.height).toString());
+                    getElement(stockID + 'chart').style.transform = 'translateY(' + additionalRect.height + 'px)';
+                    getElement(stockID + 'rangeSelector').setAttribute('transform', 
+                    // tslint:disable-next-line:align
+                    'translate(' + 0 + ',' + (stockChart.cartesianChart.cartesianChartSize.height + additionalRect.height) + ')');
                     stockChart.chart.exportModule.export(type, 'StockChart', null, [stockChart], null, stockChart.svgObject.clientHeight);
+                    remove(getElement(_this.stockChart.element.id + '_additionalExport'));
+                    getElement(stockID + 'chart').style.transform = 'translateY(0px)';
+                    getElement(stockID + 'rangeSelector').setAttribute('transform', 
+                    // tslint:disable-next-line:align
+                    'translate(' + 0 + ',' + (stockChart.cartesianChart.cartesianChartSize.height) + ')');
+                    _this.stockChart.svgObject.setAttribute('height', (svgHeight.height).toString());
                 }
             }
         });
@@ -30159,6 +30271,70 @@ var ToolBarSelector = /** @__PURE__ @class */ (function () {
             defaultPeriods.push({ text: '1H', interval: 1, intervalType: 'Hours' }, { text: '12H', interval: 12, intervalType: 'Hours' }, { text: '1D', interval: 1, intervalType: 'Days' });
         }
         return defaultPeriods;
+    };
+    /**
+     * Text elements added to while export the chart
+     * It details about the seriesTypes, indicatorTypes and Trendlines selected in chart.
+     */
+    ToolBarSelector.prototype.addExportSettings = function () {
+        var exportElement = this.stockChart.renderer.createGroup({
+            id: this.stockChart.element.id + '_additionalExport',
+            width: this.stockChart.availableSize.width,
+        });
+        var titleHeight = measureText(this.stockChart.title, this.stockChart.titleStyle).height;
+        var options = new TextOption(exportElement.id + '_Title', titlePositionX(new Rect(0, 0, this.stockChart.availableSize.width, 0), this.stockChart.titleStyle), 0, 'middle', this.stockChart.title, '', 'text-before-edge');
+        textElement(options, this.stockChart.titleStyle, this.stockChart.titleStyle.color, exportElement);
+        var style = { size: '15px', fontWeight: '500', color: null, fontStyle: 'Normal', fontFamily: 'Segoe UI' };
+        var x = measureText('Series: ' + this.selectedSeries, style).width / 2;
+        var y = titleHeight;
+        this.textElementSpan(new TextOption(exportElement.id + '_Series', x, y, 'start', ['Series : ', this.selectedSeries], '', 'text-before-edge'), style, 'black', exportElement);
+        x += measureText('Series: ' + this.selectedSeries + ' Z', style).width;
+        if (this.selectedIndicator !== '') {
+            this.textElementSpan(new TextOption(exportElement.id + '_Indicator', x, y, 'start', ['Indicator :', this.selectedIndicator], '', 'text-before-edge'), style, 'black', exportElement);
+            x += measureText('Indicator: ' + this.selectedIndicator + ' Z', style).width;
+        }
+        if (this.selectedTrendLine !== '') {
+            this.textElementSpan(new TextOption(exportElement.id + '_TrendLine', x, y, 'start', ['Trendline :', this.selectedTrendLine], '', 'text-before-edge'), style, 'black', exportElement);
+        }
+        return exportElement;
+    };
+    /** @private */
+    ToolBarSelector.prototype.textElementSpan = function (options, font, color, parent, isMinus, redraw, isAnimate, forceAnimate, animateduration) {
+        if (isMinus === void 0) { isMinus = false; }
+        if (forceAnimate === void 0) { forceAnimate = false; }
+        var renderer = new SvgRenderer('');
+        var renderOptions = {};
+        var htmlObject;
+        var text;
+        var tspanElement;
+        renderOptions = {
+            'id': options.id,
+            'font-style': font.fontStyle,
+            'font-family': font.fontFamily,
+            'font-weight': font.fontWeight,
+            'text-anchor': options.anchor,
+            'x': options.x,
+            'y': options.y,
+            'fill': color,
+            'font-size': font.size,
+            'transform': options.transform,
+            'opacity': font.opacity,
+            'dominant-baseline': options.baseLine,
+        };
+        text = typeof options.text === 'string' ? options.text : isMinus ? options.text[options.text.length - 1] : options.text[0];
+        htmlObject = renderer.createText(renderOptions, text);
+        if (typeof options.text !== 'string' && options.text.length > 1) {
+            for (var i = 1, len = options.text.length; i < len; i++) {
+                options.text[i] = ' ' + options.text[i];
+                tspanElement = renderer.createTSpan({
+                    'x': options.x + measureText(text, font).width + 5, 'id': options.id,
+                    'y': (options.y), opacity: 0.5
+                }, options.text[i]);
+                htmlObject.appendChild(tspanElement);
+            }
+        }
+        appendChildElement(parent, htmlObject, redraw, isAnimate, 'x', 'y', null, null, forceAnimate, false, null, animateduration);
+        return htmlObject;
     };
     return ToolBarSelector;
 }());
@@ -31242,7 +31418,8 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
         // manage chart refresh
         this.chart.series.forEach(function (series) {
             series.dataSource = _this.tempDataSource[series.index].filter(function (data) {
-                return (data[series.xName].getTime() >= updatedStart && data[series.xName].getTime() <= updatedEnd);
+                return (new Date(Date.parse(data[series.xName])).getTime() >= updatedStart &&
+                    new Date(Date.parse(data[series.xName])).getTime() <= updatedEnd);
             });
             series.animation.enable = false;
         });
@@ -32493,7 +32670,7 @@ function getThemeColor$2(theme) {
                 tooltipHeaderLine: '#9A9A9A'
             };
             break;
-        case 'Bootstrap4':
+        case 'bootstrap4':
             style = {
                 axisLabel: '#212529',
                 axisLine: '#ADB5BD',
@@ -32501,13 +32678,18 @@ function getThemeColor$2(theme) {
                 minorGridLine: '#DEE2E6',
                 chartTitle: '#212529',
                 legendLabel: '#212529',
-                background: '#F8F9FA',
+                background: '#FFFFFF',
                 areaBorder: '#DEE2E6',
                 tooltipFill: '#000000',
                 dataLabel: '#212529',
                 tooltipBoldLabel: '#FFFFFF',
                 tooltipLightLabel: '#FFFFFF',
-                tooltipHeaderLine: '#FFFFFF'
+                tooltipHeaderLine: '#FFFFFF',
+                fontFamily: 'HelveticaNeue-Medium',
+                fontSize: '16px',
+                labelFontFamily: 'HelveticaNeue',
+                tooltipFillOpacity: 1,
+                tooltipTextOpacity: 0.9
             };
             break;
         default:
@@ -33724,6 +33906,7 @@ var AxisRender = /** @__PURE__ @class */ (function () {
     };
     AxisRender.prototype.drawHAxisLabels = function (smithchart) {
         var hAxis = smithchart.horizontalAxis;
+        smithchart.radialAxis.labelStyle.fontFamily = smithchart.themeStyle.fontFamily || smithchart.radialAxis.labelStyle.fontFamily;
         var font = smithchart.horizontalAxis.labelStyle;
         var circleAxis;
         var label;
@@ -33780,6 +33963,7 @@ var AxisRender = /** @__PURE__ @class */ (function () {
                 smithchart.trigger('axisLabelRender', axisLabelRenderEventArgs);
                 var options = new TextOption$2(smithchart.element.id + '_HLabel_' + i, axisLabelRenderEventArgs.x, axisLabelRenderEventArgs.y, 'none', axisLabelRenderEventArgs.text);
                 var color = font.color ? font.color : smithchart.themeStyle.axisLabel;
+                font.fontFamily = font.fontFamily || smithchart.themeStyle.labelFontFamily;
                 var element = renderTextElement$1(options, font, color, groupEle);
                 groupEle.appendChild(element);
             }
@@ -33788,6 +33972,7 @@ var AxisRender = /** @__PURE__ @class */ (function () {
     };
     AxisRender.prototype.drawRAxisLabels = function (smithchart) {
         var paddingRadius = 2;
+        smithchart.radialAxis.labelStyle.fontFamily = smithchart.themeStyle.fontFamily || smithchart.radialAxis.labelStyle.fontFamily;
         var font = smithchart.radialAxis.labelStyle;
         var interSectPoint = new RadialLabelCollections();
         var label;
@@ -33848,6 +34033,7 @@ var AxisRender = /** @__PURE__ @class */ (function () {
             smithchart.trigger('axisLabelRender', axisLabelRenderEventArgs);
             var options = new TextOption$2(smithchart.element.id + '_RLabel_' + i, axisLabelRenderEventArgs.x, axisLabelRenderEventArgs.y, 'none', axisLabelRenderEventArgs.text);
             var color = font.color ? font.color : smithchart.themeStyle.axisLabel;
+            font.fontFamily = smithchart.themeStyle.labelFontFamily ? smithchart.themeStyle.labelFontFamily : font.fontFamily;
             var element = renderTextElement$1(options, font, color, groupEle);
             groupEle.appendChild(element);
         }
@@ -35050,6 +35236,8 @@ var Smithchart = /** @__PURE__ @class */ (function (_super) {
         var titleEventArgs = { text: titleText, x: x, y: y, name: 'titleRender', cancel: false };
         this.trigger(titleRender, titleEventArgs);
         var options = new TextOption$2(this.element.id + '_Smithchart_' + type, titleEventArgs.x, titleEventArgs.y, 'start', titleEventArgs.text);
+        font.fontFamily = this.themeStyle.fontFamily || title.textStyle.fontFamily;
+        font.size = this.themeStyle.fontSize || title.textStyle.size;
         var element = renderTextElement$1(options, font, this.themeStyle.chartTitle, groupEle);
         element.setAttribute('aria-label', title.description || title.text);
         var titleLocation = { x: x, y: y, textSize: textSize };
@@ -35091,7 +35279,7 @@ var Smithchart = /** @__PURE__ @class */ (function (_super) {
     Smithchart.prototype.renderBorder = function () {
         var border = this.border;
         var color = this.theme.toLowerCase() === 'highcontrast' ? '#000000' : '#FFFFFF';
-        this.background = this.background ? this.background : color;
+        this.background = this.background ? this.background : this.themeStyle.background;
         var borderRect = new RectOption$2(this.element.id + '_SmithchartBorder', this.background, border, 1, new SmithchartRect(border.width / 2, border.width / 2, this.availableSize.width - border.width, this.availableSize.height - border.width));
         this.svgObject.appendChild(this.renderer.drawRectangle(borderRect));
     };
@@ -35501,7 +35689,9 @@ var TooltipRender = /** @__PURE__ @class */ (function () {
             shapes: ['Circle'],
             theme: smithchart.theme
         });
-        this.tooltipElement.textStyle.fontFamily = 'Roboto, Segoe UI, Noto, Sans-serif';
+        this.tooltipElement.opacity = smithchart.themeStyle.tooltipFillOpacity || this.tooltipElement.opacity;
+        this.tooltipElement.textStyle.fontFamily = smithchart.themeStyle.fontFamily || 'Roboto, Segoe UI, Noto, Sans-serif';
+        this.tooltipElement.textStyle.opacity = smithchart.themeStyle.tooltipTextOpacity || this.tooltipElement.textStyle.opacity;
         this.tooltipElement.appendTo(div);
     };
     TooltipRender.prototype.closestPointXY = function (smithchart, x, y, series, seriesindex) {
@@ -35833,6 +36023,8 @@ var SmithchartLegend = /** @__PURE__ @class */ (function () {
         var shape = this.drawLegendShape(smithchart, legendSeries, location.x, location.y, k, legend, legendEventArgs);
         legendGroup.appendChild(shape);
         var options = new TextOption$2(smithchart.element.id + '_LegendItemText' + k.toString(), location.x + symbol['width'] / 2 + legend.shapePadding, location.y + textHeight / 4, 'start', legendEventArgs.text);
+        legend.textStyle.fontFamily = smithchart.themeStyle.fontFamily || legend.textStyle.fontFamily;
+        legend.textStyle.size = smithchart.themeStyle.fontSize || legend.textStyle.size;
         var element = renderTextElement$1(options, legend.textStyle, smithchart.themeStyle.legendLabel, legendGroup);
         element.setAttribute('aria-label', legend.description || 'Click to show or hide the ' + options.text + ' series');
         legendGroup.appendChild(element);
@@ -36371,7 +36563,10 @@ var SparklineRenderer = /** @__PURE__ @class */ (function () {
             id: spark.element.id + '_sparkline_g',
             'clip-path': 'url(#' + this.clipId + ')'
         });
-        var pathOption = new PathOption$1(spark.element.id + '_sparkline_line', 'transparent', args.lineWidth, args.fill, spark.opacity);
+        var color = this.sparkline.fill;
+        color = (this.sparkline.fill === '#00bdae' && this.sparkline.theme === 'Bootstrap4')
+            ? this.sparkline.sparkTheme.axisLineColor : color;
+        var pathOption = new PathOption$1(spark.element.id + '_sparkline_line', 'transparent', args.lineWidth, color, spark.opacity);
         var d = '';
         for (var i = 0, len = points.length; i < len; i++) {
             if (i === 0) {
@@ -36699,6 +36894,7 @@ var SparklineRenderer = /** @__PURE__ @class */ (function () {
         var size = measureText$1('sparkline_measure_text', labelStyle);
         var rectOptions = new RectOption$1('', dataLabel.fill, dataLabel.border, dataLabel.opacity, null);
         var edgeLabelOption;
+        labelStyle.fontFamily = spark.sparkTheme.labelFontFamily || labelStyle.fontFamily;
         for (var i = 0, length_2 = points.length; i < length_2; i++) {
             temp = points[i];
             option.id = textId + i;
@@ -37147,7 +37343,7 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
         var width = this.containerArea.border.width;
         var borderRect;
         if (width > 0 || this.containerArea.background !== 'transparent') {
-            borderRect = new RectOption$1(this.element.id + '_SparklineBorder', this.containerArea.background, this.containerArea.border, 1, new Rect$1(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width));
+            borderRect = new RectOption$1(this.element.id + '_SparklineBorder', this.sparkTheme.background, this.containerArea.border, 1, new Rect$1(width / 2, width / 2, this.availableSize.width - width, this.availableSize.height - width));
             this.svgObject.appendChild(drawRectangle(this, borderRect));
         }
         // Used to create clip path sparkline
@@ -37649,7 +37845,7 @@ var SparklineTooltip = /** @__PURE__ @class */ (function () {
         var spark = this.sparkline;
         var theme = spark.theme.toLowerCase();
         var tracker = spark.tooltipSettings.trackLineSettings;
-        var color = tracker.color || spark.sparkTheme.trackerLineColor;
+        var color = spark.sparkTheme.trackerLineColor ? spark.sparkTheme.trackerLineColor : tracker.color;
         if (!tracker.visible || spark.type === 'Pie') {
             return;
         }
@@ -37707,10 +37903,10 @@ var SparklineTooltip = /** @__PURE__ @class */ (function () {
             name: 'tooltipInitialize', cancel: false, text: text,
             textStyle: {
                 size: tooltip.textStyle.size,
-                opacity: tooltip.textStyle.opacity,
+                opacity: spark.sparkTheme.tooltipTextOpacity || tooltip.textStyle.opacity,
                 fontWeight: tooltip.textStyle.fontWeight,
                 fontStyle: tooltip.textStyle.fontStyle,
-                fontFamily: tooltip.textStyle.fontFamily,
+                fontFamily: spark.sparkTheme.fontFamily || tooltip.textStyle.fontFamily,
                 color: textColor
             }
         };
@@ -37731,6 +37927,7 @@ var SparklineTooltip = /** @__PURE__ @class */ (function () {
             areaBounds: new Rect$1(0, 0, spark.availableSize.width, spark.availableSize.height),
             theme: spark.theme
         });
+        element.opacity = spark.sparkTheme.tooltipFillOpacity || element.opacity;
         element.appendTo(div);
     };
     /**

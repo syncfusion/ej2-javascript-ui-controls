@@ -387,6 +387,34 @@ describe('Search module', () => {
       destroy(gridObj);
     });
   });
+  describe('Search without toolbar', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          columns: ['taskID', 'taskName', 'startDate', 'duration'],
+        },
+        done
+      );
+    });
+    it('Check the search records without toolbar', (done: Function) => {
+        actionComplete = (args?: Object): void => {
+         expect(gridObj.getRows()[3].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML  === "Testing").toBe(true);
+         expect(gridObj.getRows()[6].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML === "Testing").toBe(true);
+         expect(gridObj.getRows()[5].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML === "Implementation Module 2").toBe(true);
+         done();
+        }
+        gridObj.grid.actionComplete = actionComplete;
+        gridObj.search("Testing");
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

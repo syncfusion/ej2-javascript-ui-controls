@@ -39,7 +39,7 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
             break;
         case 'Bootstrap4':
             style = {
-                backgroundColor: '#F8F9FA',
+                backgroundColor: '#FFFFFF',
                 titleFontColor: '#212529',
                 tooltipFillColor: '#000000',
                 tooltipFontColor: '#FFFFFF',
@@ -47,20 +47,27 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
                 lineColor: '#ADB5BD',
                 majorTickColor: '#ADB5BD',
                 minorTickColor: '#CED4DA',
-                pointerColor: '#6C757D'
+                pointerColor: '#6C757D',
+                fontFamily: 'HelveticaNeue-Medium',
+                fontSize: '16px',
+                labelFontFamily: 'HelveticaNeue',
+                tooltipFillOpacity: 1,
+                tooltipTextOpacity: 0.9,
+                containerBackground: '#F8F9FA'
             };
             break;
         default:
             style = {
                 backgroundColor: '#FFFFFF',
                 titleFontColor: '#424242',
-                tooltipFillColor: '#363F4C',
+                tooltipFillColor: '#FFFFF',
                 tooltipFontColor: '#FFFFFF',
                 labelColor: '#686868',
                 lineColor: '#a6a6a6',
                 majorTickColor: '#a6a6a6',
                 minorTickColor: '#a6a6a6',
-                pointerColor: '#a6a6a6'
+                pointerColor: '#a6a6a6',
+                containerBackground: '#e0e0e0'
             };
             break;
     }

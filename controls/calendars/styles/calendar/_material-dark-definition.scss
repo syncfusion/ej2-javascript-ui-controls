@@ -134,7 +134,7 @@ $calendar-today-bg-hover-color: rgba($grey-white, .1) !default;
 $calendar-disable-font-color: $grey-dark-font !default;
 $calendar-disable-opacity: .35 !default;
 $calendar-active-hover-bg-color: $calendar-active-bg-color !default;
-$calendar-other-decade-cell-color: $calendar-text-color !default;
+$calendar-other-decade-cell-color: $calendar-other-month-date !default;
 $calendar-icon-padding: 10px !default;
 $calendar-bigger-icon-padding: 15px !default;
 $calendar-selected-box-shadow: inset 0 0 0 2px rgba($grey-800, .7) !default;
@@ -142,6 +142,9 @@ $calendar-selected-border-color: none !default;
 //enddefault
 //today
 $calendar-footer-container-padding: 0 10px 10px 10px !default;
+$calendar-footer-border: none !default;
+$calendar-bigger-footer-container-padding: 0 10px 10px 10px !default;
+$calendar-bigger-footer-border: none !default;
 $calendar-today-disabled-background-style: transparent !default;
 $calendar-today-disabled-border-style: transparent !default;
 $calendar-today-disabled-box-shadow: none !default;

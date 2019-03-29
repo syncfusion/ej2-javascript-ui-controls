@@ -3709,6 +3709,38 @@ describe('PivotFieldList spec', () => {
                 setTimeout(() => {
                     menuObj.close();
                     expect(buttonText.innerHTML).toEqual('Count of balance');
+                    pivotGridObj.dataSource.showAggregationOnValueField = false;
+                    done();
+                }, 1000);
+            });
+            it('check dropdown icon', (done: Function) => {
+                let valueField: HTMLElement = pivotGridObj.element.querySelector('.e-group-values');
+                let pivotButtons: HTMLElement[] = [].slice.call(valueField.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                keyModule.keyActionHandler({ action: 'enter', target: pivotButtons[0], preventDefault: (): void => { /** Null */ } });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(document.getElementById("FieldListcontextmenu")).toBeTruthy;
+                    done();
+                }, 1000);
+            });
+            it('select context Menu', (done: Function) => {
+                let menuObj: any = (document.getElementById('PivotGridvalueFieldContextMenu') as any).ej2_instances[0];
+                let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>menuObj.element.querySelectorAll('li');
+                let menu: any = {
+                    element: li[2],
+                    item: menuObj.items[2]
+                };
+                menuObj.select(menu as MenuEventArgs);
+                let valueField: HTMLElement = pivotGridObj.element.querySelector('.e-group-values');
+                let pivotButtons: HTMLElement[] = [].slice.call(valueField.querySelectorAll('.e-pivot-button'));
+                //expect(pivotButtons.length).toBeGreaterThan(0);
+                let buttonText: HTMLElement = ((pivotButtons[0]).querySelector('.e-content') as HTMLElement);
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    menuObj.close();
+                    expect(buttonText.innerHTML).toEqual('balance');
+                    pivotGridObj.dataSource.showAggregationOnValueField = true;
                     done();
                 }, 1000);
             });

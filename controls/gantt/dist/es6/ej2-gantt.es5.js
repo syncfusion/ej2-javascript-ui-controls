@@ -1240,12 +1240,12 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
     };
     TaskProcessor.prototype.constructDataSource = function (dataSource) {
         var mappingData = new DataManager(dataSource).executeLocal(new Query()
-            .group(this.parent.taskFields.parentId));
+            .group(this.parent.taskFields.parentID));
         var rootData = [];
         for (var i = 0; i < mappingData.length; i++) {
             var groupData = mappingData[i];
             if (!isNullOrUndefined(groupData.key)) {
-                var index = this.taskIds.indexOf(groupData.key);
+                var index = this.taskIds.indexOf(groupData.key.toString());
                 if (index > -1) {
                     if (!isNullOrUndefined(groupData.key)) {
                         dataSource[index][this.parent.taskFields.child] = groupData.items;
@@ -1259,7 +1259,7 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
     };
     TaskProcessor.prototype.cloneDataSource = function () {
         var taskIdMapping = this.parent.taskFields.id;
-        var parentIdMapping = this.parent.taskFields.parentId;
+        var parentIdMapping = this.parent.taskFields.parentID;
         if (!isNullOrUndefined(taskIdMapping) && !isNullOrUndefined(parentIdMapping)) {
             var data = [];
             for (var i = 0; i < this.dataArray.length; i++) {
@@ -1416,9 +1416,9 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
         var taskSettings = this.parent.taskFields;
         var dataManager = this.parent.dataSource;
         if (isLoad) {
-            if (taskSettings.parentId || (dataManager instanceof DataManager &&
+            if (taskSettings.parentID || (dataManager instanceof DataManager &&
                 dataManager.dataSource.json && dataManager.dataSource.offline)) {
-                if (taskSettings.parentId) {
+                if (taskSettings.parentID) {
                     var id = data[taskSettings.id];
                     var index = this.taskIds.indexOf(id);
                     var tempData = (index > -1) ? this.dataArray[index] : {};
@@ -1729,8 +1729,8 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
             var resourcesId = [];
             var resourcesName = [];
             for (var i = 0; i < resourceData.length; i++) {
-                resourcesId.push(resourceData[i][this.parent.resourceIDMapping].toString());
-                resourcesName.push(resourceData[i][this.parent.resourceNameMapping].toString());
+                resourcesId.push(resourceData[i][this.parent.resourceIDMapping]);
+                resourcesName.push(resourceData[i][this.parent.resourceNameMapping]);
             }
             this.parent.setRecordValue('resourceNames', resourcesName.join(','), ganttProp, true);
             this.parent.setRecordValue('taskData.' + columnMapping[fieldName], resourcesId, ganttData);
@@ -2454,7 +2454,7 @@ var GanttChart = /** @__PURE__ @class */ (function () {
             var target = e.target;
             var isOnTaskbarElement = e.target.classList.contains(taskBarMainContainer)
                 || closest(e.target, '.' + taskBarMainContainer);
-            if (target.closest('.e-gantt-parent-taskbar')) {
+            if (closest(target, '.e-gantt-parent-taskbar')) {
                 this.chartExpandCollapseRequest(e);
             }
             else if (!isOnTaskbarElement && this.parent.autoFocusTasks) {
@@ -2519,7 +2519,7 @@ var GanttChart = /** @__PURE__ @class */ (function () {
      */
     GanttChart.prototype.chartExpandCollapseRequest = function (e) {
         var target = e.target;
-        var parentElement = target.closest('.e-gantt-parent-taskbar');
+        var parentElement = closest(target, '.e-gantt-parent-taskbar');
         var record = this.getRecordByTarget(e);
         var chartRow$$1 = closest(target, 'tr');
         var rowIndex = getValue('rowIndex', chartRow$$1);
@@ -3383,7 +3383,7 @@ var Timeline = /** @__PURE__ @class */ (function () {
             }
             else {
                 if (endDate.getMonth() === 11) {
-                    endDate = new Date(startDate.getFullYear() + 1, 0, 1);
+                    endDate = new Date(endDate.getFullYear() + 1, 0, 1);
                 }
                 else {
                     endDate = new Date(endDate.getFullYear(), 12, 1);
@@ -3492,24 +3492,30 @@ var Timeline = /** @__PURE__ @class */ (function () {
      * @private
      */
     Timeline.prototype.updateTimeLineOnEditing = function (tempArray, action) {
-        var minStartDate = new Date(DataUtil.aggregates.min(tempArray, this.parent.taskFields.startDate));
-        var maxEndDate = new Date(DataUtil.aggregates.max(tempArray, this.parent.taskFields.endDate));
+        var filteredStartDateRecord = tempArray.filter(function (pdc) { return !isNullOrUndefined(pdc.ganttProperties.startDate); });
+        var filteredEndDateRecord = tempArray.filter(function (pdc) { return !isNullOrUndefined(pdc.ganttProperties.endDate); });
+        var minStartDate = filteredStartDateRecord.length > 0 ?
+            new Date(DataUtil.aggregates.min(filteredStartDateRecord, 'ganttProperties.startDate')) : null;
+        var maxEndDate = filteredEndDateRecord.length > 0 ?
+            new Date(DataUtil.aggregates.max(filteredEndDateRecord, 'ganttProperties.startDate')) : null;
         var validStartDate = new Date(this.parent.dataOperation.checkStartDate(this.timelineStartDate).getTime());
         var validEndDate = new Date(this.parent.dataOperation.checkEndDate(this.timelineEndDate).getTime());
-        var maxStartLeft = this.parent.dataOperation.getTaskLeft(minStartDate, false);
-        var maxEndLeft = this.parent.dataOperation.getTaskLeft(maxEndDate, false);
+        var maxStartLeft = isNullOrUndefined(minStartDate) ?
+            null : this.parent.dataOperation.getTaskLeft(minStartDate, false);
+        var maxEndLeft = isNullOrUndefined(maxEndDate) ?
+            null : this.parent.dataOperation.getTaskLeft(maxEndDate, false);
         var validStartLeft = this.parent.dataOperation.getTaskLeft(validStartDate, false);
         var validEndLeft = this.parent.dataOperation.getTaskLeft(validEndDate, false);
         var isChanged;
-        if (maxStartLeft <= this.bottomTierCellWidth || maxStartLeft <= validStartLeft) {
+        if (!isNullOrUndefined(maxStartLeft) && (maxStartLeft <= this.bottomTierCellWidth || maxStartLeft <= validStartLeft)) {
             isChanged = 'prevTimeSpan';
             minStartDate = minStartDate > this.timelineStartDate ? this.timelineStartDate : minStartDate;
         }
         else {
             minStartDate = this.timelineStartDate;
         }
-        if (maxEndLeft >= (this.totalTimelineWidth - this.bottomTierCellWidth) ||
-            maxEndLeft >= validEndLeft) {
+        if (!isNullOrUndefined(maxEndLeft) && (maxEndLeft >= (this.totalTimelineWidth - this.bottomTierCellWidth) ||
+            maxEndLeft >= validEndLeft)) {
             isChanged = isChanged === 'prevTimeSpan' ? 'both' : 'nextTimeSpan';
             maxEndDate = maxEndDate < this.timelineEndDate ? this.timelineEndDate : maxEndDate;
         }
@@ -3713,8 +3719,8 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
         this.parent.treeGrid.queryCellInfo = this.queryCellInfo.bind(this);
         this.parent.treeGrid.headerCellInfo = this.headerCellInfo.bind(this);
         this.parent.treeGrid.rowDataBound = this.rowDataBound.bind(this);
-        this.parent.treeGrid.grid.columnMenuOpen = this.columnMenuOpen.bind(this);
-        this.parent.treeGrid.grid.columnMenuClick = this.columnMenuClick.bind(this);
+        this.parent.treeGrid.columnMenuOpen = this.columnMenuOpen.bind(this);
+        this.parent.treeGrid.columnMenuClick = this.columnMenuClick.bind(this);
     };
     GanttTreeGrid.prototype.dataBound = function (args) {
         this.ensureScrollBar();
@@ -3780,6 +3786,7 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
     };
     GanttTreeGrid.prototype.updateKeyConfigSettings = function () {
         delete this.parent.treeGrid.grid.keyboardModule.keyConfigs.delete;
+        delete this.parent.treeGrid.grid.keyboardModule.keyConfigs.insert;
     };
     /**
      * Method to bind internal events on TreeGrid element
@@ -3917,7 +3924,7 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
             this.composeResourceColumn(column);
         }
         else if (taskSettings.notes === column.field) {
-            column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('resourceID');
+            column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('notes');
             column.width = column.width ? column.width : 150;
             column.editType = column.editType ? column.editType : 'stringedit';
             if (!this.parent.showInlineNotes) {
@@ -4719,7 +4726,7 @@ var TaskFields = /** @__PURE__ @class */ (function (_super) {
     ], TaskFields.prototype, "name", void 0);
     __decorate$12([
         Property(null)
-    ], TaskFields.prototype, "parentId", void 0);
+    ], TaskFields.prototype, "parentID", void 0);
     __decorate$12([
         Property(null)
     ], TaskFields.prototype, "startDate", void 0);
@@ -5287,7 +5294,7 @@ var ChartRows = /** @__PURE__ @class */ (function () {
             else {
                 for (var i = 0; i < length; i++) {
                     if (field === this.parent.ganttColumns[i].field) {
-                        resultString = '${if(' + field + '!== undefined && ' + field + '!== null )}${' + field + '}${/if}';
+                        resultString = '${this.chartRowsModule.getFieldValue(' + field + ') }';
                         break;
                     }
                 }
@@ -5362,6 +5369,9 @@ var ChartRows = /** @__PURE__ @class */ (function () {
         }
         return '';
     };
+    ChartRows.prototype.getFieldValue = function (field) {
+        return isNullOrUndefined(field) ? '' : field;
+    };
     ChartRows.prototype.getResourceName = function (ganttData) {
         ganttData = this.templateData;
         var resource = null;
@@ -5391,7 +5401,7 @@ var ChartRows = /** @__PURE__ @class */ (function () {
      */
     ChartRows.prototype.initChartHelperPrivateVariable = function () {
         this.baselineColor = !isNullOrUndefined(this.parent.baselineColor) &&
-            this.parent.baselineColor !== '' ? this.parent.baselineColor : 'red';
+            this.parent.baselineColor !== '' ? this.parent.baselineColor : null;
         this.taskBarHeight = isNullOrUndefined(this.parent.taskbarHeight) || this.parent.taskbarHeight >= this.parent.rowHeight ?
             Math.floor(this.parent.rowHeight * 0.62) : this.parent.taskbarHeight; // 0.62 -- Standard Ratio.
         if (this.parent.renderBaseline) {
@@ -5581,21 +5591,23 @@ var ChartRows = /** @__PURE__ @class */ (function () {
         else {
             args.taskbarBgColor = taskbarElement.querySelector(taskbarClass) ?
                 getComputedStyle(taskbarElement.querySelector(taskbarClass)).backgroundColor : null;
-            // args.taskbarBorderColor = taskbarElement.querySelector(taskbarClass) ?
-            //     getComputedStyle(taskbarElement.querySelector(taskbarClass)).borderColor : null;
+            args.taskbarBorderColor = taskbarElement.querySelector(taskbarClass) ?
+                getComputedStyle(taskbarElement.querySelector(taskbarClass)).borderColor : null;
             args.progressBarBgColor = taskbarElement.querySelector(progressBarClass) ?
                 getComputedStyle(taskbarElement.querySelector(progressBarClass)).backgroundColor : null;
-            args.progressBarBorderColor = taskbarElement.querySelector(progressBarClass) ?
-                getComputedStyle(taskbarElement.querySelector(progressBarClass)).borderColor : null;
+            // args.progressBarBorderColor = taskbarElement.querySelector(progressBarClass) ?
+            //     getComputedStyle(taskbarElement.querySelector(progressBarClass)).borderColor : null;
             args.baselineColor = trElement.querySelector('.' + baselineBar) ?
                 getComputedStyle(trElement.querySelector('.' + baselineBar)).backgroundColor : null;
             args.progressLabelColor = taskbarElement.querySelector('.' + taskLabel) ?
                 getComputedStyle(taskbarElement.querySelector('.' + taskLabel)).color : null;
         }
-        args.rightLabelColor = trElement.querySelector('.' + rightLabelContainer) ?
-            getComputedStyle(trElement.querySelector('.' + rightLabelContainer)).color : null;
-        args.leftLabelColor = trElement.querySelector('.' + leftLabelContainer) ?
-            getComputedStyle(trElement.querySelector('.' + leftLabelContainer)).color : null;
+        args.rightLabelColor = trElement.querySelector('.' + rightLabelContainer) &&
+            (trElement.querySelector('.' + rightLabelContainer)).querySelector('.' + label) ?
+            getComputedStyle((trElement.querySelector('.' + rightLabelContainer)).querySelector('.' + label)).color : null;
+        args.leftLabelColor = trElement.querySelector('.' + leftLabelContainer) &&
+            (trElement.querySelector('.' + leftLabelContainer)).querySelector('.' + label) ?
+            getComputedStyle((trElement.querySelector('.' + leftLabelContainer)).querySelector('.' + label)).color : null;
         this.parent.trigger('queryTaskbarInfo', args);
         this.updateQueryTaskbarInfoArgs(args);
     };
@@ -5628,26 +5640,18 @@ var ChartRows = /** @__PURE__ @class */ (function () {
                 getComputedStyle(taskbarElement.querySelector(taskbarClass)).backgroundColor !== args.taskbarBgColor) {
                 taskbarElement.querySelector(taskbarClass).style.backgroundColor = args.taskbarBgColor;
             }
-            // if (taskbarElement.querySelector(taskbarClass) &&
-            //     getComputedStyle(taskbarElement.querySelector(taskbarClass)).borderColor !== args.taskbarBorderColor) {
-            //     (taskbarElement.querySelector(taskbarClass) as HTMLElement).style.borderColor = args.taskbarBorderColor;
-            // }
+            if (taskbarElement.querySelector(taskbarClass) &&
+                getComputedStyle(taskbarElement.querySelector(taskbarClass)).borderColor !== args.taskbarBorderColor) {
+                taskbarElement.querySelector(taskbarClass).style.borderColor = args.taskbarBorderColor;
+            }
             if (taskbarElement.querySelector(progressBarClass) &&
                 getComputedStyle(taskbarElement.querySelector(progressBarClass)).backgroundColor !== args.progressBarBgColor) {
                 taskbarElement.querySelector(progressBarClass).style.backgroundColor = args.progressBarBgColor;
             }
-            if (taskbarElement.querySelector(progressBarClass) &&
-                getComputedStyle(taskbarElement.querySelector(progressBarClass)).borderColor !== args.progressBarBorderColor) {
-                taskbarElement.querySelector(progressBarClass).style.borderColor = args.progressBarBorderColor;
-            }
-            if (trElement.querySelector('.' + leftLabelContainer) &&
-                getComputedStyle(trElement.querySelector('.' + leftLabelContainer)).color !== args.leftLabelColor) {
-                trElement.querySelector('.' + leftLabelContainer).style.color = args.leftLabelColor;
-            }
-            if (trElement.querySelector('.' + rightLabelContainer) &&
-                getComputedStyle(trElement.querySelector('.' + rightLabelContainer)).color !== args.rightLabelColor) {
-                trElement.querySelector('.' + rightLabelContainer).style.color = args.rightLabelColor;
-            }
+            // if (taskbarElement.querySelector(progressBarClass) &&
+            //     getComputedStyle(taskbarElement.querySelector(progressBarClass)).borderColor !== args.progressBarBorderColor) {
+            //     (taskbarElement.querySelector(progressBarClass) as HTMLElement).style.borderColor = args.progressBarBorderColor;
+            // }
             if (taskbarElement.querySelector('.' + taskLabel) &&
                 getComputedStyle(taskbarElement.querySelector('.' + taskLabel)).color !== args.progressLabelColor) {
                 taskbarElement.querySelector('.' + taskLabel).style.color = args.progressLabelColor;
@@ -5656,6 +5660,16 @@ var ChartRows = /** @__PURE__ @class */ (function () {
                 getComputedStyle(trElement.querySelector('.' + baselineBar)).backgroundColor !== args.baselineColor) {
                 trElement.querySelector('.' + baselineBar).style.backgroundColor = args.baselineColor;
             }
+        }
+        if (trElement.querySelector('.' + leftLabelContainer) &&
+            (trElement.querySelector('.' + leftLabelContainer)).querySelector('.' + label) &&
+            getComputedStyle((trElement.querySelector('.' + leftLabelContainer)).querySelector('.' + label)).color !== args.leftLabelColor) {
+            (trElement.querySelector('.' + leftLabelContainer)).querySelector('.' + label).style.color = args.leftLabelColor;
+        }
+        if (trElement.querySelector('.' + rightLabelContainer) &&
+            (trElement.querySelector('.' + rightLabelContainer)).querySelector('.' + label) &&
+            getComputedStyle((trElement.querySelector('.' + rightLabelContainer)).querySelector('.' + label)).color !== args.rightLabelColor) {
+            (trElement.querySelector('.' + rightLabelContainer)).querySelector('.' + label).style.color = args.rightLabelColor;
         }
     };
     /**
@@ -6050,7 +6064,7 @@ var Dependency = /** @__PURE__ @class */ (function () {
             || isNullOrUndefined(isScheduledTask(childGanttRecord.ganttProperties))) {
             return;
         }
-        if (this.parent.enablePredecessorValidation && (childGanttRecord.ganttProperties.isAutoSchedule)) {
+        if (this.parent.isInPredecessorValidation && (childGanttRecord.ganttProperties.isAutoSchedule)) {
             var childRecordProperty = childGanttRecord.ganttProperties;
             var currentTaskId_2 = childRecordProperty.taskId.toString();
             var predecessorsCollection = childRecordProperty.predecessor;
@@ -6070,7 +6084,7 @@ var Dependency = /** @__PURE__ @class */ (function () {
             this.parent.setRecordValue('width', this.parent.dataOperation.calculateWidth(childRecordProperty), childRecordProperty, true);
             this.parent.setRecordValue('progressWidth', this.parent.dataOperation.getProgressWidth(childRecordProperty.width, childRecordProperty.progress), childRecordProperty, true);
             if (childGanttRecord.parentItem && this.parent.getParentTask(childGanttRecord.parentItem).ganttProperties.isAutoSchedule
-                && this.parent.enablePredecessorValidation) {
+                && this.parent.isInPredecessorValidation) {
                 this.parent.dataOperation.updateParentItems(childGanttRecord.parentItem);
             }
         }
@@ -6238,7 +6252,7 @@ var Dependency = /** @__PURE__ @class */ (function () {
      * @private
      */
     Dependency.prototype.validatePredecessor = function (childGanttRecord, previousValue, validationOn) {
-        if (!this.parent.enablePredecessorValidation) {
+        if (!this.parent.isInPredecessorValidation) {
             return;
         }
         if (childGanttRecord.ganttProperties.predecessor) {
@@ -6267,7 +6281,7 @@ var Dependency = /** @__PURE__ @class */ (function () {
                 predecessor = predecessors[count];
                 parentGanttRecord = this.parent.getRecordByID(predecessor.from);
                 record = this.parent.getRecordByID(predecessor.to);
-                if (this.parent.enablePredecessorValidation && record.ganttProperties.isAutoSchedule) {
+                if (this.parent.isInPredecessorValidation && record.ganttProperties.isAutoSchedule) {
                     this.parent.isValidationEnabled = true;
                 }
                 else {
@@ -6283,7 +6297,7 @@ var Dependency = /** @__PURE__ @class */ (function () {
                 predecessor = successors[count];
                 parentGanttRecord = this.parent.getRecordByID(predecessor.from);
                 record = this.parent.getRecordByID(predecessor.to);
-                if (this.parent.enablePredecessorValidation && record.ganttProperties.isAutoSchedule) {
+                if (this.parent.isInPredecessorValidation && record.ganttProperties.isAutoSchedule) {
                     this.parent.isValidationEnabled = true;
                 }
                 else {
@@ -6443,7 +6457,7 @@ var Dependency = /** @__PURE__ @class */ (function () {
             var predecessor = validPredecessor[i];
             var parentTask = this.parent.getRecordByID(predecessor.from);
             var offset = void 0;
-            if (isScheduledTask(parentTask)) {
+            if (isScheduledTask(parentTask.ganttProperties)) {
                 var tempStartDate = void 0;
                 var tempEndDate = void 0;
                 var tempDuration = void 0;
@@ -7609,7 +7623,7 @@ var ConnectorLineEdit = /** @__PURE__ @class */ (function () {
     ConnectorLineEdit.prototype.removeConnectorLineById = function (id) {
         var element = this.parent.connectorLineModule.dependencyViewContainer.querySelector('#ConnectorLine' + id);
         if (!isNullOrUndefined(element)) {
-            element.remove();
+            remove(element);
         }
     };
     ConnectorLineEdit.prototype.idFromPredecessor = function (pre) {
@@ -8280,7 +8294,7 @@ var Tooltip$1 = /** @__PURE__ @class */ (function () {
             linkText: this.parent.getPredecessorTextValue(predecessor[0].type),
             offset: predecessor[0].offset,
             offsetUnit: predecessor[0].offsetUnit,
-            offsetString: this.parent.getDurationString(fromTask.ganttProperties.duration, fromTask.ganttProperties.durationUnit)
+            offsetString: this.parent.getDurationString(predecessor[0].offset, fromTask.ganttProperties.durationUnit)
         };
         return predecessorTooltipData;
     };
@@ -8410,7 +8424,12 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
                 // console.log("Save edited cell");
                 break;
             case 'cancelRequest':
-                // console.log("Cancel edited cell");
+                if (!isNullOrUndefined(this.editModule) && !isNullOrUndefined(this.editModule.cellEditModule)) {
+                    this.editModule.cellEditModule.isCellEdit = false;
+                    if (!isNullOrUndefined(this.toolbarModule)) {
+                        this.toolbarModule.refreshToolbarItems();
+                    }
+                }
                 break;
             case 'addRow':
                 // console.log(" an empty row at the top row if the rows are not selected. If a row is selected," +
@@ -8490,7 +8509,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
         this.updatedConnectorLineCollection = [];
         this.connectorLineIds = [];
         this.predecessorsCollection = [];
-        this.enablePredecessorValidation = true;
+        this.isInPredecessorValidation = this.enablePredecessorValidation;
         this.isValidationEnabled = true;
         this.isLoad = true;
         this.editedTaskBarItem = null;
@@ -8545,18 +8564,40 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
         };
     };
     /**
+     * To validate height and width
+     */
+    Gantt.prototype.validateDimentionValue = function (value) {
+        if (!isNullOrUndefined(value)) {
+            if (typeof (value) === 'string' && value !== 'auto' && value.indexOf('%') === -1) {
+                return value.indexOf('px') === -1 ? value + 'px' : value;
+            }
+            else if (typeof (value) === 'number') {
+                return value + 'px';
+            }
+            else {
+                return value.toString();
+            }
+        }
+        else {
+            return null;
+        }
+    };
+    /**
      * To calculate dimensions of Gantt control
      */
     Gantt.prototype.calculateDimensions = function () {
-        var settingsHeight = this.height;
-        var settingsWidth = this.width;
+        var settingsHeight = this.validateDimentionValue(this.height);
+        var settingsWidth = this.validateDimentionValue(this.width);
+        if (!isNullOrUndefined(this.width) && typeof (this.width) === 'string' && this.width.indexOf('%') !== -1) {
+            settingsWidth = this.width;
+        }
         var elementStyleHeight = this.element.style.height;
         var elementStyleWidth = this.element.style.width;
         if (settingsWidth) {
-            this.element.style.width = settingsWidth.toString();
+            this.element.style.width = settingsWidth;
         }
         if (settingsHeight) {
-            this.element.style.height = settingsHeight.toString();
+            this.element.style.height = settingsHeight;
         }
         if (!settingsHeight && !elementStyleHeight) {
             this.element.style.height = 'auto'; // old 450px
@@ -8603,7 +8644,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
         // predecessor calculation
         if (this.taskFields.dependency) {
             this.predecessorModule.updatePredecessors();
-            if (this.enablePredecessorValidation) {
+            if (this.isInPredecessorValidation) {
                 this.predecessorModule.updatedRecordsDateByPredecessor();
             }
         }
@@ -8615,7 +8656,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
         this.notify('dataReady', {});
         this.renderTreeGrid();
         this.wireEvents();
-        if (this.taskFields.dependency && this.enablePredecessorValidation) {
+        if (this.taskFields.dependency && this.isInPredecessorValidation) {
             var dialogElement = createElement('div', {
                 id: this.element.id + '_dialogValidationRule',
             });
@@ -9297,6 +9338,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
         if (this.taskFields.dependency) {
             this.ganttChartModule.reRenderConnectorLines();
         }
+        this.notify('selectRowByIndex', {});
     };
     /**
      * Changes the TreeGrid column positions by field names.
@@ -9420,6 +9462,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
      */
     Gantt.prototype.expandByIndex = function (index) {
         var args = this.contructExpandCollapseArgs(null, index);
+        this.ganttChartModule.isExpandCollapseFromChart = true;
         this.ganttChartModule.expandGanttRow(args);
     };
     /**
@@ -9429,6 +9472,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
      */
     Gantt.prototype.expandByID = function (id) {
         var args = this.contructExpandCollapseArgs(id);
+        this.ganttChartModule.isExpandCollapseFromChart = true;
         this.ganttChartModule.expandGanttRow(args);
     };
     /**
@@ -9438,6 +9482,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
      */
     Gantt.prototype.collapseByIndex = function (index) {
         var args = this.contructExpandCollapseArgs(null, index);
+        this.ganttChartModule.isExpandCollapseFromChart = true;
         this.ganttChartModule.collapseGanttRow(args);
     };
     /**
@@ -9447,6 +9492,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
      */
     Gantt.prototype.collapseByID = function (id) {
         var args = this.contructExpandCollapseArgs(id);
+        this.ganttChartModule.isExpandCollapseFromChart = true;
         this.ganttChartModule.collapseGanttRow(args);
     };
     /**
@@ -9500,6 +9546,26 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
+     * Public method to open Add dialog.
+     * @return {void}
+     * @public
+     */
+    Gantt.prototype.openAddDialog = function () {
+        if (this.editModule && this.editModule.dialogModule && this.editSettings.allowAdding) {
+            this.editModule.dialogModule.openAddDialog();
+        }
+    };
+    /**
+     * Public method to open Edit dialog.
+     * @return {void}
+     * @public
+     */
+    Gantt.prototype.openEditDialog = function (taskId) {
+        if (this.editModule && this.editModule.dialogModule && this.editSettings.allowEditing) {
+            this.editModule.dialogModule.openEditDialog(taskId);
+        }
+    };
+    /**
      * Changes the TreeGrid column positions by field names.
      * @return {void}
      * @private
@@ -9508,12 +9574,12 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
         var chartRow$$1;
         var record;
         var rowIndex;
-        if (!index) {
+        if (isNullOrUndefined(index)) {
             record = this.getRecordByID(id.toString());
             chartRow$$1 = this.getRowByID(id);
             rowIndex = getValue('rowIndex', chartRow$$1);
         }
-        else if (index) {
+        else if (!isNullOrUndefined(index)) {
             chartRow$$1 = this.getRowByIndex(index);
             rowIndex = getValue('rowIndex', chartRow$$1);
             record = this.currentViewData[rowIndex];
@@ -9640,6 +9706,9 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(false)
     ], Gantt.prototype, "allowSorting", void 0);
+    __decorate([
+        Property(true)
+    ], Gantt.prototype, "enablePredecessorValidation", void 0);
     __decorate([
         Property(false)
     ], Gantt.prototype, "showColumnMenu", void 0);
@@ -9894,6 +9963,9 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
     ], Gantt.prototype, "columnMenuOpen", void 0);
     __decorate([
         Event()
+    ], Gantt.prototype, "toolbarClick", void 0);
+    __decorate([
+        Event()
     ], Gantt.prototype, "columnMenuClick", void 0);
     Gantt = __decorate([
         NotifyPropertyChanges
@@ -9924,6 +9996,9 @@ var keyPressed = 'key-pressed';
  */
 var CellEdit = /** @__PURE__ @class */ (function () {
     function CellEdit(ganttObj) {
+        /**
+         * @private
+         */
         this.isCellEdit = false;
         this.parent = ganttObj;
         this.bindTreeGridProperties();
@@ -10066,6 +10141,9 @@ var CellEdit = /** @__PURE__ @class */ (function () {
         else if (ganttProb.endDate || !isNullOrUndefined(ganttProb.duration)) {
             this.parent.setRecordValue('startDate', new Date(currentValue.getTime()), ganttProb, true);
             this.parent.dateValidationModule.calculateEndDate(ganttData);
+        }
+        else if (isNullOrUndefined(ganttProb.endDate) && isNullOrUndefined(ganttProb.duration)) {
+            this.parent.setRecordValue('startDate', new Date(currentValue.getTime()), ganttProb, true);
         }
         this.parent.setRecordValue('isMilestone', ganttProb.duration === 0 ? true : false, ganttProb, true);
         this.parent.dataOperation.updateWidthLeft(args.data);
@@ -10443,7 +10521,7 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
         this.taskBarEditElement = element;
         this.taskBarEditRecord = isNullOrUndefined(this.taskBarEditElement) ?
             null : this.parent.ganttChartModule.getRecordByTaskBar(this.taskBarEditElement);
-        if (element && e.type === 'mousedown') {
+        if (element && (e.type === 'mousedown' || e.type === 'pointerdown')) {
             this.roundOffDuration = true;
             this.taskBarEditAction = this.getTaskBarAction(e);
             if ((this.taskBarEditAction === 'ConnectorPointLeftDrag' || this.taskBarEditAction === 'ConnectorPointRightDrag') &&
@@ -10502,7 +10580,7 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
             mouseDownElement.classList.contains(taskBarLeftResizer) ? 'LeftResizing' :
                 mouseDownElement.classList.contains(taskBarRightResizer) ? 'RightResizing' :
                     mouseDownElement.classList.contains(childProgressResizer) ? 'ProgressResizing' :
-                        mouseDownElement.closest('.' + childProgressResizer) ? 'ProgressResizing' :
+                        closest(mouseDownElement, '.' + childProgressResizer) ? 'ProgressResizing' :
                             mouseDownElement.classList.contains(connectorPointLeft) ? 'ConnectorPointLeftDrag' :
                                 mouseDownElement.classList.contains(connectorPointRight) ? 'ConnectorPointRightDrag' :
                                     this.taskBarEditRecord.ganttProperties.isMilestone ? 'MilestoneDrag' : 'ChildDrag';
@@ -11257,7 +11335,8 @@ var TaskbarEdit = /** @__PURE__ @class */ (function () {
      */
     TaskbarEdit.prototype.removeFalseLine = function (isRemoveConnectorPointDisplay) {
         if (this.falseLine) {
-            this.falseLine.remove();
+            remove(this.falseLine);
+            this.falseLine = null;
             if (isRemoveConnectorPointDisplay) {
                 removeClass(this.parent.ganttChartModule.scrollElement.querySelectorAll('.' + connectorLineContainer), [connectorLineZIndex]);
             }
@@ -11525,6 +11604,20 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
         this.createDialog();
     };
     /**
+     *
+     * @return {Date}
+     * @private
+     */
+    DialogEdit.prototype.getMinimumStartDate = function () {
+        var minDate = DataUtil.aggregates.min(this.parent.flatData, 'ganttProperties.startDate');
+        if (!isNullOrUndefined(minDate)) {
+            return new Date(minDate.getTime());
+        }
+        else {
+            return new Date(this.parent.timelineModule.timelineStartDate.getTime());
+        }
+    };
+    /**
      * @private
      */
     DialogEdit.prototype.composeAddRecord = function () {
@@ -11541,7 +11634,7 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
             }
             else if (columns[i].field === taskSettings.startDate) {
                 if (isNullOrUndefined(tempData[taskSettings.endDate])) {
-                    tempData[field] = this.parent.dateValidationModule.checkStartDate(this.parent.timelineModule.timelineStartDate);
+                    tempData[field] = this.getMinimumStartDate();
                 }
                 else {
                     tempData[field] = new Date(tempData[taskSettings.endDate]);
@@ -11550,7 +11643,7 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
             }
             else if (columns[i].field === taskSettings.endDate) {
                 if (isNullOrUndefined(tempData[taskSettings.startDate])) {
-                    tempData[field] = this.parent.dateValidationModule.checkStartDate(this.parent.timelineModule.timelineStartDate);
+                    tempData[field] = this.getMinimumStartDate();
                 }
                 else {
                     tempData[field] = new Date(tempData[taskSettings.startDate]);
@@ -12010,6 +12103,9 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
                 this.parent.setRecordValue('isMilestone', false, ganttProp, true);
             }
             else if (isScheduledTask(ganttProp) || !isNullOrUndefined(ganttProp.startDate)) {
+                if (ganttData.ganttProperties.isMilestone && ganttData.ganttProperties.duration !== 0) {
+                    this.parent.dateValidationModule.calculateStartDate(ganttData);
+                }
                 this.parent.dateValidationModule.calculateEndDate(ganttData);
             }
             else if (!isScheduledTask(ganttProp) && !isNullOrUndefined(ganttProp.endDate)) {
@@ -12612,6 +12708,9 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
     };
     DialogEdit.prototype.updatePredecessorTab = function (preElement) {
         var gridObj = preElement.ej2_instances[0];
+        if (gridObj.isEdit) {
+            gridObj.endEdit();
+        }
         var dataSource = gridObj.dataSource;
         var predecessorName = [];
         var newValues = [];
@@ -12732,7 +12831,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             var rowIndex = getValue('rowIndex', args.row);
             ganttData = this.parent.currentViewData[rowIndex];
         }
-        if (!isNullOrUndefined(ganttData)) {
+        if (!isNullOrUndefined(ganttData) && this.parent.editSettings.allowEditing) {
             this.dialogModule.openEditDialog(ganttData);
         }
     };
@@ -12759,12 +12858,23 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
     Edit$$1.prototype.updateRecordByID = function (data) {
         var tasks = this.parent.taskFields;
         var ganttData = this.parent.getRecordByID(data[tasks.id]);
-        if (ganttData) {
+        if (!isNullOrUndefined(this.parent.editModule) && ganttData) {
+            this.parent.isOnEdit = true;
             this.validateUpdateValues(data, ganttData, true);
+            var keys = Object.keys(data);
+            if (keys.indexOf(tasks.startDate) !== -1 || keys.indexOf(tasks.endDate) !== -1 ||
+                keys.indexOf(tasks.duration) !== -1) {
+                this.parent.dataOperation.calculateScheduledValues(ganttData, ganttData.taskData, false);
+            }
             this.parent.dataOperation.updateWidthLeft(ganttData);
             if (!isUndefined(data[this.parent.taskFields.dependency]) &&
                 data[this.parent.taskFields.dependency] !== ganttData.ganttProperties.predecessorsName) {
                 this.parent.connectorLineEditModule.updatePredecessor(ganttData, data[this.parent.taskFields.dependency]);
+            }
+            else {
+                var args = {};
+                args.data = ganttData;
+                this.parent.editModule.initiateUpdateAction(args);
             }
         }
     };
@@ -12870,28 +12980,28 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
         var tasks = ganttObj.taskFields;
         var ganttProp = ganttData.ganttProperties;
         var isUnscheduledTask = ganttObj.allowUnscheduledTasks;
-        if (fieldNames.indexOf(tasks.startDate)) {
+        if (fieldNames.indexOf(tasks.startDate) !== -1) {
             startDate = data[tasks.startDate];
         }
-        if (fieldNames.indexOf(tasks.endDate)) {
+        if (fieldNames.indexOf(tasks.endDate) !== -1) {
             endDate = data[tasks.endDate];
         }
-        if (fieldNames.indexOf(tasks.duration)) {
+        if (fieldNames.indexOf(tasks.duration) !== -1) {
             duration = data[tasks.duration];
         }
-        if (startDate && endDate || (isUnscheduledTask && fieldNames.indexOf(tasks.startDate) &&
-            fieldNames.indexOf(tasks.endDate))) {
+        if (startDate && endDate || (isUnscheduledTask && (fieldNames.indexOf(tasks.startDate) !== -1) &&
+            (fieldNames.indexOf(tasks.endDate) !== -1))) {
             ganttObj.setRecordValue('startDate', ganttObj.dataOperation.getDateFromFormat(startDate), ganttProp, true);
             ganttObj.setRecordValue('endDate', ganttObj.dataOperation.getDateFromFormat(endDate), ganttProp, true);
             ganttObj.dataOperation.calculateDuration(ganttData);
         }
         else if (endDate && duration || (isUnscheduledTask &&
-            fieldNames.indexOf(tasks.endDate) && fieldNames.indexOf(tasks.duration))) {
+            (fieldNames.indexOf(tasks.endDate) !== -1) && (fieldNames.indexOf(tasks.duration) !== -1))) {
             ganttObj.setRecordValue('endDate', ganttObj.dataOperation.getDateFromFormat(endDate), ganttProp, true);
             ganttObj.dataOperation.updateDurationValue(duration, ganttProp);
         }
-        else if (startDate && duration || (isUnscheduledTask && fieldNames.indexOf(tasks.startDate)
-            && fieldNames.indexOf(tasks.duration))) {
+        else if (startDate && duration || (isUnscheduledTask && (fieldNames.indexOf(tasks.startDate) !== -1)
+            && (fieldNames.indexOf(tasks.duration) !== -1))) {
             ganttObj.setRecordValue('startDate', ganttObj.dataOperation.getDateFromFormat(startDate), ganttProp, true);
             ganttObj.dataOperation.updateDurationValue(duration, ganttProp);
         }
@@ -12943,7 +13053,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
     Edit$$1.prototype.isCheckPredecessor = function (data) {
         var isValidatePredecessor = false;
         var prevData = this.parent.previousRecords[data.uniqueID];
-        if (prevData && this.parent.taskFields.dependency && this.parent.enablePredecessorValidation &&
+        if (prevData && this.parent.taskFields.dependency && this.parent.isInPredecessorValidation &&
             this.parent.predecessorModule.getValidPredecessor(data).length > 0) {
             if (this.isTaskbarMoved(data)) {
                 isValidatePredecessor = true;
@@ -13050,7 +13160,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
      */
     Edit$$1.prototype.updateParentChildRecord = function (data) {
         var ganttRecord = data;
-        if (ganttRecord.hasChildRecords) {
+        if (ganttRecord.hasChildRecords && this.taskbarMoved) {
             this.updateChildItems(ganttRecord);
         }
     };
@@ -13573,9 +13683,16 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             }
         }
     };
-    Edit$$1.prototype.removeFromDataSource = function (record) {
-        var dataSource = this.parent.dataSource;
-        this.removeData(dataSource, record);
+    Edit$$1.prototype.removeFromDataSource = function (deleteRecordIDs) {
+        var dataSource;
+        var taskFields = this.parent.taskFields;
+        if (this.parent.dataSource instanceof DataManager) {
+            dataSource = this.parent.dataSource.dataSource.json;
+        }
+        else {
+            dataSource = this.parent.dataSource;
+        }
+        this.removeData(dataSource, deleteRecordIDs);
         this.isBreakLoop = false;
     };
     Edit$$1.prototype.removeData = function (dataCollection, record) {
@@ -13583,10 +13700,17 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             if (this.isBreakLoop) {
                 break;
             }
-            if (getValue(this.parent.taskFields.id, dataCollection[i]).toString() === record.ganttProperties.taskId.toString()) {
+            if (record.indexOf(getValue(this.parent.taskFields.id, dataCollection[i]).toString()) !== -1) {
+                if (dataCollection[i][this.parent.taskFields.child]) {
+                    var childRecords = dataCollection[i][this.parent.taskFields.child];
+                    this.removeData(childRecords, record);
+                }
+                record.splice(record.indexOf(getValue(this.parent.taskFields.id, dataCollection[i]).toString()), 1);
                 dataCollection.splice(i, 1);
-                this.isBreakLoop = true;
-                break;
+                if (record.length === 0) {
+                    this.isBreakLoop = true;
+                    break;
+                }
             }
             else if (dataCollection[i][this.parent.taskFields.child]) {
                 var childRecords = dataCollection[i][this.parent.taskFields.child];
@@ -13633,6 +13757,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
         var flatData = this.parent.flatData;
         var currentData = this.parent.currentViewData;
         var deletedRecords = args.deletedRecordCollection;
+        var deleteRecordIDs = [];
         for (var i = 0; i < deletedRecords.length; i++) {
             var deleteRecord = deletedRecords[i];
             var currentIndex = currentData.indexOf(deleteRecord);
@@ -13644,7 +13769,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             if (flatIndex !== -1) {
                 flatData.splice(flatIndex, 1);
             }
-            this.removeFromDataSource(deleteRecord);
+            deleteRecordIDs.push(deleteRecord.ganttProperties.taskId.toString());
             if (flatIndex !== -1) {
                 this.parent.ids.splice(flatIndex, 1);
             }
@@ -13661,6 +13786,9 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                     }
                 }
             }
+        }
+        if (deleteRecordIDs.length > 0) {
+            this.removeFromDataSource(deleteRecordIDs);
         }
         var eventArgs = {};
         this.parent.updatedConnectorLineCollection = [];
@@ -13716,7 +13844,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             obj[taskModel.id] = id;
         }
         if (taskModel.name && !obj[taskModel.name]) {
-            obj[taskModel.name] = 'newTaskName' + ' ' + obj[taskModel.id];
+            obj[taskModel.name] = 'New Task' + ' ' + obj[taskModel.id];
         }
         if (!this.parent.allowUnscheduledTasks && !obj[taskModel.startDate]) {
             obj[taskModel.startDate] = this.parent.projectStartDate;
@@ -13750,6 +13878,12 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             this.parent.setRecordValue('parentItem', this.parent.dataOperation.getCloneParent(parentItem), cAddedRecord);
             var pIndex = cAddedRecord.parentItem ? cAddedRecord.parentItem.index : null;
             this.parent.setRecordValue('parentIndex', pIndex, cAddedRecord);
+            var parentUniqId = cAddedRecord.parentItem ? cAddedRecord.parentItem.uniqueID : null;
+            this.parent.setRecordValue('parentUniqueID', parentUniqId, cAddedRecord);
+            if (!isNullOrUndefined(this.parent.taskFields.id) &&
+                !isNullOrUndefined(this.parent.taskFields.parentID) && cAddedRecord.parentItem) {
+                this.parent.setRecordValue(this.parent.taskFields.parentID, cAddedRecord.parentItem.taskId, cAddedRecord.taskData, true);
+            }
         }
         this.backUpAndPushNewlyAddedRecord(cAddedRecord, rowPosition, parentItem);
         // need to push in dataSource also.
@@ -13827,11 +13961,11 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
         for (var count = 0; count < len; count++) {
             if (predecessorCollection[count].to === parentRecordTaskData.taskId.toString()) {
                 childRecord = this.parent.getRecordByID(predecessorCollection[count].from);
-                predecessorIndex = childRecord.ganttProperties.predecessor.indexOf(predecessorCollection[count]);
-                var temppredecessorCollection = void 0;
-                temppredecessorCollection = (extend([], childRecord.ganttProperties.predecessor, [], true));
-                temppredecessorCollection.splice(predecessorIndex, 1);
-                this.parent.setRecordValue('predecessor', temppredecessorCollection, childRecord.ganttProperties, true);
+                predecessorIndex = getIndex(predecessorCollection[count], 'from', childRecord.ganttProperties.predecessor, 'to');
+                var predecessorCollections = void 0;
+                predecessorCollections = (extend([], childRecord.ganttProperties.predecessor, [], true));
+                predecessorCollections.splice(predecessorIndex, 1);
+                this.parent.setRecordValue('predecessor', predecessorCollections, childRecord.ganttProperties, true);
             }
             else if (predecessorCollection[count].from === parentRecordTaskData.taskId.toString()) {
                 childRecord = this.parent.getRecordByID(predecessorCollection[count].to);
@@ -14003,7 +14137,14 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
      * @private
      */
     Edit$$1.prototype.updateRealDataSource = function (addedRecord, rowPosition) {
-        var dataSource = this.parent.dataSource;
+        var dataSource;
+        var taskFields = this.parent.taskFields;
+        if (this.parent.dataSource instanceof DataManager) {
+            dataSource = this.parent.dataSource.dataSource.json;
+        }
+        else {
+            dataSource = this.parent.dataSource;
+        }
         if (rowPosition === 'Top') {
             dataSource.splice(0, 0, addedRecord.taskData);
         }
@@ -14011,7 +14152,12 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             dataSource.push(addedRecord);
         }
         else {
-            this.addDataInRealDataSource(dataSource, addedRecord.taskData, rowPosition);
+            if (!isNullOrUndefined(taskFields.id) && !isNullOrUndefined(taskFields.parentID)) {
+                dataSource.push(addedRecord.taskData);
+            }
+            else {
+                this.addDataInRealDataSource(dataSource, addedRecord.taskData, rowPosition);
+            }
         }
         this.isBreakLoop = false;
     };
@@ -14121,6 +14267,9 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                         _this.parent.setRecordValue('taskData.' + _this.parent.taskFields.id, e.addedRecords[0][_this.parent.taskFields.id], args.data);
                         _this.parent.setRecordValue(_this.parent.taskFields.id, e.addedRecords[0][_this.parent.taskFields.id], args.data);
                     }
+                    if (cAddedRecord.level === 0) {
+                        _this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord);
+                    }
                     _this.RefreshNewlyAddedRecord(args, cAddedRecord);
                 }).catch(function (e) {
                     _this.removeAddedRecord();
@@ -14129,6 +14278,9 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             }
             else {
                 this.updateRealDataSource(args.data, rowPosition);
+                if (cAddedRecord.level === 0) {
+                    this.parent.treeGrid.parentData.splice(0, 0, cAddedRecord);
+                }
                 this.RefreshNewlyAddedRecord(args, cAddedRecord);
             }
         }
@@ -14151,9 +14303,10 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             this.parent.staticSelectedRowIndex = this.parent.currentViewData.indexOf(args.data);
         }
         if (this.parent.timelineSettings.updateTimescaleView) {
-            var tempArray = void 0;
+            var tempArray = [];
             if (args.modifiedRecords.length > 0) {
-                tempArray.push.apply(args.data, args.modifiedRecords);
+                tempArray.push(args.data);
+                tempArray.push.apply(tempArray, args.modifiedRecords);
             }
             else {
                 tempArray = [args.data];
@@ -14308,7 +14461,8 @@ var Filter$2 = /** @__PURE__ @class */ (function () {
      */
     Filter$$1.prototype.columnMenuOpen = function (args) {
         if (this.filterMenuElement) {
-            this.filterMenuElement.remove();
+            remove(this.filterMenuElement);
+            this.filterMenuElement = null;
         }
     };
     Filter$$1.prototype.actionBegin = function (args) {
@@ -14692,8 +14846,8 @@ var Selection$1 = /** @__PURE__ @class */ (function () {
         }
     };
     Selection$$1.prototype.highlightSelectedRows = function (e, fromChart) {
-        var rows = e.target.closest('tbody').children;
-        var selectedRow = e.target.closest('tr.e-chart-row');
+        var rows = closest(e.target, 'tbody').children;
+        var selectedRow = closest(e.target, 'tr.e-chart-row');
         var rIndex = [].slice.call(rows).indexOf(selectedRow);
         this.isMultiCtrlRequest = e.ctrlKey || this.enableSelectMultiTouch;
         this.isMultiShiftRequest = e.shiftKey;
@@ -14843,7 +14997,7 @@ var Selection$1 = /** @__PURE__ @class */ (function () {
                 e.target.classList.contains('e-treegridcollapse') || !isNullOrUndefined(parent_1);
             this.popUpClickHandler(e);
             if (this.parent.selectionSettings.mode !== 'Cell' && isSelected) {
-                if (e.target.closest('tr.e-chart-row')) {
+                if (closest(e.target, 'tr.e-chart-row')) {
                     this.highlightSelectedRows(e, true);
                 }
                 else {
@@ -15072,24 +15226,65 @@ var Toolbar$3 = /** @__PURE__ @class */ (function () {
         var gID = this.id;
         var isSelected = gObj.selectionModule ? gObj.selectionModule.selectedRowIndexes.length === 1 ||
             gObj.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
-        var hasData = gObj.currentViewData && gObj.currentViewData.length;
-        edit.allowAdding ? enableItems.push(gID + '_add') : disableItems.push(gID + '_add');
-        edit.allowEditing && hasData && isSelected ? enableItems.push(gID + '_edit') : disableItems.push(gID + '_edit');
-        var isDeleteSelected = gObj.selectionModule ? gObj.selectionModule.selectedRowIndexes.length > 0 ||
-            gObj.selectionModule.getSelectedRowCellIndexes().length > 0 ? true : false : false;
-        edit.allowDeleting && hasData && isDeleteSelected ? enableItems.push(gID + '_delete') : disableItems.push(gID + '_delete');
+        var toolbarItems = this.toolbar.items;
+        var toolbarDefaultItems = [gID + '_add', gID + '_edit', gID + '_delete',
+            gID + '_update', gID + '_cancel'];
         if (!isNullOrUndefined(this.parent.editModule)) {
-            if (gObj.editModule.cellEditModule.isCellEdit) {
-                enableItems.push(gID + '_update');
-                enableItems.push(gID + '_cancel');
+            var hasData = gObj.currentViewData && gObj.currentViewData.length;
+            edit.allowAdding ? enableItems.push(gID + '_add') : disableItems.push(gID + '_add');
+            edit.allowEditing && hasData && isSelected ? enableItems.push(gID + '_edit') : disableItems.push(gID + '_edit');
+            var isDeleteSelected = gObj.selectionModule ? gObj.selectionModule.selectedRowIndexes.length > 0 ||
+                gObj.selectionModule.getSelectedRowCellIndexes().length > 0 ? true : false : false;
+            edit.allowDeleting && hasData && isDeleteSelected ? enableItems.push(gID + '_delete') : disableItems.push(gID + '_delete');
+            if (gObj.editSettings.mode === 'Auto' && !isNullOrUndefined(gObj.editModule.cellEditModule)
+                && gObj.editModule.cellEditModule.isCellEdit) {
+                // New initialization for enableItems and disableItems during isCellEdit
+                enableItems = [];
+                enableItems.push(gID + '_update', gID + '_cancel');
+                disableItems = [];
+                for (var t = 0; t < toolbarItems.length; t++) {
+                    if (toolbarItems[t].id !== gID + '_update' && toolbarItems[t].id !== gID + '_cancel' &&
+                        toolbarDefaultItems.indexOf(toolbarItems[t].id) !== -1) {
+                        disableItems.push(toolbarItems[t].id);
+                    }
+                }
             }
             else {
-                disableItems.push(gID + '_update');
-                disableItems.push(gID + '_cancel');
+                disableItems.push(gID + '_update', gID + '_cancel');
+                for (var t = 0; t < toolbarItems.length; t++) {
+                    if (enableItems.indexOf(toolbarItems[t].id) === -1 && disableItems.indexOf(toolbarItems[t].id) === -1) {
+                        enableItems.push(toolbarItems[t].id);
+                    }
+                }
             }
         }
-        this.enableItems(enableItems, true);
-        this.enableItems(disableItems, false);
+        else {
+            disableItems.push(gID + '_delete');
+            disableItems.push(gID + '_add');
+            disableItems.push(gID + '_edit');
+            disableItems.push(gID + '_update');
+            disableItems.push(gID + '_cancel');
+        }
+        for (var e = 0; e < enableItems.length; e++) {
+            var index = void 0;
+            for (var t = 0; t < toolbarItems.length; t++) {
+                if (toolbarItems[t].id === enableItems[e]) {
+                    index = t;
+                    break;
+                }
+            }
+            this.toolbar.hideItem(index, false);
+        }
+        for (var d = 0; d < disableItems.length; d++) {
+            var index = void 0;
+            for (var t = 0; t < toolbarItems.length; t++) {
+                if (toolbarItems[t].id === disableItems[d]) {
+                    index = t;
+                    break;
+                }
+            }
+            this.toolbar.hideItem(index, true);
+        }
     };
     /**
      * Enables or disables ToolBar items.

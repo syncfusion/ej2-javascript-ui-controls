@@ -178,6 +178,10 @@ var BTN_SAVE = 'e-btn-save';
 /** @hidden */
 var BTN_CANCEL = 'e-btn-cancel';
 /** @hidden */
+var RTE_SPIN_WRAP = 'e-rte-spin-wrap';
+/** @hidden */
+var CTRL_OVERLAY = 'e-control-overlay';
+/** @hidden */
 var DISABLE = 'e-disable';
 /** @hidden */
 var ICONS = 'e-icons';
@@ -191,6 +195,8 @@ var HIDE = 'e-hide';
 var RTL = 'e-rtl';
 /** @hidden */
 var ERROR = 'e-error';
+/** @hidden */
+var LOAD = 'e-loading';
 
 var __extends$1 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -262,6 +268,9 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
             this.setProperties({ model: {} }, true);
         }
         this.titleEle = this.createElement('div', { className: TITLE });
+        if (!isNullOrUndefined(this.popupSettings.model) && this.popupSettings.model.afterOpen) {
+            this.afterOpenEvent = this.popupSettings.model.afterOpen;
+        }
     };
     /**
      * To Initialize the In-place editor rendering
@@ -321,6 +330,9 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
             this.afterOpenHandler(null);
         }
         else {
+            if (!isNullOrUndefined(this.popupSettings.model) && this.popupSettings.model.afterOpen) {
+                this.popupSettings.model.afterOpen = this.afterOpenHandler.bind(this);
+            }
             var content = this.createElement('div', { className: POPUP });
             if (!this.isEmpty(this.popupSettings.title)) {
                 this.titleEle.innerHTML = this.popupSettings.title;
@@ -358,7 +370,6 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         var ctrlGroupEle = this.createElement('div', { className: CTRL_GROUP });
         var inputWrap = this.createElement('div', { className: INPUT });
         target.appendChild(this.containerEle);
-        this.containerEle.appendChild(this.loader);
         this.loadSpinner();
         this.containerEle.appendChild(this.formEle);
         this.formEle.appendChild(ctrlGroupEle);
@@ -376,6 +387,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
             }
             this.componentRoot = ele;
             inputWrap.appendChild(ele);
+            inputWrap.appendChild(this.loader);
         }
         ctrlGroupEle.appendChild(inputWrap);
         ctrlGroupEle.appendChild(this.createElement('div', { className: EDITABLE_ERROR }));
@@ -433,7 +445,9 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
             this.notify(render, { module: modulesList[this.type], target: ele, type: this.type });
         }
         else {
-            this.model.showClearButton = true;
+            if (isNullOrUndefined(this.model.showClearButton)) {
+                this.model.showClearButton = true;
+            }
             switch (this.type) {
                 case 'Date':
                     this.componentObj = new DatePicker(this.model, ele);
@@ -472,24 +486,44 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
                 break;
         }
     };
-    InPlaceEditor.prototype.loadSpinner = function () {
+    InPlaceEditor.prototype.loadSpinner = function (callType) {
         addClass([this.loader], [SHOW]);
-        setStyleAttribute(this.loader, { 'width': (this.loaderWidth) + 'px' });
-        this.spinObj = { target: this.loader };
+        if (callType === 'validate' && (this.type === 'RTE' || this.type === 'Color' || this.type === 'Slider')) {
+            addClass([this.loader], [RTE_SPIN_WRAP]);
+            addClass([this.getEditElement()], [CTRL_OVERLAY]);
+            this.spinObj = { target: this.loader };
+        }
+        else {
+            this.spinObj = { target: this.loader, width: Browser.isDevice ? '16px' : '14px' };
+        }
+        if (this.formEle) {
+            addClass([this.formEle], [LOAD]);
+        }
+        if (this.btnElements) {
+            addClass([this.btnElements], [HIDE]);
+        }
+        setStyleAttribute(this.loader, { 'width': '100%' });
         createSpinner(this.spinObj);
         showSpinner(this.spinObj.target);
-        if (this.formEle) {
-            addClass([this.formEle], [HIDE]);
-        }
     };
-    InPlaceEditor.prototype.removeSpinner = function () {
+    InPlaceEditor.prototype.removeSpinner = function (callType) {
         this.loader.removeAttribute('style');
         hideSpinner(this.spinObj.target);
         detach(this.spinObj.target.firstChild);
+        if (callType === 'submit' && (this.type === 'RTE' || this.type === 'Color' || this.type === 'Slider')) {
+            removeClass([this.loader], [RTE_SPIN_WRAP]);
+            removeClass([this.getEditElement()], [CTRL_OVERLAY]);
+        }
         if (this.formEle) {
-            removeClass([this.formEle], [HIDE]);
+            removeClass([this.formEle], [LOAD]);
+        }
+        if (this.btnElements) {
+            removeClass([this.btnElements], [HIDE]);
         }
         removeClass([this.loader], [SHOW]);
+    };
+    InPlaceEditor.prototype.getEditElement = function () {
+        return select('.' + ELEMENTS, this.formEle);
     };
     InPlaceEditor.prototype.getLocale = function (prop, val) {
         return new L10n('inplace-editor', prop, this.locale).getConstant(val);
@@ -497,9 +531,15 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
     InPlaceEditor.prototype.checkValue = function (val) {
         return (!this.isEmpty(val)) ? val : this.emptyText;
     };
+    InPlaceEditor.prototype.extendModelValue = function (val) {
+        var model = this.model;
+        extend(model, { value: val });
+        this.setProperties({ model: model }, true);
+    };
     InPlaceEditor.prototype.updateValue = function () {
         if (!isNullOrUndefined(this.value)) {
             this.setProperties({ value: getCompValue(this.type, this.value) }, true);
+            this.extendModelValue(getCompValue(this.type, this.value));
         }
     };
     InPlaceEditor.prototype.updateModelValue = function () {
@@ -516,6 +556,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         }
         else if (this.componentObj) {
             this.setProperties({ value: this.componentObj.value }, true);
+            this.extendModelValue(this.componentObj.value);
         }
     };
     InPlaceEditor.prototype.getDropDownsValue = function () {
@@ -766,12 +807,6 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         };
         errorClass([this.formEle, inputEle], ERROR, value ? 'add' : 'remove');
     };
-    InPlaceEditor.prototype.hideForm = function (value) {
-        if (isNullOrUndefined(this.formEle)) {
-            return;
-        }
-        value ? addClass([this.formEle], [HIDE]) : removeClass([this.formEle], [HIDE]);
-    };
     InPlaceEditor.prototype.updateArrow = function () {
         var pos = this.tipObj.tipPointerPosition;
         this.tipObj.tipPointerPosition = (pos === 'Middle') ? 'Auto' : 'Middle';
@@ -781,8 +816,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
     InPlaceEditor.prototype.triggerSuccess = function (args) {
         var val = args.value;
         this.trigger('actionSuccess', args);
-        this.removeSpinner();
-        this.hideForm(false);
+        this.removeSpinner('submit');
         this.renderValue(this.checkValue((args.value !== val) ? args.value : this.getRenderValue()));
         this.removeEditor();
     };
@@ -886,6 +920,10 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
             this.setAttribute(select('.e-slider-input', this.containerEle), ['name']);
         }
         this.setFocus();
+        if (this.afterOpenEvent) {
+            this.tipObj.setProperties({ afterOpen: this.afterOpenEvent }, true);
+            this.tipObj.trigger('afterOpen', e);
+        }
     };
     InPlaceEditor.prototype.popMouseDown = function (e) {
         var trgClass = e.target.classList;
@@ -924,18 +962,19 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
     InPlaceEditor.prototype.failureHandler = function (e) {
         var eventArgs = { data: e, value: this.getSendValue() };
         this.trigger('actionFailure', eventArgs);
-        this.removeSpinner();
-        this.hideForm(false);
+        this.removeSpinner('submit');
         if (this.mode === 'Popup') {
             this.updateArrow();
         }
     };
     InPlaceEditor.prototype.enterKeyDownHandler = function (e) {
-        if ((e.keyCode === 13 && e.which === 13) && closest(e.target, '.' + INPUT)) {
-            this.save();
-        }
-        else if (e.keyCode === 27 && e.which === 27) {
-            this.cancelHandler();
+        if (!closest(e.target, '.' + INPUT + ' .e-richtexteditor')) {
+            if ((e.keyCode === 13 && e.which === 13) && closest(e.target, '.' + INPUT)) {
+                this.save();
+            }
+            else if (e.keyCode === 27 && e.which === 27) {
+                this.cancelHandler();
+            }
         }
     };
     InPlaceEditor.prototype.valueKeyDownHandler = function (e) {
@@ -1008,8 +1047,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         }
         this.checkValidation();
         if (!this.formEle.classList.contains(ERROR)) {
-            this.loadSpinner();
-            this.hideForm(true);
+            this.loadSpinner('validate');
             if (this.mode === 'Popup') {
                 this.updateArrow();
             }
@@ -1273,7 +1311,6 @@ var AutoComplete$1 = /** @__PURE__ @class */ (function () {
         this.base = new Base(this.parent, this);
     }
     AutoComplete$$1.prototype.render = function (e) {
-        this.parent.model.showClearButton = true;
         this.compObj = new AutoComplete(this.parent.model, e.target);
     };
     AutoComplete$$1.prototype.focus = function () {
@@ -1282,6 +1319,7 @@ var AutoComplete$1 = /** @__PURE__ @class */ (function () {
     AutoComplete$$1.prototype.updateValue = function (e) {
         if (this.compObj && e.type === 'AutoComplete') {
             this.parent.setProperties({ value: this.compObj.value }, true);
+            this.parent.extendModelValue(this.compObj.value);
         }
     };
     /**
@@ -1320,6 +1358,7 @@ var ColorPicker$1 = /** @__PURE__ @class */ (function () {
     ColorPicker$$1.prototype.updateValue = function (e) {
         if (this.compObj && e.type === 'Color') {
             this.parent.setProperties({ value: this.compObj.value }, true);
+            this.parent.extendModelValue(this.compObj.value);
         }
     };
     /**
@@ -1350,7 +1389,6 @@ var ComboBox$1 = /** @__PURE__ @class */ (function () {
         this.base = new Base(this.parent, this);
     }
     ComboBox$$1.prototype.render = function (e) {
-        this.parent.model.showClearButton = true;
         this.compObj = new ComboBox(this.parent.model, e.target);
     };
     ComboBox$$1.prototype.focus = function () {
@@ -1359,6 +1397,7 @@ var ComboBox$1 = /** @__PURE__ @class */ (function () {
     ComboBox$$1.prototype.updateValue = function (e) {
         if (this.compObj && e.type === 'ComboBox') {
             this.parent.setProperties({ value: this.compObj.value }, true);
+            this.parent.extendModelValue(this.compObj.value);
         }
     };
     /**
@@ -1389,7 +1428,6 @@ var DateRangePicker$1 = /** @__PURE__ @class */ (function () {
         this.base = new Base(this.parent, this);
     }
     DateRangePicker$$1.prototype.render = function (e) {
-        this.parent.model.showClearButton = true;
         this.compObj = new DateRangePicker(this.parent.model);
         this.compObj.appendTo(e.target);
     };
@@ -1399,6 +1437,7 @@ var DateRangePicker$1 = /** @__PURE__ @class */ (function () {
     DateRangePicker$$1.prototype.updateValue = function (e) {
         if (this.compObj && e.type === 'DateRange') {
             this.parent.setProperties({ value: this.compObj.value }, true);
+            this.parent.extendModelValue(this.compObj.value);
         }
     };
     /**
@@ -1429,7 +1468,6 @@ var MultiSelect$1 = /** @__PURE__ @class */ (function () {
         this.base = new Base(this.parent, this);
     }
     MultiSelect$$1.prototype.render = function (e) {
-        this.parent.model.showClearButton = true;
         this.compObj = new MultiSelect(this.parent.model, e.target);
     };
     MultiSelect$$1.prototype.focus = function () {
@@ -1438,6 +1476,7 @@ var MultiSelect$1 = /** @__PURE__ @class */ (function () {
     MultiSelect$$1.prototype.updateValue = function (e) {
         if (this.compObj && e.type === 'MultiSelect') {
             this.parent.setProperties({ value: this.compObj.value }, true);
+            this.parent.extendModelValue(this.compObj.value);
         }
     };
     MultiSelect$$1.prototype.getRenderValue = function () {
@@ -1482,6 +1521,7 @@ var Rte = /** @__PURE__ @class */ (function () {
             var rteValue = this.compObj.contentModule.getEditPanel().innerHTML === '<p><br></p>' ?
                 '' : this.compObj.contentModule.getEditPanel().innerHTML;
             this.parent.setProperties({ value: rteValue }, true);
+            this.parent.extendModelValue(this.compObj.value);
         }
     };
     Rte.prototype.refresh = function () {
@@ -1523,6 +1563,7 @@ var Slider$1 = /** @__PURE__ @class */ (function () {
     Slider$$1.prototype.updateValue = function (e) {
         if (this.compObj && e.type === 'Slider') {
             this.parent.setProperties({ value: this.compObj.value }, true);
+            this.parent.extendModelValue(this.compObj.value);
         }
     };
     Slider$$1.prototype.refresh = function () {
@@ -1556,7 +1597,6 @@ var TimePicker$1 = /** @__PURE__ @class */ (function () {
         this.base = new Base(this.parent, this);
     }
     TimePicker$$1.prototype.render = function (e) {
-        this.parent.model.showClearButton = true;
         this.compObj = new TimePicker(this.parent.model, e.target);
     };
     TimePicker$$1.prototype.focus = function () {
@@ -1565,6 +1605,7 @@ var TimePicker$1 = /** @__PURE__ @class */ (function () {
     TimePicker$$1.prototype.updateValue = function (e) {
         if (this.compObj && e.type === 'Time') {
             this.parent.setProperties({ value: this.compObj.value }, true);
+            this.parent.extendModelValue(this.compObj.value);
         }
     };
     /**
@@ -1596,5 +1637,5 @@ var TimePicker$1 = /** @__PURE__ @class */ (function () {
  *
  */
 
-export { parseValue, getCompValue, render, update, destroy, setFocus, accessValue, destroyModules, PopupSettings, modulesList, localeConstant, ROOT, ROOT_TIP, VALUE_WRAPPER, VALUE, OVERLAY_ICON, TIP_TITLE, TITLE, INLINE, POPUP, WRAPPER, LOADING, FORM, CTRL_GROUP, INPUT, BUTTONS, EDITABLE_ERROR, ELEMENTS, OPEN, BTN_SAVE, BTN_CANCEL, DISABLE, ICONS, PRIMARY, SHOW, HIDE, RTL, ERROR, InPlaceEditor, Base, AutoComplete$1 as AutoComplete, ColorPicker$1 as ColorPicker, ComboBox$1 as ComboBox, DateRangePicker$1 as DateRangePicker, MultiSelect$1 as MultiSelect, Rte, Slider$1 as Slider, TimePicker$1 as TimePicker };
+export { parseValue, getCompValue, render, update, destroy, setFocus, accessValue, destroyModules, PopupSettings, modulesList, localeConstant, ROOT, ROOT_TIP, VALUE_WRAPPER, VALUE, OVERLAY_ICON, TIP_TITLE, TITLE, INLINE, POPUP, WRAPPER, LOADING, FORM, CTRL_GROUP, INPUT, BUTTONS, EDITABLE_ERROR, ELEMENTS, OPEN, BTN_SAVE, BTN_CANCEL, RTE_SPIN_WRAP, CTRL_OVERLAY, DISABLE, ICONS, PRIMARY, SHOW, HIDE, RTL, ERROR, LOAD, InPlaceEditor, Base, AutoComplete$1 as AutoComplete, ColorPicker$1 as ColorPicker, ComboBox$1 as ComboBox, DateRangePicker$1 as DateRangePicker, MultiSelect$1 as MultiSelect, Rte, Slider$1 as Slider, TimePicker$1 as TimePicker };
 //# sourceMappingURL=ej2-inplace-editor.es5.js.map

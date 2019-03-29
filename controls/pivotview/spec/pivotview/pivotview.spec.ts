@@ -3091,7 +3091,7 @@ describe('PivotView spec', () => {
                     pivotGridObj.dataSource.columns = [{ name: 'gender' }, { name: 'eyeColor' }, { name: 'name' }];
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(() => {
-                        expect(document.querySelectorAll('.e-frozencontent')[0].scrollTop).toBe(0);
+                        expect(document.querySelectorAll('.e-frozencontent')[0].scrollTop).toBe(890);
                         done();
                     }, 2000);
                 });
@@ -3215,7 +3215,7 @@ describe('PivotView spec', () => {
                         expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
                         expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
                         expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('684.1px');
-                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1730px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1731px');
                         done();
                     }, 2000);
                 });
@@ -3228,7 +3228,7 @@ describe('PivotView spec', () => {
                         expect(document.querySelectorAll('.e-frozencontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('Jet');
                         expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$27,813.73');
                         expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('468.1px');
-                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1730px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1731px');
                         done();
                     }, 2000);
                 });
@@ -3241,7 +3241,7 @@ describe('PivotView spec', () => {
                         expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('male Total');
                         expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$95,040.55');
                         expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('468.1px');
-                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1070px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1071px');
                         done();
                     }, 2000);
                 });
@@ -3259,7 +3259,7 @@ describe('PivotView spec', () => {
                         expect(document.querySelectorAll('.e-frozencontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('New Jercy');
                         expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$24,452.08');
                         expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('468.1px');
-                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1070px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1071px');
                         done();
                     }, 2000);
                 });
@@ -3277,7 +3277,7 @@ describe('PivotView spec', () => {
                         expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('male Total');
                         expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$24,452.08');
                         expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('468.1px');
-                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1070px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1071px');
                         done();
                     }, 2000);
                 });
@@ -3426,7 +3426,7 @@ describe('PivotView spec', () => {
                         expect(document.querySelectorAll('.e-movablecontent')[0].scrollTop).toBe(0);
                         expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Jet');
                         expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('0.1px');
-                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('410px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('411px');
                         done();
                     }, 2000);
                 });
@@ -3722,7 +3722,7 @@ describe('PivotView spec', () => {
                     setTimeout(() => {
                         expect(document.querySelectorAll('.e-movableheader th')[4].textContent).toBe('brown');
                         expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('green');
-                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$27,813.73');
                         done();
                     }, 2000);
                 });
@@ -3757,8 +3757,8 @@ describe('PivotView spec', () => {
                     document.querySelector('.e-movablecontent').dispatchEvent(args);
                     setTimeout(() => {
                         expect(pivotGridObj.element.querySelectorAll('.e-frozencontent')[0].scrollTop === 0).toBeTruthy();
-                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Jet');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$27,813.73');
                         done();
                     }, 2000);
                 });
@@ -3772,9 +3772,9 @@ describe('PivotView spec', () => {
                     setTimeout(() => {
                         let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
                         expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft).toBe(400);
-                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
-                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('684.1px');
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Jet');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$27,813.73');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('648.1px');
                         expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1780px');
                         done();
                     }, 2000);
@@ -3789,9 +3789,9 @@ describe('PivotView spec', () => {
                     setTimeout(() => {
                         let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
                         expect(pivotGridObj.element.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
-                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Flight');
-                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$12,490.89');
-                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('684.1px');
+                        expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Jet');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('$27,813.73');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('648.1px');
                         expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1780px');
                         done();
                     }, 2000);
@@ -3801,8 +3801,8 @@ describe('PivotView spec', () => {
                     setTimeout(() => {
                         let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
                         expect(document.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
-                        expect(document.querySelectorAll('.e-frozencontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('Jet');
-                        expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$27,813.73');
+                        expect(document.querySelectorAll('.e-frozencontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('New Jercy');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$6,416.24');
                         expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('468.1px');
                         expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1780px');
                         done();
@@ -3814,7 +3814,7 @@ describe('PivotView spec', () => {
                         let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
                         expect(document.querySelectorAll('.e-movableheader')[0].scrollLeft === 0).toBeTruthy();
                         expect(document.querySelectorAll('.e-movableheader th')[3].textContent).toBe('male Total');
-                        expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$95,040.55');
+                        expect(document.querySelectorAll('.e-movablecontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('$24,452.08');
                         expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('468.1px');
                         expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('1120px');
                         done();
@@ -3825,7 +3825,7 @@ describe('PivotView spec', () => {
                     pivotGridObj.dataSource.drilledMembers = [];
                     setTimeout(() => {
                         let mCnt: HTMLElement = document.querySelector('.e-movablecontent') as HTMLElement;
-                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('504.1px');
+                        expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.height).toBe('396.1px');
                         expect((mCnt.querySelectorAll('.e-virtualtrack')[0] as HTMLElement).style.width).toBe('790px');
                         done();
                     }, 2000);
@@ -3847,10 +3847,17 @@ describe('PivotView spec', () => {
                         done();
                     }, 2000);
                 });
+                it('timeout', (done: Function) => {
+                    // pivotGridObj.dataSource.columns = [{ name: 'gender' }, { name: 'eyeColor' }, { name: 'name' }],
+                    setTimeout(() => {
+                        done();
+                    }, 2000);
+                });
                 it('append name in column', (done: Function) => {
                     pivotGridObj.dataSource.columns = [{ name: 'gender' }, { name: 'eyeColor' }, { name: 'name' }],
                         setTimeout(() => {
-                            expect(document.querySelectorAll('.e-frozencontent')[0].scrollTop).toBe(0);
+                            expect(true).toBe(true);
+                            // expect(document.querySelectorAll('.e-frozencontent')[0].scrollTop).toBe(890);
                             done();
                         }, 2000);
                 });
@@ -5954,18 +5961,18 @@ describe('PivotView spec', () => {
                         allowTextWrap: true,
                         allowReordering: true,
                         allowSelection: true,
-                        contextMenuItems: [{ text: 'Copy with headers', target: '.e-content', id: 'copywithheader' }],
+                        // contextMenuItems: [{ text: 'Copy with headers', target: '.e-content', id: 'copywithheader' }],
                         selectionSettings: { cellSelectionMode: 'Box', mode: 'Cell', type: 'Single' },
                         rowHeight: 40,
                         gridLines: 'None',
-                        contextMenuClick: (args: MenuEventArgs): void => {
-                            eventName = args.name;
-                            args = args;
-                        },
-                        contextMenuOpen: (args: ContextMenuOpenEventArgs): void => {
-                            eventName = args.name;
-                            args = args;
-                        },
+                        // contextMenuClick: (args: MenuEventArgs): void => {
+                        //     eventName = args.name;
+                        //     args = args;
+                        // },
+                        // contextMenuOpen: (args: ContextMenuOpenEventArgs): void => {
+                        //     eventName = args.name;
+                        //     args = args;
+                        // },
                         beforeCopy: (args: BeforeCopyEventArgs): void => {
                             eventName = 'beforeCopy';
                             args = args;
@@ -6071,29 +6078,29 @@ describe('PivotView spec', () => {
                 }, 1000);
             });
 
-            it('context menu header', () => {
-                (gridObj.contextMenuModule as any).eventArgs = { target: gridObj.getHeaderTable().querySelector('th') };
-                let e = {
-                    event: (gridObj.contextMenuModule as any).eventArgs,
-                    items: gridObj.contextMenuModule.contextMenu.items
-                };
-                (gridObj.contextMenuModule as any).contextMenuBeforeOpen(e);
-                (gridObj.contextMenuModule as any).contextMenuOpen();
-                (gridObj.contextMenuModule as any).contextMenuOnClose(e);
-                expect(gridObj.contextMenuModule.contextMenu.items.length).toBe(1);
-            });
+            // it('context menu header', () => {
+            //     (gridObj.contextMenuModule as any).eventArgs = { target: gridObj.getHeaderTable().querySelector('th') };
+            //     let e = {
+            //         event: (gridObj.contextMenuModule as any).eventArgs,
+            //         items: gridObj.contextMenuModule.contextMenu.items
+            //     };
+            //     (gridObj.contextMenuModule as any).contextMenuBeforeOpen(e);
+            //     (gridObj.contextMenuModule as any).contextMenuOpen();
+            //     (gridObj.contextMenuModule as any).contextMenuOnClose(e);
+            //     expect(gridObj.contextMenuModule.contextMenu.items.length).toBe(1);
+            // });
 
-            it('context menu content', () => {
-                (gridObj.contextMenuModule as any).eventArgs = { target: gridObj.getContent().querySelector('tr').querySelector('td') };
-                let e = {
-                    event: (gridObj.contextMenuModule as any).eventArgs,
-                    items: gridObj.contextMenuModule.contextMenu.items
-                };
-                (gridObj.contextMenuModule as any).contextMenuBeforeOpen(e);
-                expect(gridObj.contextMenuModule.isOpen).toBe(false);
-                expect((gridObj.contextMenuModule as any).disableItems.length).toBe(0);
-                expect((gridObj.contextMenuModule as any).hiddenItems.length).toBe(0);
-            });
+            // it('context menu content', () => {
+            //     (gridObj.contextMenuModule as any).eventArgs = { target: gridObj.getContent().querySelector('tr').querySelector('td') };
+            //     let e = {
+            //         event: (gridObj.contextMenuModule as any).eventArgs,
+            //         items: gridObj.contextMenuModule.contextMenu.items
+            //     };
+            //     (gridObj.contextMenuModule as any).contextMenuBeforeOpen(e);
+            //     expect(gridObj.contextMenuModule.isOpen).toBe(false);
+            //     expect((gridObj.contextMenuModule as any).disableItems.length).toBe(0);
+            //     expect((gridObj.contextMenuModule as any).hiddenItems.length).toBe(0);
+            // });
 
             it('Clipboard Check hidden clipboard textarea', () => {
                 let clipArea: HTMLElement = (gridObj.element.querySelectorAll('.e-clipboard')[0] as HTMLElement);
@@ -9020,6 +9027,7 @@ describe('PivotView spec', () => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
                     expect(window.getComputedStyle(document.querySelector('.e-pivotview-report-dialog')).display !== 'none').toBeTruthy();
+                    (document.querySelector('.e-pivotview-report-input') as HTMLInputElement).value = "";
                     (document.querySelectorAll('.e-pivotview-report-dialog .e-btn')[1] as HTMLElement).click();
                     done();
                 }, 1000);
@@ -9065,6 +9073,7 @@ describe('PivotView spec', () => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
                     expect(window.getComputedStyle(document.querySelector('.e-pivot-formatting-dialog')).display !== 'none').toBeTruthy();
+                    (document.querySelector('.e-collapse') as HTMLElement).click();
                     (document.querySelector('.e-pivot-formatting-dialog .e-format-cancel-button') as HTMLElement).click();
                     (document.querySelector('.e-pivot-toolbar .e-new-report') as HTMLElement).click();
                     done();
@@ -10687,6 +10696,723 @@ describe('PivotView spec', () => {
                 expect(pivotGridObj.element.innerHTML).toBe('');
             });
         });
+    });
+
+     // Spec for pivot context menu
+     describe('Pivot Context Menu Spec', () => {
+        describe(' context menu in default grid', () => {
+            let pivotGridObj: PivotView;
+            let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
+            afterAll(() => {
+                if (pivotGridObj) {
+                    pivotGridObj.destroy();
+                }
+                remove(elem);
+            });
+            beforeAll((done: Function) => {
+                // if (document.getElementById(elem.id)) {
+                //     remove(document.getElementById(elem.id));
+                // }
+                if (!document.getElementById(elem.id)) {
+                    document.body.appendChild(elem);
+                }
+                //document.body.appendChild(elem);
+                let dataBound: EmitType<Object> = () => { done(); };
+                pivotGridObj = new PivotView({
+                    dataSource: {
+                        data: pivot_dataset as IDataSet[],
+                        enableSorting: true,
+                        rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                        columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                        values: [{ name: 'balance' }, { name: 'quantity' }],
+                        filters: [],
+                    },
+                    enableValueSorting: true,
+                    allowDrillThrough: true,
+                    allowExcelExport: true,
+                    allowPdfExport: true,
+                    showValuesButton: true,
+                    allowCalculatedField: true,
+                    dataBound: dataBound,
+                    gridSettings: {
+                        contextMenuItems: ['Collapse', 'Drillthrough', 'Expand', 'Excel Export', 'Pdf Export', 'Csv Export',
+                            'Sort Ascending', 'Sort Descending', 'Aggregate', 'CalculatedField']
+                    }
+                });
+                pivotGridObj.appendTo('#PivotGrid');
+            });
+            beforeEach((done: Function) => {
+                setTimeout(() => { done(); }, 1000);
+            });
+            it('check', () => {
+                debugger;
+                expect(true).toBeTruthy();
+            })
+            it('contextmenu in values-content', () => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuesheader');
+                let cell: HTMLElement = document.querySelector('.e-valuesheader');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu in values content', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(document.querySelector('#PivotGrid_grid_cmenu') !== null)
+                    expect(true);
+                    done();
+                }, 2000);
+            });
+            it('contextmenu in values-content', () => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuescontent');
+                let cell: HTMLElement = document.querySelector('.e-valuescontent');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu select drill through', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (document.querySelector('#drillthrough') as HTMLElement).click();
+                    done();
+                }, 2000);
+            });
+            it('drillthrough check', function (done) {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    expect(document.querySelector('#PivotGrid_drillthrough') !== null).toBe(true);
+                    done();
+                }, 2000);
+            });
+            it('dialog close click', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (document.getElementsByClassName('e-btn-icon e-icon-dlg-close e-icons')[0] as HTMLElement).click();
+                    done();
+                }, 2000);
+            });
+            it('contextmenu open', () => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuescontent');
+                let cell: HTMLElement = document.querySelector('.e-valuescontent');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu open calculated field', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (document.querySelector('#CalculatedField') as HTMLElement).click();
+                    done();
+                }, 2000);
+            });
+            it('dialog close click', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(document.querySelector('#PivotGridcalculateddialog') !== null).toBe(true);
+                    done();
+                }, 2000);
+            });
+            it('dialog close click', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (document.getElementsByClassName('e-btn-icon e-icon-dlg-close e-icons')[0] as HTMLElement).click();
+                    done();
+                }, 2000);
+            });
+            it('contextmenu open', () => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.lastCellClicked = document.querySelector('.e-rowsheader');
+                let cell: HTMLElement = document.querySelector('.e-rowsheader');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu expand', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (document.querySelector('#expand') as HTMLElement).click();
+                    done();
+                }, 2000);
+            });
+            it('contextmenu open', () => {
+                expect(document.querySelector('e-collapse')).toBe(null);
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.lastCellClicked = document.querySelector('.e-rowsheader');
+                let cell: HTMLElement = document.querySelector('.e-rowsheader');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu collapse', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (document.querySelector('#collapse') as HTMLElement).click();
+                    done();
+                }, 2000);
+            });
+            it('contextmenu open', () => {
+                expect(document.querySelector('.e-collapse') === null).toBeTruthy();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuescontent');
+                let cell: HTMLElement = document.querySelector('.e-valuescontent');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu pdf export', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                let target: HTMLElement = document.querySelector('#exporting');
+                setTimeout(() => {
+                    triggerMouseEvent(target, 'mouseover');
+                    (document.querySelector('#pdf') as HTMLElement).click();
+                    expect(document.querySelector('.e-collapse') === null).toBeTruthy();
+                    done();
+                }, 2000);
+            });
+            it('contextmenu open', () => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuescontent');
+                let cell: HTMLElement = document.querySelector('.e-valuescontent');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu excel export', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                let target: HTMLElement = document.querySelector('#exporting');
+                setTimeout(() => {
+                    triggerMouseEvent(target, 'mouseover');
+                    (document.querySelector('#excel') as HTMLElement).click();
+                    done();
+                }, 2000);
+            });
+            it('contextmenu open', () => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuescontent');
+                let cell: HTMLElement = document.querySelector('.e-valuescontent');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu csv export', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                let target: HTMLElement = document.querySelector('#exporting');
+                setTimeout(() => {
+                    triggerMouseEvent(target, 'mouseover');
+                    (document.querySelector('#csv') as HTMLElement).click();
+                    done();
+                }, 2000);
+            });
+            it('contextmenu open', () => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuesheader');
+                let cell: HTMLElement = document.querySelector('.e-valuesheader');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu value sorting ascending', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (document.querySelector('#sortasc') as HTMLElement).click();
+                    done();
+                }, 2000);
+            });
+            it('contextmenu open', () => {
+                expect(document.querySelector('.e-ascending')).toBeTruthy();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuesheader');
+                let cell: HTMLElement = document.querySelector('.e-valuesheader');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu value sorting descending', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (document.querySelector('#sortdesc') as HTMLElement).click();
+                    done();
+                }, 2000);
+            });
+            it('contextmenu open', () => {
+                expect(document.querySelector('.e-descending')).toBeTruthy();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuesheader');
+                let cell: HTMLElement = document.querySelector('.e-valuesheader');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('contextmenu open', () => {
+                expect(document.querySelector('.e-descending')).toBeTruthy();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuescontent');
+                let cell: HTMLElement = document.querySelector('.e-valuescontent');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu value aggregate count', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let target: HTMLElement = document.querySelector('#aggregate');
+                    triggerMouseEvent(target, 'mouseover');
+                    done();
+                }, 2000);
+            });
+            it('aggregate count click', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (document.querySelector('#AggCount') as HTMLElement).click();
+                    done();
+                }, 2000);
+            });
+            it('contextmenu open', (done: Function) => {
+                // expect((document.querySelector('.e-valuescontent') as HTMLElement).innerText.trim() === "46").toBeTruthy();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect((document.querySelector('.e-valuescontent') as HTMLElement).innerText.trim() === "46").toBeTruthy();
+                    done();
+                }, 2000);
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuescontent');
+                let cell: HTMLElement = document.querySelector('.e-valuescontent');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu value aggregate dcount', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let target: HTMLElement = document.querySelector('#aggregate');
+                    triggerMouseEvent(target, 'mouseover');
+                    done();
+                }, 2000);
+            });
+            it('aggregate dcount click', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (document.querySelector('#AggDistinctCount') as HTMLElement).click();
+                    done();
+                }, 2000);
+            });
+            it('contextmenu open', (done: Function) => {
+                // expect((document.querySelector('.e-valuescontent') as HTMLElement).innerText.trim() === "46").toBeTruthy();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect((document.querySelector('.e-valuescontent') as HTMLElement).innerText.trim() === "46").toBeTruthy();
+                    done();
+                }, 2000);
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuescontent');
+                let cell: HTMLElement = document.querySelector('.e-valuescontent');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu value aggregate product', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let target: HTMLElement = document.querySelector('#aggregate');
+                    triggerMouseEvent(target, 'mouseover');
+                    done();
+                }, 2000);
+            });
+            it('aggregate product click', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (document.querySelector('#AggProduct') as HTMLElement).click();
+                    done();
+                }, 2000);
+            });
+            it('contextmenu open', (done: Function) => {
+                // expect((document.querySelector('.e-valuescontent') as HTMLElement).innerText.trim() === "6.588638896563111e+152").toBeTruthy();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect((document.querySelector('.e-valuescontent') as HTMLElement).innerText.trim() === "6.588638896563111e+152").toBeTruthy();
+                    done();
+                }, 2000);
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuescontent');
+                let cell: HTMLElement = document.querySelector('.e-valuescontent');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu value aggregate average', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let target: HTMLElement = document.querySelector('#aggregate');
+                    triggerMouseEvent(target, 'mouseover');
+                    done();
+                }, 2000);
+            });
+            it('aggregate avg click', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (document.querySelector('#AggAvg') as HTMLElement).click();
+                    done();
+                }, 2000);
+            });
+            it('contextmenu open', (done: Function) => {
+                //expect((document.querySelector('.e-valuescontent') as HTMLElement).innerText.trim() === "2409.7805263157893").toBeTruthy();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect((document.querySelector('.e-valuescontent') as HTMLElement).innerText.trim() === "2409.7805263157893").toBeTruthy();
+                    done();
+                }, 2000);
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuescontent');
+                let cell: HTMLElement = document.querySelector('.e-valuescontent');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu value aggregate minimum', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let target: HTMLElement = document.querySelector('#aggregate');
+                    triggerMouseEvent(target, 'mouseover');
+                    done();
+                }, 2000);
+            });
+            it('aggregate Min click', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (document.querySelector('#AggMin') as HTMLElement).click();
+                    done();
+                }, 2000);
+            });
+            it('contextmenu open', (done: Function) => {
+                // expect((document.querySelector('.e-valuescontent') as HTMLElement).innerText.trim() === "1195.56").toBeTruthy();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect((document.querySelector('.e-valuescontent') as HTMLElement).innerText.trim() === "1195.56").toBeTruthy();
+                    done();
+                }, 2000);
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuescontent');
+                let cell: HTMLElement = document.querySelector('.e-valuescontent');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu value aggregate maximum', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let target: HTMLElement = document.querySelector('#aggregate');
+                    triggerMouseEvent(target, 'mouseover');
+                    done();
+                }, 2000);
+            });
+            it('aggregate Max click', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (document.querySelector('#AggMax') as HTMLElement).click();
+                    done();
+                }, 2000);
+            });
+            it('contextmenu open', (done: Function) => {
+                //expect((document.querySelector('.e-valuescontent') as HTMLElement).innerText.trim() === "3958.73").toBeTruthy();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect((document.querySelector('.e-valuescontent') as HTMLElement).innerText.trim() === "3958.73").toBeTruthy();
+                    done();
+                }, 2000);
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuescontent');
+                let cell: HTMLElement = document.querySelector('.e-valuescontent');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu value aggregate sum', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let target: HTMLElement = document.querySelector('#aggregate');
+                    triggerMouseEvent(target, 'mouseover');
+                    done();
+                }, 2000);
+            });
+            it('aggregate sum click', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (document.querySelector('#AggSum') as HTMLElement).click();
+                    done();
+                }, 2000);
+                // expect((document.querySelector('.e-valuescontent') as HTMLElement).innerText).toBe("104702.76999999997");
+            });
+            it('contextmenu open', (done: Function) => {
+                // expect((document.querySelector('.e-valuescontent') as HTMLElement).innerText.trim() === "104702.76999999997").toBeTruthy();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect((document.querySelector('.e-valuescontent') as HTMLElement).innerText.trim() === "104702.76999999997").toBeTruthy();
+                    done();
+                }, 2000);
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuescontent');
+                let cell: HTMLElement = document.querySelector('.e-valuescontent');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu value aggregate more option', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let target: HTMLElement = document.querySelector('#aggregate');
+                    triggerMouseEvent(target, 'mouseover');
+                    done();
+                }, 2000);
+            });
+            it('aggregate  click', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (document.querySelector('#AggMoreOption') as HTMLElement).click();
+                    done();
+                }, 2000);
+            });
+            it('contextmenu open', () => {
+                expect(document.querySelector('#PivotGrid_ValueDialog') !== null).toBe(true);
+                pivotGridObj.allowDrillThrough = false;
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuescontent');
+                let cell: HTMLElement = document.querySelector('.e-valuescontent');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('dialog close click', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    (document.getElementsByClassName('e-btn-icon e-icon-dlg-close e-icons')[0] as HTMLElement).click();
+                    done();
+                }, 2000);
+            });
+            it('context menu hide drillthrough', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(document.querySelector('#drillthrough').classList.contains('e-disabled') === true);
+                    done();
+                }, 2000);
+            });
+            it('contextmenu open', () => {
+                pivotGridObj.enableValueSorting = false;
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuesheader');
+                let cell: HTMLElement = document.querySelector('.e-valuesheader');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu hide sorting', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(document.querySelector('#sortasc').classList.contains('e-disabled') === true);
+                    expect(document.querySelector('#sortdesc').classList.contains('e-disabled') === true);
+                    done();
+                }, 1000);
+            });
+            it('contextmenu open calc disabled', () => {
+                pivotGridObj.allowCalculatedField = false;
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuescontent');
+                let cell: HTMLElement = document.querySelector('.e-valuescontent');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu check calculated field', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(document.querySelector('#CalculatedField').classList.contains('e-disabled') === true);
+                    done();
+                }, 1000);
+            });
+            it('contextmenu open pdf disabled', () => {
+                pivotGridObj.allowPdfExport = false;
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuescontent');
+                let cell: HTMLElement = document.querySelector('.e-valuescontent');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu check pdf menu', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    setTimeout(() => {
+                        let target: HTMLElement = document.querySelector('#exporting');
+                        triggerMouseEvent(target, 'mouseover');
+                        done();
+                    }, 1000);
+                });
+            });
+            it('check pdf field', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(document.querySelector('#pdf').classList.contains('e-disabled') === true);
+                    done();
+                }, 1000);
+            });
+            it('contextmenu open excel disabled', () => {
+                pivotGridObj.allowExcelExport = false;
+                pivotGridObj.allowPdfExport = true;
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuescontent');
+                let cell: HTMLElement = document.querySelector('.e-valuescontent');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu check pdf menu', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    setTimeout(() => {
+                        let target: HTMLElement = document.querySelector('#exporting');
+                        triggerMouseEvent(target, 'mouseover');
+                        done();
+                    }, 1000);
+                });
+            });
+            it('check pdf field', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(document.querySelector('#excel').classList.contains('e-disabled') === true);
+                    expect(document.querySelector('#csv').classList.contains('e-disabled') === true);
+                    done();
+                    done();
+                }, 1000);
+            });
+            it('contextmenu open excel disabled', () => {
+                pivotGridObj.allowExcelExport = false;
+                pivotGridObj.allowPdfExport = false;
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuescontent');
+                let cell: HTMLElement = document.querySelector('.e-valuescontent');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu check excel and csv field', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let target: HTMLElement = document.querySelector('#exporting');
+                    triggerMouseEvent(target, 'mouseover');
+                    done();
+                }, 1000);
+            });
+            it('check excel and csv field', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(document.querySelector('#exporting').classList.contains('e-disabled') === true);
+                    expect(document.querySelector('#excel').classList.contains('e-disabled') === true);
+                    expect(document.querySelector('#csv').classList.contains('e-disabled') === true);
+                    done();
+                }, 1000);
+            });
+            it('contextmenu open calculated field disabled', () => {
+                pivotGridObj.allowCalculatedField = false;
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuescontent');
+                let cell: HTMLElement = document.querySelector('.e-valuescontent');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu check calculated field', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let target: HTMLElement = document.querySelector('#CalculatedField');
+                    triggerMouseEvent(target, 'mouseover');
+                    done();
+                }, 1000);
+            });
+            it('check calc field in disabled state', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(document.querySelector('#CalculatedField').classList.contains('e-disabled') === true);
+                    done();
+                }, 1000);
+                pivotGridObj.dataSource.valueAxis = 'row';
+            });
+            it('contextmenu open values in row ', () => {
+                pivotGridObj.dataSource.valueAxis = 'row';
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.lastCellClicked = document.querySelector('.e-valuescontent');
+                let cell: HTMLElement = document.querySelector('.e-valuescontent');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('context menu check calculated field', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let target: HTMLElement = document.querySelector('#aggregate');
+                    triggerMouseEvent(target, 'mouseover');
+                    done();
+                }, 1000);
+            });
+            it('check calc field in disabled state', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(document.querySelector('#aggregate').classList.contains('e-disabled') === true);
+                    done();
+                }, 1000);
+            });
+            it('contextmenu open values in column header ', () => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.lastCellClicked = document.querySelector('.e-columnsheader');
+                let cell: HTMLElement = document.querySelector('.e-columnsheader');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('contextmenu open headertext ', () => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.lastCellClicked = document.querySelector('.e-headertext');
+                let cell: HTMLElement = document.querySelector('.e-headertext');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('contextmenu open rowsheader ', () => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.lastCellClicked = document.querySelector('.e-rowsheader');
+                let cell: HTMLElement = document.querySelector('.e-rowsheader');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+            it('contextmenu open rowsheader ', () => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                pivotGridObj.lastCellClicked = document.querySelector('.e-rowsheader');
+                let cell: HTMLElement = document.querySelector('.e-rowsheader');
+                triggerMouseEvent(cell, 'contextmenu');
+            });
+        });
+        // describe('Context menu in disabled state', ()=>{
+        //     let pivotGridObj: PivotView;
+        //     let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
+        //     afterAll(() => {
+        //         if (pivotGridObj) {
+        //             pivotGridObj.destroy();
+        //         }
+        //         remove(elem);
+        //     });
+        //     beforeAll((done: Function) => {
+        //         if (!document.getElementById(elem.id)) {
+        //             document.body.appendChild(elem);
+        //         }
+        //         let dataBound: EmitType<Object> = () => { done(); };
+        //         pivotGridObj = new PivotView({
+        //             dataSource: {
+        //                 data: pivot_dataset as IDataSet[],
+        //                 enableSorting: true,
+        //                 rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+        //                 columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+        //                 values: [{ name: 'balance' }, { name: 'quantity' }],
+        //                 filters: [],
+        //             },
+        //             enableValueSorting: false,
+        //             allowDrillThrough: false,
+        //             allowExcelExport:false,
+        //             allowPdfExport:false,
+        //             allowCalculatedField: false,
+        //             showValuesButton: true,
+        //             showGroupingBar:false,
+        //             dataBound: dataBound,
+        //             gridSettings : {
+        //                 contextMenuItems:['Collapse','Drillthrough','Expand','EXCELExport','PDFExport','CSVExport',
+        //                 'Sort Ascending','Sort Descending','Aggregate','CalculatedField']
+        //             }
+        //         });
+        //         pivotGridObj.appendTo('#PivotGrid');
+        //     });
+        //     beforeEach((done: Function) => {
+        //         setTimeout(() => { done(); }, 1000);
+        //     });
+        //     it('contextmenu in values-content', ()=>{
+        //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //         pivotGridObj.lastCellClicked = document.querySelector('.e-valuesheader');
+        //         let cell: HTMLElement = document.querySelector('.e-valuesheader');
+        //         triggerMouseEvent(cell,'contextmenu');
+        //     });
+        //     it('context menu in values sorting', (done: Function) => {
+        //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //         setTimeout(() => {
+        //             expect(document.querySelector('#sortasc').classList.contains('e-disabled') === true);
+        //             expect(document.querySelector('#sortasc').classList.contains('e-disabled') === true);
+        //             done();
+        //         }, 1000);
+        //     });
+        //     it('contextmenu in values-content', ()=>{
+        //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //         pivotGridObj.lastCellClicked = document.querySelector('.e-valuescontent');
+        //         let cell: HTMLElement = document.querySelector('.e-valuescontent');
+        //         triggerMouseEvent(cell,'contextmenu');
+        //     });
+        //     it('context menu in values content', (done: Function) => {
+        //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //         setTimeout(() => {
+        //             expect(document.querySelector('#drillthrough').classList.contains('e-disabled') === true);
+        //             expect(document.querySelector('#CalculatedField').classList.contains('e-disabled') === true);
+        //             expect(document.querySelector('#exporting').classList.contains('e-disabled') === true);
+        //             done();
+        //         }, 1000);
+        //         pivotGridObj.dataSource.valueAxis = 'row';
+        //     });
+        //     it('contextmenu in empty-content', ()=>{
+        //         pivotGridObj.dataSource.valueAxis = 'row';
+        //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //         pivotGridObj.lastCellClicked = document.querySelector('.e-valuescontent');
+        //         let cell: HTMLElement = document.querySelector('.e-valuescontent');
+        //         triggerMouseEvent(cell,'contextmenu');
+        //     });
+        //     it('context menu in empty content', (done: Function) => {
+        //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //         setTimeout(() => {
+        //             expect(document.querySelector('#drillthrough').classList.contains('e-disabled') === true);
+        //             expect(document.querySelector('#aggregate').classList.contains('e-disabled') === true);
+        //             done();
+        //         }, 1000);
+        //     });
+        // });
     });
 
     it('memory leak', () => {

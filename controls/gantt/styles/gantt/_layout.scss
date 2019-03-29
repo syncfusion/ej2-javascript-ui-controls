@@ -4,12 +4,14 @@
     width: 100%;
 
     .e-gantt-toolbar {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
       border-style: solid;
       border-width: 1px 1px 0;
     }
 
     .e-flmenu-valuediv {
-      padding-top: 24px;
+      padding-top: $gantt-filter-menu-value-div-padding;
     }
 
     .e-gantt-splitter {
@@ -30,6 +32,10 @@
 
     .e-tab {
       border: 0;
+
+      .e-tab-header .e-toolbar-item.e-active {
+        border-color: transparent;
+      }
     }
 
     .e-gantt-dialog .e-tab .e-tab-header {
@@ -40,9 +46,14 @@
       }
 
       .e-toolbar-item .e-tab-wrap {
-        border: 0;
+        border-style: solid;
+        border-width: $gantt-tab-header-border-width;
       }
 
+    }
+
+    .e-gantt-dialog .e-tab .e-tab-header:not(.e-vertical)::before {
+      border: 0;
     }
 
     .e-gantt-tree-grid-pane {
@@ -458,9 +469,10 @@
         .e-span-label {
           border-radius: 3px;
           font-weight: 500;
-          height: 30px;
+          height: $event-marker-label-height;
           left: 5px;
-          padding: 7px 12px;
+          line-height: $event-marker-line-height;
+          padding: $event-marker-label-padding;
           position: absolute;
           top: 50px;
           white-space: nowrap;
@@ -474,7 +486,7 @@
           border-top: 5px solid transparent;
           height: 0;
           position: absolute;
-          top: 60px;
+          top: $event-marker-label-arrow-top;
           width: 0;
         }
       }
@@ -566,6 +578,8 @@
 
     .e-gantt-dialog {
 
+      border: 0;
+
       .e-gridform .e-table {
         border-spacing: 0;
       }
@@ -585,7 +599,7 @@
       .e-edit-form-row {
         height: $gantt-dialog-general-height;
         overflow-y: auto;
-        padding-bottom: 16px;
+        padding-bottom: $gantt-dialog-general-padding-bottom;
       }
 
       .e-edit-form-column:nth-child(odd) {
@@ -602,6 +616,10 @@
 
       .e-edit-form-row.e-scroll .e-edit-form-column:nth-child(even) {
         padding: $gantt-dialog-edit-form-scroll-padding;
+      }
+
+      .e-edit-form-column {
+        height: 75px;
       }
 
       // sass-lint:disable-all
@@ -634,6 +652,7 @@
 
       // sass-lint:enable-all
       .e-dlg-header-content {
+        border-radius: $gantt-dialog-border-radius;
         padding-bottom: $gantt-dialog-padding-bottom;
 
         .e-btn.e-dlg-closeicon-btn {

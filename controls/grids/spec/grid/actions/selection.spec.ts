@@ -922,6 +922,103 @@ describe('Grid Selection module', () => {
     });
 });
 
+describe('Mode and Type changes', () => {
+    let gridObj: Grid;
+    let selectionModule: Selection;
+    let rows: Element[];
+    let cells: NodeListOf<Element>;
+    let shiftEvt: MouseEvent = document.createEvent('MouseEvent');
+    shiftEvt.initMouseEvent(
+        'click',
+        true /* bubble */, true /* cancelable */,
+        window, null,
+        0, 0, 0, 0, /* coordinates */
+        false, false, true, false, /* modifier keys */
+        0 /*left*/, null
+    );
+    
+    let rowSelecting: (e?: Object) => void;
+    let rowSelected: (e?: Object) => void;
+       beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [
+                    { headerText: 'OrderID', field: 'OrderID' },
+                    { headerText: 'CustomerID', field: 'CustomerID' },
+                    { headerText: 'EmployeeID', field: 'EmployeeID' },
+                    { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    { headerText: 'ShipCity', field: 'ShipCity' },
+                ],
+                allowSelection: true,
+                selectionSettings: { type: 'Multiple', mode: 'Row' },
+                rowSelecting: rowSelecting,
+                rowSelected: rowSelected,
+            }, done);
+    });
+
+   
+    it('multi row - selectRow test with mode change ',() =>{
+        selectionModule = gridObj.selectionModule;
+        rows = gridObj.getRows();
+        selectionModule.selectRow(4,true);
+        rows[6].firstChild.dispatchEvent(shiftEvt);   
+        gridObj.selectionSettings.mode='Cell';
+        gridObj.dataBind();
+        gridObj.selectionSettings.mode="Row";
+        gridObj.dataBind();
+        rows[8].firstChild.dispatchEvent(shiftEvt);
+        expect(gridObj.selectionModule.selectedRowIndexes.length).toBe(1);
+        expect(rows[8].hasAttribute('aria-selected')).toBeTruthy;
+        expect(rows[8].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
+             
+    });
+  
+      
+      it('final type change row count',() =>{
+        rows[5].firstChild.dispatchEvent(shiftEvt);
+        gridObj.selectionSettings.type="Single";
+        gridObj.dataBind();
+        gridObj.selectionSettings.type="Multiple";
+        rows[0].firstChild.dispatchEvent(shiftEvt);
+        expect(gridObj.selectionModule.selectedRowIndexes.length).toBe(1);
+        expect(gridObj.selectionModule.selectedRecords.length).toBe(1);
+      });
+      
+      it('cell selection with type change',() =>{
+        gridObj.selectionSettings.mode="Cell";
+        gridObj.dataBind();
+        (rows[1].querySelectorAll('.e-rowcell')[1] as HTMLElement).click();
+        rows[2].querySelectorAll('.e-rowcell')[2].dispatchEvent(shiftEvt);
+        gridObj.selectionSettings.mode="Row";
+        gridObj.dataBind();
+        gridObj.selectionSettings.mode="Cell";
+        gridObj.dataBind();
+        rows[2].querySelectorAll('.e-rowcell')[2].dispatchEvent(shiftEvt);
+        expect(gridObj.selectionModule.selectedRowCellIndexes.length).toBe(1);
+        expect(rows[2].firstElementChild.classList.contains('e-cellselectionbackground')).toBeTruthy;
+        expect(rows[2].hasAttribute('aria-selected')).toBeTruthy;           
+                
+      });
+
+      it('cell selection with mode change',() =>{
+      rows[3].querySelectorAll('.e-rowcell')[3].dispatchEvent(shiftEvt);
+        gridObj.selectionSettings.type="Single";
+        gridObj.dataBind();
+        gridObj.selectionSettings.type="Multiple";
+        gridObj.dataBind();
+        rows[4].querySelectorAll('.e-rowcell')[2].dispatchEvent(shiftEvt);
+        expect(gridObj.selectionModule.selectedRowCellIndexes.length).toBe(1);
+        expect(rows[4].firstElementChild.classList.contains('e-cellselectionbackground')).toBeTruthy;
+        expect(rows[4].hasAttribute('aria-selected')).toBeTruthy;
+           
+                
+      });
+      afterAll(() => {
+        destroy(gridObj);
+    });
+    }); 
+
 
 describe('Grid Selection module', () => {
     describe('grid row multiple seletion functionalities', () => {
@@ -1094,6 +1191,43 @@ describe('Grid Selection module', () => {
             destroy(gridObj);
         });
     });
+
+    describe('grid selection functionalities: deselection with persistSelection property', () => {
+        let gridObj: Grid;
+        let selectionModule: Selection;
+        let rows: Element[];
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID' },
+                        { headerText: 'CustomerID', field: 'CustomerID' },
+                        { headerText: 'EmployeeID', field: 'EmployeeID' },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                        { headerText: 'ShipCity', field: 'ShipCity' },
+                    ],
+                    allowSelection: true,
+                    selectionSettings: { persistSelection: true },
+                }, done);
+        });
+
+        it('selection and deselection with persistSelection property', () => {
+            selectionModule = gridObj.selectionModule;
+            selectionModule.selectRow(1, true);    
+            rows = gridObj.getRows();
+            expect(rows[1].hasAttribute('aria-selected')).toBeTruthy();
+            expect(rows[1].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
+            selectionModule.selectedRecords[0].querySelector('td').click();
+            expect(rows[1].hasAttribute('aria-selected')).toBeFalsy();
+            expect(rows[1].firstElementChild.classList.contains('e-selectionbackground')).toBeFalsy();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
 
     describe('grid row multiple selection functionalities with Freeze pane', () => {
         let gridObj: Grid;

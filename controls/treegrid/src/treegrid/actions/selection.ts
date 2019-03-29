@@ -114,7 +114,6 @@ export class Selection {
         let rowChkBox: Element = this.parent.createElement('input', { className: 'e-treeselectall', attrs: { 'type': 'checkbox'}});
         checkWrap = createCheckBox(this.parent.createElement, false, { checked: value as boolean, label: ' ' });
         checkWrap.classList.add('e-hierarchycheckbox');
-        (<HTMLElement>checkWrap.querySelector('.e-frame')).style.width = '18px';
         checkWrap.insertBefore(rowChkBox.cloneNode(), checkWrap.firstChild);
         if (!isNullOrUndefined(headerElement)) {
           headerElement.insertBefore(checkWrap, headerElement.firstChild);
@@ -132,7 +131,6 @@ export class Selection {
       let value: boolean = (isNullOrUndefined(data.checkboxState) || data.checkboxState === 'uncheck') ? false : true;
       checkWrap = createCheckBox(this.parent.createElement, false, { checked: value as boolean, label: ' ' });
       checkWrap.classList.add('e-hierarchycheckbox');
-      (<HTMLElement>checkWrap.querySelector('.e-frame')).style.width = '18px';
       if (data.checkboxState === 'indeterminate') {
         let checkbox: HTMLElement = <HTMLElement>checkWrap.querySelectorAll('.e-frame')[0];
         removeClass([checkbox], ['e-check', 'e-stop', 'e-uncheck']);

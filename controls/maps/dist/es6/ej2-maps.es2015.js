@@ -1769,10 +1769,35 @@ var DarkTheme;
 })(DarkTheme || (DarkTheme = {}));
 function getThemeStyle(theme) {
     let style;
+    let color;
+    switch (theme) {
+        case 'MaterialDark':
+            color = '#303030';
+            break;
+        case 'FabricDark':
+            color = '#201F1F';
+            break;
+        case 'BootstrapDark':
+            color = '#1A1A1A';
+            break;
+    }
     switch (theme) {
         case 'MaterialDark':
         case 'FabricDark':
         case 'BootstrapDark':
+            style = {
+                backgroundColor: color,
+                areaBackgroundColor: color,
+                titleFontColor: '#FFFFFF',
+                subTitleFontColor: '#FFFFFF',
+                legendTitleFontColor: '#DADADA',
+                legendTextColor: '#DADADA',
+                dataLabelFontColor: '#DADADA',
+                tooltipFontColor: '#ffffff',
+                tooltipFillColor: '#363F4C',
+                zoomFillColor: '#FFFFFF'
+            };
+            break;
         case 'HighContrast':
         case 'Highcontrast':
             style = {
@@ -1783,8 +1808,8 @@ function getThemeStyle(theme) {
                 legendTitleFontColor: '#FFFFFF',
                 legendTextColor: '#FFFFFF',
                 dataLabelFontColor: '#000000',
-                tooltipFontColor: '#ffffff',
-                tooltipFillColor: '#363F4C',
+                tooltipFontColor: '#000000',
+                tooltipFillColor: '#ffffff',
                 zoomFillColor: '#FFFFFF'
             };
             break;
@@ -1799,7 +1824,13 @@ function getThemeStyle(theme) {
                 dataLabelFontColor: '#212529',
                 tooltipFontColor: '#FFFFFF',
                 tooltipFillColor: '#000000',
-                zoomFillColor: '#FFFFFF'
+                zoomFillColor: '#5B6269',
+                fontFamily: 'HelveticaNeue-Medium',
+                titleFontSize: '16px',
+                legendFontSize: '14px',
+                tooltipFillOpacity: 1,
+                tooltipTextOpacity: 0.9,
+                labelFontFamily: 'HelveticaNeue'
             };
             break;
         default:
@@ -3813,9 +3844,10 @@ class Annotations {
         this.map.trigger(annotationRendering, argsData);
         templateFn = getTemplateFunction(argsData.content);
         if (templateFn && templateFn(this.map).length) {
-            templateElement = templateFn(this.map);
-            while (templateElement.length > 0) {
-                childElement.appendChild(templateElement[0]);
+            templateElement = Array.prototype.slice.call(templateFn(this.map));
+            let length = templateElement.length;
+            for (let i = 0; i < length; i++) {
+                childElement.appendChild(templateElement[i]);
             }
         }
         else {
@@ -4362,6 +4394,8 @@ let Maps = class Maps extends Component {
         let style = title.textStyle;
         let height;
         let width = Math.abs((this.margin.left + this.margin.right) - this.availableSize.width);
+        style.fontFamily = this.themeStyle.fontFamily || style.fontFamily;
+        style.size = this.themeStyle.titleFontSize || style.size;
         if (title.text) {
             if (isNullOrUndefined(groupEle)) {
                 groupEle = this.renderer.createGroup({ id: this.element.id + '_Title_Group' });
@@ -5346,6 +5380,7 @@ class DataLabel {
         let textLocation = new Point(0, 0);
         /* tslint:disable:no-string-literal */
         let shapes = layerData[index];
+        style.fontFamily = this.maps.theme === 'Bootstrap4' ? 'HelveticaNeue-Medium' : style.fontFamily;
         shape = shapes['property'];
         let properties = (Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]' ?
             layer.shapePropertyPath : [layer.shapePropertyPath]);
@@ -6016,6 +6051,8 @@ class Legend {
                 textFont.color = (textFont.color !== null) ? textFont.color : this.maps.themeStyle.legendTextColor;
                 let rectOptions = new RectOption(itemId, eventArgs.fill, eventArgs.shapeBorder, legend.opacity, bounds);
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'middle', item['text'], '', '');
+                textFont.fontFamily = map.themeStyle.fontFamily || textFont.fontFamily;
+                textFont.size = map.themeStyle.legendFontSize || textFont.size;
                 renderTextElement(textOptions, textFont, textFont.color, this.legendGroup);
                 this.legendGroup.appendChild(render.drawRectangle(rectOptions));
             }
@@ -6061,6 +6098,8 @@ class Legend {
                 let imageUrl = ((isNullOrUndefined(collection['ImageSrc'])) ? legend.shape : collection['ImageSrc']);
                 let renderOptions = new PathOption(shapeId, eventArgs.fill, eventArgs.shapeBorder.width, eventArgs.shapeBorder.color, legend.opacity, '');
                 legend.textStyle.color = (legend.textStyle.color !== null) ? legend.textStyle.color : this.maps.themeStyle.legendTextColor;
+                legend.textStyle.fontFamily = map.themeStyle.fontFamily || legend.textStyle.fontFamily;
+                legend.textStyle.size = map.themeStyle.legendFontSize || legend.textStyle.size;
                 legendElement.appendChild(drawSymbol(shapeLocation, eventArgs.shape, shapeSize, collection['ImageSrc'], renderOptions));
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
                 renderTextElement(textOptions, legend.textStyle, legend.textStyle.color, legendElement);
@@ -7348,6 +7387,8 @@ class MapsTooltip {
         if (istooltipRender) {
             if (targetId.indexOf('_shapeIndex_') > -1) {
                 option = layer.tooltipSettings;
+                option.textStyle.fontFamily = this.maps.themeStyle.fontFamily || option.textStyle.fontFamily;
+                option.textStyle.opacity = this.maps.themeStyle.tooltipTextOpacity || option.textStyle.opacity;
                 let shape = parseInt(targetId.split('_shapeIndex_')[1].split('_')[0], 10);
                 if (isNullOrUndefined(layer.layerData) || isNullOrUndefined(layer.layerData[shape])) {
                     return;
@@ -7430,8 +7471,8 @@ class MapsTooltip {
             };
             this.maps.trigger(tooltipRender, tootipArgs);
             if (!tootipArgs.cancel && option.visible && !isNullOrUndefined(currentData)) {
-                tootipArgs.options['textStyle']['color'] = tootipArgs.options['textStyle']['color'] ||
-                    this.maps.themeStyle.tooltipFontColor;
+                tootipArgs.options['textStyle']['color'] = this.maps.themeStyle.tooltipFontColor
+                    || tootipArgs.options['textStyle']['color'];
                 this.svgTooltip = new Tooltip({
                     enable: true,
                     header: '',
@@ -7445,6 +7486,7 @@ class MapsTooltip {
                     textStyle: tootipArgs.options['textStyle'],
                     fill: tootipArgs.fill || this.maps.themeStyle.tooltipFillColor
                 });
+                this.svgTooltip.opacity = this.maps.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                 this.svgTooltip.appendTo(tooltipEle);
             }
             else {
@@ -8119,7 +8161,7 @@ class Zoom {
                     direction = 'M12.364,8h-2.182l2.909,3.25L16,8h-2.182c0-3.575-2.618-6.5-5.818-6.5c-1.128,0-2.218,0.366-3.091,';
                     direction += '1.016l1.055,1.178C6.581,3.328,7.272,3.125,8,3.125C10.4,3.125,12.363,5.319,12.364,8L12.364,8z M11.091,';
                     direction += '13.484l-1.055-1.178C9.419,12.672,8.728,12.875,8,12.875c-2.4,0-4.364-2.194-4.364-4.875h2.182L2.909,4.75L0,8h2.182c0,';
-                    this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(map.element.id + '_Zooming_ToolBar_' + toolbar, fill, null, null, 1, null, direction + '3.575,2.618,6.5,5.818,6.5C9.128,14.5,10.219,14.134,11.091,13.484L11.091,13.484z')));
+                    this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(map.element.id + '_Zooming_ToolBar_' + toolbar, this.fillColor, null, this.maps.themeStyle.zoomFillColor, 1, null, direction + '3.575,2.618,6.5,5.818,6.5C9.128,14.5,10.219,14.134,11.091,13.484L11.091,13.484z')));
                     this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
                     break;
             }

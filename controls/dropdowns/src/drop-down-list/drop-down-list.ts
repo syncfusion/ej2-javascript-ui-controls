@@ -502,13 +502,14 @@ export class DropDownList extends DropDownBase implements IInput {
                 } else if (htmlAttr === 'disabled' && this.htmlAttributes[htmlAttr] === 'disabled') {
                     this.enabled = false;
                     this.setEnable();
-                } else if (htmlAttr === 'readonly' && this.htmlAttributes[htmlAttr] === 'readonly') {
+                } else if (htmlAttr === 'readonly' && !isNullOrUndefined(this.htmlAttributes[htmlAttr])) {
                     this.readonly = true;
                     this.dataBind();
                 } else if (htmlAttr === 'style') {
                     this.inputWrapper.container.setAttribute('style', this.htmlAttributes[htmlAttr]);
                 } else {
-                    let defaultAttr: string[] = ['title', 'id', 'placeholder'];
+                    let defaultAttr: string[] = ['title', 'id', 'placeholder', 'aria-placeholder',
+                    'role', 'autocorrect', 'autocomplete', 'autocapitalize', 'spellcheck'];
                     let validateAttr: string[] = ['name', 'required'];
                     if (htmlAttr.indexOf('data') === 0 || validateAttr.indexOf(htmlAttr) > -1) {
                         this.hiddenElement.setAttribute(htmlAttr, this.htmlAttributes[htmlAttr]);
@@ -1983,8 +1984,14 @@ export class DropDownList extends DropDownBase implements IInput {
     public render(): void {
         if (this.element.tagName === 'INPUT') {
             this.inputElement = this.element as HTMLInputElement;
+            if (isNullOrUndefined(this.inputElement.getAttribute('role'))) {
+                this.inputElement.setAttribute('role', 'textbox');
+            }
+            if (isNullOrUndefined(this.inputElement.getAttribute('type'))) {
+                this.inputElement.setAttribute('type', 'text');
+            }
         } else {
-            this.inputElement = this.createElement('input') as HTMLInputElement;
+            this.inputElement = this.createElement('input', { attrs: { role: 'textbox', type: 'text' }}) as HTMLInputElement;
             if (this.element.tagName !== this.getNgDirective()) {
                 this.element.style.display = 'none';
             }

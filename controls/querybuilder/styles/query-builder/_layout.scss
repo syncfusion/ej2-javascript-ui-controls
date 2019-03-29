@@ -5,7 +5,17 @@
     height: $qrybldr-height;
     width: $qrybldr-width;
 
+    & .e-multiselect .e-qb-spinner .e-spinner-inner {
+      left: $qrybldr-spinner-left;
+      right: $qrybldr-spinner-right;
+    }
+
     &.e-rtl {
+      & .e-multiselect .e-qb-spinner .e-spinner-inner {
+        left: $qrybldr-rtl-spinner-left;
+        right: $qrybldr-rtl-spinner-right;
+      }
+
       &.e-bigger {
         &.e-device .e-group-body .e-rule-container .e-rule-delete,
         & .e-group-body .e-rule-container.e-vertical-mode .e-rule-delete {

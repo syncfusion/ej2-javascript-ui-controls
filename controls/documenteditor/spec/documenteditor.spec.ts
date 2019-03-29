@@ -520,7 +520,7 @@ describe('Prevent keyboard shortcut event', () => {
         }, 1000);
     });
     it('Prevent bold operation', () => {
-        editor.editor.insertText('Syncfusion', false);
+        editor.editor.insertText('Syncfusion');
         editor.selection.selectAll();
         editor.keyDown = (args) => {
             if (args.event.ctrlKey === true && args.event.keyCode === 66) {

@@ -45,6 +45,7 @@ export class RangeSelector {
             value: [new Date(stockChart.startValue), new Date(stockChart.endValue)],
             margin : this.findMargin(stockChart),
             tooltip: { enable: stockChart.tooltip.enable, displayMode: 'Always' },
+            dataSource: stockChart.dataSource,
             changed: (args: IChangedEventArgs) => {
                 let arg: IRangeChangeEventArgs = {
                     name: 'rangeChange',

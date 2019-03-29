@@ -107,6 +107,12 @@ export class ContentRender implements IRenderer {
      */
     public renderTable(): void {
         let contentDiv: Element = this.getPanel();
+        let virtualTable: Element = contentDiv.querySelector('.e-virtualtable');
+        let virtualTrack: Element = contentDiv.querySelector('.e-virtualtrack');
+        if (this.parent.enableVirtualization && !isNullOrUndefined(virtualTable) && !isNullOrUndefined(virtualTrack)) {
+            remove(virtualTable);
+            remove(virtualTrack);
+        }
         contentDiv.appendChild(this.createContentTable('_content_table'));
         this.setTable(contentDiv.querySelector('.e-table'));
         this.ariaService.setOptions(<HTMLElement>this.getTable(), {
@@ -214,7 +220,7 @@ export class ContentRender implements IRenderer {
                 for (let m: number = 0; m < values.length; m++) {
                     if (scrollTop < values[m]) {
                         if (!isNullOrUndefined(args.virtualInfo) && args.virtualInfo.direction === 'up') {
-                            args.virtualInfo.blockIndexes = m === 0 || m === 1 ? [1, 2] : [m - 1, m];
+                            args.virtualInfo.blockIndexes = m === 0 || m === 1 ? [1, 2] : [m, m + 1];
                             startIndex = m === 0 || m === 1 ? 0 : (m * bSize);
                             break;
                         } else {

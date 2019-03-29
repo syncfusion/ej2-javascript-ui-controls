@@ -121,7 +121,7 @@ function getTextOptions(element: TextElement, maxWidth?: number): BaseAttributes
 }
 
 
-function wrapSvgText(text: TextAttributes, textValue?: string): SubTextElement[] {
+function wrapSvgText(text: TextAttributes, textValue?: string, laneWidth?: number): SubTextElement[] {
     let childNodes: SubTextElement[] = []; let k: number = 0;
     let txtValue: string; let bounds1: number;
     let content: string = textValue || text.content;
@@ -151,7 +151,7 @@ function wrapSvgText(text: TextAttributes, textValue?: string): SubTextElement[]
                 }
             }
         } else {
-            childNodes = wordWrapping(text, textValue);
+            childNodes = wordWrapping(text, textValue, laneWidth);
         }
     } else {
         childNodes[childNodes.length] = { text: content, x: 0, dy: 0, width: bBoxText(content, text) };
@@ -159,7 +159,7 @@ function wrapSvgText(text: TextAttributes, textValue?: string): SubTextElement[]
     return childNodes;
 }
 
-function wordWrapping(text: TextAttributes, textValue?: string): SubTextElement[] {
+function wordWrapping(text: TextAttributes, textValue?: string, laneWidth?: number): SubTextElement[] {
     let childNodes: SubTextElement[] = []; let txtValue: string = ''; let j: number = 0;
     let i: number = 0; let wrap: boolean = text.whiteSpace !== 'nowrap' ? true : false;
     let content: string = textValue || text.content;
@@ -175,7 +175,7 @@ function wordWrapping(text: TextAttributes, textValue?: string): SubTextElement[
             txtValue += (((i !== 0 || words.length === 1) && wrap && txtValue.length > 0) ? ' ' : '') + words[i];
             newText = txtValue + (words[i + 1] || '');
             let width: number = bBoxText(newText, text);
-            if (Math.floor(width) > text.width - 2 && txtValue.length > 0) {
+            if (Math.floor(width) > (laneWidth || text.width) - 2 && txtValue.length > 0) {
                 childNodes[childNodes.length] = {
                     text: txtValue, x: 0, dy: 0,
                     width: newText === txtValue ? width : (txtValue === existingText) ? existingWidth : bBoxText(txtValue, text)
@@ -273,7 +273,7 @@ export function measureText(
     let childNodes: SubTextElement[];
     let wrapBounds: TextBounds;
     let options: TextAttributes = getTextOptions(text, maxWidth) as TextAttributes;
-    text.childNodes = childNodes = wrapSvgText(options, textValue);
+    text.childNodes = childNodes = wrapSvgText(options, textValue, text.isLaneOrientation ? maxWidth : undefined);
     text.wrapBounds = wrapBounds = wrapSvgTextAlign(options, childNodes);
     bounds.width = wrapBounds.width;
     if (text.wrapBounds.width >= maxWidth && options.textOverflow !== 'Wrap') {

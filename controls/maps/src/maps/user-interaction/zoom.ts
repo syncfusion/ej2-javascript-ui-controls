@@ -644,8 +644,8 @@ export class Zoom {
                     direction += '1.016l1.055,1.178C6.581,3.328,7.272,3.125,8,3.125C10.4,3.125,12.363,5.319,12.364,8L12.364,8z M11.091,';
                     direction += '13.484l-1.055-1.178C9.419,12.672,8.728,12.875,8,12.875c-2.4,0-4.364-2.194-4.364-4.875h2.182L2.909,4.75L0,8h2.182c0,';
                     this.currentToolbarEle.appendChild(map.renderer.drawPath(new PathOption(
-                        map.element.id + '_Zooming_ToolBar_' + toolbar, fill, null, null, 1, null,
-                        direction + '3.575,2.618,6.5,5.818,6.5C9.128,14.5,10.219,14.134,11.091,13.484L11.091,13.484z')
+                        map.element.id + '_Zooming_ToolBar_' + toolbar, this.fillColor, null, this.maps.themeStyle.zoomFillColor,
+                        1, null, direction + '3.575,2.618,6.5,5.818,6.5C9.128,14.5,10.219,14.134,11.091,13.484L11.091,13.484z')
                     ) as HTMLElement);
                     this.wireEvents(this.currentToolbarEle, this.performToolBarAction);
                     break;

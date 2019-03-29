@@ -409,7 +409,6 @@ describe('Chart Control', () => {
                 label = document.getElementById('container0_AxisLabel_1');
                 expect(label.childElementCount == 3).toBe(true);
                 let x: number = parseInt(label.getAttribute("x"));
-                console.log('default x: ' + x);
                 //expect(x == 239 || x == 240).toBe(true);
                 done();
             };
@@ -420,7 +419,6 @@ describe('Chart Control', () => {
             loaded = (args: Object): void => {
                 let label: HTMLElement = document.getElementById('container0_AxisLabel_1');
                 let x: number = parseInt(label.getAttribute("x"));
-                console.log('inversed axis x: ' + x);
                 //expect(x == 529 || x == 530).toBe(true);
                 expect(label.childElementCount == 3).toBe(true);
                 done();
@@ -436,7 +434,6 @@ describe('Chart Control', () => {
                 label = document.getElementById('container0_AxisLabel_1');
                 expect(label.childElementCount == 3).toBe(true);
                 let x: number = parseInt(label.getAttribute("x"));
-                console.log('opposed position x: ' + x);
                 //expect(x == 239 || x == 240).toBe(true);
                 done();
             };
@@ -450,9 +447,7 @@ describe('Chart Control', () => {
                 let label: HTMLElement = document.getElementById('containerAxisLabels0');
                 expect(label.childElementCount == 5).toBe(true);
                 label = document.getElementById('container0_AxisLabel_2');
-                expect(label.childElementCount == 1).toBe(true);
-                console.log(label.childNodes[0].textContent);
-                console.log(label.childNodes[1].textContent);
+                expect(label.childElementCount == 1).toBe(true);               
                 expect(label.childNodes[0].textContent === 'Southhhhhhhhhhhhhhhhhhh...').toBe(true);
                 expect(label.childNodes[1].textContent === 'Koreaaaaaaaaaaaaaaaaaaaaa...').toBe(true);
                 done();
@@ -469,9 +464,6 @@ describe('Chart Control', () => {
                 expect(label.childElementCount == 5).toBe(true);
                 label = document.getElementById('container0_AxisLabel_2');
                 expect(label.childElementCount == 2).toBe(true);
-                console.log(label.childNodes[0].textContent);
-                console.log(label.childNodes[1].textContent);
-                console.log(label.childNodes[2].textContent);
                 expect(label.childNodes[0].textContent == 'Southhhhhhhhhhhhhhhhhhh...').toBe(true);
                 expect(label.childNodes[1].textContent == 'testhhhhhhhhhhhhhhhhhhh...').toBe(true);
                 expect(label.childNodes[2].textContent == 'Koreaaaaaaaaaaaaaaaaaaaaa...').toBe(true);

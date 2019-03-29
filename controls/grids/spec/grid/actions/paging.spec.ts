@@ -266,7 +266,7 @@ describe('Paging module', () => {
         });
         it('dropDownChanged event testing', () => {
             expect(gridObj.pageSettings.pageSize).toEqual(12);
-            expect(gridObj.pageSettings.currentPage).toBe(1);
+            expect(gridObj.pageSettings.currentPage).toBe(2);
         });
         it('pagesizes value changed to 30 and check currentpage', (done: Function) => {
             dropDownChanged = (args?: any): void => {
@@ -463,4 +463,5 @@ describe('Paging module', () => {
             destroy(gridObj);
         });
     });
+
 });

@@ -667,6 +667,21 @@ function getThemeStyle(theme) {
         case 'MaterialDark':
         case 'FabricDark':
         case 'BootstrapDark':
+            style = {
+                backgroundColor: '#333232',
+                titleFontColor: '#ffffff',
+                tooltipFillColor: '#FFFFFF',
+                tooltipFontColor: '#000000',
+                labelColor: '#DADADA',
+                lineColor: '#C8C8C8',
+                majorTickColor: '#C8C8C8',
+                minorTickColor: '#9A9A9A',
+                pointerColor: '#9A9A9A',
+                capColor: '#9A9A9A',
+                needleColor: '#9A9A9A',
+                needleTailColor: '#9A9A9A'
+            };
+            break;
         case 'Highcontrast':
         case 'HighContrast':
             style = {
@@ -686,7 +701,7 @@ function getThemeStyle(theme) {
             break;
         case 'Bootstrap4':
             style = {
-                backgroundColor: '#F8F9FA',
+                backgroundColor: '#FFFFFF',
                 titleFontColor: '#212529',
                 tooltipFillColor: '#000000',
                 tooltipFontColor: '#FFFFFF',
@@ -697,7 +712,12 @@ function getThemeStyle(theme) {
                 pointerColor: '#6C757D',
                 capColor: '#6C757D',
                 needleColor: '#6C757D',
-                needleTailColor: '#6C757D'
+                needleTailColor: '#6C757D',
+                fontFamily: 'HelveticaNeue-Medium',
+                fontSize: '16px',
+                labelFontFamily: 'HelveticaNeue',
+                tooltipFillOpacity: 1,
+                tooltipTextOpacity: 0.9
             };
             break;
         default:
@@ -707,9 +727,9 @@ function getThemeStyle(theme) {
                 tooltipFillColor: '#363F4C',
                 tooltipFontColor: '#ffffff',
                 labelColor: '#212121',
-                lineColor: '#757575',
-                majorTickColor: '#757575',
-                minorTickColor: '#757575',
+                lineColor: '#E0E0E0',
+                majorTickColor: '#9E9E9E',
+                minorTickColor: '#9E9E9E',
                 pointerColor: '#757575',
                 capColor: '#757575',
                 needleColor: '#757575',
@@ -1237,6 +1257,8 @@ class GaugeTooltip {
             }
             if (!tooltipArgs.cancel && !samePointerEle) {
                 tooltipArgs.tooltip.textStyle.color = tooltipArgs.tooltip.textStyle.color || this.gauge.themeStyle.tooltipFontColor;
+                tooltipArgs.tooltip.textStyle.fontFamily = this.gauge.themeStyle.fontFamily || tooltipArgs.tooltip.textStyle.fontFamily;
+                tooltipArgs.tooltip.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity || tooltipArgs.tooltip.textStyle.opacity;
                 this.svgTooltip = new Tooltip({
                     enable: true,
                     data: { value: tooltipArgs.content },
@@ -1250,6 +1272,7 @@ class GaugeTooltip {
                     textStyle: tooltipArgs.tooltip.textStyle,
                     border: tooltipArgs.tooltip.border
                 });
+                this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                 this.svgTooltip.appendTo(this.tooltipEle);
                 if (template && Math.abs(pageY - this.tooltipEle.getBoundingClientRect().top) <= 0) {
                     this.tooltipEle.style.top = (parseFloat(this.tooltipEle.style.top) + 20) + 'px';
@@ -1398,9 +1421,10 @@ class AxisRenderer {
     drawAxisLine(axis, index, element, gauge) {
         let startAngle = axis.startAngle;
         let endAngle = axis.endAngle;
+        let color = axis.lineStyle.color || this.gauge.themeStyle.lineColor;
         if (axis.lineStyle.width > 0) {
             startAngle = !isCompleteAngle(startAngle, endAngle) ? startAngle : [0, endAngle = 360][0];
-            appendPath(new PathOption(gauge.element.id + '_AxisLine_' + index, 'transparent', axis.lineStyle.width, axis.lineStyle.color || this.gauge.themeStyle.lineColor, null, axis.lineStyle.dashArray, getPathArc(gauge.midPoint, startAngle - 90, endAngle - 90, axis.currentRadius), '', 'pointer-events:none;'), element, gauge);
+            appendPath(new PathOption(gauge.element.id + '_AxisLine_' + index, 'transparent', axis.lineStyle.width, color, null, axis.lineStyle.dashArray, getPathArc(gauge.midPoint, startAngle - 90, endAngle - 90, axis.currentRadius), '', 'pointer-events:none;'), element, gauge);
         }
     }
     /**
@@ -1422,6 +1446,7 @@ class AxisRenderer {
         let label;
         let radius = axis.currentRadius;
         let labelPadding = 10;
+        let color = style.font.color || this.gauge.themeStyle.labelColor;
         if (style.position === 'Outside') {
             radius += (axis.nearSize - (axis.maxLabelSize.height + axis.lineStyle.width / 2)) +
                 (labelPadding / 2);
@@ -1439,7 +1464,8 @@ class AxisRenderer {
             angle = Math.round(getAngleFromValue(label.value, max, min, axis.startAngle, axis.endAngle, axis.direction === 'ClockWise'));
             location = getLocationFromAngle(angle, radius, gauge.midPoint);
             anchor = this.findAnchor(location, style, angle, label);
-            textElement(new TextOption(gauge.element.id + '_Axis_' + index + '_Label_' + i, location.x, location.y, anchor, label.text, style.autoAngle ? 'rotate(' + (angle + 90) + ',' + (location.x) + ',' + location.y + ')' : '', 'auto'), style.font, style.useRangeColor ? getRangeColor(label.value, axis.ranges, style.font.color || this.gauge.themeStyle.labelColor) : style.font.color || this.gauge.themeStyle.labelColor, labelElement, 'pointer-events:none;');
+            style.font.fontFamily = this.gauge.themeStyle.labelFontFamily || style.font.fontFamily;
+            textElement(new TextOption(gauge.element.id + '_Axis_' + index + '_Label_' + i, location.x, location.y, anchor, label.text, style.autoAngle ? 'rotate(' + (angle + 90) + ',' + (location.x) + ',' + location.y + ')' : '', 'auto'), style.font, style.useRangeColor ? getRangeColor(label.value, axis.ranges, color) : color, labelElement, 'pointer-events:none;');
         }
         element.appendChild(labelElement);
     }
@@ -1474,11 +1500,11 @@ class AxisRenderer {
         let minorInterval = minorLineStyle.interval !== null ?
             minorLineStyle.interval : (axis.visibleRange.interval / 2);
         let isRangeColor = minorLineStyle.useRangeColor;
+        let color = minorLineStyle.color || this.gauge.themeStyle.minorTickColor;
         if (minorLineStyle.width && minorLineStyle.height && minorInterval) {
             for (let i = axis.visibleRange.min, max = axis.visibleRange.max; i <= max; i += minorInterval) {
                 if (this.majorValues.indexOf(+i.toFixed(3)) < 0) {
-                    appendPath(new PathOption(gauge.element.id + '_Axis_Minor_TickLine_' + index + '_' + i, 'transparent', minorLineStyle.width, isRangeColor ? getRangeColor(i, axis.ranges, minorLineStyle.color ||
-                        this.gauge.themeStyle.minorTickColor) : minorLineStyle.color || this.gauge.themeStyle.minorTickColor, null, '0', this.calculateTicks(i, minorLineStyle, axis), '', 'pointer-events:none;'), minorTickElements, gauge);
+                    appendPath(new PathOption(gauge.element.id + '_Axis_Minor_TickLine_' + index + '_' + i, 'transparent', minorLineStyle.width, isRangeColor ? getRangeColor(i, axis.ranges, color) : color, null, '0', this.calculateTicks(i, minorLineStyle, axis), '', 'pointer-events:none;'), minorTickElements, gauge);
                 }
             }
             element.appendChild(minorTickElements);
@@ -1496,11 +1522,11 @@ class AxisRenderer {
         let majorLineStyle = axis.majorTicks;
         let isRangeColor = majorLineStyle.useRangeColor;
         this.majorValues = [];
+        let color = majorLineStyle.color || this.gauge.themeStyle.majorTickColor;
         if (majorLineStyle.width && majorLineStyle.height && axis.visibleRange.interval) {
             for (let i = axis.visibleRange.min, max = axis.visibleRange.max, interval = axis.visibleRange.interval; i <= max; i += interval) {
                 this.majorValues.push(+i.toFixed(3));
-                appendPath(new PathOption(gauge.element.id + '_Axis_Major_TickLine_' + index + '_' + i, 'transparent', majorLineStyle.width, isRangeColor ? getRangeColor(i, axis.ranges, majorLineStyle.color ||
-                    this.gauge.themeStyle.majorTickColor) : majorLineStyle.color || this.gauge.themeStyle.majorTickColor, null, '0', this.calculateTicks(i, majorLineStyle, axis), '', 'pointer-events:none;'), majorTickElements, gauge);
+                appendPath(new PathOption(gauge.element.id + '_Axis_Major_TickLine_' + index + '_' + i, 'transparent', majorLineStyle.width, isRangeColor ? getRangeColor(i, axis.ranges, color) : color, null, '0', this.calculateTicks(i, majorLineStyle, axis), '', 'pointer-events:none;'), majorTickElements, gauge);
             }
             element.appendChild(majorTickElements);
         }
@@ -1674,9 +1700,10 @@ class PointerRenderer {
         let rectDirection;
         // To render the needle
         location = getLocationFromAngle(0, pointer.currentRadius, mid);
+        let color = pointer.color || this.gauge.themeStyle.needleColor;
         direction = 'M ' + mid.x + ' ' + (mid.y - width) + ' L ' + (location.x) + ' ' + mid.y +
             ' L ' + (mid.x) + ' ' + (mid.y + width) + ' Z';
-        pointer.pathElement.push(appendPath(new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Needle_' + index, pointer.color || this.gauge.themeStyle.needleColor, pointer.border.width, pointer.border.color, null, '0', direction), parentElement, gauge));
+        pointer.pathElement.push(appendPath(new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Needle_' + index, color, pointer.border.width, pointer.border.color, null, '0', direction), parentElement, gauge));
         pointerRadius = stringToNumber(pointer.needleTail.length, pointer.currentRadius);
         // To render the rect element for touch
         rectDirection = 'M ' + mid.x + ' ' + (mid.y - width) + ' L ' + (location.x) + ' ' + (mid.y - width) +
@@ -1692,8 +1719,9 @@ class PointerRenderer {
             rectDirection += ' L ' + location.x + ' ' + (mid.y + width) + ' L ' + location.x + ' ' + (mid.y - width);
         }
         // To render the cap
+        let capcolor = pointer.cap.color || this.gauge.themeStyle.capColor;
         if (pointer.cap.radius) {
-            pointer.pathElement.push(appendPath(calculateShapes(mid, 'Circle', new Size(pointer.cap.radius * 2, pointer.cap.radius * 2), '', new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_NeedleCap_' + index, pointer.cap.color || this.gauge.themeStyle.capColor, pointer.cap.border.width, pointer.cap.border.color, null, '0', '', '')), parentElement, gauge, 'Ellipse'));
+            pointer.pathElement.push(appendPath(calculateShapes(mid, 'Circle', new Size(pointer.cap.radius * 2, pointer.cap.radius * 2), '', new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_NeedleCap_' + index, capcolor, pointer.cap.border.width, pointer.cap.border.color, null, '0', '', '')), parentElement, gauge, 'Ellipse'));
         }
         pointer.pathElement.push(appendPath(new PathOption(gauge.element.id + '_Axis_' + axisIndex + '_Pointer_NeedleRect_' + index, 'transparent', 0, 'transpanret', null, '0', rectDirection + ' Z'), parentElement, gauge));
     }
@@ -2587,6 +2615,8 @@ let CircularGauge = class CircularGauge extends Component {
      */
     renderTitle() {
         if (this.title) {
+            this.titleStyle.fontFamily = this.themeStyle.fontFamily || this.titleStyle.fontFamily;
+            this.titleStyle.size = this.themeStyle.fontSize || this.titleStyle.size;
             let size = measureText(this.title, this.titleStyle);
             let options = new TextOption(this.element.id + '_CircularGaugeTitle', this.availableSize.width / 2, this.margin.top + 3 * (size.height / 4), 'middle', this.title);
             let element = textElement(options, this.titleStyle, this.titleStyle.color || this.themeStyle.titleFontColor, this.svgObject, '');
@@ -2758,31 +2788,6 @@ let CircularGauge = class CircularGauge extends Component {
         let renderer = false;
         let refreshBounds = false;
         let refreshWithoutAnimation = false;
-        let axisIndex = null;
-        let pointerIndex = null;
-        let pointerValue = null;
-        let changedProperties = JSON.stringify(newProp);
-        let splitProperties = changedProperties.split('},');
-        if (splitProperties) {
-            for (let j = 0; j < splitProperties.length; j++) {
-                if (splitProperties[j].indexOf('pointers') > -1) {
-                    let properties = splitProperties[j].split('{');
-                    for (let k = 0; k < properties.length; k++) {
-                        let value = properties[k].replace(/([^a-z0-9]+)/gi, '');
-                        axisIndex = axisIndex === null && (value === 'axes') ? properties[k + 1].replace(/([^a-z0-9]+)/gi, '') : axisIndex;
-                        pointerIndex = pointerIndex === null && (value === 'pointers') ? properties[k + 1].replace(/([^a-z0-9]+)/gi, '') :
-                            pointerIndex;
-                        pointerValue = (value.indexOf('value') > -1) ? properties[k].replace(/[value&\/\\#,+()$~%'":*?<>{}]/g, '') :
-                            pointerValue;
-                    }
-                }
-            }
-        }
-        let samePointerValue = false;
-        if (axisIndex && pointerIndex && pointerValue) {
-            samePointerValue = this.axes[parseFloat(axisIndex)].pointers[parseFloat(pointerIndex)].currentValue
-                === parseFloat(pointerValue);
-        }
         let isPointerValueSame = (Object.keys(newProp).length === 1 && newProp instanceof Object &&
             !isNullOrUndefined(this.activePointer));
         for (let prop of Object.keys(newProp)) {

@@ -42,7 +42,7 @@ describe('Load Empty Document - Edit and Apply Style', () => {
     });
     it('Apply Heading1', () => {
         editor.open(json);
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         editor.editorModule.onEnter();
         editor.selection.handleUpKey();
         editor.selection.handleEndKey();
@@ -56,7 +56,7 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         editor.viewer.onKeyDownInternal(event);
 
         currentPara = editor.selection.start.currentWidget.paragraph;
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         currentPara = editor.selection.start.currentWidget.paragraph;
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
         expect(editor.selection.characterFormat.fontSize).toBe(11.0);
@@ -64,7 +64,7 @@ describe('Load Empty Document - Edit and Apply Style', () => {
     });
     it('Apply Heading2', () => {
         editor.open(json);
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         editor.editorModule.onEnter();
         editor.selection.handleUpKey();
         editor.selection.handleEndKey();
@@ -78,14 +78,14 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
 
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
         expect(editor.selection.characterFormat.fontSize).toBe(11.0);
         expect(editor.selection.characterFormat.fontColor).toBe("#000000");
     });
     it('Apply Heading3', () => {
         editor.open(json);
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         editor.editorModule.onEnter();
         editor.selection.handleUpKey();
         editor.selection.handleEndKey();
@@ -100,14 +100,14 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
 
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
         expect(editor.selection.characterFormat.fontSize).toBe(11.0);
         expect(editor.selection.characterFormat.fontColor).toBe("#000000");
     });
     it('Apply Heading4', () => {
         editor.open(json);
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         editor.editorModule.onEnter();
         editor.selection.handleUpKey();
         editor.selection.handleEndKey();
@@ -121,14 +121,14 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
 
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
         expect(editor.selection.characterFormat.fontSize).toBe(11.0);
         expect(editor.selection.characterFormat.fontColor).toBe("#000000");
     });
     it('Apply Heading5', () => {
         editor.open(json);
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         editor.editorModule.onEnter();
         editor.selection.handleUpKey();
         editor.selection.handleEndKey();
@@ -141,14 +141,14 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
 
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
         expect(editor.selection.characterFormat.fontSize).toBe(11.0);
         expect(editor.selection.characterFormat.fontColor).toBe("#000000");
     });
     it('Apply Heading6', () => {
         editor.open(json);
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         editor.editorModule.onEnter();
         editor.selection.handleUpKey();
         editor.selection.handleEndKey();
@@ -161,7 +161,7 @@ describe('Load Empty Document - Edit and Apply Style', () => {
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
 
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
         expect(editor.selection.characterFormat.fontSize).toBe(11.0);
         expect(editor.selection.characterFormat.fontColor).toBe("#000000");

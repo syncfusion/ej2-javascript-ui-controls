@@ -1,6 +1,6 @@
 import { createElement } from '@syncfusion/ej2-base';
 
-let themes: string[] = ['material', 'fabric', 'highcontrast', 'bootstrap', 'material-dark', 'bootstrap-dark', 'fabric-dark'];
+let themes: string[] = ['material', 'fabric', 'highcontrast', 'bootstrap', 'material-dark', 'bootstrap-dark', 'fabric-dark', 'bootstrap4'];
 
 function createButtons(id: string): HTMLButtonElement {
     let btn: HTMLButtonElement = createElement('button', { attrs: { 'type': 'button', 'class': 'e-btn', 'id': id } }) as HTMLButtonElement;

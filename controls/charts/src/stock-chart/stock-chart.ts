@@ -509,7 +509,8 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         this.chart.series.forEach((series: Series) => {
             series.dataSource = (this.tempDataSource[series.index] as Object[]).filter((data: Object) => {
                 return (
-                    data[series.xName].getTime() >= updatedStart && data[series.xName].getTime() <= updatedEnd
+                    new Date( Date.parse(data[series.xName])).getTime() >= updatedStart &&
+                    new Date( Date.parse(data[series.xName])).getTime() <= updatedEnd
                 );
             });
             series.animation.enable = false;

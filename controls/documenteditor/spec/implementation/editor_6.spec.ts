@@ -70,7 +70,7 @@ describe('ApplyStyle API validation - 1', () => {
     });
 
     it('set ClearDirectFormatting as true', () => {
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.selectAll();
         editor.selection.characterFormat.fontSize = 24;
         editor.selection.characterFormat.fontFamily = 'Algerian';
@@ -131,7 +131,7 @@ describe('ApplyStyle API validation - 2', () => {
     });
 
     it('The paragraph already contains style and direct formatting, set ClearDirectFormatting as true', () => {
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.applyStyle('Heading 1', true);
         editor.selection.selectAll();
         editor.selection.characterFormat.fontSize = 24;
@@ -187,14 +187,14 @@ describe('ApplyStyle API validation - 2 without History', () => {
     });
 
     it('without specify ClearDirectFormatting', () => {
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.selectAll();
         editor.selection.characterFormat.fontSize = 24;
         editor.editor.applyStyle('Heading 4');
         expect(editor.selection.characterFormat.fontSize).toBe(24);
     });
     it('with ClearDirectFormatting', () => {
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.selectAll();
         editor.selection.characterFormat.fontSize = 24;
         editor.editor.applyStyle('Heading 4', true);
@@ -306,7 +306,7 @@ describe('Apply Character format in empty selection and paragraph is not Empty',
     });
 
     it('Apply character format value and paragraph is empty', () => {
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.characterFormat.fontSize = 48;
         editor.selection.characterFormat.fontColor = 'Red';
         expect(editor.selection.characterFormat.fontSize).toBe(48);

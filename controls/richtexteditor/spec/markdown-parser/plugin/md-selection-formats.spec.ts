@@ -161,7 +161,7 @@ Tabs and shift-tabs work too`;
                 isCallBack = true;
             });
             expect(isCallBack).toBe(true);
-            editorObj.markdownSelection.save(123,125);
+            editorObj.markdownSelection.save(123, 125);
             editorObj.markdownSelection.restore(textArea);
             let line: any = editorObj.markdownSelection.getSelectedInlinePoints(textArea);
             expect(new RegExp('^[A-Z]*$', 'g').test(line.text)).toBe(true);
@@ -176,7 +176,7 @@ Tabs and shift-tabs work too`;
                 isCallBack = true;
             });
             expect(isCallBack).toBe(true);
-            editorObj.markdownSelection.save(123,125);
+            editorObj.markdownSelection.save(123, 125);
             editorObj.markdownSelection.restore(textArea);
             line = editorObj.markdownSelection.getSelectedInlinePoints(textArea);
             expect(new RegExp('^[a-z]*$', 'g').test(line.text)).toBe(true);
@@ -288,7 +288,7 @@ Tabs and shift-tabs work too`;
     describe('RTE - uncommand', () => {
         let elem: HTMLElement;
         let editorObj: MarkdownParser;
-        let innerHTML:string =`Lists are a piece of cake
+        let innerHTML: string = `Lists are a piece of cake
 They even auto continue as you type
 A double enter will end them
 Tabs and shift-tabs work too`;
@@ -308,7 +308,7 @@ Tabs and shift-tabs work too`;
             let line: any;
             editorObj.markdownSelection.save(0, 5);
             editorObj.markdownSelection.restore(textArea);
-             editorObj.execCommand("Style", 'Bold', null, () => {
+            editorObj.execCommand("Style", 'Bold', null, () => {
                 isCallBack = true;
             });
             expect(isCallBack).toBe(true);
@@ -321,7 +321,7 @@ Tabs and shift-tabs work too`;
                 isCallBack = true;
             });
             line = editorObj.markdownSelection.getSelectedLine(textArea);
-            expect(line.indexOf('~~')>0).toBe(true);
+            expect(line.indexOf('~~') > 0).toBe(true);
             editorObj.execCommand("Style", 'Bold', null, () => {
                 isCallBack = true;
             });
@@ -329,12 +329,110 @@ Tabs and shift-tabs work too`;
                 isCallBack = true;
             });
             line = editorObj.markdownSelection.getSelectedLine(textArea);
-            expect(line.indexOf('**')<0).toBe(true);
+            expect(line.indexOf('**') < 0).toBe(true);
             editorObj.execCommand("Style", 'StrikeThrough', null, () => {
                 isCallBack = true;
             });
             line = editorObj.markdownSelection.getSelectedLine(textArea);
-            expect(line.indexOf('~~')<0).toBe(true);
+            expect(line.indexOf('~~') < 0).toBe(true);
+        });
+
+        afterAll(() => {
+            detach(textArea);
+        });
+    });
+
+    describe('EJ2-23207 RTE - The UpperCase command is not working properly in Markdown editor ', () => {
+        let elem: HTMLElement;
+        let editorObj: MarkdownParser;
+        let length: number;
+        let innerHTML: string = `Lists are a piece of cake
+They even auto continue as you type
+A double enter will end them
+Tabs and **shift-tabs** work too`;
+        let textArea: HTMLTextAreaElement = <HTMLTextAreaElement>createElement('textarea', {
+            id: 'markdown-editor',
+            styles: 'width:200px;height:200px'
+        });
+        beforeAll(() => {
+            document.body.appendChild(textArea);
+            editorObj = new MarkdownParser({ element: textArea });
+            textArea.value = innerHTML;
+            length = textArea.value.length;
+            textArea.focus();
+        });
+
+        it(' Apply uppercase command ', () => {
+            let isCallBack: boolean = false;
+            let line: any;
+            editorObj.markdownSelection.save(4, 12);
+            editorObj.markdownSelection.restore(textArea);
+            editorObj.execCommand("Casing", 'UpperCase', null, () => {
+                isCallBack = true;
+            });
+            let upperCaseText: string = editorObj.markdownSelection.getSelectedText(textArea);
+            expect(upperCaseText === upperCaseText.toUpperCase()).toBe(true);
+            editorObj.markdownSelection.save(8, 16);
+            editorObj.markdownSelection.restore(textArea);
+            editorObj.execCommand("Casing", 'UpperCase', null, () => {
+                isCallBack = true;
+            });
+            upperCaseText = editorObj.markdownSelection.getSelectedText(textArea);
+            expect(upperCaseText === upperCaseText.toUpperCase()).toBe(true);
+        });
+
+        afterAll(() => {
+            detach(textArea);
+        });
+    });
+    describe('EJ2-23972 RTE - Markdown strikethrough style apply not working properly', () => {
+        let elem: HTMLElement;
+        let editorObj: MarkdownParser;
+        let length: number;
+        let innerHTML: string = `Lists are a piece of cake
+They even auto continue as you type
+A double enter will end them
+Tabs and **shift-tabs** work too`;
+        let textArea: HTMLTextAreaElement = <HTMLTextAreaElement>createElement('textarea', {
+            id: 'markdown-editor',
+            styles: 'width:200px;height:200px'
+        });
+        beforeAll(() => {
+            document.body.appendChild(textArea);
+            editorObj = new MarkdownParser({ element: textArea });
+            textArea.value = innerHTML;
+            length = textArea.value.length;
+            textArea.focus();
+        });
+
+        it(' Revert the bold command properly', () => {
+            let isCallBack: boolean = false;
+            editorObj.markdownSelection.save(0, textArea.value.length);
+            editorObj.markdownSelection.restore(textArea);
+            editorObj.execCommand("Style", 'Bold', null, () => {
+                isCallBack = true;
+            });
+            let secondLength = textArea.value.length;
+            let revertSyntax: number = 4;
+            let addSyntax: number = 4;
+            expect((secondLength - addSyntax) + revertSyntax == length).toBe(true);
+
+            editorObj.markdownSelection.save(10, 20);
+            editorObj.markdownSelection.restore(textArea);
+            editorObj.execCommand("Style", 'Bold', null, () => {
+                isCallBack = true;
+            });
+            secondLength = textArea.value.length;
+            expect((secondLength) + 4 == length).toBe(true);
+            length = length - 4;
+            editorObj.markdownSelection.save(10, 20);
+            editorObj.markdownSelection.restore(textArea);
+            editorObj.execCommand("Style", 'Bold', null, () => {
+                isCallBack = true;
+            });
+            secondLength = textArea.value.length;
+            addSyntax = 4;
+            expect((secondLength - addSyntax) == length).toBe(true);
         });
 
         afterAll(() => {

@@ -28,8 +28,10 @@ import { DetailRow } from '../../../src/grid/actions/detail-row'
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy, getKeyUpObj, getClickObj, getKeyActionObj } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import * as events from '../../../src/grid/base/constant';
 
 Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, Toolbar, Freeze, DetailRow);
+
 
 describe('Batch Editing module', () => {
 
@@ -276,6 +278,24 @@ describe('Batch Editing module', () => {
             gridObj.batchAdd = batchAdd;
             (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
         });
+        it('Batch Edit form internal event check', (done: Function) => {
+            gridObj.on(events.batchEditFormRendered, (args: any) => {
+                expect(args.name).toBe('batcheditform-rendered');
+                gridObj.off(events.batchEditFormRendered);
+                done();
+            });
+            gridObj.editModule.editCell(0, 'CustomerID');
+        });
+        it('Batch Cancel internal event check', (done: Function) => {
+            gridObj.editSettings.showConfirmDialog = false;
+            gridObj.on(events.beforeBatchCancel, (args: any) => {
+                expect(args.name).toBe('before-batch-cancel');
+                args.cancel = true;
+                gridObj.off(events.beforeBatchCancel);
+                done();
+            });
+            (gridObj.toolbarModule as any).toolbarClickHandler({ item: { id: gridObj.element.id + '_cancel' } });
+        });        
 
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});

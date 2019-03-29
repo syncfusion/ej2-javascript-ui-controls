@@ -18,7 +18,6 @@ export class DateRangePicker implements IComponent {
     }
 
     public render(e: NotifyParams): void {
-        (this.parent.model as DateRangePickerModel).showClearButton = true;
         this.compObj = new EJ2DateRangePicker(this.parent.model as DateRangePickerModel);
         this.compObj.appendTo(e.target as HTMLInputElement);
     }
@@ -30,6 +29,7 @@ export class DateRangePicker implements IComponent {
     public updateValue(e: NotifyParams): void {
         if (this.compObj && e.type === 'DateRange') {
             this.parent.setProperties({ value: this.compObj.value }, true);
+            this.parent.extendModelValue(this.compObj.value);
         }
     }
 

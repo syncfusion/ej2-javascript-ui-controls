@@ -1,92 +1,91 @@
 /*! component's theme wise override highcontrast-definitions and variables */
-$skin-name: 'highcontrast';
 
 // Generic
 
-$panel-position: absolute;
-$grid-layout-position: relative;
-$panel-box-sizing: border-box;
-$icon-zero: 0;
-$icon-border-radius: 50%;
+$panel-position: absolute !default;
+$grid-layout-position: relative !default;
+$panel-box-sizing: border-box !default;
+$icon-zero: 0 !default;
+$icon-border-radius: 50% !default;
 
 // Mouse
 
-$panel-header-height: 28px;
-$panel-header-padding: 0 12px;
-$panel-header-color: rgba($header-font-alt, .54);
-$panel-header-font-size: 14px;
-$panel-header-font-weight: 500;
+$panel-header-height: 28px !default;
+$panel-header-padding: 0 12px !default;
+$panel-header-color: rgba($header-font-alt, .54) !default;
+$panel-header-font-size: 14px !default;
+$panel-header-font-weight: 500 !default;
 
 // Touch
 
-$panel-bigger-header-height: 30;
-$panel-bigger-header-padding: 0 12px;
-$panel-bigger-header-color: rgba($header-font-alt, .54);
-$panel-bigger-header-font-size: 14px;
-$panel-bigger-header-font-weight: 500;
+$panel-bigger-header-height: 30 !default;
+$panel-bigger-header-padding: 0 12px !default;
+$panel-bigger-header-color: rgba($header-font-alt, .54) !default;
+$panel-bigger-header-font-size: 14px !default;
+$panel-bigger-header-font-weight: 500 !default;
 
 // Panel styles
 
-$panel-background: $bg-base-0;
-$panel-border: 1px $border-default solid;
-$panel-hover-border: 1px $border-fg solid;
-$panel-active-border: 1px $selection-border solid;
-$panel-position: absolute;
-$panel-box-sizing: border-box;
-$panel-border-radius: 0;
-$panel-full-height: 100%;
-$panel-full-width: 100%;
-$panel-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .15);
+$panel-background: $bg-base-0 !default;
+$panel-border: 1px $border-default solid !default;
+$panel-hover-border: 1px $border-fg solid !default;
+$panel-active-border: 1px $selection-border solid !default;
+$panel-position: absolute !default;
+$panel-box-sizing: border-box !default;
+$panel-border-radius: 0 !default;
+$panel-full-height: 100% !default;
+$panel-full-width: 100% !default;
+$panel-box-shadow: 0 2px 5px 0 rgba(0, 0, 0, .15) !default;
 
 // icons styles
 
-$panel-resize-one-dimensional-icon-height: 8px;
-$panel-resize-one-dimensional-icon-width: 8px;
-$panel-resize-one-dimensional-icon-background: $selection-bg;
-$panel-resize-one-dimensional-icon-border: none;
+$panel-resize-one-dimensional-icon-height: 8px !default;
+$panel-resize-one-dimensional-icon-width: 8px !default;
+$panel-resize-one-dimensional-icon-background: $selection-bg !default;
+$panel-resize-one-dimensional-icon-border: none !default;
 
-$panel-resize-two-dimensional-icon-height: 16px;
-$panel-resize-two-dimensional-icon-width: 16px;
-$panel-resize-two-dimensional-inner-icon-height: 8px;
-$panel-resize-two-dimensional-inner-icon-width: 8px;
-$panel-resize-two-dimensional-icon-background: $selection-bg;
-$panel-resize-two-dimensional-icon-color: $content-font !default;
-$panel-resize-two-dimensional-icon-border: 2px $bg-base-0 solid;
+$panel-resize-two-dimensional-icon-height: 16px !default;
+$panel-resize-two-dimensional-icon-width: 16px !default;
+$panel-resize-two-dimensional-inner-icon-height: 8px !default;
+$panel-resize-two-dimensional-inner-icon-width: 8px !default;
+$panel-resize-two-dimensional-icon-background: $selection-bg !default;
+$panel-resize-two-dimensional-icon-color: $content-font !default !default;
+$panel-resize-two-dimensional-icon-border: 2px $bg-base-0 solid !default;
 
 // south-east-icon-styles
 
-$panel-south-east-icon-right: -6px;
-$panel-south-east-icon-bottom: -5px;
+$panel-south-east-icon-right: -6px !default;
+$panel-south-east-icon-bottom: -5px !default;
 
 // south-west-icon-style
 
-$panel-south-west-icon-left: -6px;
-$panel-south-west-icon-bottom: -5px;
+$panel-south-west-icon-left: -6px !default;
+$panel-south-west-icon-bottom: -5px !default;
 
 
 // north-east-icon-styles
 
-$panel-north-east-icon-right: -6px;
-$panel-north-east-icon-top: -5px;
+$panel-north-east-icon-right: -6px !default;
+$panel-north-east-icon-top: -5px !default;
 
 // north-west-icon-styles
 
-$panel-north-west-icon-left: -6px;
-$panel-north-west-icon-top: -5px;
+$panel-north-west-icon-left: -6px !default;
+$panel-north-west-icon-top: -5px !default;
 
 // droppable area border
 
-$panel-drop-border: 1px $selection-bg dotted;
-$panel-drop-background: rgba($selection-bg, .3);
-$panel-drop-border-radius: 0;
+$panel-drop-border: 1px $selection-bg dotted !default;
+$panel-drop-background: rgba($selection-bg, .3) !default;
+$panel-drop-border-radius: 0 !default;
 
 // dragging element style
 
-$panel-dragging-cursor: move;
-$panel-dragging-zindex: 1111;
-$panel-drag-prevent: none;
+$panel-dragging-cursor: move !default;
+$panel-dragging-zindex: 1111 !default;
+$panel-drag-prevent: none !default;
 // sass-lint:disable-all
-$element-width-complete: 100% !important;
+$element-width-complete: 100% !important !default;
 //gridlines
-$gridline-background: $bg-base-10;
-$gridline-border: $border-default;
+$gridline-background: $bg-base-10 !default;
+$gridline-border: $border-default !default;

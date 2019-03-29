@@ -533,4 +533,10 @@ export interface IThemeStyle {
     tooltipFontColor: string;
     tooltipFillColor: string;
     zoomFillColor: string;
+    fontFamily?: string;
+    titleFontSize?: string;
+    tooltipFillOpacity? : number;
+    tooltipTextOpacity?: number;
+    legendFontSize?: string;
+    labelFontFamily?: string;
 }

@@ -6,7 +6,7 @@ import {NavigationPane} from '../../../src/file-manager/layout/navigation-pane';
 import {DetailsView} from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement, Browser } from '@syncfusion/ej2-base';
-import { toolbarItems, toolbarItems1, data1, data2, data3 } from '../data';
+import { toolbarItems, toolbarItems1, data1, data16, data17 } from '../data';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -199,6 +199,105 @@ describe('FileManager control single selection LargeIcons view', () => {
             feObj.dataBind();
             expect(document.getElementById('file_tree').offsetWidth).toEqual(0);
             feObj.destroy();
+        });
+        it('for path', (done: Function) => {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                allowMultiSelection: false,
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                path: 'Employees/'
+            }, '#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data16)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                expect(treeObj.selectedNodes[0]).toEqual("fe_tree_1");
+                expect(treeLi.length).toEqual(6);
+                expect(largeLi.length).toEqual(1);
+                expect(feObj.path).toBe('/Employees/');
+                feObj.path = '/Documents';
+                feObj.dataBind();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data17)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                    let treeLi: any = treeObj.element.querySelectorAll('li');
+                    let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                    expect(treeObj.selectedNodes[0]).toEqual("fe_tree_0");
+                    expect(treeLi.length).toEqual(6);
+                    expect(largeLi.length).toEqual(1);
+                    expect(feObj.path).toBe('/Documents/');
+                    done();
+                }, 500);
+            }, 500);
+        });
+        it('for ajaxSettings', function (done) {
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                allowMultiSelection: false,
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                }
+            });
+            feObj.appendTo('#file')
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 404,
+                responseText: "Not Found"
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                feObj.ajaxSettings.url = "http://localhost/FileOperations";
+                feObj.ajaxSettings.uploadUrl = "http://localhost/uploadUrl";
+                feObj.ajaxSettings.getImageUrl = "http://localhost/getImageUrl";
+                feObj.ajaxSettings.downloadUrl = "http://localhost/downloadUrl";
+                feObj.dataBind();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                    let treeLi: any = treeObj.element.querySelectorAll('li');
+                    let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                    expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+                    expect(treeLi.length).toEqual(5);
+                    expect(largeLi.length).toEqual(5);
+                    expect(feObj.ajaxSettings.url).toBe('http://localhost/FileOperations');
+                    expect(feObj.ajaxSettings.uploadUrl).toBe('http://localhost/uploadUrl');
+                    expect(feObj.ajaxSettings.getImageUrl).toBe('http://localhost/getImageUrl');
+                    expect(feObj.ajaxSettings.downloadUrl).toBe('http://localhost/downloadUrl');
+                    done();
+                }, 500);
+            }, 500);
         });
     });
 });

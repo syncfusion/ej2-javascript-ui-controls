@@ -1,7 +1,7 @@
 import { Grid, Resize, ContextMenu, Sort, VirtualScroll, RowSelectEventArgs, RowDeselectEventArgs, Column } from '@syncfusion/ej2-grids';
 import { select, KeyboardEvents, EventHandler, KeyboardEventArgs, getValue, selectAll, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, Touch, TapEventArgs, setValue, addClass, removeClass } from '@syncfusion/ej2-base';
-import { Internationalization } from '@syncfusion/ej2-base';
+import { Internationalization, closest } from '@syncfusion/ej2-base';
 import { FileManager } from '../base/file-manager';
 import * as events from '../base/constant';
 import * as CLS from '../base/classes';
@@ -13,10 +13,10 @@ import { treeNodes } from '../common/utility';
 import { removeBlur, openAction, getImageUrl, fileType, getSortedData, getLocaleText } from '../common/utility';
 import { createEmptyElement } from '../common/utility';
 import { read, Download } from '../common/operations';
-import { cutFiles, addBlur } from '../common/index';
+import { cutFiles, addBlur, openSearchFolder } from '../common/index';
 import { ROWCELL } from '../../index';
 import { RecordDoubleClickEventArgs, RowDataBoundEventArgs, SortEventArgs, HeaderCellInfoEventArgs } from '@syncfusion/ej2-grids';
-import { BeforeDataBoundArgs, ColumnModel } from '@syncfusion/ej2-grids';
+import { BeforeDataBoundArgs, ColumnModel, SortDescriptorModel } from '@syncfusion/ej2-grids';
 Grid.Inject(Resize, ContextMenu, Sort, VirtualScroll);
 
 /**
@@ -34,6 +34,7 @@ export class DetailsView {
     private isInteracted: boolean = true;
     private clickObj: Touch;
     private sortSelectedNodes: string[];
+    private emptyArgs: ReadArgs | SearchArgs;
 
     /* public variable */
     public gridObj: Grid;
@@ -73,6 +74,12 @@ export class DetailsView {
             removeClass([this.parent.element], CLS.MULTI_SELECT);
             let items: Object[] = getSortedData(this.parent, args.files);
             let columns: ColumnModel[] = this.getColumns();
+            let sortSettings: SortDescriptorModel[];
+            if (this.parent.isMobile) {
+                sortSettings = [];
+            } else {
+                sortSettings = [{ direction: this.parent.sortOrder, field: this.parent.sortBy }];
+            }
             this.gridObj = new Grid({
                 dataSource: items,
                 allowSorting: true,
@@ -85,7 +92,7 @@ export class DetailsView {
                 },
                 enableRtl: this.parent.enableRtl,
                 pageSettings: { pageSize: 20 },
-                sortSettings: { allowUnsort: false, columns: [{ direction: this.parent.sortOrder, field: this.parent.sortBy }] },
+                sortSettings: { allowUnsort: false, columns: sortSettings },
                 columns: columns,
                 recordDoubleClick: this.DblClickEvents.bind(this),
                 beforeDataBound: this.onBeforeDataBound.bind(this),
@@ -93,17 +100,14 @@ export class DetailsView {
                 rowDataBound: this.onRowDataBound.bind(this),
                 actionBegin: this.onActionBegin.bind(this),
                 headerCellInfo: this.onHeaderCellInfo.bind(this),
+                width: '100%'
             });
             this.gridObj.appendTo('#' + this.parent.element.id + CLS.GRID_ID);
             this.wireEvents();
-            let pane: HTMLElement = <HTMLElement>select('#' + this.parent.element.id + CLS.CONTENT_ID, this.parent.element);
-            let bar: HTMLElement = <HTMLElement>select('#' + this.parent.element.id + CLS.BREADCRUMBBAR_ID, this.parent.element);
-            let gridHeader: HTMLElement = <HTMLElement>select('.' + CLS.GRID_HEADER, this.parent.element);
-            let height: number = (pane.offsetHeight - bar.offsetHeight - gridHeader.offsetHeight);
-            this.gridObj.height = height;
+            this.adjustHeight();
             // tslint:disable-next-line
             (this.gridObj as any).defaultLocale.EmptyRecord = '';
-            this.checkEmptyDiv(args);
+            this.emptyArgs = args;
         }
     }
 
@@ -114,7 +118,7 @@ export class DetailsView {
                 {
                     field: 'name', headerText: getLocaleText(this.parent, 'Name'), width: 'auto', minWidth: 120, headerTextAlign: 'Left',
                     template: '<div class="e-fe-text">${name}</div><div class="e-fe-date">${dateModified}</div>' +
-                                '<span class="e-fe-size">${size}</span>'
+                        '<span class="e-fe-size">${size}</span>'
                 },
             ];
         } else {
@@ -123,7 +127,7 @@ export class DetailsView {
                 columns[i].headerText = getLocaleText(this.parent, columns[i].headerText);
             }
         }
-        let iWidth: string = (this.parent.isBigger ? '54' : '46');
+        let iWidth: string = ((this.parent.isMobile || this.parent.isBigger) ? '54' : '46');
         let icon: ColumnModel = {
             field: 'type', width: iWidth, minWidth: iWidth, template: '<span class="e-fe-icon ${iconClass}"></span>',
             allowResizing: false, allowSorting: true, customAttributes: { class: 'e-fe-grid-icon' },
@@ -143,6 +147,16 @@ export class DetailsView {
             }
         }
         return columns;
+    }
+
+    private adjustHeight(): void {
+        if (!this.gridObj) { return; }
+        let pane: HTMLElement = <HTMLElement>select('#' + this.parent.element.id + CLS.CONTENT_ID, this.parent.element);
+        let bar: HTMLElement = <HTMLElement>select('#' + this.parent.element.id + CLS.BREADCRUMBBAR_ID, this.parent.element);
+        let gridHeader: HTMLElement = <HTMLElement>select('.' + CLS.GRID_HEADER, this.parent.element);
+        let height: number = (pane.offsetHeight - bar.offsetHeight - gridHeader.offsetHeight);
+        this.gridObj.height = height;
+        this.gridObj.dataBind();
     }
 
     private renderCheckBox(): void {
@@ -207,6 +221,17 @@ export class DetailsView {
         if (args.requestType === 'sorting') {
             this.parent.sortOrder = args.direction;
             this.parent.sortBy = args.columnName;
+            if (this.parent.selectedItems.length !== 0) {
+                this.sortItem = true;
+                let rows: number[] = this.gridObj.getSelectedRowIndexes();
+                let len: number = rows.length;
+                this.sortSelectedNodes = [];
+                while (len > 0) {
+                    let data: Object = this.gridObj.getRowsObject()[rows[len - 1]].data;
+                    this.sortSelectedNodes.push(getValue('name', data));
+                    len--;
+                }
+            }
             this.parent.notify(events.sortByChange, {});
         }
     }
@@ -282,6 +307,7 @@ export class DetailsView {
         if (this.gridObj.currentViewData.length * this.gridObj.getRowHeight() < this.gridObj.height) {
             let hdTable: HTMLElement = <HTMLElement>this.gridObj.getHeaderContent();
             hdTable.style.paddingRight = '';
+            hdTable.style.paddingLeft = '';
             let hdContent: HTMLElement = <HTMLElement>select('.e-headercontent', hdTable);
             hdContent.style.borderRightWidth = '0';
             let cnTable: HTMLElement = <HTMLElement>this.gridObj.getContent().querySelector('.e-content');
@@ -289,11 +315,16 @@ export class DetailsView {
             cnTable.classList.add('e-scrollShow');
         } else {
             let hdTable: HTMLElement = <HTMLElement>this.gridObj.getHeaderContent();
-            hdTable.style.paddingRight = '16px';
+            if (!this.parent.enableRtl) {
+                hdTable.style.paddingRight = '16px';
+            } else {
+                hdTable.style.paddingLeft = '16px';
+            }
             let cnTable: Element = this.gridObj.getContent().querySelector('.e-content');
             cnTable.classList.remove('e-scrollShow');
         }
         this.isRendered = true;
+        this.checkEmptyDiv(this.emptyArgs);
     }
 
     private selectRecords(nodes: string[]): void {
@@ -310,17 +341,6 @@ export class DetailsView {
     }
 
     private onSortColumn(args: Object): void {
-        if (this.parent.selectedItems.length !== 0) {
-            this.sortItem = true;
-            let rows: number[] = this.gridObj.getSelectedRowIndexes();
-            let len: number = rows.length;
-            this.sortSelectedNodes = [];
-            while (len > 0) {
-                let data: Object = this.gridObj.getRowsObject()[rows[len - 1]].data;
-                this.sortSelectedNodes.push(getValue('name', data));
-                len--;
-            }
-        }
         this.gridObj.sortModule.sortColumn(this.parent.sortBy, this.parent.sortOrder);
     }
 
@@ -331,6 +351,18 @@ export class DetailsView {
         }
         for (let prop of Object.keys(e.newProp)) {
             switch (prop) {
+                case 'height':
+                    this.adjustHeight();
+                    break;
+                case 'detailsViewSettings':
+                    if (!isNullOrUndefined(this.gridObj)) {
+                        let columns: ColumnModel[] = this.getColumns();
+                        this.gridObj.columns = columns;
+                        this.gridObj.allowResizing = this.parent.detailsViewSettings.columnResizing;
+                        this.gridObj.dataBind();
+                        this.gridObj.refreshColumns();
+                    }
+                    break;
                 case 'selectedItems':
                     if (this.parent.selectedItems.length !== 0) {
                         this.selectRecords(this.parent.selectedItems);
@@ -391,7 +423,7 @@ export class DetailsView {
             this.gridObj.dataSource = getSortedData(this.parent, args.files);
             this.parent.notify(events.searchTextChange, args);
         }
-        this.checkEmptyDiv(args);
+        this.emptyArgs = args;
     }
 
     private checkEmptyDiv(args: ReadArgs | SearchArgs): void {
@@ -440,11 +472,16 @@ export class DetailsView {
                 createImageDialog(this.parent, name, imgUrl);
             }
         } else {
-            let newPath: string = this.parent.path + getValue('name', data) + '/';
-            this.parent.setProperties({ path: newPath }, true);
-            this.parent.pathId.push(getValue('nodeId', data));
-            this.parent.itemData = [data];
-            openAction(this.parent);
+            let val: string = this.parent.breadcrumbbarModule.searchObj.element.value;
+            if (val === '') {
+                let newPath: string = this.parent.path + getValue('name', data) + '/';
+                this.parent.setProperties({ path: newPath }, true);
+                this.parent.pathId.push(getValue('nodeId', data));
+                this.parent.itemData = [data];
+                openAction(this.parent);
+            } else {
+                openSearchFolder(this.parent, data);
+            }
         }
     }
 
@@ -465,6 +502,7 @@ export class DetailsView {
             if (this.parent.breadcrumbbarModule.searchObj.element.value.trim() !== '') {
                 this.onSearchFiles(args);
             }
+            this.adjustHeight();
         }
     }
 
@@ -497,9 +535,14 @@ export class DetailsView {
         }
     }
 
-    private onInitialEnd(args: ReadArgs): void {
-        this.render(args);
-        this.parent.notify(events.searchTextChange, args);
+    private onFinalizeEnd(args: ReadArgs): void {
+        if (this.parent.view !== 'Details') { return; }
+        if (!this.gridObj) {
+            this.render(args);
+            this.parent.notify(events.searchTextChange, args);
+        } else {
+            this.onPathChanged(args);
+        }
     }
 
     private onCreateEnd(args: ReadArgs): void {
@@ -558,13 +601,11 @@ export class DetailsView {
     }
 
     private onAfterRequest(args: Object): void {
-        if (getValue('action', args) === 'failure') {
-            this.isRendered = true;
-        }
+        this.isRendered = true;
     }
 
     private addEventListener(): void {
-        this.parent.on(events.initialEnd, this.onInitialEnd, this);
+        this.parent.on(events.finalizeEnd, this.onFinalizeEnd, this);
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.layoutChange, this.onLayoutChange, this);
         this.parent.on(events.pathChanged, this.onPathChanged, this);
@@ -588,7 +629,7 @@ export class DetailsView {
     }
 
     private removeEventListener(): void {
-        this.parent.off(events.initialEnd, this.onInitialEnd);
+        this.parent.off(events.finalizeEnd, this.onFinalizeEnd);
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.layoutChange, this.onLayoutChange);
         this.parent.off(events.pathChanged, this.onPathChanged);
@@ -661,11 +702,7 @@ export class DetailsView {
         if (this.parent.isDevice && isNOU(indexes) && args.target && !multiSelect && !args.target.closest('.e-headercell')) {
             this.parent.isFile = getValue('isFile', args.data);
             if (!this.parent.isFile) {
-                let newPath: string = this.parent.path + getValue('name', args.data) + '/';
-                this.parent.setProperties({ path: newPath }, true);
-                this.parent.pathId.push(getValue('nodeId', args.data));
-                this.parent.itemData = [args.data];
-                openAction(this.parent);
+                this.openContent(args.data);
             }
         }
         this.parent.visitedItem = args.row;
@@ -765,7 +802,7 @@ export class DetailsView {
                         }
                         let target: Element = <Element>e.originalEvent.target;
                         if (target) {
-                            let row: Element = target.closest('.' + CLS.ROW);
+                            let row: Element = closest(target, '.' + CLS.ROW);
                             let index: number = proxy.gridObj.getRows().indexOf(row);
                             proxy.gridObj.selectRow(index);
                         }
@@ -783,6 +820,7 @@ export class DetailsView {
     private removeSelection(): void {
         removeClass([this.parent.element], CLS.MULTI_SELECT);
         this.gridObj.clearSelection();
+        this.parent.setProperties({ selectedItems: [] }, true);
         this.parent.notify(events.selectionChanged, {});
     }
 

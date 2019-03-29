@@ -46,6 +46,7 @@ export class ForeignKey extends Data {
             let promise: Promise<Object>;
             let query: Query = args.isComplex ? this.genarateColumnQuery(col) :
                 <Query>this.genarateQuery(col, <{ records?: Object[] }>args.result.result, false, true);
+            query.params = this.parent.query.params;
             let dataSource: DataManager = <DataManager>col.dataSource;
             if (!dataSource.ready || dataSource.dataSource.offline) {
                 promise = dataSource.executeQuery(query);

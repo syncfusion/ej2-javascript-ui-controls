@@ -18,8 +18,17 @@
         }
 
         & .e-menu-item  {
-          & .e-menu-icon {
-            color: $menu-icon-color;
+          @if $skin-name == 'bootstrap4' {
+            & .e-caret {
+              color: $menu-caret-color;
+            }
+
+            & .e-menu-icon {
+              color: $menu-icon-color;
+            }
+          }
+          @else {
+            @include icon-color;
           }
 
           &.e-menu-header {
@@ -30,30 +39,37 @@
             color: $menu-color;
           }
 
-          & .e-caret {
-            color: $menu-caret-color;
-          }
-
           &.e-focused {
-            background-color: $menu-ul-bgcolor;
             color: $menu-icon-hover-color;
             outline: $menu-li-hover-outline;
             outline-offset: $menu-li-hover-outline-offset;
+            @if $skin-name == 'bootstrap4' {
+              background-color: $menu-ul-bgcolor;
 
-            & .e-caret {
-              color: $menu-caret-color;
+              & .e-caret {
+                color: $menu-caret-color;
+              }
+
+              & .e-menu-icon {
+                color: $menu-icon-hover-color;
+              }
             }
-
-            & .e-menu-icon {
-              color: $menu-icon-hover-color;
+            @else {
+              @include focused-icon-color;
+              background-color: $menu-li-bgcolor;
             }
           }
 
           &.e-selected {
-            background-color: $menu-ul-bgcolor;
             color: $menu-selected-color;
             outline: $menu-li-selected-outline;
             outline-offset: $menu-li-selected-outline-offset;
+            @if $skin-name == 'bootstrap4' {
+              background-color: $menu-ul-bgcolor;
+            }
+            @else {
+              background-color: $menu-li-selection-bgcolor;
+            }
 
             & .e-caret {
               color: $menu-caret-color;
@@ -77,23 +93,37 @@
         color: $submenu-color;
 
         & .e-menu-item {
-          &.e-focused {
+          @if $skin-name == 'bootstrap4' {
             & .e-caret {
-              color: $menu-caret-color;
-           }
+              color: $submenu-color;
+            }
 
             & .e-menu-icon {
-              color: $menu-icon-hover-color;
+              color: $submenu-color;
+            }
+        }
+
+          &.e-focused {
+            @if $skin-name == 'bootstrap4' {
+              & .e-caret {
+                color: $menu-caret-color;
+              }
+
+              & .e-menu-icon {
+                color: $submenu-color;
+              }
             }
           }
 
           &.e-selected {
-            & .e-caret {
-              color: $menu-icon-focussed-color;
-            }
+            @if $skin-name == 'bootstrap4' {
+              & .e-caret {
+                color: $menu-icon-focussed-color;
+              }
 
-            & .e-menu-icon {
-              color: $menu-icon-focussed-color;
+              & .e-menu-icon {
+                color: $menu-icon-focussed-color;
+              }
             }
           }
 
@@ -127,13 +157,42 @@
         color: $cmenu-caret-color;
       }
 
-      &:hover,
+      &:hover {
+        @if $skin-name == 'bootstrap4' {
+          background-color: darken($gray-600, 7.5%);
+          border: 1px inside darken($gray-600, 10%);
+
+          & .e-icons {
+            color: $menu-icon-focussed-color;
+          }
+        }
+        @else {
+          background: $menu-li-bgcolor;
+        }
+      }
+
       &:focus {
-        background: $menu-li-bgcolor;
+        @if $skin-name == 'bootstrap4' {
+          background-color: darken($gray-600, 7.5%);
+          border-color: darken($gray-600, 10%);
+
+          & .e-icons {
+            color: $menu-icon-focussed-color;
+          }
+        }
+        @else {
+          background: $menu-li-bgcolor;
+        }
       }
 
       &:active {
-        background: $menu-li-selection-bgcolor;
+        @if $skin-name == 'bootstrap4' {
+          background-color: darken($gray-600, 7.5%);
+          border: 1px inside darken($gray-600, 10%);
+        }
+        @else {
+          background: $menu-li-bgcolor;
+        }
       }
     }
 

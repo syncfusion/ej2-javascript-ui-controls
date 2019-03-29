@@ -8,7 +8,7 @@
       box-shadow: $btn-box-shadow;
     }
 
-    @if $skin-name == 'material' {
+    @if $skin-name == 'material' or $skin-name == 'bootstrap4' {
       .e-btn {
         box-shadow: none;
       }
@@ -101,7 +101,7 @@
 
         &.e-info {
           @include outline-info-focus;
-          box-shadow: none;
+            box-shadow: none;
         }
 
         &.e-warning {
@@ -207,36 +207,50 @@
     .e-btn:disabled,
     input:disabled+label.e-btn {
       @include disabled;
-      border-color: $btn-border-color;
+      @if $skin-name != 'bootstrap4' {
+        border-color: $btn-border-color;
+      }
 
       &.e-primary {
         @include primary-disabled;
-        border-color: $btn-primary-border-color;
+        @if $skin-name != 'bootstrap4' {
+          border-color: $btn-primary-border-color;
+        }
       }
 
       &.e-success {
         @include success-disabled;
-        border-color: $btn-success-border-color;
+        @if $skin-name != 'bootstrap4' {
+          border-color: $btn-success-border-color;
+        }
       }
 
       &.e-info {
         @include info-disabled;
-        border-color: $btn-info-border-color;
+        @if $skin-name != 'bootstrap4' {
+          border-color: $btn-info-border-color;
+        }
       }
 
       &.e-warning {
         @include warning-disabled;
-        border-color: $btn-warning-border-color;
+        @if $skin-name != 'bootstrap4' {
+          border-color: $btn-warning-border-color;
+        }
       }
 
       &.e-danger {
         @include danger-disabled;
-        border-color: $btn-danger-border-color;
+        @if $skin-name != 'bootstrap4' {
+          border-color: $btn-danger-border-color;
+        }
       }
 
       &.e-link {
         @include link-disabled;
-        border-color: $btn-link-border-color;
+        @if $skin-name != 'bootstrap4' {
+          border-color: $btn-link-border-color;
+        }
       }
 
       &.e-outline {

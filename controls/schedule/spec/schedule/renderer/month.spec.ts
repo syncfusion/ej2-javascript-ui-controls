@@ -3,7 +3,8 @@
  */
 import { createElement, remove, EmitType, closest, Browser } from '@syncfusion/ej2-base';
 import {
-    Schedule, ScheduleModel, CellClickEventArgs, NavigatingEventArgs, ActionEventArgs, Day, Week, WorkWeek, Month, Agenda, EJ2Instance
+    Schedule, ScheduleModel, CellClickEventArgs, NavigatingEventArgs, ActionEventArgs, Day, Week, WorkWeek, Month, Agenda, EJ2Instance,
+    SelectEventArgs, PopupOpenEventArgs
 } from '../../../src/schedule/index';
 import { RecurrenceEditor } from '../../../src/recurrence-editor/recurrence-editor';
 import { triggerMouseEvent } from '../util.spec';
@@ -404,6 +405,58 @@ describe('Schedule Month view', () => {
             expect(beginFn).toHaveBeenCalledTimes(2);
             expect(endFn).toHaveBeenCalledTimes(2);
             expect(navFn).toHaveBeenCalledTimes(1);
+        });
+
+        it('cell select', () => {
+            let eventName1: string;
+            let eventName2: string;
+            let eventName3: string;
+            schObj = new Schedule({
+                select: (args: SelectEventArgs) => {
+                    eventName1 = args.name;
+                },
+                cellClick: (args: CellClickEventArgs) => {
+                    eventName2 = args.name;
+                },
+                popupOpen: (args: PopupOpenEventArgs) => {
+                    eventName3 = args.name;
+                },
+                currentView: 'Month', selectedDate: new Date(2017, 9, 5)
+            });
+            schObj.appendTo('#Schedule');
+            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
+            triggerMouseEvent(workCells[3], 'mousedown');
+            triggerMouseEvent(workCells[3], 'mouseup');
+            (schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement).click();
+            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(eventName1).toEqual('select');
+            expect(eventName2).toEqual('cellClick');
+            expect(eventName3).toEqual('popupOpen');
+        });
+
+        it('multi cell select', () => {
+            let eventName: string;
+            schObj = new Schedule({
+                select: (args: SelectEventArgs) => {
+                    eventName = args.name;
+                },
+                currentView: 'Month', selectedDate: new Date(2017, 9, 5)
+            });
+            schObj.appendTo('#Schedule');
+            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
+            triggerMouseEvent(workCells[3], 'mousedown');
+            triggerMouseEvent(workCells[5], 'mousemove');
+            triggerMouseEvent(workCells[5], 'mouseup');
+            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
+            expect(eventName).toEqual('select');
         });
 
         it('cell click', () => {
@@ -1072,7 +1125,7 @@ describe('Schedule Month view', () => {
                 expect(moreIndicatorList.length).toEqual(0);
                 done();
             };
-            schObj.enableAdaptiveRows = true;
+            schObj.rowAutoHeight = true;
             schObj.dataBound = dataBound;
             schObj.dataBind();
         });
@@ -1196,14 +1249,14 @@ describe('Schedule Month view', () => {
         });
     });
 
-    describe('Events rendering with enableAdaptiveRows property', () => {
+    describe('Events rendering with rowAutoHeight property', () => {
         describe('default view', () => {
             let schObj: Schedule;
             beforeAll((done: Function) => {
                 let schOptions: ScheduleModel = {
                     height: '500px',
                     selectedDate: new Date(2017, 10, 6),
-                    enableAdaptiveRows: true,
+                    rowAutoHeight: true,
                     currentView: 'Month',
                 };
                 schObj = util.createSchedule(schOptions, testData, done);
@@ -1263,7 +1316,7 @@ describe('Schedule Month view', () => {
                     expect(moreIndicatorList.length).toEqual(9);
                     done();
                 };
-                schObj.enableAdaptiveRows = false;
+                schObj.rowAutoHeight = false;
                 schObj.dataBound = dataBound;
                 schObj.dataBind();
             });
@@ -1278,7 +1331,7 @@ describe('Schedule Month view', () => {
                 let schOptions: ScheduleModel = {
                     height: '550px',
                     selectedDate: new Date(2017, 10, 6),
-                    enableAdaptiveRows: true,
+                    rowAutoHeight: true,
                     currentView: 'Month',
                 };
                 schObj = util.createSchedule(schOptions, testData, done);
@@ -1308,7 +1361,7 @@ describe('Schedule Month view', () => {
                     expect(moreIndicatorList.length).toEqual(2);
                     done();
                 };
-                schObj.enableAdaptiveRows = false;
+                schObj.rowAutoHeight = false;
                 schObj.dataBound = dataBound;
                 schObj.dataBind();
             });
@@ -1320,7 +1373,7 @@ describe('Schedule Month view', () => {
                 let schOptions: ScheduleModel = {
                     height: '550px',
                     selectedDate: new Date(2017, 10, 6),
-                    enableAdaptiveRows: true,
+                    rowAutoHeight: true,
                     enableRtl: true,
                     currentView: 'Month',
                 };
@@ -1383,7 +1436,7 @@ describe('Schedule Month view', () => {
                     expect(moreIndicatorList.length).toEqual(2);
                     done();
                 };
-                schObj.enableAdaptiveRows = false;
+                schObj.rowAutoHeight = false;
                 schObj.dataBound = dataBound;
                 schObj.dataBind();
             });
@@ -1394,7 +1447,7 @@ describe('Schedule Month view', () => {
                 let schOptions: ScheduleModel = {
                     height: '500px',
                     selectedDate: new Date(2018, 3, 1),
-                    enableAdaptiveRows: true,
+                    rowAutoHeight: true,
                     currentView: 'Month',
                     group: {
                         resources: ['Rooms', 'Owners']
@@ -1489,7 +1542,7 @@ describe('Schedule Month view', () => {
                     expect(moreIndicatorList.length).toEqual(2);
                     done();
                 };
-                schObj.enableAdaptiveRows = false;
+                schObj.rowAutoHeight = false;
                 schObj.dataBound = dataBound;
                 schObj.dataBind();
             });

@@ -16,7 +16,7 @@ $ddl-list-active-bg-color: $primary !default;
 $ddl-list-hover-bg-color: darken($gray-100, 2%) !default;
 $ddl-list-hover-border-color: $white !default;
 $ddl-list-hover-font-color: $gray-900 !default;
-$ddl-nodata-font-color: $light !default;
+$ddl-nodata-font-color: $gray-900 !default;
 $ddl-group-list-padding-left: 30px !default;
 $ddl-header-font-weight: normal !default;
 $ddl-list-header-padding-left: 20px !default;
@@ -36,15 +36,20 @@ $ddl-multi-column-border-color: rgba($black, .12) !default;
   }
 
   .e-bigger .e-content.e-dropdownbase {
-    padding: 8px 0 0;
+    padding: 8px 0;
   }
 
   .e-content.e-dropdownbase {
-    padding: 6px 0 0;
+    padding: 6px 0;
   }
 
   .e-bigger .e-dropdownbase .e-list-item .e-list-icon {
+    font-size: 16px;
     padding: 0 12px 0 0;
+  }
+
+  .e-input-group.e-ddl .e-spinner-pane .e-spinner-inner .e-spin-bootstrap4 .e-path-circle {
+    stroke-width: 1px;
   }
 }
  

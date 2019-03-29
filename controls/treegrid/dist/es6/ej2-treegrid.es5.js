@@ -206,6 +206,12 @@ var keyPressed = 'key-pressed';
 var updateData = 'update-data';
 /** @hidden */
 var doubleTap = 'double-tap';
+/** @hidden */
+var beforeStartEdit = 'edit-form';
+/** @hidden */
+var beforeBatchCancel = 'before-batch-cancel';
+/** @hidden */
+var batchEditFormRendered = 'batcheditform-rendered';
 
 function isRemoteData(parent) {
     if (parent.dataSource instanceof DataManager) {
@@ -425,7 +431,6 @@ var Selection = /** @__PURE__ @class */ (function () {
             var rowChkBox = this.parent.createElement('input', { className: 'e-treeselectall', attrs: { 'type': 'checkbox' } });
             checkWrap = createCheckBox(this.parent.createElement, false, { checked: value, label: ' ' });
             checkWrap.classList.add('e-hierarchycheckbox');
-            checkWrap.querySelector('.e-frame').style.width = '18px';
             checkWrap.insertBefore(rowChkBox.cloneNode(), checkWrap.firstChild);
             if (!isNullOrUndefined(headerElement)) {
                 headerElement.insertBefore(checkWrap, headerElement.firstChild);
@@ -442,7 +447,6 @@ var Selection = /** @__PURE__ @class */ (function () {
         var value = (isNullOrUndefined(data.checkboxState) || data.checkboxState === 'uncheck') ? false : true;
         checkWrap = createCheckBox(this.parent.createElement, false, { checked: value, label: ' ' });
         checkWrap.classList.add('e-hierarchycheckbox');
-        checkWrap.querySelector('.e-frame').style.width = '18px';
         if (data.checkboxState === 'indeterminate') {
             var checkbox = checkWrap.querySelectorAll('.e-frame')[0];
             removeClass([checkbox], ['e-check', 'e-stop', 'e-uncheck']);
@@ -957,6 +961,9 @@ var Render = /** @__PURE__ @class */ (function () {
             }
             var iconRequired = !isNullOrUndefined(data.hasFilteredChildRecords)
                 ? data.hasFilteredChildRecords : data.hasChildRecords;
+            if (iconRequired && !isNullOrUndefined(data.childRecords)) {
+                iconRequired = !(data.childRecords.length === 0);
+            }
             if (iconRequired) {
                 addClass([args.cell], 'e-treerowcell');
                 var expandIcon = createElement('span', {
@@ -1194,7 +1201,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
      */
     DataManipulation.prototype.convertToFlatData = function (data) {
         var _this = this;
-        this.parent.flatData = [];
+        this.parent.flatData = (Object.keys(data).length === 0 ? this.parent.dataSource : []);
         if ((isRemoteData(this.parent) && !isOffline(this.parent)) && data instanceof DataManager) {
             var dm = this.parent.dataSource;
             if (this.parent.parentIdMapping) {
@@ -1230,7 +1237,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
             this.taskIds = [];
             for (var i = 0; i < Object.keys(data).length; i++) {
                 var tempData = data[i];
-                this.hierarchyData.push(extend({}, tempData, true));
+                this.hierarchyData.push(extend({}, tempData));
                 if (!isNullOrUndefined(tempData[this.parent.idMapping])) {
                     this.taskIds.push(tempData[this.parent.idMapping]);
                 }
@@ -1238,7 +1245,6 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
             if (this.isSelfReference) {
                 var selfData = [];
                 var mappingData = new DataManager(this.hierarchyData).executeLocal(new Query()
-                    .where(this.parent.parentIdMapping, 'notequal', null)
                     .group(this.parent.parentIdMapping));
                 for (var i = 0; i < mappingData.length; i++) {
                     var groupData = mappingData[i];
@@ -1255,7 +1261,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
                 this.hierarchyData = this.selfReferenceUpdate(selfData);
             }
             if (!Object.keys(this.hierarchyData).length) {
-                this.parent.flatData = [];
+                this.parent.flatData = (this.parent.dataSource);
             }
             else {
                 this.createRecords(this.hierarchyData);
@@ -2112,6 +2118,10 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         if (this.isDestroyed) {
             return modules;
         }
+        modules.push({
+            member: 'filter',
+            args: [this, this.filterSettings]
+        });
         if (!isNullOrUndefined(this.toolbar)) {
             modules.push({
                 member: 'toolbar',
@@ -2152,12 +2162,6 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             modules.push({
                 member: 'resize',
                 args: [this]
-            });
-        }
-        if (this.allowFiltering || (this.toolbar && this.toolbar.indexOf('Search') !== -1)) {
-            modules.push({
-                member: 'filter',
-                args: [this, this.filterSettings]
             });
         }
         if (this.allowExcelExport) {
@@ -2271,6 +2275,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     TreeGrid.prototype.bindGridProperties = function () {
         this.grid.dataSource = isRemoteData(this) ? this.dataSource : this.flatData;
         this.grid.enableRtl = this.enableRtl;
+        this.grid.allowKeyboard = this.allowKeyboard;
         this.grid.columns = this.getGridColumns(this.columns);
         this.grid.allowExcelExport = this.allowExcelExport;
         this.grid.allowPdfExport = this.allowPdfExport;
@@ -2452,6 +2457,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         };
         this.grid.actionBegin = function (args) {
             var requestType = getObject('requestType', args);
+            var target = getObject('target', args);
             if (requestType === 'reorder') {
                 _this.notify('getColumnIndex', {});
             }
@@ -2459,6 +2465,10 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                 && (_this.grid.filterSettings.columns.length === 0 || _this.grid.searchSettings.key.length === 0)) {
                 _this.notify('clearFilters', { flatData: _this.grid.dataSource });
                 _this.grid.dataSource = _this.dataResults.result;
+            }
+            if (!isNullOrUndefined(target) && requestType === 'sorting' && target.parentElement.classList.contains('e-hierarchycheckbox')) {
+                setValue('cancel', true, args);
+                return;
             }
             _this.trigger(actionBegin, args);
             _this.notify(beginEdit, args);
@@ -5231,7 +5241,20 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         // this.parent.on(events.beforeBatchAdd, this.beforeBatchAdd, this);
         // this.parent.on(events.beforeBatchSave, this.beforeBatchSave, this);
         // this.parent.on(events.batchSave, this.batchSave, this);
+        this.parent.grid.on(beforeStartEdit, this.beforeStartEdit, this);
+        this.parent.grid.on(beforeBatchCancel, this.beforeBatchCancel, this);
+        //this.parent.grid.on(events.batchEditFormRendered, this.batchEditFormRendered, this);
     };
+    Edit$$1.prototype.beforeStartEdit = function (args) {
+        this.parent.trigger(actionBegin, args);
+    };
+    Edit$$1.prototype.beforeBatchCancel = function (args) {
+        args.type = 'cancel';
+        this.parent.trigger(actionComplete, args);
+    };
+    /*private batchEditFormRendered(args: Object):void {
+      this.parent.trigger(events.actionComplete, args);
+    }*/
     /**
      * @hidden
      */
@@ -5249,6 +5272,9 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         this.parent.off(cellEdit, this.cellEdit);
         this.parent.grid.off(doubleTap, this.recordDoubleClick);
         this.parent.off('savePreviousRowPosition', this.savePreviousRowPosition);
+        this.parent.grid.off(beforeStartEdit, this.beforeStartEdit);
+        this.parent.grid.off(beforeBatchCancel, this.beforeBatchCancel);
+        //this.parent.grid.off(events.batchEditFormRendered, this.batchEditFormRendered);
     };
     /**
      * To destroy the editModule
@@ -5285,6 +5311,9 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
     Edit$$1.prototype.keyPressed = function (args) {
         if (this.isOnBatch) {
             this.keyPress = args.action;
+        }
+        if (args.action === 'f2') {
+            this.recordDoubleClick(args);
         }
     };
     Edit$$1.prototype.deleteUniqueID = function (value) {
@@ -5352,7 +5381,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         // }
     };
     Edit$$1.prototype.cellSave = function (args) {
-        if (this.parent.editSettings.mode === 'Cell') {
+        if (this.parent.editSettings.mode === 'Cell' && this.parent.element.querySelector('form')) {
             args.cancel = true;
             setValue('isEdit', false, this.parent.grid);
             args.rowData[args.columnName] = args.value;
@@ -5370,25 +5399,35 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             else {
                 rowIndex_1 = row.rowIndex;
             }
+            var arg = {};
+            extend(arg, args);
+            arg.cancel = false;
+            arg.type = 'save';
             row = this.parent.grid.getRows()[rowIndex_1];
-            this.parent.grid.editModule.updateRow(rowIndex_1, args.rowData);
-            if (this.parent.grid.aggregateModule) {
-                this.parent.grid.aggregateModule.refresh(args.rowData);
+            this.parent.trigger(actionBegin, arg);
+            if (!arg.cancel) {
+                this.parent.grid.editModule.updateRow(rowIndex_1, args.rowData);
+                if (this.parent.grid.aggregateModule) {
+                    this.parent.grid.aggregateModule.refresh(args.rowData);
+                }
+                this.parent.grid.editModule.formObj.destroy();
+                if (this.keyPress !== 'tab' && this.keyPress !== 'shiftTab') {
+                    this.updateGridEditMode('Normal');
+                    this.isOnBatch = false;
+                }
+                this.enableToolbarItems('save');
+                removeClass([row], ['e-editedrow', 'e-batchrow']);
+                removeClass(row.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
+                editAction({ value: args.rowData, action: 'edit' }, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, args.columnName);
+                var saveArgs = {
+                    type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
+                    previousData: args.previousValue, row: row, target: args.cell
+                };
+                this.parent.trigger(actionComplete, saveArgs);
             }
-            this.parent.grid.editModule.formObj.destroy();
-            if (this.keyPress !== 'tab' && this.keyPress !== 'shiftTab') {
-                this.updateGridEditMode('Normal');
-                this.isOnBatch = false;
+            else {
+                this.parent.grid.isEdit = true;
             }
-            this.enableToolbarItems('save');
-            removeClass([row], ['e-editedrow', 'e-batchrow']);
-            removeClass(row.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
-            editAction({ value: args.rowData, action: 'edit' }, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, args.columnName);
-            var saveArgs = {
-                type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
-                previousData: args.previousValue, row: row, target: args.cell
-            };
-            this.parent.trigger(actionComplete, saveArgs);
         }
     };
     Edit$$1.prototype.crudAction = function (details, columnName) {
@@ -5636,5 +5675,5 @@ var CommandColumn$1 = /** @__PURE__ @class */ (function () {
  * Export TreeGrid component
  */
 
-export { TreeGrid, load, rowDataBound, dataBound, queryCellInfo, beforeDataBound, actionBegin, actionComplete, rowSelecting, rowSelected, checkboxChange, rowDeselected, toolbarClick, beforeExcelExport, beforePdfExport, resizeStop, expanded, expanding, collapsed, collapsing, remoteExpand, localPagedExpandCollapse, pagingActions, printGridInit, contextMenuOpen, contextMenuClick, savePreviousRowPosition, crudAction, beginEdit, beginAdd, recordDoubleClick, cellSave, cellSaved, cellEdit, batchDelete, batchCancel, batchAdd, beforeBatchAdd, beforeBatchSave, batchSave, keyPressed, updateData, doubleTap, DataManipulation, Reorder$1 as Reorder, Resize$1 as Resize, Column, EditSettings, FilterSettings, PageSettings, SearchSettings, SelectionSettings, AggregateColumn, AggregateRow, Render, isRemoteData, findParentRecords, getExpandStatus, findChildrenRecords, isOffline, extendArray, getPlainData, getParentData, ToolbarItem, ContextMenuItems, Filter$1 as Filter, ExcelExport$1 as ExcelExport, PdfExport$1 as PdfExport, Page$1 as Page, Toolbar$1 as Toolbar, Aggregate$1 as Aggregate, Sort$1 as Sort, ColumnMenu$1 as ColumnMenu, ContextMenu$1 as ContextMenu, Edit$1 as Edit, CommandColumn$1 as CommandColumn, Selection };
+export { TreeGrid, load, rowDataBound, dataBound, queryCellInfo, beforeDataBound, actionBegin, actionComplete, rowSelecting, rowSelected, checkboxChange, rowDeselected, toolbarClick, beforeExcelExport, beforePdfExport, resizeStop, expanded, expanding, collapsed, collapsing, remoteExpand, localPagedExpandCollapse, pagingActions, printGridInit, contextMenuOpen, contextMenuClick, savePreviousRowPosition, crudAction, beginEdit, beginAdd, recordDoubleClick, cellSave, cellSaved, cellEdit, batchDelete, batchCancel, batchAdd, beforeBatchAdd, beforeBatchSave, batchSave, keyPressed, updateData, doubleTap, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, DataManipulation, Reorder$1 as Reorder, Resize$1 as Resize, Column, EditSettings, FilterSettings, PageSettings, SearchSettings, SelectionSettings, AggregateColumn, AggregateRow, Render, isRemoteData, findParentRecords, getExpandStatus, findChildrenRecords, isOffline, extendArray, getPlainData, getParentData, ToolbarItem, ContextMenuItems, Filter$1 as Filter, ExcelExport$1 as ExcelExport, PdfExport$1 as PdfExport, Page$1 as Page, Toolbar$1 as Toolbar, Aggregate$1 as Aggregate, Sort$1 as Sort, ColumnMenu$1 as ColumnMenu, ContextMenu$1 as ContextMenu, Edit$1 as Edit, CommandColumn$1 as CommandColumn, Selection };
 //# sourceMappingURL=ej2-treegrid.es5.js.map

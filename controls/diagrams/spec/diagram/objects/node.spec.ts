@@ -1471,4 +1471,108 @@ describe('Diagram Control', () => {
             done();
         });
     });
+    describe('distribute issue', () => {
+        let diagram: Diagram; let ele: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramNodeZindex' });
+            document.body.appendChild(ele);
+            let node = {
+                offsetX: 250,
+                offsetY: 250,
+                width: 100,
+                height: 100,
+                annotations: [{
+                    content: "Left",
+                }]
+            };
+
+            let node2 = {
+                offsetX: 350,
+                offsetY: 250,
+                width: 100,
+                height: 100,
+                annotations: [{
+                    content: "Middle",
+                }]
+            };
+
+            let node3 = {
+                offsetX: 850,
+                offsetY: 250,
+                width: 100,
+                height: 100,
+                annotations: [{
+                    content: "Right",
+                }]
+            };
+            diagram = new Diagram({
+                width: '100%',
+                height: '600px',
+                nodes: [node, node2, node3]
+            });
+            diagram.appendTo('#diagramNodeZindex');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking distribute with righttoleft', (done: Function) => {
+            let diagramlayer: HTMLElement = document.getElementById(diagram.element.id + '_diagramLayer');
+            diagram.select([diagram.nodes[2], diagram.nodes[0], diagram.nodes[1]], true);
+            diagram.distribute("RightToLeft", diagram.selectedItems.nodes);
+            expect(diagram.nodes[1].offsetX === 550 || diagram.nodes[0].offsetX === 250).toBe(true);
+            done();
+        });
+        it('Checking distribution of nodes with righttoleft', (done: Function) => {
+            let diagramlayer: HTMLElement = document.getElementById(diagram.element.id + '_diagramLayer');
+            diagram.nodes[0].offsetY = 100;
+            diagram.nodes[1].offsetY = 250;
+            diagram.nodes[2].offsetY = 350;
+            diagram.select([diagram.nodes[2], diagram.nodes[0], diagram.nodes[1]], true);
+            diagram.distribute("RightToLeft", diagram.selectedItems.nodes);            
+            expect(diagram.nodes[1].offsetY === 250 || diagram.nodes[0].offsetX === 250).toBe(true);
+            done();
+        });
+    });
+    describe('Update shape content issue', () => {
+        let diagram: Diagram; let ele: HTMLElement;
+        let redSvg = '<g><circle cx="0" cy="0" r="50" fill="red"/></g>';
+        let blueSvg = '<g><circle cx="0" cy="0" r="50" fill="blue"/></g>';
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramNodeZindex' });
+            document.body.appendChild(ele);
+            let node: NodeModel = {
+                id: "svg",
+                offsetX: 0,
+                offsetY: 200,
+                width: 100,
+                height: 100,
+                shape: {
+                    type: "Native",
+                    content: blueSvg,
+                },
+            };
+
+            diagram = new Diagram({
+                width: '100%',
+                height: '600px',
+                nodes: [node]
+            });
+            diagram.appendTo('#diagramNodeZindex');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking update shape content issue', (done: Function) => {
+            let diagramlayer: HTMLElement = document.getElementById(diagram.element.id + '_diagramLayer');
+            (diagram.nodes[0].shape as NativeModel).content = redSvg;
+            expect((diagram.nodes[0].shape as NativeModel).content === redSvg).toBe(true);
+            done();
+        });      
+    });
 });

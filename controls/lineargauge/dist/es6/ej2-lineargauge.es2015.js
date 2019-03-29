@@ -1530,10 +1530,11 @@ class AxisRenderer extends Animations {
         let options;
         let rect = axis.lineBounds;
         let path = '';
+        let color = axis.line.color || this.gauge.themeStyle.lineColor;
         if (axis.line.width > 0) {
             path = 'M' + rect.x + ' ' + rect.y + ' L ' + (this.gauge.orientation === 'Vertical' ? rect.x : rect.x + rect.width) +
                 ' ' + (this.gauge.orientation === 'Vertical' ? rect.y + rect.height : rect.y) + 'z';
-            options = new PathOption(this.gauge.element.id + '_AxisLine_' + axisIndex, axis.line.color || this.gauge.themeStyle.lineColor, axis.line.width, axis.line.color || this.gauge.themeStyle.lineColor, 1, axis.line.dashArray, path);
+            options = new PathOption(this.gauge.element.id + '_AxisLine_' + axisIndex, color, axis.line.width, color, 1, axis.line.dashArray, path);
             axisObject.appendChild(this.gauge.renderer.drawPath(options));
         }
     }
@@ -1544,8 +1545,9 @@ class AxisRenderer extends Animations {
         let options;
         let range = axis.visibleRange;
         let line = axis.lineBounds;
-        let tickColor = (tickID === 'MajorTicks') ? ticks.color || this.gauge.themeStyle.majorTickColor :
-            ticks.color || this.gauge.themeStyle.minorTickColor;
+        let majorTickColor = axis.majorTicks.color || this.gauge.themeStyle.majorTickColor;
+        let minorTickColor = axis.minorTicks.color || this.gauge.themeStyle.minorTickColor;
+        let tickColor = (tickID === 'MajorTicks') ? majorTickColor : minorTickColor;
         let interval = ((tickID === 'MajorTicks') ? axis.majorInterval : axis.minorInterval);
         for (let i = range.min; (i <= range.max && interval > 0); i += interval) {
             if ((tickID === 'MajorTicks') || (tickID === 'MinorTicks' && i !== range.min && i !== range.max
@@ -1584,7 +1586,7 @@ class AxisRenderer extends Animations {
             labelSize = axis.visibleLabels[i].size;
             labelColor = axis.labelStyle.useRangeColor ? getRangeColor(axis.visibleLabels[i].value, axis.ranges) :
                 null;
-            labelColor = isNullOrUndefined(labelColor) ? axis.labelStyle.font.color || this.gauge.themeStyle.labelColor : labelColor;
+            labelColor = isNullOrUndefined(labelColor) ? this.gauge.themeStyle.labelColor : labelColor;
             if (this.gauge.orientation === 'Vertical') {
                 pointY = (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) *
                     rect.height) + rect.y;
@@ -1598,6 +1600,7 @@ class AxisRenderer extends Animations {
                 anchor = 'middle';
                 baseline = '';
             }
+            axis.labelStyle.font.fontFamily = this.gauge.themeStyle.labelFontFamily || axis.labelStyle.font.fontFamily;
             options = new TextOption(this.gauge.element.id + '_AxisLabel_' + i, pointX, pointY, anchor, axis.visibleLabels[i].text, null, baseline);
             textElement(options, axis.labelStyle.font, labelColor, labelElement);
         }
@@ -1634,7 +1637,8 @@ class AxisRenderer extends Animations {
         if (getElement(pointerID) && getElement(pointerID).childElementCount > 0) {
             remove(getElement(pointerID));
         }
-        options = new PathOption(pointerID, pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width, pointer.border.color, pointer.opacity, null, null, transform);
+        let pointerColor = pointer.color || this.gauge.themeStyle.pointerColor;
+        options = new PathOption(pointerID, pointerColor, pointer.border.width, pointer.border.color, pointer.opacity, null, null, transform);
         options = calculateShapes(pointer.bounds, pointer.markerType, new Size(pointer.width, pointer.height), pointer.imageUrl, options, this.gauge.orientation, axis, pointer);
         pointerElement = ((pointer.markerType === 'Circle' ? this.gauge.renderer.drawCircle(options)
             : (pointer.markerType === 'Image') ? this.gauge.renderer.drawImage(options) :
@@ -1759,9 +1763,10 @@ class Annotations {
         if (!argsData.cancel) {
             templateFn = getTemplateFunction(argsData.content);
             if (templateFn && templateFn(this.gauge).length) {
-                templateElement = templateFn(this.gauge);
-                while (templateElement.length > 0) {
-                    childElement.appendChild(templateElement[0]);
+                templateElement = Array.prototype.slice.call(templateFn(this.gauge));
+                let length = templateElement.length;
+                for (let i = 0; i < length; i++) {
+                    childElement.appendChild(templateElement[i]);
                 }
             }
             else {
@@ -1890,6 +1895,8 @@ class GaugeTooltip {
             this.axisIndex = current.axisIndex;
             this.currentPointer = current.pointer;
             let customTooltipFormat = this.tooltip.format && this.tooltip.format.match('{value}') !== null;
+            this.tooltip.textStyle.fontFamily = this.gauge.themeStyle.fontFamily || this.tooltip.textStyle.fontFamily;
+            this.tooltip.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity || this.tooltip.textStyle.opacity;
             tooltipContent = customTooltipFormat ? textFormatter(this.tooltip.format, { value: this.currentPointer.currentValue }, this.gauge) :
                 formatValue(this.currentPointer.currentValue, this.gauge).toString();
             if (document.getElementById(this.tooltipId)) {
@@ -1937,6 +1944,7 @@ class GaugeTooltip {
                     border: args.tooltip.border,
                     theme: args.gauge.theme
                 });
+                this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                 this.svgTooltip.appendTo(tooltipEle);
             }
         }
@@ -2077,7 +2085,7 @@ function getThemeStyle(theme) {
             break;
         case 'Bootstrap4':
             style = {
-                backgroundColor: '#F8F9FA',
+                backgroundColor: '#FFFFFF',
                 titleFontColor: '#212529',
                 tooltipFillColor: '#000000',
                 tooltipFontColor: '#FFFFFF',
@@ -2085,20 +2093,27 @@ function getThemeStyle(theme) {
                 lineColor: '#ADB5BD',
                 majorTickColor: '#ADB5BD',
                 minorTickColor: '#CED4DA',
-                pointerColor: '#6C757D'
+                pointerColor: '#6C757D',
+                fontFamily: 'HelveticaNeue-Medium',
+                fontSize: '16px',
+                labelFontFamily: 'HelveticaNeue',
+                tooltipFillOpacity: 1,
+                tooltipTextOpacity: 0.9,
+                containerBackground: '#F8F9FA'
             };
             break;
         default:
             style = {
                 backgroundColor: '#FFFFFF',
                 titleFontColor: '#424242',
-                tooltipFillColor: '#363F4C',
+                tooltipFillColor: '#FFFFF',
                 tooltipFontColor: '#FFFFFF',
                 labelColor: '#686868',
                 lineColor: '#a6a6a6',
                 majorTickColor: '#a6a6a6',
                 minorTickColor: '#a6a6a6',
-                pointerColor: '#a6a6a6'
+                pointerColor: '#a6a6a6',
+                containerBackground: '#e0e0e0'
             };
             break;
     }
@@ -2216,7 +2231,6 @@ let LinearGauge = class LinearGauge extends Component {
         this.appendSecondaryElement();
         this.renderBorder();
         this.renderTitle();
-        this.renderArea();
         this.renderContainer();
     }
     appendSecondaryElement() {
@@ -2267,24 +2281,27 @@ let LinearGauge = class LinearGauge extends Component {
         let height;
         let width;
         let titleBounds;
-        if (this.title) {
-            let size = measureText(this.title, this.titleStyle);
-            let options = new TextOption(this.element.id + '_LinearGaugeTitle', this.availableSize.width / 2, this.margin.top + (size.height / 2), 'middle', this.title);
-            titleBounds = {
-                x: options.x - (size.width / 2),
-                y: options.y,
-                width: size.width,
-                height: size.height
-            };
-            let element = textElement(options, this.titleStyle, this.titleStyle.color || this.themeStyle.titleFontColor, this.svgObject);
-            element.setAttribute('aria-label', this.description || this.title);
-            element.setAttribute('tabindex', this.tabIndex.toString());
-        }
+        let size = measureText(this.title, this.titleStyle);
+        let options = new TextOption(this.element.id + '_LinearGaugeTitle', this.availableSize.width / 2, this.margin.top + (size.height / 2), 'middle', this.title);
+        titleBounds = {
+            x: options.x - (size.width / 2),
+            y: options.y,
+            width: size.width,
+            height: size.height
+        };
         x = this.margin.left;
         y = (isNullOrUndefined(titleBounds)) ? this.margin.top : titleBounds.y;
         height = (this.availableSize.height - y - this.margin.bottom);
         width = (this.availableSize.width - this.margin.left - this.margin.right);
         this.actualRect = { x: x, y: y, width: width, height: height };
+        this.renderArea();
+        if (this.title) {
+            this.titleStyle.fontFamily = this.themeStyle.fontFamily || this.titleStyle.fontFamily;
+            this.titleStyle.size = this.themeStyle.fontSize || this.titleStyle.size;
+            let element = textElement(options, this.titleStyle, this.titleStyle.color || this.themeStyle.titleFontColor, this.svgObject);
+            element.setAttribute('aria-label', this.description || this.title);
+            element.setAttribute('tabindex', this.tabIndex.toString());
+        }
     }
     /*
      * Method to unbind the gauge events
@@ -2366,7 +2383,9 @@ let LinearGauge = class LinearGauge extends Component {
         let path = '';
         let topRadius;
         let bottomRadius;
-        let fill = this.container.backgroundColor;
+        let fill = (this.container.backgroundColor !== 'transparent'
+            || (this.theme !== 'Bootstrap4' && this.theme !== 'Material'))
+            ? this.container.backgroundColor : this.themeStyle.containerBackground;
         let rect;
         let radius = this.container.width;
         bottomRadius = radius + ((radius / 2) / Math.PI);
@@ -2708,7 +2727,7 @@ let LinearGauge = class LinearGauge extends Component {
      * @param annotationIndex
      * @param content
      */
-    setAnnotationValue(annotationIndex, content) {
+    setAnnotationValue(annotationIndex, content, axisValue) {
         let elementExist = getElement(this.element.id + '_Annotation_' + annotationIndex) === null;
         let element = getElement(this.element.id + '_AnnotationsGroup') ||
             createElement('div', {
@@ -2716,10 +2735,9 @@ let LinearGauge = class LinearGauge extends Component {
             });
         let annotation = this.annotations[annotationIndex];
         if (content !== null) {
-            if (getElement(this.element.id + '_Annotation_' + annotationIndex)) {
-                getElement(this.element.id + '_Annotation_' + annotationIndex).remove();
-            }
+            removeElement(this.element.id + '_Annotation_' + annotationIndex);
             annotation.content = content;
+            annotation.axisValue = axisValue ? axisValue : annotation.axisValue;
             this.annotationsModule.createAnnotationTemplate(element, annotationIndex);
             if (!elementExist) {
                 element.appendChild(getElement(this.element.id + '_Annotation_' + annotationIndex));
@@ -2799,6 +2817,9 @@ let LinearGauge = class LinearGauge extends Component {
                     renderer = true;
                     break;
                 case 'container':
+                    refreshBounds = true;
+                    break;
+                case 'axes':
                     refreshBounds = true;
                     break;
             }

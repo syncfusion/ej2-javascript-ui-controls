@@ -39,19 +39,19 @@ describe('Word export module with simple text and character formatting text vali
         expect((editor.wordExportModule as any).getModuleName()).toBe('WordExport')
     });
     it('export simple text validation', () => {
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         let doc= editor.viewer.owner.sfdtExportModule.write();
         expect(()=>{ editor.save('simpleText', 'Docx');}).not.toThrowError();
     });
     it('export simple text validation and save as blob', () => {
         editor.openBlank();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         expect(()=>{ editor.saveAsBlob('Docx');}).not.toThrowError();
     });
 
     it('export text with character formatting validation-1', () => {
         editor.openBlank();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.selectAll();
         editor.editor.toggleBold();
         editor.editor.toggleItalic();
@@ -60,7 +60,7 @@ describe('Word export module with simple text and character formatting text vali
     });
     it('export text with character formatting validation-2', () => {
         editor.openBlank();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.selectAll();
         editor.editor.toggleUnderline();
         editor.editor.toggleStrikethrough();
@@ -69,7 +69,7 @@ describe('Word export module with simple text and character formatting text vali
     });
     it('export text with character formatting validation-3', () => {
         editor.openBlank();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.selectAll();
         editor.editor.toggleHighlightColor();
         editor.selection.characterFormat.fontColor = 'Pink';
@@ -101,11 +101,11 @@ describe('Word export module paragraph formatting text validation', () => {
 
     it('export text with paragraph formatting validation-1', () => {
         editor.openBlank();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onEnter();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onEnter();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onEnter();
         editor.selection.selectAll();
         editor.editor.toggleTextAlignment('Center');
@@ -113,11 +113,11 @@ describe('Word export module paragraph formatting text validation', () => {
     });
     it('export text with paragraph formatting validation-2', () => {
         editor.openBlank();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onEnter();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onEnter();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onEnter();
         editor.selection.selectAll();
         editor.editor.increaseIndent();
@@ -151,11 +151,11 @@ describe('Word export module with list validation', () => {
 
     it('export text with bullet list', () => {
         editor.openBlank();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onEnter();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onEnter();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onEnter();
         editor.selection.selectAll();
         editor.editor.applyBullet('\uf0a7', 'Wingdings');
@@ -163,11 +163,11 @@ describe('Word export module with list validation', () => {
     });
     it('export text with numbering list', () => {
         editor.openBlank();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onEnter();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onEnter();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onEnter();
         editor.selection.selectAll();
         editor.editor.applyNumbering('%1)', 'UpRoman');
@@ -175,7 +175,7 @@ describe('Word export module with list validation', () => {
     });
     it('export text with numbering list', () => {
         editor.openBlank();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onEnter();   
         editor.selection.selectAll();
         editor.editor.applyNumbering('%1)', 'Arabic');
@@ -183,7 +183,7 @@ describe('Word export module with list validation', () => {
     });
     it('export text with numbering list', () => {
         editor.openBlank();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onEnter();   
         editor.selection.selectAll();
         editor.editor.applyNumbering('%1)','LowRoman');
@@ -191,7 +191,7 @@ describe('Word export module with list validation', () => {
     });
     it('export text with numbering list', () => {
         editor.openBlank();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onEnter();   
         editor.selection.selectAll();
         editor.editor.applyNumbering('%1)','UpLetter');
@@ -199,7 +199,7 @@ describe('Word export module with list validation', () => {
     });
     it('export text with numbering list', () => {
         editor.openBlank();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onEnter();   
         editor.selection.selectAll();
         editor.editor.applyNumbering('%1)','LowLetter');
@@ -207,20 +207,20 @@ describe('Word export module with list validation', () => {
     });
     it('export text with follow character space', () => {
         editor.openBlank();
-        editor.editor.insertText('1', false);
-        editor.editor.insertText(' ', false);        
+        editor.editor.insertText('1');
+        editor.editor.insertText(' ');        
         expect(()=>{ editor.save('FollowChar', 'Docx');}).not.toThrowError();
     });
     it('export text with multilevel list', () => {
         editor.openBlank();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.applyNumbering('%1)', 'UpRoman');
         editor.editor.onEnter();
         editor.selection.handleTabKey(false, false);
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onEnter();
         editor.selection.handleTabKey(false, false);
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onEnter();
         expect(()=>{ editor.save('MultiLevelList', 'Docx');}).not.toThrowError();
     });
@@ -253,14 +253,14 @@ describe('Word export module with table validation', () => {
     it('export simple table', () => {
         editor.openBlank();
         editor.editor.insertTable(2, 2);
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         expect(()=>{ editor.save('SimpleTable', 'Docx');}).not.toThrowError();
     });
     it('export nested table', () => {
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.editor.insertTable(2, 2);
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         expect(()=>{ editor.save('NestedList', 'Docx');}).not.toThrowError();
     });
     it('export table with vertical merge cell', () => {
@@ -319,7 +319,7 @@ describe('Word export module with table formatting validation', () => {
         editor.selection.tableFormat.rightMargin = 10;
         editor.selection.tableFormat.topMargin = 10;
         editor.selection.tableFormat.bottomMargin = 10;
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         expect(()=>{ editor.save('TableFormat1', 'Docx');}).not.toThrowError();
     });
     it('table formatting validation with table alignment, background color and left indent', () => {
@@ -439,9 +439,9 @@ describe('Word export module with row formatting validation', () => {
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.selection.handleShiftDownKey();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onEnter();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.cellFormat.verticalAlignment = 'Center';        
         expect(()=>{ editor.save('CellCenterAlignment', 'Docx');}).not.toThrowError();
     });
@@ -449,9 +449,9 @@ describe('Word export module with row formatting validation', () => {
         editor.openBlank();
         editor.editor.insertTable(2, 2);
         editor.selection.handleShiftDownKey();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.editor.onEnter();
-        editor.editor.insertText('Sample', false);
+        editor.editor.insertText('Sample');
         editor.selection.cellFormat.verticalAlignment = 'Bottom';        
         expect(()=>{ editor.save('CellFormat1', 'Docx');}).not.toThrowError();
     });
@@ -497,15 +497,15 @@ describe('Word export module with hyperlink , bookmark and image', () => {
         }, 1000);
     });
     it('export simple hyperlink', () => {
-        editor.editor.insertText('www.google.com', false);
+        editor.editor.insertText('www.google.com');
         editor.editor.onEnter();
         expect(()=>{ editor.save('link', 'Docx');}).not.toThrowError();
     });
 
     // it('export text with character formatting validation-1', () => {
-    //     editor.editor.insertText('Sample', false);
+    //     editor.editor.insertText('Sample');
     //     editor.editor.onEnter();
-    //     editor.editor.insertText('Sample', false);
+    //     editor.editor.insertText('Sample');
     //     editor.selection.selectAll();        
     //     editor.save('simple','Docx');
     // });

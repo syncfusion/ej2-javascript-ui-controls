@@ -94,12 +94,13 @@ export class AxisRenderer extends Animations {
         let options: PathOption;
         let rect: Rect = axis.lineBounds;
         let path: string = '';
+        let color: string =  axis.line.color || this.gauge.themeStyle.lineColor;
         if (axis.line.width > 0) {
             path = 'M' + rect.x + ' ' + rect.y + ' L ' + (this.gauge.orientation === 'Vertical' ? rect.x : rect.x + rect.width) +
                 ' ' + (this.gauge.orientation === 'Vertical' ? rect.y + rect.height : rect.y) + 'z';
             options = new PathOption(
-                this.gauge.element.id + '_AxisLine_' + axisIndex, axis.line.color || this.gauge.themeStyle.lineColor,
-                axis.line.width, axis.line.color || this.gauge.themeStyle.lineColor, 1, axis.line.dashArray, path);
+                this.gauge.element.id + '_AxisLine_' + axisIndex, color,
+                axis.line.width, color, 1, axis.line.dashArray, path);
             axisObject.appendChild(this.gauge.renderer.drawPath(options) as HTMLElement);
         }
     }
@@ -110,8 +111,9 @@ export class AxisRenderer extends Animations {
         let options: PathOption;
         let range: VisibleRange = axis.visibleRange;
         let line: Rect = axis.lineBounds;
-        let tickColor: string = (tickID === 'MajorTicks') ? ticks.color || this.gauge.themeStyle.majorTickColor :
-            ticks.color || this.gauge.themeStyle.minorTickColor;
+        let majorTickColor: string = axis.majorTicks.color || this.gauge.themeStyle.majorTickColor;
+        let minorTickColor: string = axis.minorTicks.color || this.gauge.themeStyle.minorTickColor;
+        let tickColor: string = (tickID === 'MajorTicks') ? majorTickColor : minorTickColor;
         let interval: number = ((tickID === 'MajorTicks') ? axis.majorInterval : axis.minorInterval);
         for (let i: number = range.min; (i <= range.max && interval > 0); i += interval) {
             if ((tickID === 'MajorTicks') || (tickID === 'MinorTicks' && i !== range.min && i !== range.max
@@ -150,7 +152,7 @@ export class AxisRenderer extends Animations {
             labelSize = axis.visibleLabels[i].size;
             labelColor = axis.labelStyle.useRangeColor ? getRangeColor(axis.visibleLabels[i].value, <Range[]>axis.ranges) :
                 null;
-            labelColor = isNullOrUndefined(labelColor) ? axis.labelStyle.font.color || this.gauge.themeStyle.labelColor : labelColor;
+            labelColor = isNullOrUndefined(labelColor) ? this.gauge.themeStyle.labelColor : labelColor;
             if (this.gauge.orientation === 'Vertical') {
                 pointY = (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) *
                     rect.height) + rect.y;
@@ -163,6 +165,7 @@ export class AxisRenderer extends Animations {
                 anchor = 'middle';
                 baseline = '';
             }
+            axis.labelStyle.font.fontFamily = this.gauge.themeStyle.labelFontFamily || axis.labelStyle.font.fontFamily;
             options = new TextOption(
                 this.gauge.element.id + '_AxisLabel_' + i, pointX, pointY, anchor, axis.visibleLabels[i].text, null, baseline);
             textElement(options, axis.labelStyle.font, labelColor, labelElement);
@@ -204,8 +207,9 @@ export class AxisRenderer extends Animations {
         if (getElement(pointerID) && getElement(pointerID).childElementCount > 0) {
             remove(getElement(pointerID));
         }
+        let pointerColor: string = pointer.color || this.gauge.themeStyle.pointerColor;
         options = new PathOption(
-            pointerID, pointer.color || this.gauge.themeStyle.pointerColor,
+            pointerID, pointerColor,
             pointer.border.width, pointer.border.color, pointer.opacity, null, null, transform);
         options = calculateShapes(
             pointer.bounds, pointer.markerType, new Size(pointer.width, pointer.height),

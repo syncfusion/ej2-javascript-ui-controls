@@ -112,9 +112,22 @@
 
       & .e-upload-actions {
 
-        .e-file-upload-btn,
+        .e-file-upload-btn {
+          @if ($skin-name == 'bootstrap4') {
+            margin: $footer-upload-buttons-margin;
+          }
+          @else if ($skin-name != 'bootstrap4') {
+            margin: $footer-buttons-margin;
+          }
+        }
+
         .e-file-clear-btn {
-          margin: $footer-buttons-margin;
+          @if ($skin-name == 'bootstrap4') {
+            margin: $footer-clear-buttons-margin;
+          }
+          @else if ($skin-name != 'bootstrap4') {
+            margin: $footer-buttons-margin;
+          }
         }
       }
 
@@ -394,9 +407,22 @@
       position: relative;
       text-align: right;
 
-      .e-file-upload-btn,
+      .e-file-upload-btn {
+        @if ($skin-name == 'bootstrap4') {
+          margin: $action-upload-buttons-margin-smaller;
+        }
+        @else if ($skin-name != 'bootstrap4') {
+          margin: $action-buttons-margin-smaller;
+        }
+      }
+
       .e-file-clear-btn {
-        margin: $action-buttons-margin-smaller;
+        @if ($skin-name == 'bootstrap4') {
+          margin: $action-clear-buttons-margin-smaller;
+        }
+        @else if ($skin-name != 'bootstrap4') {
+          margin: $action-buttons-margin-smaller;
+        }
       }
     }
 

@@ -414,19 +414,19 @@ export type SortOrder = 'None' | 'Ascending' | 'Descending';
 export class ActionSettings extends ChildProperty<ActionSettings> {
     /**
      * Specifies the type of animation.
-     * @default : 'SlideDown';
+     * @default 'SlideDown'
      */
     @Property('SlideDown')
     public effect: Effect;
     /**
      * Specifies the duration to animate.
-     * @default : 400;
+     * @default 400
      */
     @Property(400)
     public duration: number;
     /**
      * Specifies the animation timing function.
-     * @default : 'linear';
+     * @default 'linear'
      */
     @Property('linear')
     public easing: string;

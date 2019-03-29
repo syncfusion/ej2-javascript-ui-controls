@@ -3073,6 +3073,8 @@ class TextElement extends DiagramElement {
         /** @private */
         this.canMeasure = true;
         /** @private */
+        this.isLaneOrientation = false;
+        /** @private */
         this.canConsiderBounds = true;
         /**
          * sets the hyperlink color to blue
@@ -3147,7 +3149,8 @@ class TextElement extends DiagramElement {
     measure(availableSize) {
         let size;
         if (this.isDirt && this.canMeasure) {
-            size = measureText(this, this.style, this.content, this.width || availableSize.width);
+            size = measureText(this, this.style, this.content, this.isLaneOrientation ?
+                availableSize.height : (this.width || availableSize.width));
         }
         else {
             size = this.desiredSize;
@@ -8789,6 +8792,7 @@ class GridPanel extends Container {
             row.cells[i].desiredCellHeight = row.cells[i].minHeight = height;
             if (row.cells[i].children && row.cells[i].children.length) {
                 row.cells[i].children[0].height = height;
+                this.setTextRefresh(row.cells[i].children[0]);
             }
         }
         this.desiredRowHeight[rowId] = height;
@@ -8802,6 +8806,19 @@ class GridPanel extends Container {
             }
         }
     }
+    setTextRefresh(canvas) {
+        if (canvas.children && canvas.children.length) {
+            let children = canvas.children;
+            for (let i = 0; i < children.length; i++) {
+                if (children[i] instanceof TextElement) {
+                    children[i].refreshTextElement();
+                }
+                if (children[i] instanceof Canvas) {
+                    this.setTextRefresh(children[i]);
+                }
+            }
+        }
+    }
     /** @private */
     updateColumnWidth(colId, width, isConsiderChild, padding) {
         this.colDefns[colId].width = width;
@@ -8809,6 +8826,7 @@ class GridPanel extends Container {
             this.width += width - this.rows[this.rows.length - 1].cells[colId].desiredCellWidth;
         }
         for (let i = 0; i < this.rows.length; i++) {
+            this.setTextRefresh(this.rows[i].cells[0]);
             this.rows[i].cells[colId].desiredCellWidth = this.rows[i].cells[colId].minWidth = width;
             if (this.rows[i].cells[colId].children && this.rows[i].cells[colId].children.length) {
                 this.rows[i].cells[colId].children[0].width = width;
@@ -9884,8 +9902,15 @@ function addObjectToGrid(diagram, grid, parent, object, isHeader, isPhase, isLan
             }
             if (child instanceof TextElement) {
                 child.canConsiderBounds = false;
+                if (!isHeader && (parent.shape.orientation === 'Vertical' && isPhase) ||
+                    (parent.shape.orientation !== 'Vertical' && isLane)) {
+                    child.isLaneOrientation = true;
+                    child.refreshTextElement();
+                }
             }
         }
+        node.wrapper.measure(new Size(undefined, undefined));
+        node.wrapper.arrange(node.wrapper.desiredSize);
     }
     return node.wrapper;
 }
@@ -13915,18 +13940,27 @@ function offsetPoint(mousePosition, bound, diagram, isMouseBased, x, y) {
     return point;
 }
 /** @private */
-function sort(objects) {
+function sort(objects, option) {
     let i = 0;
     let j = 0;
     let temp;
     for (i = 0; i < objects.length; i++) {
         let b = getBounds(objects[i].wrapper);
-        for (j = i; j < objects.length; j++) {
+        for (j = 0; j < objects.length; j++) {
             let bounds = getBounds(objects[j].wrapper);
-            if (b.center.x > bounds.center.x) {
-                temp = objects[i];
-                objects[i] = objects[j];
-                objects[j] = temp;
+            if (option === 'Top' || option === 'Bottom' || option === 'BottomToTop' || option === 'Middle') {
+                if (b.center.y > bounds.center.y) {
+                    temp = objects[i];
+                    objects[i] = objects[j];
+                    objects[j] = temp;
+                }
+            }
+            else {
+                if (b.center.x > bounds.center.x) {
+                    temp = objects[i];
+                    objects[i] = objects[j];
+                    objects[j] = temp;
+                }
             }
         }
     }
@@ -14699,7 +14733,7 @@ function updateContent(newValues, actualObject, diagram) {
         else if (actualObject.shape.type === 'Native') {
             let nativeElement;
             for (let i = 0; i < diagram.views.length; i++) {
-                nativeElement = getDiagramElement(actualObject.wrapper.children[0].id + '_groupElement', diagram.views[i]);
+                nativeElement = getDiagramElement(actualObject.wrapper.children[0].id + '_native_element', diagram.views[i]);
                 if (newValues.shape.content !== undefined && nativeElement) {
                     nativeElement.removeChild(nativeElement.children[0]);
                     actualObject.wrapper.children[0].content = newValues.shape.content;
@@ -15401,7 +15435,7 @@ function getTextOptions(element, maxWidth) {
     options.fill = '';
     return options;
 }
-function wrapSvgText(text, textValue) {
+function wrapSvgText(text, textValue, laneWidth) {
     let childNodes = [];
     let k = 0;
     let txtValue;
@@ -15435,7 +15469,7 @@ function wrapSvgText(text, textValue) {
             }
         }
         else {
-            childNodes = wordWrapping(text, textValue);
+            childNodes = wordWrapping(text, textValue, laneWidth);
         }
     }
     else {
@@ -15443,7 +15477,7 @@ function wrapSvgText(text, textValue) {
     }
     return childNodes;
 }
-function wordWrapping(text, textValue) {
+function wordWrapping(text, textValue, laneWidth) {
     let childNodes = [];
     let txtValue = '';
     let j = 0;
@@ -15461,7 +15495,7 @@ function wordWrapping(text, textValue) {
             txtValue += (((i !== 0 || words.length === 1) && wrap && txtValue.length > 0) ? ' ' : '') + words[i];
             newText = txtValue + (words[i + 1] || '');
             let width = bBoxText(newText, text);
-            if (Math.floor(width) > text.width - 2 && txtValue.length > 0) {
+            if (Math.floor(width) > (laneWidth || text.width) - 2 && txtValue.length > 0) {
                 childNodes[childNodes.length] = {
                     text: txtValue, x: 0, dy: 0,
                     width: newText === txtValue ? width : (txtValue === existingText) ? existingWidth : bBoxText(txtValue, text)
@@ -15561,7 +15595,7 @@ function measureText(text, style, content, maxWidth, textValue) {
     let childNodes;
     let wrapBounds;
     let options = getTextOptions(text, maxWidth);
-    text.childNodes = childNodes = wrapSvgText(options, textValue);
+    text.childNodes = childNodes = wrapSvgText(options, textValue, text.isLaneOrientation ? maxWidth : undefined);
     text.wrapBounds = wrapBounds = wrapSvgTextAlign(options, childNodes);
     bounds.width = wrapBounds.width;
     if (text.wrapBounds.width >= maxWidth && options.textOverflow !== 'Wrap') {
@@ -26892,7 +26926,7 @@ class CommandHandler {
             let btt = 0;
             let undoSelectorObj = { nodes: [], connectors: [] };
             let redoSelectorObj = { nodes: [], connectors: [] };
-            objects = sort(objects);
+            objects = sort(objects, option);
             for (i = 1; i < objects.length; i++) {
                 right = right + objects[i].wrapper.bounds.topRight.x - objects[i - 1].wrapper.bounds.topRight.x;
                 left = left + objects[i].wrapper.bounds.topLeft.x - objects[i - 1].wrapper.bounds.topLeft.x;
@@ -32381,13 +32415,13 @@ class Diagram extends Component {
                         && text.indexOf('~') === -1 && node.id.indexOf('_umlClass_header') === -1) {
                         text = ' + ' + text;
                     }
-                    if (node.isLane) {
+                    if (node.isLane || node.isPhase) {
                         this.protectPropertyChange(true);
                     }
                     annotation.content = text;
                     this.dataBind();
                     this.updateSelector();
-                    if (node.isLane) {
+                    if (node.isLane || node.isPhase) {
                         this.protectPropertyChange(false);
                     }
                 }
@@ -33944,7 +33978,7 @@ class Diagram extends Component {
                         else {
                             value = this.add(clonedObject, true);
                         }
-                        if (value && canSingleSelect(this)) {
+                        if ((clonedObject || value) && canSingleSelect(this)) {
                             this.select([this.nameTable[clonedObject[id]]]);
                         }
                     }
@@ -36024,6 +36058,17 @@ class BpmnDiagrams {
         taskShapes.style.strokeColor = 'transparent';
         taskShapes.style.strokeWidth = 0;
         taskShapes.children = [taskNode, taskTypeNode];
+        //childnode for service
+        if (task.type === 'Service') {
+            let taskTypeNodeService = new PathElement();
+            taskTypeNodeService.id = node.id + '_1_taskTypeService';
+            taskTypeNodeService.data = taskTypeNodeData;
+            taskTypeNodeService.margin.left = taskTypeNode.margin.left + 9;
+            taskTypeNodeService.margin.top = taskTypeNode.margin.top + 9;
+            taskTypeNodeService.style.fill = 'white';
+            taskTypeNodeService.style.opacity = node.style.opacity;
+            taskShapes.children.push(taskTypeNodeService);
+        }
         // if task as loop
         let loopType = task.loop;
         let taskLoopNode = new PathElement();

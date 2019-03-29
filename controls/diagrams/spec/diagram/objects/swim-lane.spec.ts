@@ -2188,7 +2188,34 @@ describe('Diagram Control', () => {
                 events.mouseUpEvent(diagram.element, 500, 300, false, false);
                 done();
             });
-
+            it('Drag and drop the node from palette to lane and ensure single selection', (done: Function) => {
+                palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                    let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                    let position: PointModel = palette['getMousePosition'](e.sender);
+                    let symbols: IElement = palette.symbolTable['Terminator'];
+                    palette['selectedSymbols'] = symbols;
+                    if (symbols !== undefined) {
+                        clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                        clonedElement.setAttribute('paletteId', palette.element.id);
+                    }
+                    return clonedElement;
+                };
+                let events: MouseEvents = new MouseEvents();
+                let ele = document.getElementById("Terminator_container");
+                let bounds: DOMRect = ele.getBoundingClientRect() as DOMRect;
+                let startPointX = bounds.x + bounds.width / 2 + ele.offsetLeft;
+                let startPointY = bounds.y + bounds.height / 2 + ele.offsetTop;
+                diagram.select([diagram.nodes[diagram.nodes.length-1]]);
+                events.mouseDownEvent(palette.element, 75, 100, false, false);
+                events.mouseMoveEvent(palette.element, 100, 100, false, false);
+                events.mouseMoveEvent(palette.element, 200, 200, false, false);
+                events.mouseMoveEvent(diagram.element, 500, 300, false, false);
+                events.mouseMoveEvent(diagram.element, 500, 305, false, false);
+                events.mouseMoveEvent(diagram.element, 500, 310, false, false);
+                events.mouseUpEvent(diagram.element, 500, 300, false, false);
+                expect(diagram.selectedItems.nodes.length === 1).toBe(true);
+                done();
+            });
             it('Drag and drop the node from palette to diagram and then diagram to lane', (done: Function) => {
                 palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
                     let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
@@ -2930,6 +2957,26 @@ describe('Diagram Control', () => {
                 events.mouseMoveEvent(diagram.element, targetOffsetX + 10 + diagram.element.offsetLeft, targetOffsetY + diagram.element.offsetTop, false, false);
                 events.mouseMoveEvent(diagram.element, targetOffsetX + diagram.element.offsetLeft, targetOffsetY + diagram.element.offsetTop, false, false);
                 events.mouseUpEvent(diagram.element, targetOffsetX + diagram.element.offsetLeft, targetOffsetY + diagram.element.offsetTop, false, false);
+                done();
+            });
+
+            it('annotation alignment while Resize South - lane ', (done: Function) => {
+                debugger;
+                diagram.nameTable["swimlanestackCanvas2_0_header"].annotations[0].content = 'a as asd asdf asdfg g the alws g';
+                diagram.dataBind();
+                let lane = diagram.nameTable["swimlanestackCanvas11"];
+                mouseEvents.mouseDownEvent(diagramCanvas, lane.wrapper.offsetX + diagram.element.offsetLeft, lane.wrapper.offsetY + diagram.element.offsetTop);
+                mouseEvents.mouseUpEvent(diagramCanvas, lane.wrapper.offsetX + diagram.element.offsetLeft, lane.wrapper.offsetY + diagram.element.offsetTop);
+                undoOffsetX = lane.wrapper.offsetX; undoOffsetY = lane.wrapper.offsetY;
+                let x = diagram.selectedItems.wrapper.bounds.x + (diagram.selectedItems.wrapper.bounds.width / 2) + diagram.element.offsetLeft;
+                let y = diagram.selectedItems.wrapper.bounds.y + (diagram.selectedItems.wrapper.bounds.height) + diagram.element.offsetTop;
+                mouseEvents.mouseDownEvent(diagramCanvas, x, y);
+                mouseEvents.mouseMoveEvent(diagramCanvas, x, y + 20);
+                mouseEvents.mouseMoveEvent(diagramCanvas, x, y + 40);
+                mouseEvents.mouseMoveEvent(diagramCanvas, x, y + 70);
+                mouseEvents.mouseUpEvent(diagramCanvas, x, y + 70);
+                redoOffsetX = lane.wrapper.offsetX; redoOffsetY = lane.wrapper.offsetY;
+                expect(diagram.nameTable["swimlanestackCanvas2_0_header"].wrapper.children[1].childNodes.length === 1).toBe(true);
                 done();
             });
             it('delete - phase', (done: Function) => {

@@ -5,10 +5,21 @@
     line-height: $card-bigger-lheight;
     min-height: $card-bigger-mheight;
 
+    @if $card-skin-name == 'bootstrap4' {
+      > .e-card-title {
+        font-size: $card-txt-bigger-title-font;
+      }
+
+      .e-card-content {
+        font-size: $card-content-bigger-font-size;
+        line-height: 24px;
+      }
+    }
+
     > .e-card-header-title {
       line-height: $card-header-bigger-lheight;
       padding: $card-header-bigger-padding;
-      @if $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'highcontrast' {
+      @if $card-skin-name == 'fabric' or $card-skin-name == 'bootstrap' or $card-skin-name == 'highcontrast' {
         min-height: 45px;
       }
 
@@ -55,6 +66,9 @@
 
         .e-card-header-title {
           font-size: $card-header-txt-bigger-title-font;
+          @if $card-skin-name == 'bootstrap4' {
+            font-weight: 500;
+          }
           line-height: $card-header-txt-title-bigger-lheight;
         }
 
@@ -145,19 +159,19 @@
     text-overflow: ellipsis;
     vertical-align: middle;
     width: 100%;
-    @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+    @if $card-skin-name == 'fabric' or $card-skin-name == 'highcontrast' {
       padding: 1px;
     }
 
     &:hover {
-      @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+      @if $card-skin-name == 'fabric' or $card-skin-name == 'highcontrast' {
         border-width: 2px;
         padding: 0;
       }
     }
 
     &:active {
-      @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+      @if $card-skin-name == 'fabric' or $card-skin-name == 'highcontrast' {
         border-width: 2px;
         padding: 0;
       }
@@ -172,7 +186,7 @@
       font-size: $card-header-font;
       line-height: $card-header-lheight;
       padding: $card-header-padding;
-      @if $skin-name == 'fabric' or $skin-name == 'bootstrap' or $skin-name == 'highcontrast' {
+      @if $card-skin-name == 'fabric' or $card-skin-name == 'bootstrap' or $card-skin-name == 'highcontrast' {
         min-height: 34px;
       }
 
@@ -283,7 +297,7 @@
       .e-card-header-image  {
         align-self: center;
         display: flex;
-        @if $skin-name == 'highcontrast' {
+        @if $card-skin-name == 'highcontrast' {
           border: 1px solid;
         }
       }
@@ -310,11 +324,11 @@
 
         .e-card-header-title {
           font-size: $card-header-txt-nrml-title-font;
-          font-weight: 400;
-          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
-            font-weight: 600;
-          }
+          font-weight: 600;
           line-height: $card-header-txt-title-lheight;
+          @if $skin-name == 'bootstrap4' {
+            font-weight: 500;
+          }
         }
 
         .e-card-sub-title {
@@ -466,6 +480,9 @@
       line-height: normal;
       overflow: hidden;
       text-overflow: ellipsis;
+      @if $skin-name = 'bootstrap4' {
+        line-height: 21px;
+      }
     }
  }
 }

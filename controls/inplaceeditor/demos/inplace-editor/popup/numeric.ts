@@ -40,6 +40,8 @@ document.getElementById('renderMode').addEventListener('change', (e: any) => {
 });
 
 document.getElementById('themes').addEventListener('change', (e: any) => {
+    let container: HTMLElement = <HTMLElement>document.querySelector('.sample-container');
+    container.style.background = ((e.target.value.indexOf('dark') > 0 || e.target.value.indexOf('contrast') > 0) ? 'black' : 'initial');
     document.getElementsByTagName('link')[0].href = '../theme-files/' + e.target.value + '.css';
 });
 

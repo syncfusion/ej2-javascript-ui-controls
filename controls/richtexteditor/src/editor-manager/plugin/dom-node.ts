@@ -1,6 +1,7 @@
 import * as CONSTANT from './../base/constant';
 import { append, detach, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { NodeSelection } from './../../selection/index';
+import { selfClosingTags } from '../../common/config';
 
 export const markerClassName: { [key: string]: string } = {
     startSelection: 'e-editor-select-start',
@@ -324,7 +325,9 @@ export class DOMNode {
             if (start.nodeType === 3) {
                 this.replaceWith(start, this.marker(markerClassName.startSelection, this.encode(start.textContent)));
             } else {
-                start = start.tagName === 'BR' ? start.parentNode as Element : start;
+                for (let i: number = 0; i < selfClosingTags.length; i++) {
+                    start = start.tagName === selfClosingTags[i] ? start.parentNode as Element : start;
+                }
                 let marker: string = this.marker(markerClassName.startSelection, '');
                 append([this.parseHTMLFragment(marker)], start);
             }

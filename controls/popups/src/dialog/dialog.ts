@@ -1093,13 +1093,18 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 case 'cssClass':
                     this.setCSSClass(oldProp.cssClass); break;
                 case 'buttons':
-                    if (!isNullOrUndefined(this.buttons[0].buttonModel)) {
-                        if (!isNullOrUndefined(this.ftrTemplateContent)) {
-                            detach(this.ftrTemplateContent); this.ftrTemplateContent = null;
+                    let buttonCount : number = this.buttons.length;
+                    if (!isNullOrUndefined(this.ftrTemplateContent)) {
+                        detach(this.ftrTemplateContent);
+                        this.ftrTemplateContent = null;
+                    }
+                    for (let i : number = 0; i < buttonCount; i++) {
+                        if (!isNullOrUndefined(this.buttons[i].buttonModel)) {
+                            this.footerTemplate = '';
+                            this.setButton();
                         }
-                        this.footerTemplate = '';
-                        this.setButton();
-                    } break;
+                    }
+                    break;
                 case 'allowDragging':
                     if (this.allowDragging && (!isNullOrUndefined(this.headerContent))) {
                         this.setAllowDragging();
@@ -1399,7 +1404,7 @@ export namespace DialogUtility {
      * ```
      */
      /* istanbul ignore next */
-    export function alert(args?: AlertDialogArgs | string): DialogModel {
+    export function alert(args?: AlertDialogArgs | string): Dialog {
         let dialogComponent: Dialog;
         let dialogElement: HTMLElement = createElement('div', { 'className': DLG_UTIL_ALERT });
         document.body.appendChild(dialogElement);
@@ -1419,6 +1424,9 @@ export namespace DialogUtility {
             alertDialogObj = createDialog(alertOptions(args), dialogElement);
         }
         alertDialogObj.close = () => {
+            if (args && (args as AlertDialogArgs).close) {
+                (args as AlertDialogArgs).close.apply(alertDialogObj);
+            }
             alertDialogObj.destroy();
             if (alertDialogObj.element.classList.contains('e-dlg-modal')) {
                 alertDialogObj.element.parentElement.remove();
@@ -1438,7 +1446,7 @@ export namespace DialogUtility {
      * ```
      */
      /* istanbul ignore next */
-    export function confirm(args?: ConfirmDialogArgs | string): DialogModel {
+    export function confirm(args?: ConfirmDialogArgs | string): Dialog {
         let dialogComponent: Dialog;
         let dialogElement: HTMLElement = createElement('div', { 'className': DLG_UTIL_CONFIRM });
         document.body.appendChild(dialogElement);
@@ -1464,6 +1472,9 @@ export namespace DialogUtility {
             confirmDialogObj = createDialog(confirmOptions(args), dialogElement);
         }
         confirmDialogObj.close = () => {
+            if (args && (args as ConfirmDialogArgs).close) {
+                (args as ConfirmDialogArgs).close.apply(confirmDialogObj);
+            }
             confirmDialogObj.destroy();
             if (confirmDialogObj.element.classList.contains('e-dlg-modal')) {
                 confirmDialogObj.element.parentElement.remove();
@@ -1507,6 +1518,9 @@ export namespace DialogUtility {
         options.position = !isNullOrUndefined(option.position) ? option.position : { X: 'center', Y: 'top' };
         options.animationSettings = !isNullOrUndefined(option.animationSettings) ? option.animationSettings :
                                     { effect: 'Fade', duration: 400, delay: 0 };
+        options.cssClass = !isNullOrUndefined(option.cssClass) ? option.cssClass : '';
+        options.zIndex = !isNullOrUndefined(option.zIndex) ? option.zIndex : 1000;
+        options.open = !isNullOrUndefined(option.open) ? option.open : null;
         return options;
     }
 
@@ -1588,6 +1602,10 @@ export interface AlertDialogArgs {
     position?: PositionDataModel;
     okButton?: ButtonArgs;
     animationSettings ?: AnimationSettingsModel;
+    cssClass?: string;
+    zIndex?: number;
+    open?: EmitType<Object>;
+    close?: EmitType<Object>;
 }
 
 export interface ConfirmDialogArgs {
@@ -1601,4 +1619,8 @@ export interface ConfirmDialogArgs {
     okButton?: ButtonArgs;
     cancelButton?: ButtonArgs;
     animationSettings ?: AnimationSettingsModel;
+    cssClass?: string;
+    zIndex?: number;
+    open?: EmitType<Object>;
+    close?: EmitType<Object>;
 }

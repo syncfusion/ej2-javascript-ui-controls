@@ -7104,6 +7104,7 @@ describe('Toolbar Control', () => {
             innerOfEle.innerHTML = 'ChildElement'
             let innerEle1: HTMLElement = createElement('div');
             let innerEle_1: HTMLElement = createElement('div', { className: 'e-toolbar-item', id: 'e-itemID' });
+            innerEle_1.innerHTML = 'ParentElement';
             innerEle_1.setAttribute('tabindex', '0' );
             let innerEle_: HTMLElement = createElement('div');
             innerEle_.appendChild(innerOfEle);
@@ -11736,11 +11737,15 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
                         type: 'Button', text: 'BoldBtn', align:'Right',
                     },
                     {
+                        type: 'Button', text: 'ItalicBtn', align:'Right',
+                    },
+                    {
                         type: 'Button', text: 'UnderlineBtn', align:'Right',
                     }
                 ],
             }, '#ej2Toolbar');
             toolbar.enableItems(element.querySelectorAll('.e-toolbar-item')[4], false);
+            toolbar.hideItem(element.querySelectorAll('.e-toolbar-item')[5], true);
             expect(element.querySelectorAll('.e-toolbar-item')[4].getAttribute("aria-disabled")).toBe('true');
             keyEventArgs = {
                 preventDefault: function () { },

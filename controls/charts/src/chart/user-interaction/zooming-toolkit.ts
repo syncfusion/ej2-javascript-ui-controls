@@ -4,7 +4,7 @@ import { Chart } from '../chart';
 import { Axis } from '../axis/axis';
 import { AxisModel } from '../axis/axis-model';
 import { ZoomMode } from '../utils/enum';
-import { removeElement, RectOption, PolygonOption, createTooltip, minMax } from '../../common/utils/helper';
+import { removeElement, RectOption, PolygonOption, createTooltip, minMax, getElement } from '../../common/utils/helper';
 import { textElement,  } from '../../common/utils/helper';
 import { PathOption, Rect, measureText, TextOption, Size, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Zoom } from './zooming';
@@ -25,14 +25,21 @@ export class Toolkit {
     private zoomOutElements: Element;
     private zoomElements: Element;
     private panElements: Element;
-
+    private iconRect: Rect;
+    private hoveredID: string;
+    private selectedID: string;
+    private iconRectOverFill: string = 'transparent';
+    private iconRectSelectionFill: string = 'transparent';
 
     /** @private */
     constructor(chart: Chart) {
         this.chart = chart;
         this.elementId = chart.element.id;
-        this.selectionColor = '#ff4081';
-        this.fillColor = '#737373';
+        this.selectionColor = chart.theme === 'Bootstrap4' ? '#FFFFFF' : '#ff4081';
+        this.fillColor = chart.theme === 'Bootstrap4' ? '#495057' : '#737373';
+        this.iconRectOverFill = chart.theme === 'Bootstrap4' ? '#5A6268' : this.iconRectOverFill;
+        this.iconRectSelectionFill = chart.theme === 'Bootstrap4' ? '#5B6269' : this.iconRectSelectionFill;
+        this.iconRect = chart.theme === 'Bootstrap4' ? new Rect(-5, -5, 26, 26) : new Rect(0, 0, 16, 16);
     }
     /**
      * To create the pan button.
@@ -48,7 +55,7 @@ export class Toolkit {
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('Pan'));
         this.panElements = childElement;
         childElement.appendChild(render.drawRectangle(
-            new RectOption(this.elementId + '_Zooming_Pan_1', 'transparent', {}, 1, new Rect(0, 0, 16, 16))
+            new RectOption(this.elementId + '_Zooming_Pan_1', 'transparent', {}, 1, this.iconRect)
         ) as HTMLElement);
         childElement.appendChild(render.drawPath(new PathOption(
             this.elementId + '_Zooming_Pan_2', fillColor, null, null, 1, null,
@@ -65,14 +72,16 @@ export class Toolkit {
     public createZoomButton(childElement: Element, parentElement: Element, chart: Chart): void {
         let render: SvgRenderer = this.chart.renderer;
         let fillColor: string = this.chart.zoomModule.isPanning ? this.fillColor : this.selectionColor;
+        let rectColor: string = this.chart.zoomModule.isPanning ? 'transparent' : this.iconRectSelectionFill;
         let direction: string = 'M0.001,14.629L1.372,16l4.571-4.571v-0.685l0.228-0.274c1.051,0.868,2.423,1.417,3.885,1.417c3.291,0,';
         direction += '5.943-2.651,5.943-5.943S13.395,0,10.103,0S4.16,2.651,4.16,5.943c0,1.508,0.503,2.834,1.417,3.885l-0.274,0.228H4.571';
         direction = direction + 'L0.001,14.629L0.001,14.629z M5.943,5.943c0-2.285,1.828-4.114,4.114-4.114s4.114,1.828,4.114,';
         childElement.id = this.elementId + '_Zooming_Zoom';
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('Zoom'));
         this.zoomElements = childElement;
+        this.selectedID = this.chart.zoomModule.isPanning ? this.chart.element.id + '_Zooming_Pan_1' : this.elementId + '_Zooming_Zoom_1';
         childElement.appendChild(render.drawRectangle(
-            new RectOption(this.elementId + '_Zooming_Zoom_1', 'transparent', {}, 1, new Rect(0, 0, 16, 16))
+            new RectOption(this.elementId + '_Zooming_Zoom_1', rectColor, {}, 1, this.iconRect)
         ) as HTMLElement);
         childElement.appendChild(render.drawPath(new PathOption(
             this.elementId + '_Zooming_Zoom_3', fillColor, null, null, 1, null,
@@ -96,7 +105,7 @@ export class Toolkit {
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('ZoomIn'));
         let polygonDirection: string = '12.749,5.466 10.749,5.466 10.749,3.466 9.749,3.466 9.749,5.466 7.749,5.466 7.749,6.466';
         childElement.appendChild(render.drawRectangle(
-            new RectOption(this.elementId + '_Zooming_ZoomIn_1', 'transparent', {}, 1, new Rect(0, 0, 16, 16))
+            new RectOption(this.elementId + '_Zooming_ZoomIn_1', 'transparent', {}, 1, this.iconRect)
         ) as HTMLElement);
         childElement.appendChild(render.drawPath(new PathOption(
             this.elementId + '_Zooming_ZoomIn_2', fillColor, null, null, 1, null,
@@ -127,7 +136,7 @@ export class Toolkit {
         childElement.id = this.elementId + '_Zooming_ZoomOut';
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('ZoomOut'));
         childElement.appendChild(render.drawRectangle(
-            new RectOption(this.elementId + '_Zooming_ZoomOut_1', 'transparent', {}, 1, new Rect(0, 0, 16, 16))
+            new RectOption(this.elementId + '_Zooming_ZoomOut_1', 'transparent', {}, 1, this.iconRect)
         ) as HTMLElement);
         childElement.appendChild(render.drawPath(new PathOption(
             this.elementId + '_Zooming_ZoomOut_2', fillColor, null, null, 1, null,
@@ -155,7 +164,7 @@ export class Toolkit {
         childElement.setAttribute('aria-label', this.chart.getLocalizedLabel('Reset'));
         if (!isDevice) {
             childElement.appendChild(render.drawRectangle(
-                new RectOption(this.elementId + '_Zooming_Reset_1', 'transparent', {}, 1, new Rect(0, 0, 16, 16))
+                new RectOption(this.elementId + '_Zooming_Reset_1', 'transparent', {}, 1, this.iconRect)
             ) as HTMLElement);
             childElement.appendChild(render.drawPath(new PathOption(
                 this.elementId + '_Zooming_Reset_2', fillColor, null, null, 1, null,
@@ -196,12 +205,40 @@ export class Toolkit {
     private showTooltip(event: MouseEvent): void {
         let text: string = (<HTMLElement>event.currentTarget).id.split('_Zooming_')[1];
         let left: number = (event.pageX - (measureText(text, { size: '10px' }).width + 5));
+        let rect: Element = getElement((<HTMLElement>event.currentTarget).id + '_1');
+        let icon2: Element = getElement((<HTMLElement>event.currentTarget).id + '_2');
+        let icon3: Element = getElement((<HTMLElement>event.currentTarget).id + '_3');
+        if (rect) {
+            this.hoveredID = rect.id;
+            rect.setAttribute('fill', this.iconRectOverFill);
+        }
+        if (icon2) {
+            icon2.setAttribute('fill', this.selectionColor);
+        }
+        if (icon3) {
+            icon3.setAttribute('fill', this.selectionColor);
+        }
         if (!this.chart.isTouch) {
             createTooltip('EJ2_Chart_ZoomTip', this.chart.getLocalizedLabel(text), (event.pageY + 10), left, '10px');
         }
     }
     /** @private */
+    // tslint:disable
     public removeTooltip(): void {
+        if(getElement(this.hoveredID)) {
+            let rectColor: string = this.chart.zoomModule.isPanning ? (this.hoveredID.indexOf('_Pan_') > -1) ? this.iconRectSelectionFill : 'transparent' : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.iconRectSelectionFill : 'transparent';
+            getElement(this.hoveredID).setAttribute('fill', rectColor);
+        }
+        let icon2: Element = this.hoveredID ? getElement(this.hoveredID.replace('_1', '_2')) : null;
+        let icon3: Element = this.hoveredID ? getElement(this.hoveredID.replace('_1', '_3')) : null;
+        if(icon2) {            
+            let iconColor: string = this.chart.zoomModule.isPanning ? (this.hoveredID.indexOf('_Pan_') > -1) ? this.selectionColor : this.fillColor : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.selectionColor : this.fillColor;
+            icon2.setAttribute('fill', iconColor);
+        }
+        if(icon3) {
+            let iconColor: string = this.chart.zoomModule.isPanning ? this.fillColor : (this.hoveredID.indexOf('_Zoom_') > -1) ? this.selectionColor : this.fillColor;
+            icon3.setAttribute('fill', iconColor);
+        }
         removeElement('EJ2_Chart_ZoomTip');
     }
 
@@ -261,6 +298,11 @@ export class Toolkit {
         this.zoomOutElements.setAttribute('opacity', this.elementOpacity);
         this.applySelection(this.zoomElements.childNodes, this.selectionColor);
         this.applySelection(this.panElements.childNodes, '#737373');
+        if(getElement(this.selectedID)) {
+            getElement(this.selectedID).setAttribute('fill', 'transparent');
+        }
+        this.selectedID = this.chart.element.id + '_Zooming_Zoom_1';
+        getElement(this.selectedID).setAttribute('fill', this.iconRectSelectionFill);
         return false;
     }
     /** @private */
@@ -273,6 +315,11 @@ export class Toolkit {
         element = this.zoomOutElements ? this.zoomOutElements.setAttribute('opacity', this.elementOpacity) : null;
         element = this.panElements ? this.applySelection(this.panElements.childNodes, this.selectionColor) : null;
         element = this.zoomElements ? this.applySelection(this.zoomElements.childNodes, '#737373') : null;
+        if(getElement(this.selectedID)) {
+            getElement(this.selectedID).setAttribute('fill', 'transparent');
+        }
+        this.selectedID = this.chart.element.id + '_Zooming_Pan_1';
+        getElement(this.selectedID).setAttribute('fill', this.iconRectSelectionFill);
         return false;
     }
 

@@ -8,10 +8,16 @@
     .e-split-btn {
       border-bottom-right-radius: 0;
       border-top-right-radius: 0;
-      padding-left: 10px;
-      padding-right: 4px;
       text-transform: none;
       z-index: 1;
+      @if $skin-name == 'bootstrap4' {
+        padding-left: $split-btn-icon-btn-padding;
+        padding-right: $split-btn-icon-btn-padding;
+      }
+      @else {
+        padding-left: 10px;
+        padding-right: 4px;
+      }
 
       &:focus {
         outline-offset: $split-btn-focus-outline-offset;
@@ -54,8 +60,14 @@
       border-bottom-left-radius: 0;
       border-top-left-radius: 0;
       margin-left: $split-btn-sec-btn-margin-left;
-      padding-left: 4px;
-      padding-right: 4px;
+      @if $skin-name == 'bootstrap4' {
+        padding-left: $split-btn-icon-btn-padding;
+        padding-right: $split-btn-icon-btn-padding;
+      }
+      @else {
+        padding-left: 4px;
+        padding-right: 4px;
+      }
 
       &:focus,
       &:hover,
@@ -100,8 +112,14 @@
         border-top-left-radius: 0;
         border-top-right-radius: $split-btn-border-radius;
         margin-left: $split-btn-sec-btn-margin-left;
-        padding-left: 4px;
-        padding-right: 10px;
+        @if $skin-name == 'bootstrap4' {
+          padding-left: $split-btn-icon-btn-padding;
+          padding-right: $split-btn-icon-btn-padding;
+        }
+        @else {
+          padding-left: 4px;
+          padding-right: 10px;
+        }
 
         .e-btn-icon {
           margin-right: 0;
@@ -145,8 +163,14 @@
         border-bottom-left-radius: 0;
         border-top-right-radius: $split-btn-border-radius;
         line-height: 1;
-        padding-bottom: 4px;
-        padding-right: 10px;
+        @if $skin-name == 'bootstrap4' {
+          padding-bottom: $split-btn-icon-btn-padding;
+          padding-right: $split-btn-icon-btn-padding;
+        }
+        @else {
+          padding-bottom: 4px;
+          padding-right: 10px;
+        }
 
         .e-icon-top {
           padding-bottom: 4px;
@@ -159,8 +183,14 @@
         line-height: $split-btn-vertical-secondary-icon-line-height;
         margin-left: 0;
         margin-top: $split-btn-sec-btn-margin-left;
-        padding-bottom: 4px;
-        padding-top: 4px;
+        @if $skin-name == 'bootstrap4' {
+          padding-bottom: $split-btn-icon-btn-padding;
+          padding-top: $split-btn-icon-btn-padding;
+        }
+        @else {
+          padding-bottom: 4px;
+          padding-top: 4px;
+        }
 
         .e-icon-bottom {
           padding-top: 0;
@@ -185,8 +215,14 @@
   .e-bigger .e-split-btn-wrapper,
   .e-bigger.e-split-btn-wrapper {
     .e-split-btn {
-      padding-left: 12px;
-      padding-right: 6px;
+      @if $skin-name == 'bootstrap4' {
+        padding-left: $split-btn-icon-btn-padding-bigger;
+        padding-right: $split-btn-icon-btn-padding-bigger;
+      }
+      @else {
+        padding-left: 12px;
+        padding-right: 6px;
+      }
 
       &.e-top-icon-btn {
         padding-bottom: 12px;
@@ -216,14 +252,26 @@
     }
 
     .e-dropdown-btn {
-      padding-left: 4px;
-      padding-right: 4px;
+      @if $skin-name == 'bootstrap4' {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+      @else {
+        padding-left: 4px;
+        padding-right: 4px;
+      }
     }
 
     &.e-rtl {
       .e-split-btn {
-        padding-left: 6px;
-        padding-right: 12px;
+        @if $skin-name == 'bootstrap4' {
+          padding-left: $split-btn-icon-btn-padding-bigger;
+          padding-right: $split-btn-icon-btn-padding-bigger;
+        }
+        @else {
+          padding-left: 6px;
+          padding-right: 12px;
+        }
 
         .e-btn-icon {
           padding-left: 10px;
@@ -247,13 +295,25 @@
 
     &.e-vertical {
       .e-split-btn {
-        padding-bottom: 6px;
-        padding-right: 12px;
+        @if $skin-name == 'bootstrap4' {
+          padding-bottom: $split-btn-icon-btn-padding-bigger;
+          padding-right: $split-btn-icon-btn-padding-bigger;
+        }
+        @else {
+          padding-bottom: 6px;
+          padding-right: 12px;
+        }
       }
 
       .e-dropdown-btn {
-        padding-bottom: 4px;
-        padding-top: 4px;
+        @if $skin-name == 'bootstrap4' {
+          padding-bottom: $split-btn-icon-btn-padding-bigger;
+          padding-top: $split-btn-icon-btn-padding-bigger;
+        }
+        @else {
+          padding-bottom: 4px;
+          padding-top: 4px;
+        }
 
         .e-icon-bottom {
           padding-top: 0;

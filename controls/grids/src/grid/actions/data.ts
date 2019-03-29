@@ -536,7 +536,7 @@ export class Data implements IDataProcessor {
         let colFieldNames: string[] = [];
         let columns: Column[] = this.parent.getColumns();
         for (let col of columns) {
-            if (col.allowSearching) {
+            if (col.allowSearching && !isNullOrUndefined(col.field)) {
                 colFieldNames.push(col.field);
             }
         }

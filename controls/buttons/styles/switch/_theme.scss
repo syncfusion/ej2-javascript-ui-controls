@@ -44,6 +44,9 @@
     &.e-switch-disabled {
       & .e-switch-handle.e-switch-active {
         box-shadow: $switch-handle-shadow-disabled;
+        @if $skin-name == 'bootstrap4' {
+          background-color: $switch-inner-hover-bg-color;
+        }
       }
 
       & .e-switch-handle {
@@ -53,6 +56,7 @@
 
       & .e-switch-inner .e-switch-off {
         background-color: $switch-on-off-disabled-bg-color;
+        border-color: $switch-handle-disabled-bg-color;
         color: $switch-disabled-font-color;
         opacity: $switch-on-off-disabled-bg-color-opacity;
       }
@@ -90,7 +94,12 @@
         }
 
         & .e-switch-handle.e-switch-active {
-          background-color: $switch-handle-disabled-bg-color;
+          @if $skin-name == 'bootstrap4' {
+            background-color: $switch-inner-hover-bg-color;
+          }
+          @else {
+            background-color: $switch-handle-disabled-bg-color;
+          }
         }
     }
     }
@@ -150,7 +159,21 @@
       &.e-focus {
 
         & .e-switch-on {
-          background-color: $switch-on-off-hover-bg-color;
+          @if $skin-name == 'bootstrap4' {
+            background-color: $switch-on-hover-bg-color;
+          }
+          @else {
+            background-color: $switch-on-off-hover-bg-color;
+          }
+        }
+
+        & .e-switch-off {
+          @if $skin-name == 'bootstrap4' {
+            background-color: $switch-off-bg-color;
+          }
+          @else {
+            background-color: $switch-on-off-hover-bg-color;
+          }
         }
 
         & .e-switch-inner.e-switch-active {
@@ -184,7 +207,12 @@
 
       &:hover {
         & .e-switch-inner.e-switch-active {
-          background-color: $switch-inner-hover-bg-color;
+          @if $skin-name == 'bootstrap4' {
+            background-color: $switch-on-hover-bg-color;
+          }
+          @else {
+            background-color: $switch-inner-hover-bg-color;
+          }
           border-color: $switch-inner-hover-border-color;
         }
 
@@ -197,12 +225,22 @@
         }
 
         & .e-switch-handle.e-switch-active {
-          background-color: $switch-handle-hover-bg-color;
+          @if $skin-name == 'bootstrap4' {
+            background-color: $switch-inner-hover-bg-color;
+          }
+          @else {
+            background-color: $switch-handle-hover-bg-color;
+          }
         }
     }
 
       &.e-switch-disabled {
-        & .e-switch-inner .e-switch-on,
+        & .e-switch-inner .e-switch-on {
+          background-color: $switch-on-disabled-bg-color;
+          color: $switch-disabled-font-color;
+          opacity: $switch-on-off-disabled-bg-color-opacity;
+        }
+
         & .e-switch-inner .e-switch-off {
           background-color: $switch-on-off-disabled-bg-color;
           color: $switch-disabled-font-color;
@@ -215,7 +253,12 @@
         }
 
         & .e-switch-handle.e-switch-active {
-          background-color: $switch-handle-on-disabled-bg-color;
+          @if $skin-name == 'bootstrap4' {
+            background-color: $switch-inner-hover-bg-color;
+          }
+          @else {
+            background-color: $switch-handle-on-disabled-bg-color;
+          }
           box-shadow: $switch-handle-shadow-disabled;
         }
 
@@ -241,11 +284,26 @@
             color: $switch-disabled-font-color;
           }
 
+          & .e-switch-handle.e-switch-active {
+            @if $skin-name == 'bootstrap4' {
+              background-color: $switch-inner-hover-bg-color;
+            }
+            @else {
+              background-color: $switch-handle-disabled-bg-color;
+            }
+          }
+
           & .e-switch-handle {
             background-color: $switch-handle-disabled-bg-color;
           }
         }
         }
+    }
+
+    & .e-switch {
+      &:focus {
+        box-shadow: $switch-focus-inner-box-shadow;
+      }
     }
 
     &.e-small {

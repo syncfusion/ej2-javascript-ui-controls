@@ -11,6 +11,9 @@ import { Tab } from '@syncfusion/ej2-navigations';
  */
 export class CellEdit {
     private parent: Gantt;
+    /**
+     * @private
+     */
     public isCellEdit: boolean = false;
     constructor(ganttObj: Gantt) {
         this.parent = ganttObj;
@@ -144,6 +147,8 @@ export class CellEdit {
         } else if (ganttProb.endDate || !isNullOrUndefined(ganttProb.duration)) {
             this.parent.setRecordValue('startDate', new Date(currentValue.getTime()), ganttProb, true);
             this.parent.dateValidationModule.calculateEndDate(ganttData);
+        } else if (isNullOrUndefined(ganttProb.endDate) && isNullOrUndefined(ganttProb.duration)) {
+            this.parent.setRecordValue('startDate', new Date(currentValue.getTime()), ganttProb, true);
         }
         this.parent.setRecordValue('isMilestone', ganttProb.duration === 0 ? true : false, ganttProb, true);
         this.parent.dataOperation.updateWidthLeft(args.data);

@@ -584,7 +584,7 @@ export class DragAndDrop extends ActionBase {
         let trCollection: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-content-wrap .e-content-table tr:not(.e-hidden)');
         let translateY: number = util.getTranslateY(dragArea.querySelector('table'));
         translateY = (isNullOrUndefined(translateY)) ? 0 : translateY;
-        let rowHeight: number = (this.parent.enableAdaptiveRows) ?
+        let rowHeight: number = (this.parent.rowAutoHeight) ?
             ~~(dragArea.querySelector('table').offsetHeight / trCollection.length) : this.actionObj.cellHeight;
         let rowIndex: number = Math.floor(Math.floor((this.actionObj.Y + (dragArea.scrollTop - translateY)) -
             dragArea.getBoundingClientRect().top) / rowHeight);
@@ -601,7 +601,7 @@ export class DragAndDrop extends ActionBase {
         this.actionObj.groupIndex = (td && !isNaN(parseInt(td.getAttribute('data-group-index'), 10)))
             ? parseInt(td.getAttribute('data-group-index'), 10) : this.actionObj.groupIndex;
         let top: number = (<HTMLElement>trCollection.item(rowIndex)).offsetTop;
-        if (this.parent.enableAdaptiveRows) {
+        if (this.parent.rowAutoHeight) {
             let cursorElement: HTMLElement = this.getCursorElement(e);
             if (cursorElement) {
                 top = cursorElement.classList.contains(cls.WORK_CELLS_CLASS) ? cursorElement.offsetTop :

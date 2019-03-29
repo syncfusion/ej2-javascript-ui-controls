@@ -2258,13 +2258,16 @@ let Dialog = class Dialog extends Component {
                     this.setCSSClass(oldProp.cssClass);
                     break;
                 case 'buttons':
-                    if (!isNullOrUndefined(this.buttons[0].buttonModel)) {
-                        if (!isNullOrUndefined(this.ftrTemplateContent)) {
-                            detach(this.ftrTemplateContent);
-                            this.ftrTemplateContent = null;
+                    let buttonCount = this.buttons.length;
+                    if (!isNullOrUndefined(this.ftrTemplateContent)) {
+                        detach(this.ftrTemplateContent);
+                        this.ftrTemplateContent = null;
+                    }
+                    for (let i = 0; i < buttonCount; i++) {
+                        if (!isNullOrUndefined(this.buttons[i].buttonModel)) {
+                            this.footerTemplate = '';
+                            this.setButton();
                         }
-                        this.footerTemplate = '';
-                        this.setButton();
                     }
                     break;
                 case 'allowDragging':
@@ -2686,6 +2689,9 @@ var DialogUtility;
             alertDialogObj = createDialog(alertOptions(args), dialogElement);
         }
         alertDialogObj.close = () => {
+            if (args && args.close) {
+                args.close.apply(alertDialogObj);
+            }
             alertDialogObj.destroy();
             if (alertDialogObj.element.classList.contains('e-dlg-modal')) {
                 alertDialogObj.element.parentElement.remove();
@@ -2730,6 +2736,9 @@ var DialogUtility;
             confirmDialogObj = createDialog(confirmOptions(args), dialogElement);
         }
         confirmDialogObj.close = () => {
+            if (args && args.close) {
+                args.close.apply(confirmDialogObj);
+            }
             confirmDialogObj.destroy();
             if (confirmDialogObj.element.classList.contains('e-dlg-modal')) {
                 confirmDialogObj.element.parentElement.remove();
@@ -2771,6 +2780,9 @@ var DialogUtility;
         options.position = !isNullOrUndefined(option.position) ? option.position : { X: 'center', Y: 'top' };
         options.animationSettings = !isNullOrUndefined(option.animationSettings) ? option.animationSettings :
             { effect: 'Fade', duration: 400, delay: 0 };
+        options.cssClass = !isNullOrUndefined(option.cssClass) ? option.cssClass : '';
+        options.zIndex = !isNullOrUndefined(option.zIndex) ? option.zIndex : 1000;
+        options.open = !isNullOrUndefined(option.open) ? option.open : null;
         return options;
     }
     function setAlertButtonModel(options, option) {
@@ -2866,6 +2878,7 @@ const TIP_RIGHT = 'e-tip-right';
 const POPUP_ROOT$1 = 'e-popup';
 const POPUP_OPEN = 'e-popup-open';
 const POPUP_CLOSE = 'e-popup-close';
+const POPUP_LIB = 'e-lib';
 class Animation$1 extends ChildProperty {
 }
 __decorate$2([
@@ -2928,6 +2941,7 @@ let Tooltip = class Tooltip extends Component {
     }
     renderPopup(target) {
         let elePos = this.mouseTrail ? { top: 0, left: 0 } : this.getTooltipPosition(target);
+        this.tooltipEle.classList.remove(POPUP_LIB);
         this.popupObj = new Popup(this.tooltipEle, {
             height: this.height,
             width: this.width,
@@ -3214,7 +3228,7 @@ let Tooltip = class Tooltip extends Component {
         if (isNullOrUndefined(this.tooltipEle)) {
             this.ctrlId = this.element.getAttribute('id') ? getUniqueID(this.element.getAttribute('id')) : getUniqueID('tooltip');
             this.tooltipEle = this.createElement('div', {
-                className: TOOLTIP_WRAP + ' ' + POPUP_ROOT$1, attrs: {
+                className: TOOLTIP_WRAP + ' ' + POPUP_ROOT$1 + ' ' + POPUP_LIB, attrs: {
                     role: 'tooltip', 'aria-hidden': 'false', 'id': this.ctrlId + '_content'
                 }, styles: 'width:' + formatUnit(this.width) + ';height:' + formatUnit(this.height) + ';position:absolute;'
             });

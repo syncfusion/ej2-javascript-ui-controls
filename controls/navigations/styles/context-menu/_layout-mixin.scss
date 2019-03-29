@@ -10,9 +10,7 @@
   &.e-ul,
   &.e-ul * {
     box-sizing: border-box;
-  }
 
-  &.e-ul {
     &:focus {
       outline: none;
     }

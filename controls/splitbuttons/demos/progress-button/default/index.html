@@ -24,7 +24,7 @@
 </head>
 
 <body>
-    <table>
+    <table id="frame">
         <thead>
             <tr>
                 <td colspan="4" style="text-align: center; font-size: 20px; line-height: 2">
@@ -32,7 +32,7 @@
                 </td>
             </tr>
         </thead>
-        <tbody id="frame">
+        <tbody>
             <tr>
                 <td>
                     <button id="progress"></button>
@@ -81,7 +81,7 @@
 </body>
 <style>
     .e-caret::before {
-        content: "\e826";
+        content: "\e844";
     }
 
     td button {
@@ -95,7 +95,6 @@
 
     #frame {
         box-shadow: 0 0 1px grey;
-        margin-top: 5%;
         padding: 15px;
     }
 

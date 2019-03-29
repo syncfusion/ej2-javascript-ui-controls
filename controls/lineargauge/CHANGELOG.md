@@ -8,6 +8,18 @@
 
 ## [Unreleased]
 
+## 17.1.38 (2019-03-29)
+
+### LinearGauge
+
+#### New Features
+
+- In 'setAnnotationValue' method, an option has been provided to set the position of annotation based on axis value.
+
+#### Bug Fixes
+
+- The dynamically updating support has been provided to the 'Axes' API of linear gauge.
+
 ## 16.4.46 (2019-01-08)
 
 ### LinearGauge

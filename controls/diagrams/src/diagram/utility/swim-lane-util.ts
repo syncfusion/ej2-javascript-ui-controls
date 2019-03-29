@@ -87,8 +87,15 @@ export function addObjectToGrid(
             }
             if (child instanceof TextElement) {
                 child.canConsiderBounds = false;
+                if (!isHeader && ((parent.shape as SwimLaneModel).orientation === 'Vertical' && isPhase) ||
+                    ((parent.shape as SwimLaneModel).orientation !== 'Vertical' && isLane)) {
+                    child.isLaneOrientation = true;
+                    child.refreshTextElement();
+                }
             }
         }
+        node.wrapper.measure(new Size(undefined, undefined));
+        node.wrapper.arrange(node.wrapper.desiredSize);
     }
     return node.wrapper;
 }

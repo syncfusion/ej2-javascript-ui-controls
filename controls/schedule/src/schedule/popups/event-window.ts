@@ -183,9 +183,13 @@ export class EventWindow {
             endObj.value = new Date(startObj.value.getTime() + (util.MS_PER_MINUTE * eventProp.duration));
             endObj.dataBind();
         }
+        if (this.parent.editorTemplate && this.element.querySelector('.e-recurrenceeditor') && !this.recurrenceEditor) {
+            this.recurrenceEditor = this.getInstance('e-recurrenceeditor') as RecurrenceEditor;
+        }
     }
 
     private onBeforeClose(): void {
+        this.resetForm();
         this.parent.eventBase.focusElement();
     }
 
@@ -974,6 +978,9 @@ export class EventWindow {
         this.parent.activeEventData = { event: undefined, element: undefined };
         this.parent.currentAction = null;
         this.dialogObject.hide();
+    }
+
+    private resetForm(): void {
         this.fieldValidator.destroyToolTip();
         this.resetFormFields();
         if (!this.parent.isAdaptive && this.recurrenceEditor) {

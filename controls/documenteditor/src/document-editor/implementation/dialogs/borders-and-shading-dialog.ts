@@ -113,7 +113,7 @@ export class BordersAndShadingDialog {
         if (isRtl) {
             previewContinerPosition = 'right: 342px;';
         } else {
-            previewContinerPosition = 'left: 345px;';
+            previewContinerPosition = 'left: 339px;';
         }
         let previewContiner: HTMLDivElement = <HTMLDivElement>createElement('div', {
             // tslint:disable-next-line:max-line-length
@@ -410,7 +410,7 @@ export class BordersAndShadingDialog {
             shdApplyPosition = 'left: 150px;';
         }
         let shdApply: HTMLDivElement = <HTMLDivElement>createElement('div', {
-            styles: 'position:absolute;top:41px;' + shdApplyPosition + 'width:180px;'
+            styles: 'position:absolute;top:44px;' + shdApplyPosition + 'width:180px;'
         });
         let div: HTMLDivElement = <HTMLDivElement>createElement('div', {
             styles: 'width:100px;padding-bottom: 10px;', innerHTML: localeValue.getConstant('Apply To'),
@@ -533,12 +533,12 @@ export class BordersAndShadingDialog {
         this.ulelementShading.appendTo(ulelementShading);
         this.borderColorPicker = new ColorPicker({
             value: '#000000', change: this.applyPreviewTableBorderColor,
-            enableRtl: isRtl, locale: this.owner.owner.locale
+            enableRtl: isRtl, locale: this.owner.owner.locale, cssClass: 'e-de-dlg-clr-picker'
         });
         this.borderColorPicker.appendTo(borderColorPickerElement);
         this.shadingColorPicker = new ColorPicker({
             value: '#000000', change: this.applyPreviewTableBackgroundColor,
-            enableRtl: isRtl, locale: this.owner.owner.locale
+            enableRtl: isRtl, locale: this.owner.owner.locale, cssClass: 'e-de-dlg-clr-picker'
         });
         this.shadingColorPicker.appendTo(shadingColorPickerElement);
         if (isRtl) {

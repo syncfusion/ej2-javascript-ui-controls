@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 17.1.38 (2019-03-29)
+
+### In-place Editor
+
+#### Bug Fixes
+
+- Toolbar fails to render properly in `RichTextEditor` In-Place Editor when `afterOpen` is set, that issue has been fixed.
+- Not able to hide the close icon issue has been fixed.
+
 ## 16.4.53 (2019-02-13)
 
 ### In-place Editor

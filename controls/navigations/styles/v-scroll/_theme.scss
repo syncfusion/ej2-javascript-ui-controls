@@ -55,7 +55,7 @@
           border-color: $vscroll-hover-border-color;
           color: $vscroll-hover-font;
 
-          @if $skin-name == 'highcontrast' {
+          @if $vscroll-skin == 'highcontrast' {
 
             &:active {
               background: $vscroll-press-bg;
@@ -74,7 +74,7 @@
           border: $vscroll-hover-border;
           color: $vscroll-hover-font;
 
-          @if $skin-name == 'highcontrast' {
+          @if $vscroll-skin == 'highcontrast' {
             border: 1px solid $hover-border;
 
             &:active {
@@ -89,7 +89,7 @@
           border-color: $vscroll-hover-border-color;
           color: $vscroll-hover-font;
 
-          @if $skin-name == 'highcontrast' {
+          @if $vscroll-skin == 'highcontrast' {
             background: inherit;
             border: $vscroll-dash-border;
           }
@@ -101,7 +101,7 @@
           box-shadow: $vscroll-active-box-shadow;
           color: $vscroll-active-font-color;
 
-          @if $skin-name == 'highcontrast' {
+          @if $vscroll-skin == 'highcontrast' {
             .e-icons {
               color: $selection-font;
             }

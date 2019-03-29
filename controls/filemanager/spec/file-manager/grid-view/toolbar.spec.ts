@@ -2,11 +2,12 @@
  * FileManager spec document
  */
 import { FileManager } from '../../../src/file-manager/base/file-manager';
-import {NavigationPane} from '../../../src/file-manager/layout/navigation-pane';
-import {DetailsView} from '../../../src/file-manager/layout/details-view';
+import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane';
+import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement, Browser, EventHandler, isNullOrUndefined, select } from '@syncfusion/ej2-base';
-import { toolbarItems, toolbarItems1, toolbarItems3, data1, data2, data3, data4, data5, data6, data7, data8, data9, data12, data13, UploadData, rename, renameExist, renameExtension, renamed_ext, renamedwithout_ext, getMultipleDetails, pastesuccess, paste1 } from '../data';
+import { toolbarItems, toolbarItems1, toolbarItems3, data1, folderRename, data2, data3, data4, data5, data6, data7, data8, data9, data12, data13, UploadData, rename, renameExist, renameExtension, renamed_ext, renamedwithout_ext, getMultipleDetails, pastesuccess, paste1 } from '../data';
+import { dataSortbySize, dataDelete, getSingleDetails, singleSelectionDetails } from '../data';
 import { extend } from '@syncfusion/ej2-grids';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
@@ -214,6 +215,213 @@ describe('FileManager control Grid view', () => {
                 expect(ntr[1].querySelector('.e-frame').classList.contains('e-check')).toBe(true);
                 expect(ntr[2].getAttribute('aria-selected')).toEqual('true');
                 expect(ntr[2].querySelector('.e-frame').classList.contains('e-check')).toBe(true);
+                done();
+            }, 500);
+        });
+
+        it('mouse click on new  button', (done: Function) => {
+            let items: any = document.getElementsByClassName('e-fe-newfolder');
+            items[0].click();
+            (<HTMLInputElement>document.getElementById('newname')).value = "New Folder";
+            (<HTMLElement>document.getElementById('file_dialog').querySelectorAll('.e-btn')[1]).click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data5)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let nli: any = document.getElementById('file_tree').querySelectorAll('li');
+                let ntr: any = document.getElementById('file_grid').querySelectorAll('.e-rowcell.e-rowcell.e-fe-grid-name');
+                let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+                expect(nli.length).toEqual(6);
+                expect(ntr.length).toEqual(6);
+                expect(nar.length).toEqual(1);
+                expect(ntr[1].classList.contains('e-active')).toBe(false);
+                expect(ntr[2].classList.contains('e-active')).toBe(false);
+                done();
+            }, 500);
+        });
+        it('mouse click on delete button', (done: Function) => {
+            let li: any = document.getElementById('file_grid').querySelectorAll('li');
+            feObj.detailsviewModule.gridObj.selectRows([0]);
+            let items: any = document.getElementsByClassName('e-fe-delete');
+            items[0].click();
+            (<HTMLElement>document.getElementById('file_dialog').querySelectorAll('.e-btn')[1]).click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(dataDelete)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let nli: any = document.getElementById('file_tree').querySelectorAll('li');
+                let ntr: any = document.getElementById('file_grid').querySelectorAll('.e-rowcell.e-rowcell.e-fe-grid-name');
+                let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+                expect(nli.length).toEqual(4);
+                expect(ntr.length).toEqual(4);
+                expect(nar.length).toEqual(1);
+                expect(ntr[1].classList.contains('e-active')).toBe(false);
+                done();
+            }, 500);
+        });
+        it('mouse click on sortby button', (done: Function) => {
+            let items: any = document.getElementById('file_tb_sortby');
+            items.click();
+            let size: any = document.getElementById('file_ddl_size');
+            size.click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(dataSortbySize)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let nli: any = document.getElementById('file_tree').querySelectorAll('li');
+                let ntr: any = document.getElementById('file_grid').querySelectorAll('.e-rowcell.e-rowcell.e-fe-grid-name');
+                let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+                expect(nli.length).toEqual(5);
+                expect(ntr.length).toEqual(5);
+                expect(nar.length).toEqual(1);
+                // expect(ntr[0].textContent).toBe("Food");
+                expect(ntr[2].classList.contains('e-active')).toBe(false);
+                done();
+            }, 500);
+        });
+        // it('mouse click on view button', (done: Function) => {
+        //     let items: any = document.getElementById('file_view');
+        //     items.click();
+        //     let size: any = document.getElementById('file_ddl_details');
+        //     size.click();
+        //     this.request = jasmine.Ajax.requests.mostRecent();
+        //     this.request.respondWith({
+        //         status: 200,
+        //         responseText: JSON.stringify(data1)
+        //     });
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(function () {
+        //         let nli: any = document.getElementById('file_tree').querySelectorAll('li');
+        //         let ntr: any = document.getElementById('file_grid').querySelectorAll('.e-rowcell.e-rowcell.e-fe-grid-name');
+        //         let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+        //         expect(nli.length).toEqual(5);
+        //         expect(ntr.length).toEqual(5);
+        //         expect(nar.length).toEqual(1);
+        //         expect(document.getElementById('file_grid').offsetWidth != 0).toEqual(true);
+        //         // expect(document.getElementById('file_largeicons').offsetWidth == 0).toEqual(true);
+        //         expect(ntr[0].textContent).toBe("Documents");
+        //         expect(ntr[2].classList.contains('e-active')).toBe(false);;
+        //         let items: any = document.getElementById('file_view');
+        //         items.click();
+        //         let size: any = document.getElementById('file_ddl_large');
+        //         size.click();
+        //         this.request = jasmine.Ajax.requests.mostRecent();
+        //         this.request.respondWith({
+        //             status: 200,
+        //             responseText: JSON.stringify(data1)
+        //         });
+        //         setTimeout(function () {
+        //             let nli: any = document.getElementById('file_tree').querySelectorAll('li');
+        //             let ntr: any = document.getElementById('file_grid').querySelectorAll('.e-rowcell.e-rowcell.e-fe-grid-name');
+        //             let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+        //             expect(nli.length).toEqual(5);
+        //             expect(ntr.length).toEqual(5);
+        //             expect(nar.length).toEqual(1);
+        //             expect(document.getElementById('file_grid').offsetWidth == 0).toEqual(true);
+        //             expect(document.getElementById('file_largeicons').offsetWidth != 0).toEqual(true);
+        //         }, 500);
+        //     }, 500);
+        // });
+        // it('mouse click on  info button', (done: Function) => {
+        //     let items: any = document.getElementById('file_tb_details');
+        //     items.click();
+        //     this.request = jasmine.Ajax.requests.mostRecent();
+        //     this.request.respondWith({
+        //         status: 200,
+        //         responseText: JSON.stringify(getSingleDetails)
+        //     });
+        //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        //     setTimeout(function () {
+        //         expect(document.getElementById('file_dialog_title').textContent).toBe('FileContent')
+        //         expect((<any>document.querySelectorAll('.e-fe-value')[0]).textContent).toBe('Folder')
+        //         // expect((<any>document.querySelectorAll('.e-fe-value')[1]).textContent).toBe('0')
+        //         expect((<any>document.querySelectorAll('.e-fe-value')[2]).textContent).toBe('/FileContent')
+        //         expect((<any>document.querySelectorAll('.e-fe-value')[3]).textContent).toBe('October 16, 2018 19:43:17')
+        //         let lgli: any = document.getElementById('file_grid').querySelectorAll('li');
+        //         mouseEventArgs.target = lgli[1];
+        //         feObj.detailsviewModule.gridObj.selectRows([1]);
+        //         let items: any = document.getElementById('file_tb_details');
+        //         items.click();
+        //         this.request = jasmine.Ajax.requests.mostRecent();
+        //         this.request.respondWith({
+        //             status: 200,
+        //             responseText: JSON.stringify(singleSelectionDetails)
+        //         });
+        //         setTimeout(function () {
+        //             expect(document.getElementById('file_dialog_title').textContent).toBe('Documents')
+        //             expect(document.querySelectorAll('.e-fe-value').length).toBe(4)
+        //             expect((<any>document.querySelectorAll('.e-fe-value')[0]).textContent).toBe('Folder')
+        //             // expect((<any>document.querySelectorAll('.e-fe-value')[1]).textContent).toBe('0')
+        //             expect((<any>document.querySelectorAll('.e-fe-value')[2]).textContent).toBe('/Documents')
+        //             expect((<any>document.querySelectorAll('.e-fe-value')[3]).textContent).toBe('October 16, 2018 19:43:17')
+        //             let nli: any = document.getElementById('file_tree').querySelectorAll('li');
+        //             let ntr: any = document.getElementById('file_grid').querySelectorAll('li');
+        //             let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+        //             expect(nli.length).toEqual(5);
+        //             // expect(ntr.length).toEqual(5);
+        //             expect(nar.length).toEqual(1);
+        //             expect(document.getElementById('file_grid').offsetWidth != 0).toEqual(true);
+        //             // expect(document.getElementById('file_grid').offsetWidth == 0).toEqual(true);
+        //         }, 500);
+        //     }, 500);
+        // });
+
+        it('mouse click on rename button', (done: Function) => {
+            feObj.detailsviewModule.gridObj.selectRows([1]);
+            let items: any = document.getElementsByClassName('e-fe-rename');
+            items[0].click();
+            let nli: any = document.getElementById('file_tree').querySelectorAll('li');
+            let ntr: any = document.getElementById('file_grid').querySelectorAll('.e-rowcell.e-rowcell.e-fe-grid-name');
+            let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+            expect(nli.length).toEqual(5);
+            expect(ntr.length).toEqual(5);
+            expect(nar.length).toEqual(1);
+            expect(ntr[1].textContent).toBe("Employees");
+            (<HTMLInputElement>document.getElementById('rename')).value = "My Folder";
+            (<HTMLElement>document.getElementById('file_dialog').querySelectorAll('.e-btn')[1]).click();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(folderRename)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(rename)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let nli: any = document.getElementById('file_tree').querySelectorAll('li');
+                let ntr: any = document.getElementById('file_grid').querySelectorAll('.e-rowcell.e-rowcell.e-fe-grid-name');
+                let nar: any = document.getElementsByClassName('e-addressbar-ul')[0].querySelectorAll('li');
+                expect(nli.length).toEqual(5);
+                expect(ntr.length).toEqual(5);
+                expect(nar.length).toEqual(1);
+                expect(ntr[2].textContent).toBe("My Folder");
+                expect(nli[2].textContent).toBe("My Folder");
+                expect(ntr[1].classList.contains('e-active')).toBe(false);                
                 done();
             }, 500);
         });

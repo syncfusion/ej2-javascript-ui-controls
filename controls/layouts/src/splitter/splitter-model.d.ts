@@ -1,4 +1,4 @@
-import { Component, Property, setStyleAttribute, ChildProperty, compile } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, addClass, Collection, isNullOrUndefined, append } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, selectAll, removeClass, select, Browser, detach, formatUnit } from '@syncfusion/ej2-base';
+import { Component, Property, setStyleAttribute, ChildProperty, compile } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, addClass, Collection, isNullOrUndefined } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, selectAll, removeClass, select, Browser, detach, formatUnit } from '@syncfusion/ej2-base';
 import {Orientation,CreatedEventArgs,ResizeEventArgs,ResizingEventArgs,BeforeExpandEventArgs,ExpandedEventArgs} from "./splitter";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -71,7 +71,7 @@ export interface SplitterModel extends ComponentModel{
     width?: string;
 
     /**
-     * Configures the individual pane behaviors such as content, size, resizable, minimum, and maximum validation.
+     * Configures the individual pane behaviors such as content, size, resizable, minimum, maximum validation, collapsible and collapsed.
      * @default []
      */
     paneSettings?: PanePropertiesModel[];

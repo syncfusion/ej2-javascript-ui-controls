@@ -339,6 +339,8 @@ export const PIVOT_CONTEXT_MENU_CLASS: string = 'e-pivot-context-menu';
 /** @hidden */
 export const MENU_DISABLE: string = 'e-disabled';
 /** @hidden */
+export const MENU_HIDE: string = 'e-menu-hide';
+/** @hidden */
 export const EMPTY_MEMBER_CLASS: string = 'e-member-prompt';
 /** @hidden */
 export const CALC_EDIT: string = 'e-edit';
@@ -439,6 +441,14 @@ export const GRID_HEADER: string = 'e-gridheader';
 /** @hidden */
 export const GRID_EXPORT: string = 'e-export';
 /** @hidden */
+export const PIVOTVIEW_EXPORT: string = 'e-pivotview-export';
+/** @hidden */
+export const PIVOTVIEW_GRID: string = 'e-pivotview-grid';
+/** @hidden */
+export const PIVOTVIEW_EXPAND: string = 'e-pivotview-expand';
+/** @hidden */
+export const PIVOTVIEW_COLLAPSE: string = 'e-pivotview-collapse';
+/** @hidden */
 export const GRID_PDF_EXPORT: string = 'e-pivotview-pdf-export';
 /** @hidden */
 export const GRID_EXCEL_EXPORT: string = 'e-pivotview-excel-export';
@@ -498,3 +508,35 @@ export const GROUP_CHART_VALUE_DROPDOWN_DIV: string = 'e-group-chart-values-drod
 export const GROUP_CHART_VALUE_DROPDOWN: string = 'e-group-chart-values-drodown';
 /** @hidden */
 export const CHART_GROUPING_BAR_CLASS: string = 'e-chart-grouping-bar';
+/** @hidden */
+export const PIVOT_DISABLE_ICON: string = 'e-pivotview-disable-icon';
+/** @hidden */
+export const PIVOT_SELECT_ICON: string = 'e-pivotview-select-icon';
+/** @hidden */
+export const VALUESHEADER: string = 'e-valuesheader';
+/** @hidden */
+export const ICON_ASC: string = 'e-icon-ascending';
+/** @hidden */
+export const ICON_DESC: string = 'e-icon-descending';
+/** @hidden */
+export const CONTEXT_EXPAND_ID: string = '#expand';
+/** @hidden */
+export const CONTEXT_COLLAPSE_ID: string = '#collapse';
+/** @hidden */
+export const CONTEXT_DRILLTHROUGH_ID: string = '#drillthrough';
+/** @hidden */
+export const CONTEXT_SORT_ASC_ID: string = '#sortasc';
+/** @hidden */
+export const CONTEXT_SORT_DESC_ID: string = '#sortdesc';
+/** @hidden */
+export const CONTEXT_CALC_ID: string = '#CalculatedField';
+/** @hidden */
+export const CONTEXT_PDF_ID: string = '#pdf';
+/** @hidden */
+export const CONTEXT_EXCEL_ID: string = '#excel';
+/** @hidden */
+export const CONTEXT_CSV_ID: string = '#csv';
+/** @hidden */
+export const CONTEXT_EXPORT_ID: string = '#exporting';
+/** @hidden */
+export const CONTEXT_AGGREGATE_ID: string = '#aggregate';

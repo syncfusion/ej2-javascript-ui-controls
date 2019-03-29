@@ -858,6 +858,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let style: FontModel = title.textStyle;
         let height: number;
         let width: number = Math.abs((this.margin.left + this.margin.right) - this.availableSize.width);
+        style.fontFamily = this.themeStyle.fontFamily || style.fontFamily;
+        style.size = this.themeStyle.titleFontSize || style.size;
         if (title.text) {
             if (isNullOrUndefined(groupEle)) {
                 groupEle = this.renderer.createGroup({ id: this.element.id + '_Title_Group' });

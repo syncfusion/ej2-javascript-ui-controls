@@ -48,8 +48,20 @@ describe('DropDownList Control', () => {
             expect(document.activeElement.tagName === 'INPUT').toEqual(true);
         });
         it('Clear icon availability testing', () => {
-            expect(editorObj.componentObj.showClearButton === true).toEqual(true);
-            expect(selectAll('.e-clear-icon', ele).length === 1).toEqual(true);
+            expect(editorObj.componentObj.showClearButton).toBe(true);
+            expect(selectAll('.e-clear-icon', ele).length).toBe(1);
+        });
+        it('Clear icon availability testing for false', () => {
+            editorObj.componentObj.showClearButton = false;
+            editorObj.componentObj.dataBind();
+            expect(editorObj.componentObj.showClearButton).toBe(false);
+            expect(selectAll('.e-clear-icon', ele).length).toBe(0);
+        });
+        it('Clear icon availability testing for true', () => {
+            editorObj.componentObj.showClearButton = true;
+            editorObj.componentObj.dataBind();
+            expect(editorObj.componentObj.showClearButton).toBe(true);
+            expect(selectAll('.e-clear-icon', ele).length).toBe(1);
         });
         it('save method with value property testing', () => {
             editorObj.componentObj.value = 'testing';
@@ -658,6 +670,49 @@ describe('DropDownList Control', () => {
         });
     });
 
+    describe('Model - value child property update testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        let dataSource: string[] = ['Badminton', 'Cricket'];
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Default value with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'DropDownList',
+                mode: 'Inline',
+                value: 'Badminton',
+                model: {
+                    dataSource: dataSource
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual('Badminton');
+            expect(valueEle.innerHTML).toEqual('Badminton');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-dropdownlist', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('Badminton');
+            expect(editorObj.model.value).toEqual('Badminton');
+            expect((<HTMLInputElement>select('.e-dropdownlist', document.body)).value).toEqual('Badminton');
+            (<HTMLInputElement>select('.e-dropdownlist', document.body)).value = '';
+            editorObj.setProperties({ value: null }, true);
+            editorObj.componentObj.value = null;
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-dropdownlist', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect((<HTMLInputElement>select('.e-dropdownlist', document.body)).value).toEqual('');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
@@ -667,14 +722,4 @@ describe('DropDownList Control', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
-
-     it('memory leak', () => {
-        profile.sample();
-        let average: any = inMB(profile.averageChange)
-        //Check average change in memory samples to not be over 10MB
-        expect(average).toBeLessThan(10);
-        let memory: any = inMB(getMemoryProfile())
-        //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-        expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-    })
 });

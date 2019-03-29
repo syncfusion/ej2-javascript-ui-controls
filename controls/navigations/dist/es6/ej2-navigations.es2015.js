@@ -983,20 +983,26 @@ let MenuBase = class MenuBase extends Component {
      * @private
      */
     preRender() {
-        if (this.element.tagName === 'EJS-CONTEXTMENU') {
-            this.element.style.display = 'none';
-            this.element.classList.remove('e-' + this.getModuleName());
-            this.element.classList.remove('e-control');
-            let ejInst = getValue('ej2_instances', this.element);
-            let ul = this.createElement('ul');
-            this.ngElement = this.element;
-            this.element = ul;
-            this.element.classList.add('e-control');
-            this.element.classList.add('e-' + this.getModuleName());
-            setValue('ej2_instances', ejInst, this.element);
-            if (!this.element.id) {
-                this.element.id = getUniqueID(this.getModuleName());
+        if (!this.isMenu) {
+            let ul;
+            if (this.element.tagName === 'EJS-CONTEXTMENU') {
+                ul = this.createElement('ul', {
+                    id: getUniqueID(this.getModuleName()), className: 'e-control e-lib e-' + this.getModuleName()
+                });
+                let ejInst = getValue('ej2_instances', this.element);
+                removeClass([this.element], ['e-control', 'e-lib', 'e-' + this.getModuleName()]);
+                this.clonedElement = this.element;
+                this.element = ul;
+                setValue('ej2_instances', ejInst, this.element);
             }
+            else {
+                ul = this.createElement('ul', { id: getUniqueID(this.getModuleName()) });
+                append([].slice.call(this.element.cloneNode(true).children), ul);
+                let refEle = this.element.nextElementSibling;
+                refEle ? this.element.parentElement.insertBefore(ul, refEle) : this.element.parentElement.appendChild(ul);
+                this.clonedElement = ul;
+            }
+            this.clonedElement.style.display = 'none';
         }
         if (this.element.tagName === 'EJS-MENU') {
             let ele = this.element;
@@ -1011,7 +1017,7 @@ let MenuBase = class MenuBase extends Component {
             ele = ul;
             wrapper.appendChild(ele);
             setValue('ej2_instances', ejInstance, ele);
-            this.ngElement = wrapper;
+            this.clonedElement = wrapper;
             this.element = ele;
             if (!this.element.id) {
                 this.element.id = getUniqueID(this.getModuleName());
@@ -1241,7 +1247,7 @@ let MenuBase = class MenuBase extends Component {
                 }
                 fli.classList.add(SELECTED);
                 if (e.action === ENTER) {
-                    eventArgs = { element: fli, item: item };
+                    eventArgs = { element: fli, item: item, event: e };
                     this.trigger('select', eventArgs);
                 }
                 fli.focus();
@@ -1259,7 +1265,7 @@ let MenuBase = class MenuBase extends Component {
                         fli.classList.remove(FOCUSED);
                     }
                     fli.classList.add(SELECTED);
-                    eventArgs = { element: fli, item: item };
+                    eventArgs = { element: fli, item: item, event: e };
                     this.trigger('select', eventArgs);
                     this.closeMenu(null, e);
                 }
@@ -1604,6 +1610,7 @@ let MenuBase = class MenuBase extends Component {
         let level = this.navIdx ? this.navIdx.length : 0;
         let showIcon = this.hasField(items, this.getField('iconCss', level));
         let id = 'id';
+        let iconCss = 'iconCss';
         let listBaseOptions = {
             showIcon: showIcon,
             moduleName: 'menu',
@@ -1612,7 +1619,6 @@ let MenuBase = class MenuBase extends Component {
             itemCreating: (args) => {
                 if (!args.curData[args.fields[id]]) {
                     args.curData[args.fields[id]] = getUniqueID('menuitem');
-                    this.clearChanges();
                 }
                 args.curData.htmlAttributes = {
                     role: 'menuitem',
@@ -1620,6 +1626,9 @@ let MenuBase = class MenuBase extends Component {
                 };
                 if (this.isMenu && !args.curData[this.getField('separator', level)]) {
                     args.curData.htmlAttributes['aria-label'] = args.curData[args.fields.text];
+                }
+                if (args.curData[args.fields[iconCss]] === '') {
+                    args.curData[args.fields[iconCss]] = null;
                 }
             },
             itemCreated: (args) => {
@@ -1650,6 +1659,7 @@ let MenuBase = class MenuBase extends Component {
                 this.trigger('beforeItemRender', eventArgs);
             }
         };
+        this.setProperties({ 'items': this.items }, true);
         let ul = ListBase.createList(this.createElement, items, listBaseOptions, !this.template);
         ul.setAttribute('tabindex', '0');
         if (this.isMenu) {
@@ -1732,7 +1742,7 @@ let MenuBase = class MenuBase extends Component {
                 this.setLISelected(cli);
                 let navIdx = this.getIndex(cli.id, true);
                 let item = this.getItem(navIdx);
-                let eventArgs = { element: cli, item: item };
+                let eventArgs = { element: cli, item: item, event: e };
                 this.trigger('select', eventArgs);
             }
             if (isInstLI && (e.type === 'mouseover' || Browser.isDevice || this.showItemOnClick)) {
@@ -1908,7 +1918,7 @@ let MenuBase = class MenuBase extends Component {
                     if (!Object.keys(oldProp.items).length) {
                         let ul = this.element;
                         ul.innerHTML = '';
-                        let lis = [].slice.call(this.createItems(newProp.items).children);
+                        let lis = [].slice.call(this.createItems(this.items).children);
                         lis.forEach((li) => {
                             ul.appendChild(li);
                         });
@@ -1959,12 +1969,12 @@ let MenuBase = class MenuBase extends Component {
      * Used to unwire the bind events.
      * @private
      */
-    unWireEvents() {
+    unWireEvents(targetSelctor = this.target) {
         let wrapper = this.getWrapper();
-        if (this.target) {
+        if (targetSelctor) {
             let target;
             let touchModule;
-            let targetElems = selectAll(this.target);
+            let targetElems = selectAll(targetSelctor);
             for (let i = 0, len = targetElems.length; i < len; i++) {
                 target = targetElems[i];
                 if (Browser.isIos) {
@@ -2253,6 +2263,22 @@ let MenuBase = class MenuBase extends Component {
             }
         }
     }
+    removeAttributes() {
+        ['top', 'left', 'display', 'z-index'].forEach((key) => {
+            this.element.style.removeProperty(key);
+        });
+        ['role', 'tabindex', 'class', 'style'].forEach((key) => {
+            if (key === 'class' && this.element.classList.contains('e-menu-parent')) {
+                this.element.classList.remove('e-menu-parent');
+            }
+            if (['class', 'style'].indexOf(key) === -1 || !this.element.getAttribute(key)) {
+                this.element.removeAttribute(key);
+            }
+            if (this.isMenu && key === 'class' && this.element.classList.contains('e-vertical')) {
+                this.element.classList.remove('e-vertical');
+            }
+        });
+    }
     /**
      * Destroys the widget.
      * @returns void
@@ -2260,31 +2286,36 @@ let MenuBase = class MenuBase extends Component {
     destroy() {
         let wrapper = this.getWrapper();
         if (wrapper) {
-            super.destroy();
             this.unWireEvents();
-            if (this.ngElement && !this.isMenu) {
-                this.ngElement.style.display = 'block';
+            if (!this.isMenu) {
+                this.clonedElement.style.display = '';
+                if (this.clonedElement.tagName === 'EJS-CONTEXTMENU') {
+                    addClass([this.clonedElement], ['e-control', 'e-lib', 'e-' + this.getModuleName()]);
+                    this.element = this.clonedElement;
+                }
+                else {
+                    if (this.refreshing && this.clonedElement.childElementCount && this.clonedElement.children[0].tagName === 'LI') {
+                        this.setProperties({ 'items': [] }, true);
+                    }
+                    if (document.getElementById(this.clonedElement.id)) {
+                        let refEle = this.clonedElement.nextElementSibling;
+                        refEle && refEle !== wrapper ? this.clonedElement.parentElement.insertBefore(this.element, refEle) :
+                            this.clonedElement.parentElement.appendChild(this.element);
+                        this.element.innerHTML = '';
+                        append([].slice.call(this.clonedElement.children), this.element);
+                        detach(this.clonedElement);
+                        this.removeAttributes();
+                    }
+                }
+                this.clonedElement = null;
             }
             else {
                 this.closeMenu();
                 this.element.innerHTML = '';
-                ['top', 'left', 'display', 'z-index'].forEach((key) => {
-                    this.element.style.removeProperty(key);
-                });
-                ['role', 'tabindex', 'class', 'style'].forEach((key) => {
-                    if (key === 'class' && this.element.classList.contains('e-menu-parent')) {
-                        this.element.classList.remove('e-menu-parent');
-                    }
-                    if (['class', 'style'].indexOf(key) === -1 || !this.element.getAttribute(key)) {
-                        this.element.removeAttribute(key);
-                    }
-                    if (this.isMenu && key === 'class' && this.element.classList.contains('e-vertical')) {
-                        this.element.classList.remove('e-vertical');
-                    }
-                });
+                this.removeAttributes();
                 wrapper.parentNode.insertBefore(this.element, wrapper);
             }
-            if (this.isMenu && this.ngElement) {
+            if (this.isMenu && this.clonedElement) {
                 detach(this.element);
                 wrapper.style.display = '';
                 wrapper.classList.remove('e-' + this.getModuleName() + '-wrapper');
@@ -2293,6 +2324,7 @@ let MenuBase = class MenuBase extends Component {
             else {
                 detach(wrapper);
             }
+            super.destroy();
         }
     }
 };
@@ -2792,7 +2824,9 @@ let Toolbar = class Toolbar extends Component {
     eleFocus(closest$$1, pos) {
         let sib = Object(closest$$1)[pos + 'ElementSibling'];
         let contains = (el) => {
-            return el.classList.contains(CLS_SEPARATOR) || el.classList.contains(CLS_DISABLE$2) || el.getAttribute('disabled');
+            // tslint:disable-next-line:max-line-length
+            return el.classList.contains(CLS_SEPARATOR) || el.classList.contains(CLS_DISABLE$2) || el.getAttribute('disabled') || el.classList.contains(CLS_HIDDEN) || !isVisible(el);
+            // tslint:enable-next-line:max-line-length
         };
         if (sib) {
             let skipEle = contains(sib);
@@ -4591,7 +4625,9 @@ let Accordion = class Accordion extends Component {
         if (trgt.classList.contains(CLS_CONTENT) || trgt.classList.contains(CLS_CTENT) || cntclkCheck) {
             return;
         }
-        [].slice.call(this.element.children).forEach((el) => {
+        let acrdcontainer = this.element.querySelector('.' + CLS_CONTAINER);
+        let acrdnchild = (acrdcontainer) ? acrdcontainer.children : this.element.children;
+        [].slice.call(acrdnchild).forEach((el) => {
             if (el.classList.contains(CLS_ACTIVE)) {
                 acrdActive.push(el);
             }
@@ -5353,8 +5389,7 @@ let ContextMenu = class ContextMenu extends MenuBase {
                     this.filter = newProp.filter;
                     break;
                 case 'target':
-                    this.unWireEvents();
-                    this.target = newProp.target;
+                    this.unWireEvents(oldProp.target);
                     this.wireEvents();
                     break;
             }
@@ -5442,11 +5477,7 @@ let Menu = class Menu extends MenuBase {
             }
         }
         else {
-            this.tempItems = this.items;
-            this.items = [];
-            this.tempItems.map(this.createMenuItems, this);
-            this.setProperties({ items: this.items }, true);
-            this.tempItems = [];
+            this.updateMenuItems(this.items);
         }
         super.preRender();
     }
@@ -5463,6 +5494,13 @@ let Menu = class Menu extends MenuBase {
             }
         }
     }
+    updateMenuItems(items) {
+        this.tempItems = items;
+        this.items = [];
+        this.tempItems.map(this.createMenuItems, this);
+        this.setProperties({ items: this.items }, true);
+        this.tempItems = [];
+    }
     /**
      * Called internally if any of the property value changed
      * @private
@@ -5471,7 +5509,6 @@ let Menu = class Menu extends MenuBase {
      * @returns void
      */
     onPropertyChanged(newProp, oldProp) {
-        super.onPropertyChanged(newProp, oldProp);
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'orientation':
@@ -5484,8 +5521,14 @@ let Menu = class Menu extends MenuBase {
                         this.element.removeAttribute('aria-orientation');
                     }
                     break;
+                case 'items':
+                    if (!Object.keys(oldProp.items).length) {
+                        this.updateMenuItems(newProp.items);
+                    }
+                    break;
             }
         }
+        super.onPropertyChanged(newProp, oldProp);
     }
     createMenuItems(item) {
         let pIdField;
@@ -11397,7 +11440,6 @@ let Sidebar = class Sidebar extends Component {
         else {
             this.setMediaQuery();
         }
-        this.checkType(true);
         this.setType(this.type);
         this.setCloseOnDocumentClick();
         this.setEnableRTL();
@@ -11463,24 +11505,14 @@ let Sidebar = class Sidebar extends Component {
         removeClass([this.element], [OPEN, CLOSE, RIGHT, LEFT, SLIDE, PUSH, OVER]);
         this.element.classList.add(ROOT$1);
         addClass([this.element], (this.position === 'Right') ? RIGHT : LEFT);
-        if (this.type === 'Auto' && !Browser.isDevice) {
-            this.show();
+        if (this.type === 'Auto' && !Browser.isDevice && !this.enableDock) {
+            addClass([this.element], OPEN);
         }
-        else if (!this.isOpen) {
+        else {
             addClass([this.element], CLOSE);
         }
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
         this.element.setAttribute('tabindex', this.tabIndex);
-    }
-    checkType(val) {
-        if (!(this.type === 'Push' || this.type === 'Over' || this.type === 'Slide')) {
-            this.type = 'Auto';
-        }
-        else {
-            if (!this.element.classList.contains(CLOSE) && !val) {
-                this.hide();
-            }
-        }
     }
     destroyBackDrop() {
         let sibling = document.querySelector('.e-main-content') ||
@@ -11718,11 +11750,9 @@ let Sidebar = class Sidebar extends Component {
                     this.setAnimation();
                     break;
                 case 'type':
-                    this.checkType(false);
                     removeClass([this.element], [VISIBILITY]);
                     this.addClass();
-                    addClass([this.element], this.type === 'Auto' ? (Browser.isDevice ? ['e-over'] :
-                        ['e-push']) : ['e-' + this.type.toLowerCase()]);
+                    this.setType(this.type);
                     break;
                 case 'position':
                     this.element.style.transform = '';
@@ -11843,6 +11873,7 @@ let Sidebar = class Sidebar extends Component {
                     if (sibling && (this.enableDock || this.element.classList.contains(OPEN))) {
                         this.position === 'Left' ? sibling.style.marginLeft = margin : sibling.style.marginRight = margin;
                     }
+                    this.setProperties({ isOpen: true }, true);
                 }
                 this.createBackDrop();
         }

@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, compile, detach, formatUnit, isNullOrUndefined, isUndefined, removeClass, select, selectAll, setStyleAttribute } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Component, Draggable, Event, EventHandler, NotifyPropertyChanges, Property, addClass, append, closest, compile, detach, formatUnit, isNullOrUndefined, isUndefined, removeClass, select, selectAll, setStyleAttribute } from '@syncfusion/ej2-base';
 
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -104,6 +104,7 @@ let Splitter = class Splitter extends Component {
         this.border = 0;
         this.validDataAttributes = ['data-size', 'data-min', 'data-max', 'data-collapsible', 'data-resizable', 'data-content', 'data-collapsed'];
         this.validElementAttributes = ['data-orientation', 'data-width', 'data-height'];
+        this.iconsDelay = 300;
     }
     /**
      * Gets called when the model property changes.The data that describes the old and new values of the property that changed.
@@ -229,7 +230,7 @@ let Splitter = class Splitter extends Component {
         EventHandler.add(document, 'touchstart click', this.onDocumentClick, this);
     }
     onDocumentClick(e) {
-        if (!e.target.classList.contains(SPLIT_BAR)) {
+        if (!e.target.classList.contains(SPLIT_BAR) && !isNullOrUndefined(this.currentSeparator)) {
             this.currentSeparator.classList.remove(SPLIT_BAR_HOVER);
             this.currentSeparator.classList.remove(SPLIT_BAR_ACTIVE);
         }
@@ -563,8 +564,14 @@ let Splitter = class Splitter extends Component {
         return resizable;
     }
     addMouseActions(separator) {
-        separator.addEventListener('mouseover', () => {
-            addClass([separator], [SPLIT_BAR_HOVER]);
+        // tslint:disable-next-line
+        let sTout;
+        separator.addEventListener('mouseenter', () => {
+            /* istanbul ignore next */
+            sTout = setTimeout(() => { addClass([separator], [SPLIT_BAR_HOVER]); }, this.iconsDelay);
+        });
+        separator.addEventListener('mouseleave', () => {
+            clearTimeout(sTout);
         });
         separator.addEventListener('mouseout', () => {
             removeClass([separator], [SPLIT_BAR_HOVER]);
@@ -624,7 +631,9 @@ let Splitter = class Splitter extends Component {
         EventHandler.add(this.currentSeparator, 'touchstart click', this.clickHandler, this);
     }
     clickHandler(e) {
-        e.target.classList.add(SPLIT_BAR_HOVER);
+        if (!e.target.classList.contains(NAVIGATE_ARROW)) {
+            e.target.classList.add(SPLIT_BAR_HOVER);
+        }
         let icon = e.target;
         if (icon.classList.contains(ARROW_LEFT) || icon.classList.contains(ARROW_UP)) {
             this.collapseAction(e);
@@ -1275,18 +1284,38 @@ let Splitter = class Splitter extends Component {
     }
     setTemplate(template, toElement) {
         toElement.innerHTML = '';
+        this.templateCompile(toElement, template);
+    }
+    // tslint:disable-next-line
+    templateCompile(ele, cnt) {
+        let tempEle = this.createElement('div');
+        this.compileElement(tempEle, cnt, 'content');
+        if (tempEle.childNodes.length !== 0) {
+            for (let item = 0; item < tempEle.childNodes.length; item++) {
+                ele.appendChild(tempEle.childNodes[item]);
+            }
+        }
+    }
+    compileElement(ele, val, prop) {
+        if (typeof (val) === 'string') {
+            val = (val).trim();
+        }
         let templateFn;
-        if (this.element.nodeName === 'EJS-SPLITTER' || typeof (template) !== 'object') {
-            templateFn = compile(template);
+        if (!isNullOrUndefined(val.outerHTML)) {
+            templateFn = compile(val.outerHTML);
         }
         else {
-            templateFn = compile(template.outerHTML);
+            templateFn = compile(val);
         }
-        let fromElements = [];
-        for (let item of templateFn({})) {
-            fromElements.push(item);
+        let templateFUN;
+        if (!isNullOrUndefined(templateFn)) {
+            templateFUN = templateFn({}, this, prop);
         }
-        append([].slice.call(fromElements), toElement);
+        if (!isNullOrUndefined(templateFn) && templateFUN.length > 0) {
+            [].slice.call(templateFUN).forEach((el) => {
+                ele.appendChild(el);
+            });
+        }
     }
     paneCollapsible(pane, index) {
         this.paneSettings[index].collapsible ? addClass([pane], COLLAPSIBLE) : removeClass([pane], COLLAPSIBLE);
@@ -1889,7 +1918,7 @@ let DashboardLayout = class DashboardLayout extends Component {
     }
     downResizeHandler(e) {
         this.resizeCalled = false;
-        let el = (e.currentTarget).closest('.e-panel');
+        let el = closest((e.currentTarget), '.e-panel');
         let args = { event: e, element: el };
         this.trigger('resizeStart', args);
         this.downTarget = e.currentTarget;
@@ -1915,7 +1944,7 @@ let DashboardLayout = class DashboardLayout extends Component {
     // tslint:disable-next-line:max-func-body-length
     moveResizeHandler(e) {
         this.moveTarget = this.downTarget;
-        let el = this.moveTarget.closest('.e-panel');
+        let el = closest((this.moveTarget), '.e-panel');
         let args = { event: e, element: el };
         this.trigger('resize', args);
         if (this.lastMouseX === e.pageX || this.lastMouseY === e.pageY) {
@@ -2026,7 +2055,7 @@ let DashboardLayout = class DashboardLayout extends Component {
             return;
         }
         this.upTarget = this.downTarget;
-        let el = this.upTarget.closest('.e-panel');
+        let el = closest((this.upTarget), '.e-panel');
         let args = { event: e, element: el };
         this.trigger('resizeStop', args);
         if (el) {
@@ -3578,6 +3607,7 @@ let DashboardLayout = class DashboardLayout extends Component {
                 this.gridPanelCollection.splice(this.gridPanelCollection.indexOf(item), 1);
             }
         });
+        this.updateCloneArrayObject();
     }
     /**
      * Moves the panel in the DashboardLayout.

@@ -3454,7 +3454,7 @@ describe('Selection test script1', () => {
         expect(editor.selection.text).toBe('Document ');
     });
     it('Select Current word  on field end validation', () => {
-        editor.editorModule.insertText('https://syncfusion.com', false);
+        editor.editorModule.insertText('https://syncfusion.com');
         editor.editorModule.handleTextInput(' ');
         editor.selectionModule.movePreviousPosition();
         editor.selection.selectCurrentWord();
@@ -4307,8 +4307,8 @@ describe('Selection Validation for branch ', () => {
         }, 1000);
     });
     it('get Fields from parageph', () => {
-        editor.editorModule.insertText('www.google.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('www.google.com');
+        editor.editorModule.insertText(' ');
         let field: FieldElementBox[] = editor.viewer.fields;
         editor.selection.getHyperLinkFields(editor.selection.start.paragraph, field);
         expect(field.length).toBe(1);
@@ -4395,7 +4395,7 @@ describe('update table format validation', () => {
         }, 1000);
     });
     it('Apply hight light color validation', () => {
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.selection.selectAll();
         editor.editorModule.toggleHighlightColor();
         expect(editor.selection.characterFormat.highlightColor).toBe('Yellow');
@@ -4483,9 +4483,9 @@ describe('Selection API validation For field ', () => {
 
     it('Move to paragraph validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software', true);
+        editor.editorModule.insertTextInternal('Syncfusion Software', true);
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Syncfusion Software', true);
+        editor.editorModule.insertTextInternal('Syncfusion Software', true);
         editor.selectionModule.selectPosition(editor.documentStart, editor.documentStart);
         editor.selection.handleControlShiftDownKey();
         expect(editor.selection.start.paragraph).toBe(editor.selection.end.paragraph);
@@ -4496,7 +4496,7 @@ describe('Selection API validation For field ', () => {
     });
     it('Move to paragraph start validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('https://syncfusion.com', true);
+        editor.editorModule.insertTextInternal('https://syncfusion.com', true);
         editor.editorModule.handleTextInput(' ');
         editor.selection.moveToLineStart();
         editor.editorModule.handleShiftEnter();
@@ -4538,7 +4538,7 @@ describe('Move To paragraph start validation', () => {
     });
     it('get editing context testing', () => {
         editor.openBlank();
-        editor.editorModule.insertText('syncfusion software', true);
+        editor.editorModule.insertTextInternal('syncfusion software', true);
         let type = editor.selection.contextType;
         expect(type).toBe('Text');
     });
@@ -4724,7 +4724,7 @@ describe('Insert Hyperlink Validation', () => {
     });
     it('insert hyperlink with same display name', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Google', false);
+        editor.editorModule.insertText('Google');
         let span: TextElementBox = editor.selection.start.currentWidget.children[0] as TextElementBox;
         editor.selection.start.location = editor.selection.getPhysicalPositionInline(span, 0, false);
         editor.selection.start.offset = 0;
@@ -4738,7 +4738,7 @@ describe('Insert Hyperlink Validation', () => {
     it('insert hyperlink with same display name', () => {
         editor.openBlank();
         editor.openBlank();
-        editor.editorModule.insertText('Google', false);
+        editor.editorModule.insertText('Google');
         let span: TextElementBox = editor.selection.start.currentWidget.children[0] as TextElementBox;
         editor.selection.start.location = editor.selection.getPhysicalPositionInline(span, 0, false);
         editor.selection.start.offset = 0;
@@ -4753,7 +4753,7 @@ describe('Insert Hyperlink Validation', () => {
     it('insert hyperlink with same display name back ward selection', () => {
         editor.openBlank();
         editor.openBlank();
-        editor.editorModule.insertText('Google', false);
+        editor.editorModule.insertText('Google');
         let span: TextElementBox = editor.selection.start.currentWidget.children[0] as TextElementBox;
         editor.selection.start.location = editor.selection.getPhysicalPositionInline(span, 0, false);
         editor.selection.start.offset = 0;
@@ -4773,7 +4773,7 @@ describe('Insert Hyperlink Validation', () => {
     it('Edit hyperlink with same display name back ward selection', () => {
         editor.openBlank();
         editor.openBlank();
-        editor.editorModule.insertText('Google', false);
+        editor.editorModule.insertText('Google');
         let span: TextElementBox = editor.selection.start.currentWidget.children[0] as TextElementBox;
         editor.selection.start.location = editor.selection.getPhysicalPositionInline(span, 0, false);
         editor.selection.start.offset = 0;
@@ -4870,7 +4870,7 @@ describe('Get Cell and Block Validation', () => {
     it('Get Block from last cell', () => {
         editor.editor.insertTable(1, 2);
         editor.selection.handleTabKey(true, false);
-        editor.editorModule.insertText('2', false);
+        editor.editorModule.insertText('2');
         let paragraph = selection.start.paragraph;
         let table = editor.selection.start.paragraph.associatedCell.ownerTable;
         expect(selection.getLastBlockInLastCell(table)).toBe(paragraph);
@@ -4988,8 +4988,8 @@ describe('Get previous valid line ', () => {
     //     expect(selection.getPreviousValidElement(fieldEnd)).toBe(undefined);
     // });
     it('Get Previous valid inline of FieldEnd', () => {
-        editor.editorModule.insertText('www.google.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('www.google.com');
+        editor.editorModule.insertText(' ');
         let end = editor.selection.start.currentWidget.children[4];
         let separator = editor.selection.start.currentWidget.children[2];
         let begin = editor.selection.start.currentWidget.children[0];
@@ -4997,8 +4997,8 @@ describe('Get previous valid line ', () => {
         expect(selection.getPreviousValidElement(separator)).toBe(begin);
     });
     it('get next valid inline with out field separator', () => {
-        editor.editorModule.insertText('www.google.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('www.google.com');
+        editor.editorModule.insertText(' ');
         editor.selection.start.currentWidget.children.splice(2, 1);
         let end = editor.selection.start.currentWidget.children[3];
         let begin = editor.selection.start.currentWidget.children[0];
@@ -5116,10 +5116,10 @@ describe('is exist after inline', () => {
         expect(selection.isExistBeforeInline(span1, span)).toBe(false);
     });
     it('is Exist After in different section in side table', () => {
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         let span = selection.start.currentWidget.children[0];
         editor.editor.insertTable(2, 2);
-        editor.editorModule.insertText('https://syncfusion.com', false);
+        editor.editorModule.insertText('https://syncfusion.com');
 
         let section: BodyWidget = new BodyWidget();
         let paragaph: ParagraphWidget = new ParagraphWidget();
@@ -5133,9 +5133,9 @@ describe('is exist after inline', () => {
     });
     it('is Exist After inline with paragraph and table', () => {
         editor.editorModule.insertTable(2, 2);
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('https://syncfusion.com', false);
+        editor.editorModule.insertText('https://syncfusion.com');
         let section: BodyWidget = new BodyWidget();
         let paragaph: ParagraphWidget = new ParagraphWidget();
         let span1 = selection.start.currentWidget.children[0];

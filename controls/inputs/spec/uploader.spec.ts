@@ -502,7 +502,7 @@ describe('Uploader Control', () => {
             uploadObj.allowedExtensions = '';
             uploadObj.dataBind();
             expect(uploadObj.allowedExtensions).toBe('');
-            expect(uploadObj.element.getAttribute('accept')).toEqual('');
+            expect(uploadObj.element.getAttribute('accept')).toEqual(null);
         });
         it('set min file size ', () => {
             uploadObj.minFileSize = 20000;
@@ -1455,24 +1455,6 @@ describe('Uploader Control', () => {
             expect(document.activeElement).toBe(uploadObj.browseButton);
         });
     })
-
-    describe('WAI-ARIA Support', () => {
-        let uploadObj: any;
-        beforeAll((): void => {
-            let element: HTMLElement = createElement('input', {id: 'upload'});            
-            document.body.appendChild(element);
-            element.setAttribute('type', 'file');
-            uploadObj = new Uploader({ autoUpload: false });
-            uploadObj.appendTo(document.getElementById('upload'));
-        })
-        afterAll((): void => {
-            document.body.innerHTML = '';
-        });
-        it('aria-activedescendant attribute', () => {
-            expect(uploadObj.uploadWrapper.hasAttribute('aria-activedescendant')).toBe(true);
-            expect(uploadObj.uploadWrapper.getAttribute('aria-activedescendant')).toEqual('li-focused');
-        })
-    });
 
     describe('worst case testing', () => {
         let uploadObj: any;
@@ -3611,6 +3593,44 @@ describe('Uploader Control', () => {
         });
     })
 
+
+    describe('File name truncating in uploader', () => {
+        let uploadObj: any;
+        let onComplete: EmitType<Object> = jasmine.createSpy('actionComplete');
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload'});       
+            document.body.appendChild(element);
+            element.setAttribute('type', 'file');
+            uploadObj = new Uploader({
+                autoUpload: false,
+                asyncSettings: {
+                    saveUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Save',
+                    removeUrl: 'https://aspnetmvc.syncfusion.com/services/api/uploadbox/Remove'
+                }
+            });
+            uploadObj.appendTo(document.getElementById('upload'));
+        })
+        afterAll((): void => {
+            uploadObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('name truncate', () => {
+            let element: HTMLElement = createElement('div', {id:'name'});
+            element.textContent = 'This is testing file for truncation functionality in uploader.rtf';
+            let parentElement: HTMLElement = createElement('div', {id:'Parentname'});
+            parentElement.style.width = '250px';
+            parentElement.style.overflow = 'hidden';
+            parentElement.style.textOverflow = 'ellipsis';
+            parentElement.style.whiteSpace = 'nowrap';
+            parentElement.appendChild(element);
+            document.body.appendChild(parentElement);
+            document.body.style.width = '500px';
+            uploadObj.truncateName(element);
+            expect(element.hasAttribute('data-tail')).toBe(true);
+            expect(element.getAttribute('data-tail')).toEqual('loader.rtf')
+        })
+    })
+
     describe('File List Template UI for preload files', () => {
         let uploadObj: any;       
         beforeAll((): void => {
@@ -3644,6 +3664,25 @@ describe('Uploader Control', () => {
                 expect(uploadObj.uploadWrapper.querySelectorAll('li')[2].querySelector('.upload-status').innerHTML).toBe('Status Customized');
                 done();
             }, 3000);
+        });
+    })
+    describe('EJ2-21915 - uploader HTML 5 validation', () => {
+        let uploadObj: any;       
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload'});            
+            document.body.appendChild(element);
+            element.setAttribute('type', 'file');
+            uploadObj = new Uploader({
+                multiple: true
+            });
+            uploadObj.appendTo(document.getElementById('upload'));
+        })
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+        it('Check HTML Attributes', () => {
+            expect(uploadObj.element.getAttribute('multiple')).toBe('multiple');
+            expect(uploadObj.element.getAttribute('accept')).not.toBe('');
         });
     })
     it('memory leak testing', () => {

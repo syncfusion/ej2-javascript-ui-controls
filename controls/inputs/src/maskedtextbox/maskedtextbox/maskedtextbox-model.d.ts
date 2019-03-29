@@ -82,7 +82,7 @@ export interface MaskedTextBoxModel extends ComponentModel{
      * The symbol used to show input positions in the MaskedTextBox.
      * For more information on prompt-character, refer to
      * [prompt-character](../maskedtextbox/mask-configuration#prompt-character/).
-     * @default _
+     * @default '_'
      */
     promptChar?: string;
 

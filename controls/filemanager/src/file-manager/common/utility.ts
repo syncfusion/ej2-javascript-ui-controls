@@ -3,6 +3,7 @@ import * as CLS from '../base/classes';
 import * as events from '../base/constant';
 import { read } from '../common/operations';
 import { getValue, setValue, isNullOrUndefined as isNOU, matches, select, createElement } from '@syncfusion/ej2-base';
+import { closest } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 
@@ -92,7 +93,7 @@ export function activeElement(action: string, isGrid?: boolean, file?: IFileMana
             }
             isFile = (file.activeModule === 'largeiconsview') ?
                 ((blurEle[i].querySelector('.' + CLS.LARGE_ICON_FOLDER)) ? false : true) : null;
-            id = (isFile === false) ? blurEle[i].closest('li').getAttribute('data-uid') : null;
+            id = (isFile === false) ? closest(blurEle[i], 'li').getAttribute('data-uid') : null;
             (blurEle[i].querySelector('.' + CLS.LIST_TEXT)) ?
                 nodeNames.push({ 'name': blurEle[i].querySelector('.' + CLS.LIST_TEXT).textContent, 'isFile': isFile, 'id': id }) :
                 nodeNames = nodeNames;
@@ -138,7 +139,7 @@ export function getModule(element: Element, file?: IFileManager): void {
     if (element) {
         if (element.classList.contains(CLS.ROWCELL)) {
             file.activeModule = 'detailsview';
-        } else if (element.closest('.' + CLS.LARGE_ICON)) {
+        } else if (closest(element, '.' + CLS.LARGE_ICON)) {
             file.activeModule = 'largeiconsview';
         } else {
             file.activeModule = 'navigationpane';
@@ -236,7 +237,7 @@ export function getImageUrl(parent: IFileManager, item: Object, ): string {
     let baseUrl: string = parent.ajaxSettings.getImageUrl ? parent.ajaxSettings.getImageUrl : parent.ajaxSettings.url;
     let imgUrl: string;
     if (parent.breadcrumbbarModule.searchObj.element.value !== '') {
-        imgUrl = baseUrl + '?path=' + parent.path + getValue('filterPath', item);
+        imgUrl = baseUrl + '?path=' + getValue('filterPath', item);
     } else {
         imgUrl = baseUrl + '?path=' + parent.path + getValue('name', item);
     }
@@ -250,9 +251,13 @@ export function getSortedData(parent: IFileManager, items: Object[]): Object[] {
     let lists: Object[] = new DataManager(items).executeLocal(query);
     return getValue('records', lists);
 }
-
+/* istanbul ignore next */
 export function getItemObject(parent: IFileManager, item: Element): Object {
     let name: string = select('.' + CLS.LIST_TEXT, item).textContent;
+    return getObject(parent, name);
+}
+
+export function getObject(parent: IFileManager, name: string): Object {
     let currFiles: Object[] = getValue(parent.path, parent.feFiles);
     let query: Query = new Query().where('name', 'equal', name);
     let lists: Object[] = new DataManager(currFiles).executeLocal(query);
@@ -356,4 +361,28 @@ export function getSortField(id: string): string {
             break;
     }
     return field;
+}
+
+export function setNextPath(parent: IFileManager, path: string): void {
+    let currfolders: string[] = path.split('/');
+    let folders: string[] = parent.originalPath.split('/');
+    for (let i: number = currfolders.length - 1, len: number = folders.length - 1; i < len; i++) {
+        let eventName: string = (folders[i + 1] === '') ? events.finalizeEnd : events.initialEnd;
+        let newPath: string = (folders[i] === '') ? '/' : (parent.path + folders[i] + '/');
+        let data: Object = getObject(parent, folders[i]);
+        let id: string = getValue('nodeId', data);
+        parent.setProperties({ path: newPath }, true);
+        parent.pathId.push(id);
+        parent.itemData = [data];
+        read(parent, eventName, parent.path);
+        break;
+    }
+}
+
+export function openSearchFolder(parent: IFileManager, data: Object): void {
+    let fPath: string = getValue('filterPath', data) + '/';
+    fPath = fPath.replace(/\\/g, '/');
+    parent.notify(events.clearPathInit, { selectedNode: parent.pathId[parent.pathId.length - 1] });
+    parent.originalPath = fPath;
+    read(parent, (parent.path !== parent.originalPath) ? events.initialEnd : events.finalizeEnd, parent.path);
 }

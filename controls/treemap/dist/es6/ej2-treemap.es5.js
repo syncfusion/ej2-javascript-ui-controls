@@ -721,6 +721,7 @@ function findPosition(location, alignment, textSize, type) {
 function createTextStyle(renderer, renderOptions, text) {
     var htmlObject;
     htmlObject = renderer.createText(renderOptions, text);
+    htmlObject.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
     htmlObject.style['user-select'] = 'none';
     htmlObject.style['-moz-user-select'] = 'none';
     htmlObject.style['-webkit-touch-callout'] = 'none';
@@ -768,6 +769,10 @@ function renderTextElement(options, font, color, parent, isMinus) {
                 options.connectorText : drillLevelText[z];
             renderOptions['id'] = options.id + '_' + z;
             htmlObject = createTextStyle(renderer, renderOptions, drillText);
+            if (z % 2 === 0 && z !== 0) {
+                var re = /\s+/g;
+                drillText = drillText.replace(re, '&nbsp');
+            }
             var size = measureText(drillText, font);
             renderOptions['x'] = z !== 0 ? renderOptions['x'] + size.width : renderOptions['x'] + size.width + spacing;
             parent.appendChild(htmlObject);
@@ -1925,6 +1930,7 @@ var LayoutPanel = /** @__PURE__ @class */ (function () {
                 !item['isDrilled'] ? treeMap.enableRtl ? renderText + ' [+]' : '[+] ' + renderText :
                     treeMap.enableRtl ? renderText + ' [-]' : '[-] ' + renderText : renderText;
             textStyle = (isLeafItem ? leaf.labelStyle : levels[index].headerStyle);
+            textStyle.fontFamily = this.treemap.themeStyle.labelFontFamily || textStyle.fontFamily;
             border = isLeafItem ? leaf.border : levels[index].border;
             position = !isLeafItem ? (levels[index].headerAlignment) === 'Near' ? 'TopLeft' : (levels[index].headerAlignment) === 'Center' ?
                 'TopCenter' : 'TopRight' : leaf.labelPosition;
@@ -2247,10 +2253,32 @@ var Theme;
  */
 function getThemeStyle(theme) {
     var style;
+    var color;
+    switch (theme) {
+        case 'MaterialDark':
+            color = '#303030';
+            break;
+        case 'FabricDark':
+            color = '#201F1F';
+            break;
+        case 'BootstrapDark':
+            color = '#1A1A1A';
+            break;
+    }
     switch (theme) {
         case 'BootstrapDark':
         case 'FabricDark':
         case 'MaterialDark':
+            style = {
+                backgroundColor: color,
+                titleFontColor: '#FFFFFF',
+                subTitleFontColor: '#FFFFFF',
+                tooltipFillColor: '#363F4C',
+                tooltipFontColor: '#ffffff',
+                legendTitleColor: '#DADADA',
+                legendTextColor: '#DADADA'
+            };
+            break;
         case 'Highcontrast':
         case 'HighContrast':
             style = {
@@ -2265,13 +2293,19 @@ function getThemeStyle(theme) {
             break;
         case 'Bootstrap4':
             style = {
-                backgroundColor: '#F8F9FA',
+                backgroundColor: '#FFFFFF',
                 titleFontColor: '#212529',
                 subTitleFontColor: '#212529',
                 tooltipFillColor: '#000000',
                 tooltipFontColor: '#FFFFFF',
+                tooltipFillOpacity: 1,
+                tooltipTextOpacity: 0.9,
                 legendTitleColor: '#212529',
-                legendTextColor: '#212529'
+                legendTextColor: '#212529',
+                fontFamily: 'HelveticaNeue-Medium',
+                fontSize: '16px',
+                legendFontSize: '14px',
+                labelFontFamily: 'HelveticaNeue'
             };
             break;
         default:
@@ -2464,6 +2498,8 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         var height;
         var titlePadding = 10;
         var width = (this.availableSize.width - this.margin.right - this.margin.left);
+        title.textStyle.fontFamily = this.themeStyle.fontFamily || title.textStyle.fontFamily;
+        title.textStyle.size = this.themeStyle.fontSize || title.textStyle.size;
         if (title.text) {
             if (isNullOrUndefined(groupEle)) {
                 groupEle = this.renderer.createGroup({ id: this.element.id + '_Title_Group' });
@@ -3192,7 +3228,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], TreeMap.prototype, "enableBreadcrumb", void 0);
     __decorate([
-        Property('.')
+        Property(' - ')
     ], TreeMap.prototype, "breadcrumbConnector", void 0);
     __decorate([
         Property(false)
@@ -3369,12 +3405,16 @@ var TreeMapLegend = /** @__PURE__ @class */ (function () {
                 * parseFloat(legend.width) : parseFloat(legend.width) : null;
             var legendHeight = (legend.height.length > 1) ? (legend.height.indexOf('%') > -1) ?
                 (treemap.availableSize.height / 100) * parseFloat(legend.height) : parseFloat(legend.height) : null;
+            titleTextStyle.fontFamily = treemap.themeStyle.fontFamily || titleTextStyle.fontFamily;
+            titleTextStyle.size = treemap.themeStyle.legendFontSize || titleTextStyle.size;
             var legendTitleSize = measureText(legendTitle, titleTextStyle);
             var startX_1 = 0;
             var startY_1 = 0;
             var shapePadding = legend.shapePadding;
             var itemTextStyle = legend.textStyle;
             var legendLength = this.legendCollections.length;
+            legend.textStyle.size = treemap.themeStyle.legendFontSize || legend.textStyle.size;
+            legend.textStyle.fontFamily = treemap.themeStyle.fontFamily || legend.textStyle.fontFamily;
             if (legendMode === 'Default') {
                 legendWidth = (isNullOrUndefined(legendWidth)) ? treemap.areaRect.width : legendWidth;
                 legendHeight = (isNullOrUndefined(legendHeight)) ? treemap.areaRect.height : legendHeight;
@@ -4669,6 +4709,12 @@ var TreeMapTooltip = /** @__PURE__ @class */ (function () {
                 }
                 location = getMousePosition(pageX, pageY, this.treemap.svgObject);
                 location.y = (this.tooltipSettings.template) ? location.y + 10 : location.y;
+                this.tooltipSettings.textStyle.fontFamily = this.treemap.theme === 'Bootstrap4' ? 'HelveticaNeue-Medium'
+                    : this.tooltipSettings.textStyle.fontFamily;
+                this.tooltipSettings.textStyle.color = this.treemap.themeStyle.tooltipFontColor
+                    || this.tooltipSettings.textStyle.color;
+                this.tooltipSettings.textStyle.opacity = this.treemap.themeStyle.tooltipTextOpacity
+                    || this.tooltipSettings.textStyle.opacity;
                 tootipArgs = {
                     cancel: false, name: tooltipRendering, item: item,
                     options: {
@@ -4692,6 +4738,7 @@ var TreeMapTooltip = /** @__PURE__ @class */ (function () {
                         areaBounds: this.treemap.areaRect,
                         textStyle: tootipArgs.options['textStyle']
                     });
+                    this.svgTooltip.opacity = this.treemap.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                     this.svgTooltip.appendTo(tooltipEle);
                 }
                 else {

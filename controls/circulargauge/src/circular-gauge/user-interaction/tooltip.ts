@@ -127,6 +127,8 @@ export class GaugeTooltip {
             }
             if (!tooltipArgs.cancel && !samePointerEle) {
                 tooltipArgs.tooltip.textStyle.color = tooltipArgs.tooltip.textStyle.color || this.gauge.themeStyle.tooltipFontColor;
+                tooltipArgs.tooltip.textStyle.fontFamily = this.gauge.themeStyle.fontFamily || tooltipArgs.tooltip.textStyle.fontFamily;
+                tooltipArgs.tooltip.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity || tooltipArgs.tooltip.textStyle.opacity;
                 this.svgTooltip = new Tooltip({
                     enable: true,
                     data: { value: tooltipArgs.content },
@@ -140,6 +142,7 @@ export class GaugeTooltip {
                     textStyle: tooltipArgs.tooltip.textStyle,
                     border: tooltipArgs.tooltip.border
                 });
+                this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                 this.svgTooltip.appendTo(this.tooltipEle);
                 if (template && Math.abs(pageY - this.tooltipEle.getBoundingClientRect().top) <= 0) {
                     this.tooltipEle.style.top = (parseFloat(this.tooltipEle.style.top) + 20) + 'px';

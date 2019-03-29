@@ -473,6 +473,12 @@ export interface DataSourceModel {
     alwaysShowValueHeader?: boolean;
 
     /**
+     * It allows enable/disable show aggregation on PivotButton.
+     * @default true
+     */
+    showAggregationOnValueField?: boolean;
+
+    /**
      * It allows to set the settings of number formatting.
      * @default []
      */

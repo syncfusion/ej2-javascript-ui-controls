@@ -95,18 +95,21 @@
         padding: $calendar-table-padding;
         table-layout: fixed;
         width: $calendar-full-width;
-}& td.e-other-month > span.e-day {
+}& td.e-other-month > span.e-day,
+      & td.e-other-year > span.e-day {
         display: $calendar-other-month-display-style;
         font-weight: $calendar-link-font-weight-style;
 }& tr.e-month-hide {
         display: $calendar-other-month-row-display-style;
         font-weight: $calendar-link-font-weight-style;
 }& tr.e-month-hide,
-      & td.e-other-month {
+      & td.e-other-month,
+      & td.e-other-year {
         pointer-events: $calendar-pointer-events;
         touch-action: $calendar-pointer-events;
 }& tr.e-month-hide,
-      & td.e-other-month.e-disabled {
+      & td.e-other-month.e-disabled,
+      & td.e-other-year.e-disabled {
         pointer-events: $calendar-none-style;
         touch-action: $calendar-none-style;
 }& td.e-week-number:hover span.e-day,
@@ -222,6 +225,7 @@
         width: $calendar-normal-icon-size;
     }
 }& .e-footer-container {
+      border-top: $calendar-footer-border;
       cursor: $calendar-cursor-default-style;
       display: $calendar-display-style;
       flex-direction: row;
@@ -310,6 +314,9 @@
         height: $calendar-bigger-icon-size;
         width: $calendar-bigger-icon-size;
     }
+    }& .e-footer-container {
+      border-top: $calendar-bigger-footer-border;
+      padding: $calendar-bigger-footer-container-padding;
     }
   }
 

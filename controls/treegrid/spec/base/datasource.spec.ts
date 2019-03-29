@@ -162,6 +162,40 @@ export let sampleData: Object[] = [
         'parentID': 3
     },
     ];
+
+    export let selfReferenceData: Object[] = [{
+        'TaskID': 1,
+        'TaskName': 'Parent Task 1',
+        'StartDate': new Date('02/23/2014'),
+        'EndDate': new Date('02/27/2014'),
+        'Progress': '40',
+        'parentID': null
+    },
+    {
+        'TaskID': 2,
+        'TaskName': 'Child Task 1',
+        'StartDate': new Date('02/23/2014'),
+        'EndDate': new Date('02/27/2014'),
+        'Progress': '40',
+        'parentID': 1
+    },
+    {
+        'TaskID': 3,
+        'TaskName': 'Parent Task 2',
+        'StartDate': new Date('02/23/2014'),
+        'EndDate': new Date('02/27/2014'),
+        'Progress': '30',
+        'parentID': null
+    },
+    {
+        'TaskID': 4,
+        'TaskName': 'Child Task 1',
+        'StartDate': new Date('02/23/2014'),
+        'EndDate': new Date('02/27/2014'),
+        'Progress': '60',
+        'parentID': 3
+    },
+    ];
     
      export let projectDatas: Object[] = [{
         'TaskID': 1,
@@ -196,21 +230,131 @@ export let sampleData: Object[] = [
         'parentID': 3
     },
     ];
-export let treeMappedData: Object[] = [
-    {
-        'taskID': 1,
-        'taskName': 'Planning',
-        'startDate': '2017-02-02T18:30:00.000Z',
-        'endDate': '2017-02-06T18:30:00.000Z',
-        'progress': 100,
-        'duration': 5,
-        'priority': 'Normal',
-        'approved': false,
-        'index': 0,
-        'hasChildRecords': true,
-        'expanded': true,
-        'level': 0
-    },
+    export let treeMappedData: Object[] = [
+        {
+            'taskID': 1,
+            'taskName': 'Planning',
+            'startDate': '2017-02-02T18:30:00.000Z',
+            'endDate': '2017-02-06T18:30:00.000Z',
+            'progress': 100,
+            'duration': 5,
+            'priority': 'Normal',
+            'approved': false,
+            'index': 0,
+            'hasChildRecords': true,
+            'expanded': true,
+            'level': 0,
+            'uniqueID': "Grid_data_0",
+            'childRecords' : [
+                {
+                    'taskID': 2,
+                    'taskName': 'Plan timeline',
+                    'startDate': '2017-02-02T18:30:00.000Z',
+                    'endDate': '2017-02-06T18:30:00.000Z',
+                    'duration': 5,
+                    'progress': 100,
+                    'priority': 'Normal',
+                    'approved': false,
+                    'index': 1,
+                    'parentIndex': 0,
+                    'level': 1,
+                    'uniqueID': "Grid_data_1",
+                    'parentUniqueID' : "Grid_data_0",
+                    parentItem: {
+                        'taskID': 1,
+                        'taskName': 'Planning',
+                        'startDate': '2017-02-02T18:30:00.000Z',
+                        'endDate': '2017-02-06T18:30:00.000Z',
+                        'progress': 100,
+                        'duration': 5,
+                        'priority': 'Normal',
+                        'approved': false,
+                        'uniqueID': "Grid_data_0",
+                        'index': 0
+                    }
+                },
+                {
+                    'taskID': 3,
+                    'taskName': 'Plan budget',
+                    'startDate': '2017-02-02T18:30:00.000Z',
+                    'endDate': '2017-02-06T18:30:00.000Z',
+                    'duration': 5,
+                    'progress': 100,
+                    'approved': true,
+                    'index': 2,
+                    'parentIndex': 0,
+                    'level': 1,
+                    'uniqueID': "Grid_data_2",
+                    'parentUniqueID' : "Grid_data_0",
+                    parentItem: {
+                        'taskID': 1,
+                        'taskName': 'Planning',
+                        'startDate': '2017-02-02T18:30:00.000Z',
+                        'endDate': '2017-02-06T18:30:00.000Z',
+                        'progress': 100,
+                        'duration': 5,
+                        'priority': 'Normal',
+                        'approved': false,
+                        'uniqueID': "Grid_data_0",
+                        'index': 0
+                    }
+                },
+                {
+                    'taskID': 4,
+                    'taskName': 'Allocate resources',
+                    'startDate': '2017-02-02T18:30:00.000Z',
+                    'endDate': '2017-02-06T18:30:00.000Z',
+                    'duration': 5,
+                    'progress': 100,
+                    'priority': 'Critical',
+                    'approved': false,
+                    'index': 3,
+                    'parentIndex': 0,
+                    'uniqueID': "Grid_data_3",
+                    'parentUniqueID' : "Grid_data_0",
+                    'level': 1,
+                    parentItem: {
+                        'taskID': 1,
+                        'taskName': 'Planning',
+                        'startDate': '2017-02-02T18:30:00.000Z',
+                        'endDate': '2017-02-06T18:30:00.000Z',
+                        'progress': 100,
+                        'duration': 5,
+                        'priority': 'Normal',
+                        'approved': false,
+                        'uniqueID': "Grid_data_0",
+                        'index': 0
+                    }
+                },
+                {
+                    'taskID': 5,
+                    'taskName': 'Planning complete',
+                    'startDate': '2017-02-06T18:30:00.000Z',
+                    'endDate': '2017-02-06T18:30:00.000Z',
+                    'duration': 0,
+                    'progress': 0,
+                    'priority': 'Low',
+                    'approved': true,
+                    'index': 4,
+                    'parentIndex': 0,
+                    'level': 1,
+                    'uniqueID': "Grid_data_4",
+                    'parentUniqueID' : "Grid_data_0",
+                    parentItem: {
+                        'taskID': 1,
+                        'taskName': 'Planning',
+                        'startDate': '2017-02-02T18:30:00.000Z',
+                        'endDate': '2017-02-06T18:30:00.000Z',
+                        'progress': 100,
+                        'duration': 5,
+                        'priority': 'Normal',
+                        'approved': false,
+                        'uniqueID': "Grid_data_0",
+                        'index': 0
+                    }
+                }
+            ]
+        },
     {
         'taskID': 2,
         'taskName': 'Plan timeline',
@@ -223,6 +367,8 @@ export let treeMappedData: Object[] = [
         'index': 1,
         'parentIndex': 0,
         'level': 1,
+        'uniqueID': "Grid_data_1",
+        'parentUniqueID' : "Grid_data_0",
         parentItem: {
             'taskID': 1,
             'taskName': 'Planning',
@@ -231,7 +377,9 @@ export let treeMappedData: Object[] = [
             'progress': 100,
             'duration': 5,
             'priority': 'Normal',
-            'approved': false
+            'approved': false,
+            'uniqueID': "Grid_data_0",
+            'index': 0
         }
     },
     {
@@ -245,6 +393,8 @@ export let treeMappedData: Object[] = [
         'index': 2,
         'parentIndex': 0,
         'level': 1,
+        'uniqueID': "Grid_data_2",
+        'parentUniqueID' : "Grid_data_0",
         parentItem: {
             'taskID': 1,
             'taskName': 'Planning',
@@ -253,7 +403,9 @@ export let treeMappedData: Object[] = [
             'progress': 100,
             'duration': 5,
             'priority': 'Normal',
-            'approved': false
+            'approved': false,
+            'uniqueID': "Grid_data_0",
+            'index': 0
         }
     },
     {
@@ -268,6 +420,8 @@ export let treeMappedData: Object[] = [
         'index': 3,
         'parentIndex': 0,
         'level': 1,
+        'uniqueID': "Grid_data_3",
+        'parentUniqueID' : "Grid_data_0",
         parentItem: {
             'taskID': 1,
             'taskName': 'Planning',
@@ -276,7 +430,9 @@ export let treeMappedData: Object[] = [
             'progress': 100,
             'duration': 5,
             'priority': 'Normal',
-            'approved': false
+            'approved': false,
+            'uniqueID': "Grid_data_0",
+            'index': 0
         }
     },
     {
@@ -291,6 +447,8 @@ export let treeMappedData: Object[] = [
         'index': 4,
         'parentIndex': 0,
         'level': 1,
+        'uniqueID': "Grid_data_4",
+        'parentUniqueID' : "Grid_data_0",
         parentItem: {
             'taskID': 1,
             'taskName': 'Planning',
@@ -299,11 +457,12 @@ export let treeMappedData: Object[] = [
             'progress': 100,
             'duration': 5,
             'priority': 'Normal',
-            'approved': false
+            'approved': false,
+            'uniqueID': "Grid_data_0",
+            'index': 0
         }
     }
-
-];
+    ];
 export var multiLevelSelfRef = [{
     'TaskID': 1,
     'TaskName': 'Parent Task 1',

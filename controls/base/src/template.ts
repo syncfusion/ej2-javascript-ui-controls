@@ -119,7 +119,7 @@ function evalExp(str: string, nameSpace: string, helper?: Object): string {
                         cnt.replace(
                             rlStr,
                             addNameSpace(
-                                matches[1].replace(',', nameSpace + '.'),
+                                matches[1].replace(',', '+' + nameSpace + '.'),
                                 (fNameSpace === 'global' ? false : true),
                                 nameSpace,
                                 localKeys
@@ -136,7 +136,9 @@ function evalExp(str: string, nameSpace: string, helper?: Object): string {
                 cnt = cnt.replace(IF_OR_FOR, '"; \n } \n str = str + "');
             } else {
                 // evaluate normal expression
-                cnt = '"+' + addNameSpace(cnt, (localKeys.indexOf(cnt) === -1), nameSpace, localKeys) + '+"';
+                cnt = '"+' + addNameSpace(
+                    cnt.replace(/\,/gi, '+' + nameSpace + '.'),
+                    (localKeys.indexOf(cnt) === -1), nameSpace, localKeys) + '+"';
             }
             return cnt;
         });

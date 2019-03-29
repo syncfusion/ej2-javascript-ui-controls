@@ -1,6 +1,6 @@
 import { ContextMenu as Menu, BeforeOpenCloseMenuEventArgs, TreeView, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { IFileManager, FileMenuClickEventArgs, FileMenuOpenEventArgs, NotifyArgs, viewType } from '../base/interface';
-import { isNullOrUndefined, KeyboardEventArgs, createElement } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, KeyboardEventArgs, createElement, closest, remove, KeyboardEvents } from '@syncfusion/ej2-base';
 import { MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { Download, read } from './../common/operations';
 import { createDialog } from './dialog';
@@ -16,7 +16,8 @@ export class ContextMenu {
     private parent: IFileManager;
     private targetElement: HTMLElement;
     public contextMenu: Menu;
-
+    private keyConfigs: { [key: string]: string };
+    private keyboardModule: KeyboardEvents;
     /**
      * Constructor for the ContextMenu module
      * @hidden
@@ -27,6 +28,10 @@ export class ContextMenu {
     }
 
     private render(): void {
+        this.keyConfigs = {
+            downarrow: 'downarrow',
+            uparrow: 'uparrown'
+        };
         this.contextMenu = new Menu({
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
@@ -44,12 +49,14 @@ export class ContextMenu {
     public onBeforeItemRender(args: MenuEventArgs): void {
         if (args.item.id === this.getMenuId('largeiconsview')) {
             let iconSpan: HTMLElement = createElement('span');
-            args.element.insertBefore(iconSpan, args.element.childNodes[1]);
+            let element: HTMLElement = args.element;
+            element.insertBefore(iconSpan, this.parent.view === 'LargeIcons' ? element.childNodes[1] : element.childNodes[0]);
             iconSpan.setAttribute('class', CLS.ICON_LARGE + ' ' + CLS.MENU_ICON);
         }
         if (args.item.id === this.getMenuId('detailsview')) {
             let iconSpan: HTMLElement = createElement('span');
-            args.element.insertBefore(iconSpan, args.element.childNodes[1]);
+            let element: HTMLElement = args.element;
+            element.insertBefore(iconSpan, this.parent.view === 'Details' ? element.childNodes[1] : element.childNodes[0]);
             iconSpan.setAttribute('class', CLS.ICON_GRID + ' ' + CLS.MENU_ICON);
         }
     }
@@ -68,33 +75,33 @@ export class ContextMenu {
         if (target.classList.contains(CLS.FULLROW)) {
             this.parent.selectedItems.length = 0;
         }
-        this.targetElement = this.parent.fileView === 'Details' ? target.closest('tr') as HTMLElement : target as HTMLElement;
+        this.targetElement = this.parent.view === 'Details' ? closest(target, 'tr') as HTMLElement : target as HTMLElement;
         let view: string = this.getTargetView(target);
         /* istanbul ignore next */
-        if (target.classList.contains(CLS.TREE_VIEW) || target.closest('th') ||
-            (target.closest('#' + this.parent.element.id + CLS.BREADCRUMBBAR_ID))) {
+        if (target.classList.contains(CLS.TREE_VIEW) || closest(target, 'th') ||
+            (closest(target, '#' + this.parent.element.id + CLS.BREADCRUMBBAR_ID))) {
             args.cancel = true;
             // tslint:disable-next-line
-        } else if (!(this.parent.fileView === 'LargeIcons') && this.targetElement &&
+        } else if (!(this.parent.view === 'LargeIcons') && this.targetElement &&
             this.targetElement.classList.contains('e-emptyrow')) {
             this.setLayoutItem(target);
             //Paste
             // this.contextMenu.enableItems([this.getMenuId('Paste')], this.parent.enablePaste, true);
             /* istanbul ignore next */
-        } else if (target.closest('.' + CLS.EMPTY)) {
+        } else if (closest(target, '.' + CLS.EMPTY)) {
             this.setLayoutItem(target);
             // tslint:disable-next-line
         } else if (!target.classList.contains(CLS.MENU_ITEM) && !target.classList.contains(CLS.MENU_ICON) && !target.classList.contains(CLS.SUBMENU_ICON)) {
             /* istanbul ignore next */
             // tslint:disable-next-line
-            if (this.parent.fileView === 'LargeIcons' && !isNullOrUndefined(target.closest('li')) && !target.closest('#' + this.parent.element.id + CLS.TREE_ID)) {
+            if (this.parent.view === 'LargeIcons' && !isNullOrUndefined(closest(target, 'li')) && !target.closest('#' + this.parent.element.id + CLS.TREE_ID)) {
                 let eveArgs: KeyboardEventArgs = { ctrlKey: true, shiftKey: true } as KeyboardEventArgs;
-                data = getItemObject(this.parent, this.targetElement.closest('li')) as { [key: string]: Object };
-                if (!target.closest('li').classList.contains('e-active')) {
+                data = this.parent.visitedData as { [key: string]: Object };
+                if (!closest(target, 'li').classList.contains('e-active')) {
                     this.parent.largeiconsviewModule.doSelection(target, eveArgs);
                 }
                 select = true;
-            } else if (!isNullOrUndefined(target.closest('tr'))) {
+            } else if (!isNullOrUndefined(closest(target, 'tr'))) {
                 uid = this.targetElement.getAttribute('data-uid');
                 data = this.parent.detailsviewModule.gridObj.getRowObjectFromUID(uid).data as { [key: string]: Object };
                 if (isNullOrUndefined(this.targetElement.getAttribute('aria-selected'))) {
@@ -104,16 +111,17 @@ export class ContextMenu {
                 }
                 select = true;
                 /* istanbul ignore next */
-            } else if (target.closest('#' + this.parent.element.id + CLS.TREE_ID)) {
+            } else if (closest(target, '#' + this.parent.element.id + CLS.TREE_ID)) {
+                uid = closest(target, 'li').getAttribute('data-uid');
                 treeFolder = true;
             }
             /* istanbul ignore next */
             if (select) {
-                if (this.parent.fileView === 'LargeIcons') {
+                if (this.parent.view === 'LargeIcons') {
                     if (data.isFile === true) {
                         this.setFileItem(target);
-                        if (target.closest('li') &&
-                            (target.closest('li')).getElementsByClassName('e-list-img').length === 0) {
+                        if (closest(target, 'li') &&
+                            (closest(target, 'li')).getElementsByClassName('e-list-img').length === 0) {
                             this.contextMenu.enableItems([this.getMenuId('Open')], false, true);
                         }
                     } else {
@@ -122,8 +130,8 @@ export class ContextMenu {
                     // tslint:disable-next-line
                 } else if (data['isFile'] === true) {
                     this.setFileItem(target);
-                    if (target.closest('tr') &&
-                        (target.closest('tr')).getElementsByClassName(CLS.ICON_IMAGE).length === 0) {
+                    if (closest(target, 'tr') &&
+                        (closest(target, 'tr')).getElementsByClassName(CLS.ICON_IMAGE).length === 0) {
                         this.contextMenu.enableItems([this.getMenuId('Open')], false, true);
                     }
                 } else {
@@ -132,6 +140,9 @@ export class ContextMenu {
                 /* istanbul ignore next */
             } else if (treeFolder) {
                 this.setFolderItem(true);
+                if (uid === this.parent.pathId[0]) {
+                    this.contextMenu.enableItems([this.getMenuId('Delete'), this.getMenuId('Rename')], false, true);
+                }
                 /* istanbul ignore next */
                 // tslint:disable-next-line
             } else if (view === 'TreeView' || view === 'GridView' || view === 'LargeIcon') {
@@ -177,7 +188,6 @@ export class ContextMenu {
         this.contextMenu.dataBind();
         if (isTree) {
             this.contextMenu.enableItems([this.getMenuId('Open')], false, true);
-            this.contextMenu.enableItems([this.getMenuId('Download')], false, true);
         } else if (this.parent.selectedItems.length !== 1) {
             this.contextMenu.enableItems([this.getMenuId('Rename')], false, true);
         }
@@ -197,10 +207,10 @@ export class ContextMenu {
     private setLayoutItem(target: Element): void {
         this.contextMenu.items = this.getItemData(this.parent.contextMenuSettings.layout);
         this.contextMenu.dataBind();
-        if ((this.parent.fileView === 'LargeIcons' &&
-            (target.closest('#' + this.parent.element.id + CLS.LARGEICON_ID).getElementsByClassName(CLS.EMPTY).length !== 0))
-            || (this.parent.fileView === 'Details' &&
-                (target.closest('#' + this.parent.element.id + CLS.GRID_ID).getElementsByClassName(CLS.EMPTY).length !== 0))) {
+        if ((this.parent.view === 'LargeIcons' &&
+            (closest(target, '#' + this.parent.element.id + CLS.LARGEICON_ID).getElementsByClassName(CLS.EMPTY).length !== 0))
+            || (this.parent.view === 'Details' &&
+                (closest(target, '#' + this.parent.element.id + CLS.GRID_ID).getElementsByClassName(CLS.EMPTY).length !== 0))) {
             this.contextMenu.enableItems([this.getMenuId('SelectAll')], false, true);
             this.contextMenu.dataBind();
         }
@@ -233,7 +243,7 @@ export class ContextMenu {
             let path: string;
             // tslint:disable-next-line
             let data: { [key: string]: Object };
-            if (this.parent.fileView === 'Details') {
+            if (this.parent.view === 'Details') {
                 let uid: string = this.targetElement.getAttribute('data-uid');
                 data = this.parent.detailsviewModule.gridObj.getRowObjectFromUID(uid).data as { [key: string]: Object };
                 /* istanbul ignore next */
@@ -290,6 +300,9 @@ export class ContextMenu {
                     for (let ele: number = 0; ele < elements.length; ele++) {
                         items[ele] = getItemObject(this.parent, elements[ele]);
                     }
+                } else if (this.parent.activeModule === 'navigationpane' && this.parent.selectedItems.length === 0) {
+                    this.parent.notify(events.downloadInit, {});
+                    items = this.parent.itemData;
                 }
                 if (items.length > 0) {
                     Download(this.parent, items);
@@ -373,11 +386,27 @@ export class ContextMenu {
     private addEventListener(): void {
         this.parent.on(events.destroy, this.destroy, this);
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);
+        this.keyboardModule = new KeyboardEvents(
+            this.contextMenu.element,
+            {
+                keyAction: this.keyActionHandler.bind(this),
+                keyConfigs: this.keyConfigs,
+                eventName: 'keydown',
+            }
+        );
     }
 
     private removeEventListener(): void {
         this.parent.off(events.destroy, this.destroy);
         this.parent.off(events.modelChanged, this.onPropertyChanged);
+        this.keyboardModule.destroy();
+    }
+    private keyActionHandler(e: KeyboardEventArgs): void {
+        switch (e.action) {
+            case 'uparrow':
+            case 'downarrow':
+                e.preventDefault();
+        }
     }
 
     /**
@@ -398,7 +427,7 @@ export class ContextMenu {
         this.removeEventListener();
         this.contextMenu.destroy();
         if (document.getElementById(this.parent.element.id + CLS.CONTEXT_MENU_ID)) {
-            document.getElementById(this.parent.element.id + CLS.CONTEXT_MENU_ID).remove();
+            remove(document.getElementById(this.parent.element.id + CLS.CONTEXT_MENU_ID));
         }
     }
     /* istanbul ignore next */
@@ -445,24 +474,24 @@ export class ContextMenu {
                         items: [
                             {
                                 id: this.getMenuId('Name'), text: getLocaleText(this.parent, 'Name'),
-                                iconCss: this.parent.sortBy === 'name' ? CLS.TB_OPTION_DOT : ''
+                                iconCss: this.parent.sortBy === 'name' ? CLS.TB_OPTION_DOT : null
                             },
                             {
                                 id: this.getMenuId('Size'), text: getLocaleText(this.parent, 'Size'),
-                                iconCss: this.parent.sortBy === 'size' ? CLS.TB_OPTION_DOT : ''
+                                iconCss: this.parent.sortBy === 'size' ? CLS.TB_OPTION_DOT : null
                             },
                             {
                                 id: this.getMenuId('Date'), text: getLocaleText(this.parent, 'DateModified'),
-                                iconCss: this.parent.sortBy === 'dateModified' ? CLS.TB_OPTION_DOT : ''
+                                iconCss: this.parent.sortBy === 'dateModified' ? CLS.TB_OPTION_DOT : null
                             },
                             { separator: true },
                             {
                                 id: this.getMenuId('Ascending'), text: getLocaleText(this.parent, 'Ascending'),
-                                iconCss: this.parent.sortOrder === 'Ascending' ? CLS.TB_OPTION_TICK : ''
+                                iconCss: this.parent.sortOrder === 'Ascending' ? CLS.TB_OPTION_TICK : null
                             },
                             {
                                 id: this.getMenuId('Descending'), text: getLocaleText(this.parent, 'Descending'),
-                                iconCss: this.parent.sortOrder === 'Descending' ? CLS.TB_OPTION_TICK : ''
+                                iconCss: this.parent.sortOrder === 'Descending' ? CLS.TB_OPTION_TICK : null
                             }
                         ]
                     };
@@ -474,11 +503,11 @@ export class ContextMenu {
                         items: [
                             {
                                 id: this.getMenuId('largeiconsview'), text: getLocaleText(this.parent, 'View-LargeIcons'),
-                                iconCss: this.parent.view === 'Details' ? '' : CLS.TB_OPTION_TICK
+                                iconCss: this.parent.view === 'Details' ? null : CLS.TB_OPTION_TICK
                             },
                             {
                                 id: this.getMenuId('detailsview'), text: getLocaleText(this.parent, 'View-Details'),
-                                iconCss: this.parent.view === 'Details' ? CLS.TB_OPTION_TICK : ''
+                                iconCss: this.parent.view === 'Details' ? CLS.TB_OPTION_TICK : null
                             }
                         ]
                     };

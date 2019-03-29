@@ -93,7 +93,7 @@ export class VirtualScroll {
         let conTable: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement;
         this.renderedLength = resWrap.querySelector('tbody').children.length;
         let firstTDIndex: number = parseInt(resWrap.querySelector('tbody td').getAttribute('data-group-index'), 10);
-        let scrollHeight: number = (this.parent.enableAdaptiveRows) ?
+        let scrollHeight: number = (this.parent.rowAutoHeight) ?
             (conTable.offsetHeight - conWrap.offsetHeight) : this.bufferCount * this.itemSize;
         addClass([conWrap], 'e-transition');
         let resCollection: TdData[] = [];
@@ -114,7 +114,7 @@ export class VirtualScroll {
 
     private upScroll(conWrap: HTMLElement, firstTDIndex: number): TdData[] {
         let index: number = (~~(conWrap.scrollTop / this.itemSize) + Math.ceil(conWrap.clientHeight / this.itemSize)) - this.renderedLength;
-        if (this.parent.enableAdaptiveRows) {
+        if (this.parent.rowAutoHeight) {
             index = (index > firstTDIndex) ? firstTDIndex - this.bufferCount : index;
         }
         index = (index > 0) ? index : 0;
@@ -123,7 +123,7 @@ export class VirtualScroll {
         if (firstTDIndex === 0) {
             this.translateY = conWrap.scrollTop;
         } else {
-            let height: number = (this.parent.enableAdaptiveRows) ? this.averageRowHeight : this.itemSize;
+            let height: number = (this.parent.rowAutoHeight) ? this.averageRowHeight : this.itemSize;
             this.translateY = (conWrap.scrollTop - (this.bufferCount * height) > 0) ?
                 conWrap.scrollTop - (this.bufferCount * height) : 0;
         }
@@ -139,7 +139,7 @@ export class VirtualScroll {
             return null;
         }
         let nextSetResIndex: number = ~~(conWrap.scrollTop / this.itemSize);
-        if (this.parent.enableAdaptiveRows) {
+        if (this.parent.rowAutoHeight) {
             nextSetResIndex = ~~((conWrap.scrollTop - this.translateY) / this.averageRowHeight) + firstTDIndex;
             nextSetResIndex = (nextSetResIndex > firstTDIndex + this.bufferCount) ? nextSetResIndex : firstTDIndex + this.bufferCount;
         }

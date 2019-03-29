@@ -76,7 +76,7 @@ export class Count {
     private restrict(e: NotifyArgs): void {
         if (this.parent.showCharCount) {
             let element: string = ((e.args as MouseEvent).currentTarget as HTMLElement).textContent.trim();
-            let array: number[] = [8, 16, 17, 37, 38, 39, 40, 65];
+            let array: number[] = [8, 16, 17, 37, 38, 39, 40, 46, 65];
             let arrayKey: number;
             for (let i: number = 0; i <= array.length - 1; i++) {
                 if ((e.args as MouseEvent).which === array[i]) {

@@ -2,11 +2,11 @@
   .e-schedule {
     .e-schedule-toolbar {
       & .e-icon-prev::before {
-        content: '\e70d';
+        content: '\e71f';
       }
 
       & .e-icon-next::before {
-        content: '\e76a';
+        content: '\e70b';
       }
 
       & .e-icon-add::before {
@@ -18,7 +18,7 @@
       }
 
       & .e-icon-down-arrow::before {
-        content: '\e798';
+        content: '\e744';
       }
 
       & .e-icon-day::before {
@@ -50,11 +50,11 @@
       }
 
       & .e-icon-timeline-week::before {
-        content: '\e762';
+        content: '\e72f';
       }
 
       & .e-icon-timeline-workweek::before {
-        content: '\e7c2';
+        content: '\e762';
       }
 
       & .e-icon-timeline-month::before {
@@ -73,11 +73,11 @@
 
       &.e-rtl {
         & .e-icon-prev::before {
-          content: '\e76a';
+          content: '\e70b';
         }
 
         & .e-icon-next::before {
-          content: '\e70d';
+          content: '\e71f';
         }
       }
     }
@@ -145,7 +145,7 @@
     }
 
     .e-resource-tree-icon::before {
-      content: '\e76a';
+      content: '\e70b';
     }
   }
 

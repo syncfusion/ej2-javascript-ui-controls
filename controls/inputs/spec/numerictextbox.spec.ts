@@ -5118,6 +5118,30 @@ describe('Change Event testing', () => {
             expect(document.getElementById('tsNumeric').parentElement.classList.contains('e-float-input')).toEqual(false);
         });
     });
+
+    describe('Disabled attribute as inline', () => {
+        let numerictextbox: any;
+        let setModelNumeric: any;       
+        beforeEach((): void => {
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'tsNumeric' });
+            ele.setAttribute('disabled','');
+            ele.setAttribute('readonly','');
+            document.body.appendChild(ele);
+            numerictextbox = new NumericTextBox({ value: 25, showClearButton:true, enabled: false, readonly: true });
+            numerictextbox.appendTo('#tsNumeric');
+        });
+        afterEach((): void => {
+            if (numerictextbox) {
+                numerictextbox.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+		it('Check e-disabled class in input element', () => {
+            expect(numerictextbox.element.classList.contains('e-disabled')).toBe(true);
+            expect(numerictextbox.element.parentElement.classList.contains('e-disabled')).toBe(true);
+            expect(numerictextbox.element.getAttribute('aria-readonly')).toBe("true");
+        });
+    });
     describe('NumericTextBox in HTML5 forms testing:', () => {
         let numeric: any;
         let container: HTMLDivElement;

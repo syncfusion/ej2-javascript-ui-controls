@@ -95,11 +95,7 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
                 /* action on catch */
             }
         } else {
-            this.tempItems =  this.items as objColl;
-            this.items = [];
-            this.tempItems.map(this.createMenuItems, this);
-            this.setProperties({ items: this.items }, true);
-            this.tempItems = [];
+            this.updateMenuItems(this.items);
         }
         super.preRender();
     }
@@ -117,6 +113,14 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
         }
     }
 
+    private updateMenuItems(items: MenuItemModel[]): void {
+        this.tempItems =  items as objColl;
+        this.items = [];
+        this.tempItems.map(this.createMenuItems, this);
+        this.setProperties({ items: this.items }, true);
+        this.tempItems = [];
+    }
+
     /**
      * Called internally if any of the property value changed
      * @private
@@ -125,7 +129,6 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
      * @returns void
      */
     public onPropertyChanged(newProp: MenuModel, oldProp: MenuModel): void {
-        super.onPropertyChanged(newProp, oldProp);
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'orientation':
@@ -137,8 +140,12 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
                     this.element.removeAttribute('aria-orientation');
                 }
                 break;
+                case 'items':
+                    if (!Object.keys(oldProp.items).length) { this.updateMenuItems(newProp.items); }
+                    break;
             }
         }
+        super.onPropertyChanged(newProp, oldProp);
     }
 
     private createMenuItems(item: obj): void {

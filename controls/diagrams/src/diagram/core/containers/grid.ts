@@ -4,6 +4,7 @@ import { Container } from './container';
 import { Size } from '../../primitives/size';
 import { ShapeStyleModel } from '../appearance-model';
 import { randomId } from '../../utility/base-util';
+import { TextElement } from '../elements/text-element';
 
 /**
  * Grid panel is used to arrange the children in a table like structure
@@ -188,7 +189,10 @@ export class GridPanel extends Container {
             row.cells[i].desiredCellHeight = row.cells[i].minHeight = height;
             if (row.cells[i].children && row.cells[i].children.length) {
                 row.cells[i].children[0].height = height;
+                this.setTextRefresh(row.cells[i].children[0] as Canvas);
+
             }
+
         }
         this.desiredRowHeight[rowId] = height;
         this.measure(new Size(this.width, this.height));
@@ -200,7 +204,20 @@ export class GridPanel extends Container {
                 this.updateRowHeight(rowId, minHeight, false);
             }
         }
+    }
 
+    private setTextRefresh(canvas: Canvas): void {
+        if (canvas.children && canvas.children.length) {
+            let children: object[] = canvas.children;
+            for (let i: number = 0; i < children.length; i++) {
+                if (children[i] instanceof TextElement) {
+                    (children[i] as TextElement).refreshTextElement();
+                }
+                if (children[i] instanceof Canvas) {
+                    this.setTextRefresh(children[i] as Canvas);
+                }
+            }
+        }
     }
 
     /** @private */
@@ -210,6 +227,7 @@ export class GridPanel extends Container {
             this.width += width - this.rows[this.rows.length - 1].cells[colId].desiredCellWidth;
         }
         for (let i: number = 0; i < this.rows.length; i++) {
+            this.setTextRefresh(this.rows[i].cells[0]);
             this.rows[i].cells[colId].desiredCellWidth = this.rows[i].cells[colId].minWidth = width;
             if (this.rows[i].cells[colId].children && this.rows[i].cells[colId].children.length) {
                 this.rows[i].cells[colId].children[0].width = width;

@@ -14,7 +14,7 @@ import { Editor } from '../../../src/index';
  */
 function createDocument(editor: DocumentEditor) {
     editor.openBlank();
-    editor.editorModule.insertText('Adventure Works cycles', false);
+    editor.editorModule.insertText('Adventure Works cycles');
 }
 let arabic: any = {
     "sections": [
@@ -585,7 +585,7 @@ describe('dialog event validation-1', () => {
     });
     it('NumberFormat event validation', (done) => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.editor.applyNumbering('%1.', 'Number');
         dialog.showListDialog();
         setTimeout(() => {
@@ -599,7 +599,7 @@ describe('dialog event validation-1', () => {
     it('follow character event validation', () => {
         let viewer: LayoutViewer = editor.viewer;
         createDocument(editor);
-        editor.editorModule.insertText('Syncfusion Software', false);
+        editor.editorModule.insertText('Syncfusion Software');
         editor.editor.applyBullet('\uf0b7', 'Symbol');
         let locale: L10n = new L10n('documenteditor', editor.defaultLocale);
         locale.setLocale(editor.locale);

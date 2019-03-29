@@ -73,17 +73,20 @@ export class AggregateMenu {
         if (removeContextMenu !== null) {
             removeContextMenu.innerHTML = '';
         }
-        this.parent.element.appendChild(createElement('ul', {
+        let contextMenu: HTMLElement = createElement('ul', {
             id: this.parent.element.id + 'valueFieldContextMenu'
-        }));
+        });
+        this.parent.element.appendChild(contextMenu);
         this.menuInfo = new Menu(menuOptions);
-        this.menuInfo.appendTo('#' + this.parent.element.id + 'valueFieldContextMenu');
+        this.menuInfo.appendTo(contextMenu);
     }
     private beforeMenuOpen(args: BeforeOpenCloseMenuEventArgs): void {
         args.element.style.zIndex = (this.menuInfo.element.style.zIndex + 3).toString();
         args.element.style.display = 'inline';
     }
-    private createValueSettingsDialog(target: HTMLElement): void {
+    /** @hidden */
+    public createValueSettingsDialog(target: HTMLElement, parentElement: HTMLElement): void {
+        this.parentElement = parentElement;
         let valueDialog: HTMLElement = createElement('div', {
             id: this.parentElement.id + '_ValueDialog',
             className: 'e-value-field-settings',
@@ -274,7 +277,7 @@ export class AggregateMenu {
         if (menu.item.text !== null) {
             let buttonElement: HTMLElement = this.currentMenu.parentElement as HTMLElement;
             if (menu.item.id === 'MoreOption') {
-                this.createValueSettingsDialog(buttonElement);
+                this.createValueSettingsDialog(buttonElement, this.parentElement);
             } else {
                 let field: string = buttonElement.getAttribute('data-uid');
                 let valuefields: IFieldOptions[] = this.parent.dataSource.values;
@@ -318,16 +321,21 @@ export class AggregateMenu {
         let baseFieldInstance: DropDownList = getInstance('#' + this.parentElement.id + '_base_field_option', DropDownList) as DropDownList;
         let baseItemInstance: DropDownList = getInstance('#' + this.parentElement.id + '_base_item_option', DropDownList) as DropDownList;
         let fieldName: string = dialogElement.getAttribute('data-field');
-        let buttonElement: HTMLElement = this.parentElement.querySelector('.' + cls.PIVOT_BUTTON_CLASS + '#' + fieldName) as HTMLElement;
-        let contentElement: HTMLElement = buttonElement.querySelector('.e-content') as HTMLElement;
-        let captionName: string =
-            this.parent.localeObj.getConstant(summaryInstance.value as string) + ' ' + 'of' + ' ' + captionInstance.value;
-        contentElement.innerHTML = captionName;
-        contentElement.setAttribute('title', captionName);
-        buttonElement.setAttribute('data-type', summaryInstance.value as string);
-        buttonElement.setAttribute('data-caption', captionInstance.value);
-        buttonElement.setAttribute('data-basefield', baseFieldInstance.value as string);
-        buttonElement.setAttribute('data-baseitem', baseItemInstance.value as string);
+        let buttonElement: HTMLElement;
+        if (this.parentElement.querySelector('.' + cls.PIVOT_BUTTON_CLASS)) {
+            buttonElement = this.parentElement.querySelector('.' + cls.PIVOT_BUTTON_CLASS + '#' + fieldName) as HTMLElement;
+        }
+        if (buttonElement) {
+            let contentElement: HTMLElement = buttonElement.querySelector('.e-content') as HTMLElement;
+            let captionName: string =
+                this.parent.localeObj.getConstant(summaryInstance.value as string) + ' ' + 'of' + ' ' + captionInstance.value;
+            contentElement.innerHTML = captionName;
+            contentElement.setAttribute('title', captionName);
+            buttonElement.setAttribute('data-type', summaryInstance.value as string);
+            buttonElement.setAttribute('data-caption', captionInstance.value);
+            buttonElement.setAttribute('data-basefield', baseFieldInstance.value as string);
+            buttonElement.setAttribute('data-baseitem', baseItemInstance.value as string);
+        }
         let selectedField: IFieldOptions = this.parent.pivotCommon.eventBase.getFieldByName(fieldName, this.parent.dataSource.values);
         selectedField = (<{ [key: string]: Object }>selectedField).properties ?
             (<{ [key: string]: Object }>selectedField).properties : selectedField;

@@ -6,42 +6,44 @@
     background: $acrdn-bg-color;
     border: $acrdn-border-size $acrdn-border-type $acrdn-default-border;
 
-    @if $skin-name == 'bootstrap4' {
+    @if $acrdn-skin == 'bootstrap4' {
       border-radius: $acrdn-border-radius;
     }
 
-    @if $skin-name == 'highcontrast' {
+    @if $acrdn-skin == 'highcontrast' {
       background: $acrdn-bg;
     }
 
     .e-active {
       background: $acrdn-active-bg;
-      @if $skin-name == 'highcontrast' {
+      @if $acrdn-skin == 'highcontrast' {
         background: $acrdn-active-item-bg;
       }
     }
 
     .e-acrdn-item {
-      @if $skin-name == 'fabric' {
+      @if $acrdn-skin == 'fabric' {
         border-bottom: 1px solid $acrdn-item-border-color;
         border-top: 1px solid $acrdn-item-border-color;
       }
 
-      @if $skin-name == 'bootstrap4' {
+      @if $acrdn-skin == 'bootstrap4' {
         border-bottom: $acrdn-border-size $acrdn-border-type $acrdn-default-border;
+        border-radius: 4px 4px 0 0;
 
         &.e-select:last-child {
           border-bottom: 0;
+          border-radius: 0 0 4px 4px;
         }
       }
 
       &.e-item-focus {
-        @if $skin-name == 'fabric' {
+        @if $acrdn-skin == 'fabric' {
           border-bottom: 1px solid $acrdn-header-focus-bg;
           border-top: 1px solid $acrdn-header-focus-bg;
         }
 
-        @if $skin-name == 'highcontrast' {
+        @if $acrdn-skin == 'highcontrast' {
           .e-acrdn-header:focus {
             border-color: $acrdn-focus-hdr-focus-border-color;
           }
@@ -49,11 +51,11 @@
       }
 
       &.e-item-focus.e-select.e-selected.e-expand-state {
-        @if $skin-name == 'fabric' or $skin-name == 'material' {
+        @if $acrdn-skin == 'fabric' or $acrdn-skin == 'material' {
           border-top: 1px solid $acrdn-selected-header-color;
         }
 
-        @if $skin-name == 'highcontrast' {
+        @if $acrdn-skin == 'highcontrast' {
           .e-acrdn-header:focus {
             border: 2px dashed $acrdn-focus-exp-hdr-focus-border-color;
           }
@@ -72,25 +74,25 @@
 
       &.e-item-focus.e-expand-state.e-select,
       &.e-item-focus.e-select.e-selected.e-expand-state  {
-        @if $skin-name == 'material' {
+        @if $acrdn-skin == 'material' {
           border-color: $acrdn-header-focus-bg;
         }
       }
 
       &.e-expand-state.e-select {
-        @if $skin-name == 'fabric' or $skin-name == 'material' {
+        @if $acrdn-skin == 'fabric' or $acrdn-skin == 'material' {
           border-bottom: 1px solid $acrdn-selected-header-color;
           border-top: 1px solid $acrdn-selected-header-color;
         }
       }
 
       .e-acrdn-header {
-        @if $skin-name == 'fabric' {
+        @if $acrdn-skin == 'fabric' {
           border: 1px solid $acrdn-item-header-border-color;
         }
       }
 
-      @if $skin-name == 'bootstrap4' {
+      @if $acrdn-skin == 'bootstrap4' {
         &.e-overlay.e-select.e-expand-state {
           .e-acrdn-header {
             .e-icons,
@@ -104,11 +106,11 @@
       &.e-overlay {
         background: $acrdn-bg-color;
 
-        @if $skin-name == 'bootstrap4' {
+        @if $acrdn-skin == 'bootstrap4' {
           opacity: $acrdn-opacity;
         }
 
-        @if $skin-name == 'highcontrast' or $skin-name == 'bootstrap4' {
+        @if $acrdn-skin == 'highcontrast' or $acrdn-skin == 'bootstrap4' {
           .e-acrdn-header {
 
             .e-icons,
@@ -122,10 +124,10 @@
       &.e-selected.e-select.e-expand-state > .e-acrdn-header {
 
         &:focus {
-          @if $skin-name == 'fabric' {
+          @if $acrdn-skin == 'fabric' {
             border: 1px solid $acrdn-item-exp-hdr-focus-border-color;
           }
-          @else if $skin-name == 'highcontrast' {
+          @else if $acrdn-skin == 'highcontrast' {
             border: 2px dashed $acrdn-item-exp-hdr-focus-border-color;
           }
           @else {
@@ -136,7 +138,7 @@
 
       .e-acrdn-panel.e-nested {
 
-        @if $skin-name == 'bootstrap4' {
+        @if $acrdn-skin == 'bootstrap4' {
           .e-acrdn-content .e-acrdn-item:last-child {
             border-bottom: $acrdn-border-size $acrdn-selected-border-type $acrdn-default-border;
           }
@@ -146,7 +148,7 @@
           color: $acrdn-header-font;
         }
 
-        @if $skin-name == 'highcontrast' {
+        @if $acrdn-skin == 'highcontrast' {
           .e-expand-state {
             > .e-icons,
             > .e-acrdn-header-content {
@@ -158,7 +160,7 @@
 
       &.e-select {
 
-        @if $skin-name == 'bootstrap' {
+        @if $acrdn-skin == 'bootstrap' {
           background: $acrdn-item-select-bg;
           border: $acrdn-border-size solid $acrdn-default-border;
         }
@@ -166,17 +168,17 @@
         .e-acrdn-panel .e-acrdn-content {
           color: $acrdn-content-color;
 
-          @if $skin-name == 'bootstrap4' {
+          @if $acrdn-skin == 'bootstrap4' {
             background: $acrdn-item-panel-content-select-bg;
             border-top: $acrdn-border-size $acrdn-border-type $acrdn-default-border;
           }
 
-          @if $skin-name == 'highcontrast' {
+          @if $acrdn-skin == 'highcontrast' {
             background: $acrdn-selected-item-content-color;
           }
         }
 
-        @if $skin-name == 'material' {
+        @if $acrdn-skin == 'material' {
           .e-acrdn-panel .e-acrdn-content .e-content-icon {
             color: $acrdn-icon-color;
           }
@@ -197,10 +199,10 @@
       &.e-expand-state.e-select:not(.e-selected) > .e-acrdn-header {
 
         &:focus {
-          @if $skin-name == 'fabric' {
+          @if $acrdn-skin == 'fabric' {
             border: 1px solid $acrdn-item-exp-hdr-focus-border-color;
           }
-          @else if $skin-name == 'highcontrast' {
+          @else if $acrdn-skin == 'highcontrast' {
             border-color: $acrdn-item-exp-hdr-focus-border-color;
           }
           @else {
@@ -211,36 +213,36 @@
 
       .e-acrdn-header {
 
-        @if $skin-name == 'highcontrast' {
+        @if $acrdn-skin == 'highcontrast' {
           border: 1px solid $acrdn-item-header-border-color;
         }
 
         &:hover {
-          @if $skin-name == 'fabric' {
+          @if $acrdn-skin == 'fabric' {
             border: 1px solid $acrdn-header-hover-bg;
           }
           background: $acrdn-header-hover-bg;
-          @if $skin-name == 'highcontrast' {
+          @if $acrdn-skin == 'highcontrast' {
             border-color: $acrdn-item-header-hover-border-color;
           }
         }
 
         &:active {
-          @if $skin-name == 'fabric' {
+          @if $acrdn-skin == 'fabric' {
             border: 1px solid $acrdn-header-active-bg;
           }
           background: $acrdn-header-active-bg;
-          @if $skin-name == 'highcontrast' {
+          @if $acrdn-skin == 'highcontrast' {
             border-color: $acrdn-item-header-active-border-color;
           }
         }
 
         &:focus {
-          @if $skin-name == 'fabric' {
+          @if $acrdn-skin == 'fabric' {
             border: 1px solid $acrdn-header-focus-bg;
           }
           background: $acrdn-header-focus-bg;
-          @if $skin-name == 'highcontrast' {
+          @if $acrdn-skin == 'highcontrast' {
             background: $acrdn-item-header-focus-bg-color;
             border: 2px dashed $acrdn-item-header-focus-border-color;
 
@@ -258,7 +260,7 @@
 
       &.e-select {
 
-        @if $skin-name == 'bootstrap4' {
+        @if $acrdn-skin == 'bootstrap4' {
           &.e-acrdn-item > .e-acrdn-header {
             &:hover {
               .e-icons,
@@ -280,12 +282,12 @@
 
         &.e-selected.e-expand-state > .e-acrdn-header,
         &.e-expand-state > .e-acrdn-header {
-          @if $skin-name == 'fabric' {
+          @if $acrdn-skin == 'fabric' {
             border: 1px solid $acrdn-selected-header-color;
           }
           background: $acrdn-selected-header-color;
 
-          @if $skin-name == 'bootstrap4' {
+          @if $acrdn-skin == 'bootstrap4' {
             &:hover {
               .e-icons,
               .e-acrdn-header-content {
@@ -299,7 +301,7 @@
             }
           }
 
-          @if $skin-name == 'highcontrast' {
+          @if $acrdn-skin == 'highcontrast' {
             background: $acrdn-exp-hdr-bg-color;
             border-color: $acrdn-exp-hdr-border-color;
 
@@ -334,7 +336,7 @@
         }
 
         &.e-expand-state > .e-acrdn-header:hover:focus {
-          @if $skin-name == 'highcontrast' {
+          @if $acrdn-skin == 'highcontrast' {
             .e-icons,
             .e-acrdn-header-content {
               color: $acrdn-exp-hdr-hover-focus-color;
@@ -344,7 +346,7 @@
       }
 
       &.e-select {
-        @if $skin-name == 'material' {
+        @if $acrdn-skin == 'material' {
           border-bottom: $acrdn-selected-border-size $acrdn-selected-border-type transparent;
           border-top: $acrdn-selected-border-size $acrdn-selected-border-type transparent;
 
@@ -353,7 +355,7 @@
           }
         }
 
-        @if $skin-name == 'highcontrast' {
+        @if $acrdn-skin == 'highcontrast' {
           &.e-expand-state .e-acrdn-header:hover {
             border-color: $acrdn-exp-hdr-hover-border-color;
 
@@ -366,7 +368,7 @@
       }
 
       &.e-selected {
-        @if $skin-name == 'bootstrap' {
+        @if $acrdn-skin == 'bootstrap' {
           border:  $acrdn-border-size solid $acrdn-default-border;
         }
         @else {
@@ -374,7 +376,7 @@
             border-bottom: $acrdn-selected-border-size $acrdn-selected-border-type  $acrdn-selected-border-color;
             border-top: $acrdn-selected-border-size $acrdn-selected-border-type  $acrdn-selected-border-color;
 
-            @if $skin-name == 'bootstrap4' {
+            @if $acrdn-skin == 'bootstrap4' {
               border-bottom: $acrdn-border-size $acrdn-border-type $acrdn-default-border;
 
               &.e-select:last-child {
@@ -385,23 +387,23 @@
         }
 
         + .e-selected {
-          @if $skin-name == 'bootstrap' {
+          @if $acrdn-skin == 'bootstrap' {
             border:  $acrdn-border-size solid $acrdn-default-border;
           }
-          @if $skin-name == 'material' {
+          @if $acrdn-skin == 'material' {
             border-top: $acrdn-selected-border-size solid  transparent;
           }
           @else {
             border-top: $acrdn-selected-border-size none  $acrdn-selected-border-color;
           }
         }
-        @if $skin-name != 'bootstrap' {
+        @if $acrdn-skin != 'bootstrap' {
           .e-selected:last-child {
             border-bottom: $acrdn-selected-border-size none  $acrdn-selected-border-color;
           }
         }
 
-        @if $skin-name == 'highcontrast' {
+        @if $acrdn-skin == 'highcontrast' {
           .e-acrdn-item.e-selected:not(.e-expand-state) {
             > .e-acrdn-header .e-icons,
             > .e-acrdn-header .e-acrdn-header-content {
@@ -425,18 +427,18 @@
         }
 
         &.e-select > .e-acrdn-header {
-          @if $skin-name == 'bootstrap' {
+          @if $acrdn-skin == 'bootstrap' {
             background: $acrdn-selected-header-color;
             border: 0;
             border-bottom:  $acrdn-border-size solid $acrdn-default-border;
             border-radius: 0;
           }
 
-          @if $skin-name == 'bootstrap4' {
+          @if $acrdn-skin == 'bootstrap4' {
             border-radius: 4px;
           }
 
-          @if $skin-name == 'highcontrast' {
+          @if $acrdn-skin == 'highcontrast' {
 
             &:focus {
               border: 2px dashed $acrdn-selected-hdr-focus-border-color;

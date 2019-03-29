@@ -48,7 +48,7 @@ describe('open find pane and repalce pane testing', () => {
         editor.selection.start.setPositionForCurrentIndex('0;0;1;1;33');
         editor.selection.end.setPositionForCurrentIndex('0;0;2;2;45');
         editor.selection.highlightSelectedContent(editor.selection.start, editor.selection.end);
-        editor.editorModule.insertText('a', false);
+        editor.editorModule.insertText('a');
         expect((editor.viewer.pages[0].bodyWidgets[0].childWidgets[1] as ParagraphWidget).childWidgets.length).not.toBe(paraLength);
     });
     it('replace all validation-2', () => {
@@ -57,7 +57,7 @@ describe('open find pane and repalce pane testing', () => {
         editor.selection.start.setPositionForCurrentIndex('0;0;1;1;33');
         editor.selection.end.setPositionForCurrentIndex('0;0;2;2;45');
         editor.selection.highlightSelectedContent(editor.selection.start, editor.selection.end);
-        editor.editorModule.insertText('a', false);
+        editor.editorModule.insertText('a');
         let count: number = 1;
         while (count <= 10) {
             editor.editorHistory.undo();
@@ -173,7 +173,7 @@ describe('open find pane and repalce pane testing', () => {
     });
     it('back slash character validation', () => {
         editor.open(getJson());
-        editor.editorModule.insertText('\\', false);
+        editor.editorModule.insertText('\\');
         let optionsPane = editor.optionsPaneModule;
         optionsPane.showHideOptionsPane(true);
         (optionsPane as any).searchInput.value = '\\';

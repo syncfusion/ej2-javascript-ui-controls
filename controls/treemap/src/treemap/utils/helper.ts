@@ -227,6 +227,7 @@ export function createTextStyle(
 ): HTMLElement {
     let htmlObject: HTMLElement;
     htmlObject = <HTMLElement>renderer.createText(renderOptions, text);
+    htmlObject.setAttributeNS('http://www.w3.org/XML/1998/namespace', 'xml:space', 'preserve');
     htmlObject.style['user-select'] = 'none';
     htmlObject.style['-moz-user-select'] = 'none';
     htmlObject.style['-webkit-touch-callout'] = 'none';
@@ -274,6 +275,10 @@ export function renderTextElement(
                 options.connectorText : drillLevelText[z];
             renderOptions['id'] = options.id + '_' + z;
             htmlObject = createTextStyle(renderer, renderOptions, drillText);
+            if (z % 2 === 0 && z !== 0) {
+                let re: RegExp = /\s+/g;
+                drillText = drillText.replace(re, '&nbsp');
+            }
             let size: Size = measureText(drillText, font);
             renderOptions['x'] = z !== 0 ? renderOptions['x'] + size.width : renderOptions['x'] + size.width + spacing;
             parent.appendChild(htmlObject);

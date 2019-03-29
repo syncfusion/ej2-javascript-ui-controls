@@ -70,7 +70,7 @@ export class ResourceBase {
         let resColl: ResourcesModel[] = this.resourceCollection;
         let resDiv: Element = createElement('div', { className: cls.RESOURCE_COLUMN_WRAP_CLASS });
         let tbl: Element = this.parent.activeView.createTableLayout(cls.RESOURCE_COLUMN_TABLE_CLASS);
-        if (!this.parent.uiStateValues.isGroupAdaptive && this.parent.enableAdaptiveRows && this.parent.activeView.isTimelineView()
+        if (!this.parent.uiStateValues.isGroupAdaptive && this.parent.rowAutoHeight && this.parent.activeView.isTimelineView()
             && this.parent.activeViewOptions.group.resources.length > 0) {
             addClass([tbl], cls.AUTO_HEIGHT);
         }

@@ -1,5 +1,5 @@
 import { EventHandler, closest, isNullOrUndefined, KeyboardEvents, KeyboardEventArgs, createElement } from '@syncfusion/ej2-base';
-import { getValue, addClass, removeClass } from '@syncfusion/ej2-base';
+import { getValue, addClass, removeClass, remove } from '@syncfusion/ej2-base';
 import { TextBox, ChangedEventArgs } from '@syncfusion/ej2-inputs';
 import { IFileManager, ITreeView, NotifyArgs, ReadArgs } from '../base/interface';
 import { DropDownButton, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
@@ -51,7 +51,7 @@ export class BreadCrumbBar {
     private render(): void {
         this.addEventListener();
     }
-    public onPathChanged(): void {
+    public onPathChange(): void {
         let rootName: string = getValue('name', getValue('/', this.parent.feParent));
         if (!this.addressBarLink) {
             this.addressPath = rootName + this.parent.path;
@@ -78,13 +78,13 @@ export class BreadCrumbBar {
                 }
                 addressbarLI.setAttribute('data-utext', id);
                 addressbarLI.classList.add('e-address-list-item');
-                addressbarLI.setAttribute('tabindex', '0');
                 if (i !== 0) {
                     let icon: HTMLElement = createElement('span', { className: CLS.ICONS });
                     addressbarLI.appendChild(icon);
                 }
                 if (countOfAddressBarPath - i !== 1) {
                     addressATag = createElement('a', { className: CLS.LIST_TEXT });
+                    addressbarLI.setAttribute('tabindex', '0');
                 } else {
                     addressATag = createElement('span', { className: CLS.LIST_TEXT });
                 }
@@ -109,9 +109,6 @@ export class BreadCrumbBar {
             this.updateBreadCrumbBar(addressbarUL);
         }
         this.addressBarLink = '';
-        if (this.searchObj.value !== '') {
-            this.searchObj.value = '';
-        }
     }
     /* istanbul ignore next */
     private updateBreadCrumbBar(addresBarUL: HTMLElement): void {
@@ -130,11 +127,12 @@ export class BreadCrumbBar {
             liElementsWidth = liElementsWidth + width;
         }
         if (!isNullOrUndefined(ulElement)) {
-            ulElement.remove();
+            remove(ulElement);
         }
         let searchContainer: HTMLElement = this.parent.createElement('div');
         searchContainer.setAttribute('class', 'e-search-wrap');
-        let searchInput: HTMLElement = createElement('input', { id: this.parent.element.id + '_search' });
+        let id: string = this.parent.element.id + CLS.SEARCH_ID;
+        let searchInput: HTMLElement = createElement('input', { id: id, attrs: { autocomplete: 'off' } });
         searchContainer.appendChild(searchInput);
         let searchEle: Element = this.parent.breadCrumbBarNavigation.querySelector('.e-search-wrap .e-input');
         if (isNullOrUndefined(searchEle)) {
@@ -143,12 +141,13 @@ export class BreadCrumbBar {
             EventHandler.add(span, 'click', this.onShowInput, this);
             searchInput.parentElement.insertBefore(span, searchInput);
             this.searchObj = new TextBox({
+                value: '',
                 showClearButton: true,
                 placeholder: getLocaleText(this.parent, 'Search'),
                 focus: this.onFocus.bind(this),
                 blur: this.onBlur.bind(this),
             });
-            this.searchObj.appendTo('#' + this.parent.element.id + '_search');
+            this.searchObj.appendTo('#' + this.parent.element.id + CLS.SEARCH_ID);
             this.searchEventBind(this.parent.searchSettings.allowSearchOnTyping);
             let search: Element = this.searchObj.element.nextElementSibling;
             EventHandler.add(search, 'mousedown', this.searchChangeHandler.bind(this), this);
@@ -196,7 +195,7 @@ export class BreadCrumbBar {
     }
     /* istanbul ignore next */
     private onFocus(): void {
-        let wrap: Element = this.searchObj.element.closest('.e-search-wrap');
+        let wrap: Element = closest(this.searchObj.element, '.e-search-wrap');
         wrap.classList.add('e-focus');
     }
     /* istanbul ignore next */
@@ -205,7 +204,7 @@ export class BreadCrumbBar {
     }
     /* istanbul ignore next */
     private onBlur(): void {
-        let wrap: Element = this.searchObj.element.closest('.e-search-wrap');
+        let wrap: Element = closest(this.searchObj.element, '.e-search-wrap');
         wrap.classList.remove('e-focus');
     }
     /* istanbul ignore next */
@@ -242,7 +241,9 @@ export class BreadCrumbBar {
                 searchWord = '*' + args.value + '*';
             }
             if (this.searchObj.element.value.length > 0) {
-                Search(this.parent, events.search, this.parent.path, searchWord, false, false);
+                let caseSensitive: boolean = this.parent.searchSettings.ignoreCase;
+                let hiddenItems: boolean = this.parent.showHiddenItems;
+                Search(this.parent, events.search, this.parent.path, searchWord, hiddenItems, !caseSensitive);
             } else {
                 read(this.parent, events.pathChanged, this.parent.path);
             }
@@ -286,18 +287,15 @@ export class BreadCrumbBar {
         return path;
     }
 
-    private onInitialEnd(): void {
-        this.onPathChanged();
-    }
-
-    private onRefreshEnd(): void {
-        this.onPathChanged();
+    private onUpdatePath(): void {
+        this.onPathChange();
+        this.removeSearchValue();
     }
 
     private onCreateEnd(args: ReadArgs): void {
         let path: string = this.addressPath.substring(this.addressPath.indexOf('/'), this.addressPath.length);
         if (path !== this.parent.path) {
-            this.onPathChanged();
+            this.onPathChange();
         }
     }
 
@@ -305,12 +303,21 @@ export class BreadCrumbBar {
     private onDeleteEnd(): void {
         let path: string = this.addressPath.substring(this.addressPath.indexOf('/'), this.addressPath.length);
         if (path !== this.parent.path) {
-            this.onPathChanged();
+            this.onUpdatePath();
         }
     }
 
-    private onRenameEnd(): void {
-        this.onPathChanged();
+    /* istanbul ignore next */
+    private removeSearchValue(): void {
+        if (this.searchObj.value !== '' || this.searchObj.element.value !== '') {
+            this.searchObj.value = '';
+            this.searchObj.element.value = '';
+            this.searchObj.dataBind();
+        }
+    }
+
+    private onResize(): void {
+        this.onPathChange();
     }
 
     private liClick(currentPath: string): void {
@@ -328,15 +335,15 @@ export class BreadCrumbBar {
         this.parent.on(events.modelChanged, this.onPropertyChanged, this);
         EventHandler.add(this.parent.breadCrumbBarNavigation, 'click', this.addressPathClickHandler, this);
         this.parent.on(events.destroy, this.destroy, this);
-        this.parent.on(events.pathChanged, this.onPathChanged, this);
-        this.parent.on(events.initialEnd, this.onInitialEnd, this);
-        this.parent.on(events.refreshEnd, this.onRefreshEnd, this);
-        this.parent.on(events.openEnd, this.onPathChanged, this);
+        this.parent.on(events.pathChanged, this.onUpdatePath, this);
+        this.parent.on(events.finalizeEnd, this.onUpdatePath, this);
+        this.parent.on(events.refreshEnd, this.onUpdatePath, this);
+        this.parent.on(events.openEnd, this.onUpdatePath, this);
         this.parent.on(events.createEnd, this.onCreateEnd, this);
-        this.parent.on(events.renameEnd, this.onRenameEnd, this);
+        this.parent.on(events.renameEnd, this.onUpdatePath, this);
         this.parent.on(events.deleteEnd, this.onDeleteEnd, this);
-        this.parent.on(events.splitterResize, this.onPathChanged, this);
-        this.parent.on(events.resizeEnd, this.onPathChanged, this);
+        this.parent.on(events.splitterResize, this.onResize, this);
+        this.parent.on(events.resizeEnd, this.onResize, this);
         this.parent.on(events.searchTextChange, this.onSearchTextChange, this);
     }
 
@@ -350,15 +357,15 @@ export class BreadCrumbBar {
     }
     private removeEventListener(): void {
         this.keyboardModule.destroy();
-        this.parent.off(events.pathChanged, this.onPathChanged);
-        this.parent.off(events.initialEnd, this.onInitialEnd);
-        this.parent.off(events.refreshEnd, this.onRefreshEnd);
-        this.parent.off(events.openEnd, this.onPathChanged);
+        this.parent.off(events.pathChanged, this.onUpdatePath);
+        this.parent.off(events.finalizeEnd, this.onUpdatePath);
+        this.parent.off(events.refreshEnd, this.onUpdatePath);
+        this.parent.off(events.openEnd, this.onUpdatePath);
         this.parent.off(events.createEnd, this.onCreateEnd);
-        this.parent.off(events.renameEnd, this.onRenameEnd);
+        this.parent.off(events.renameEnd, this.onUpdatePath);
         this.parent.off(events.deleteEnd, this.onDeleteEnd);
-        this.parent.off(events.splitterResize, this.onPathChanged);
-        this.parent.off(events.resizeEnd, this.onPathChanged);
+        this.parent.off(events.splitterResize, this.onResize);
+        this.parent.off(events.resizeEnd, this.onResize);
         this.parent.off(events.searchTextChange, this.onSearchTextChange);
     }
 
@@ -387,6 +394,6 @@ export class BreadCrumbBar {
     }
 
     private onSearchTextChange(args: ReadArgs): void {
-        this.searchObj.element.placeholder = getLocaleText(this.parent, 'Search ' + args.cwd.name);
+        this.searchObj.element.placeholder = getLocaleText(this.parent, 'Search') + ' ' + args.cwd.name;
     }
 }

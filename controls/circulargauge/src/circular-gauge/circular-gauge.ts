@@ -711,6 +711,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      */
     private renderTitle(): void {
         if (this.title) {
+            this.titleStyle.fontFamily = this.themeStyle.fontFamily || this.titleStyle.fontFamily;
+            this.titleStyle.size = this.themeStyle.fontSize || this.titleStyle.size;
             let size: Size = measureText(this.title, this.titleStyle);
             let options: TextOption = new TextOption(
                 this.element.id + '_CircularGaugeTitle',
@@ -909,29 +911,6 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         let renderer: boolean = false;
         let refreshBounds: boolean = false;
         let refreshWithoutAnimation: boolean = false;
-        let axisIndex: string = null; let pointerIndex: string = null; let pointerValue: string = null;
-        let changedProperties: string = JSON.stringify(newProp);
-        let splitProperties: string[] = changedProperties.split('},');
-        if (splitProperties) {
-            for (let j: number = 0; j < splitProperties.length; j++) {
-                if (splitProperties[j].indexOf('pointers') > -1) {
-                    let properties: string[] = splitProperties[j].split('{');
-                    for (let k: number = 0; k < properties.length; k++) {
-                        let value: string = properties[k].replace(/([^a-z0-9]+)/gi, '');
-                        axisIndex = axisIndex === null && (value === 'axes') ? properties[k + 1].replace(/([^a-z0-9]+)/gi, '') : axisIndex;
-                        pointerIndex = pointerIndex === null && (value === 'pointers') ? properties[k + 1].replace(/([^a-z0-9]+)/gi, '') :
-                            pointerIndex;
-                        pointerValue = (value.indexOf('value') > -1) ? properties[k].replace(/[value&\/\\#,+()$~%'":*?<>{}]/g, '') :
-                            pointerValue;
-                    }
-                }
-            }
-        }
-        let samePointerValue: boolean = false;
-        if (axisIndex && pointerIndex && pointerValue) {
-            samePointerValue = (this.axes[parseFloat(axisIndex)].pointers[parseFloat(pointerIndex)] as Pointer).currentValue
-                === parseFloat(pointerValue);
-        }
         let isPointerValueSame: boolean = (Object.keys(newProp).length === 1 && newProp instanceof Object &&
             !isNullOrUndefined(this.activePointer));
         for (let prop of Object.keys(newProp)) {

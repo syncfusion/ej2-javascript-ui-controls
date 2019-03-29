@@ -13,3 +13,5 @@ export * from './contextMenu-settings';
 export * from './contextMenu-settings-model';
 export * from './navigation-pane-settings-model';
 export * from './navigation-pane-settings';
+export * from './upload-settings';
+export * from './upload-settings-model';

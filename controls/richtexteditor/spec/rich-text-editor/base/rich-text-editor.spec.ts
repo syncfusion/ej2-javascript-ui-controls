@@ -2957,7 +2957,7 @@ describe('EJ2-24017 - Enable the submit button while pressing the tab key - RTE 
     let editNode: Element;
     let rteEle: Element;
     let selectNode: Element;
-    let isChanged: boolean=false;
+    let isChanged: boolean = false;
     beforeAll(() => {
         rteObj = renderRTE({
             toolbarSettings: {
@@ -2981,5 +2981,72 @@ describe('EJ2-24017 - Enable the submit button while pressing the tab key - RTE 
         setCursorPoint(curDocument, selectNode, 0);
         (rteObj as any).keyDown(keyBoardEvent);
         expect(isChanged).toBe(false);
+    });
+});
+
+describe('EJ2-24065 - Unwanted content show while changing the locale property in  RichTextEditor ', () => {
+    let rteObj: RichTextEditor;
+    let elem: HTMLElement;
+    beforeEach((done: Function) => {
+        elem = document.createElement('div');
+        elem.innerHTML = `<p class="p-node"><b>Description:</b></p>`;
+        elem.id = 'EJ2-24065-defaultRTE';
+        elem.setAttribute('name', 'RTEName');
+        document.body.appendChild(elem);
+        done();
+    });
+    it(' Change the locale dynamically and check the content', () => {
+        rteObj = new RichTextEditor();
+        rteObj.appendTo("#EJ2-24065-defaultRTE");
+        rteObj.locale = 'de-DE';
+        rteObj.dataBind();
+        let pNodes: any = rteObj.element.querySelectorAll('.p-node');
+        expect(pNodes.length === 1).toBe(true);
+    });
+    it(' Value poperty should be set as high priority ', () => {
+        rteObj = new RichTextEditor({ value: '<p>RTE</p>' });
+        rteObj.appendTo("#EJ2-24065-defaultRTE");
+        rteObj.locale = 'de-DE';
+        rteObj.dataBind();
+        let pNodes: any = rteObj.element.querySelectorAll('.p-node');
+        expect(pNodes.length === 0).toBe(true);
+    });
+    afterEach((done) => {
+        destroy(rteObj);
+        document.body.innerHTML = '';
+        done();
+    });
+});
+
+describe('EJ2-23854 - Redo action occurs for keyboard shortcuts copy command with text selection & no text selection ', () => {
+    let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9, key: 'Tab' };
+    let rteObj: RichTextEditor;
+    let curDocument: Document;
+    let editNode: Element;
+    let rteEle: Element;
+    let selectNode: Element;
+    let controlId: string;
+    beforeAll(() => {
+        rteObj = renderRTE({
+
+        });
+        rteEle = rteObj.element;
+        editNode = rteObj.contentModule.getEditPanel();
+        curDocument = rteObj.contentModule.getDocument();
+        controlId = rteEle.id;
+    });
+    afterAll(() => {
+        destroy(rteObj);
+        detach(rteEle);
+    });
+    it(' check the undo and redo button when copy action', () => {
+        selectNode = editNode.querySelector('br');
+        setCursorPoint(curDocument, selectNode, 0);
+        keyBoardEvent.action = 'copy';
+        (rteObj as any).keyDown(keyBoardEvent);
+        let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_Undo');
+        expect(item.parentElement.classList.contains("e-overlay")).toBe(true);
+        item = rteObj.element.querySelector('#' + controlId + '_toolbar_Redo');
+        expect(item.parentElement.classList.contains("e-overlay")).toBe(true);
     });
 });

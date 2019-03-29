@@ -108,9 +108,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     @Property(true)
     public enableGestures: boolean;
     /**
-     * Gets or sets the Sidebar component is open or close. 
-     * > When the Sidebar type is set to `Auto`,
-     * the component will be expanded in the desktop and collapsed in the mobile mode regardless of the isOpen property.
+     * Gets or sets the Sidebar component is open or close.
      * @default false
      */
     @Property(false)
@@ -181,12 +179,14 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      * Specifies the width of the Sidebar. By default, the width of the Sidebar sets based on the size of its content.
      * Width can also be set in pixel values.
      * @default 'auto'
+     * @aspType string
      */
     @Property('auto')
     public width: string | number;
     /**
      * Specifies the z-index of the Sidebar. It is applicable only when sidebar act as overlay type.
-     * @default 1000
+     * @default '1000'
+     * @aspType string
      */
     @Property(1000)
     public zIndex: string | number;
@@ -244,7 +244,6 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         } else {
             this.setMediaQuery();
         }
-        this.checkType(true);
         this.setType(this.type);
         this.setCloseOnDocumentClick();
         this.setEnableRTL();
@@ -312,22 +311,13 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         removeClass([this.element], [OPEN, CLOSE, RIGHT, LEFT, SLIDE, PUSH, OVER]);
         this.element.classList.add(ROOT);
         addClass([this.element], (this.position === 'Right') ? RIGHT : LEFT);
-        if (this.type === 'Auto' && !Browser.isDevice) {
-            this.show();
-        } else if (!this.isOpen) {
+        if (this.type === 'Auto' && !Browser.isDevice && !this.enableDock) {
+            addClass([this.element], OPEN);
+        } else {
             addClass([this.element], CLOSE);
         }
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
         this.element.setAttribute('tabindex', this.tabIndex);
-    }
-    private checkType(val: boolean): void {
-        if (!(this.type === 'Push' || this.type === 'Over' || this.type === 'Slide')) {
-            this.type = 'Auto';
-        } else {
-            if (!this.element.classList.contains(CLOSE) && !val) {
-                this.hide();
-            }
-        }
     }
     private destroyBackDrop(): void {
         let sibling: HTMLElement = (<HTMLElement>document.querySelector('.e-main-content')) ||
@@ -560,11 +550,9 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
                     this.setAnimation();
                     break;
                 case 'type':
-                    this.checkType(false);
                     removeClass([this.element], [VISIBILITY]);
                     this.addClass();
-                    addClass([this.element], this.type === 'Auto' ? (Browser.isDevice ? ['e-over'] :
-                    ['e-push']) : ['e-' + this.type.toLowerCase()]);
+                    this.setType(this.type);
                     break;
                 case 'position':
                     this.element.style.transform = '';
@@ -678,6 +666,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
                     if (sibling && (this.enableDock || this.element.classList.contains(OPEN))) {
                         this.position === 'Left' ? sibling.style.marginLeft = margin : sibling.style.marginRight = margin;
                     }
+                    this.setProperties({ isOpen: true }, true);
                 }
                 this.createBackDrop();
         }

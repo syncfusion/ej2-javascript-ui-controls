@@ -48,9 +48,21 @@ describe('AutoComplete module', () => {
             expect(document.activeElement.tagName === 'INPUT').toEqual(true);
         });
         it('Clear icon availability testing', () => {
-            expect(editorObj.atcModule.compObj.showClearButton === true).toEqual(true);
-            expect(selectAll('.e-clear-icon', ele).length === 1).toEqual(true);
+            expect(editorObj.atcModule.compObj.showClearButton).toBe(true);
+            expect(selectAll('.e-clear-icon', ele).length).toBe(1);
         });
+        it('remove icon availability testing false', () => {
+            editorObj.atcModule.compObj.showClearButton = false;
+            editorObj.atcModule.compObj.dataBind();
+            expect(editorObj.atcModule.compObj.showClearButton).toBe(false);
+            expect(selectAll('.e-clear-icon', ele).length).toBe(0);
+        });
+        it('Clear icon availability testing for true', () => {
+            editorObj.atcModule.compObj.showClearButton = true;
+            editorObj.atcModule.compObj.dataBind();
+            expect(editorObj.atcModule.compObj.showClearButton).toBe(true)
+            expect(selectAll('.e-clear-icon', ele).length).toBe(1);
+         });
         it('Value property testing', () => {
             expect(editorObj.atcModule.compObj.value === 'test').toEqual(true);
             expect(editorObj.value === editorObj.atcModule.compObj.value).toEqual(true);
@@ -61,6 +73,20 @@ describe('AutoComplete module', () => {
             editorObj.atcModule.compObj.dataBind();
             editorObj.save();
             expect(valueEle.innerHTML === 'testing').toEqual(true);
+        });
+        it('Without compObj data to update value method testing', () => {
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-autocomplete', ele).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('testing');
+            expect(editorObj.atcModule.compObj.value).toEqual('testing');
+            editorObj.atcModule.compObj.value = 'Tested';
+            expect(editorObj.atcModule.compObj.value).toEqual('Tested');
+            editorObj.atcModule.compObj = undefined;
+            editorObj.save();
+            expect(editorObj.value).toEqual('testing');
         });
     });
     describe('Duplicate ID availability testing', () => {
@@ -132,6 +158,35 @@ describe('AutoComplete module', () => {
         }
         afterEach((): void => {
             destroy(editorObj);
+        });
+        it('validation with rules and no error to submit testing', (done: Function) => {
+            editorObj = renderEditor({
+                type: 'AutoComplete',
+                mode: 'Inline',
+                value: 'test',
+                validating: click2,
+                name: 'Game',
+                validationRules: {
+                    Game: {
+                        required: true
+                    }
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            setTimeout(() => {
+                expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+                buttonEle = <HTMLElement>select('.' + classes.BTN_SAVE, ele);
+                buttonEle.dispatchEvent(new MouseEvent('mousedown'));
+                let errorContainer: HTMLElement = <HTMLElement>select('.' + classes.ERROR, editorObj.element);
+                expect(errorContainer).toBe(null);
+                expect(eventValue).toEqual('test');
+                expect(eventFieldName).toEqual('Game');
+                expect(eventPrimaryKey).toEqual('');
+                done();
+            }, 400);
         });
         it('validation with rules testing', (done: Function) => {
             editorObj = renderEditor({
@@ -789,6 +844,49 @@ describe('AutoComplete module', () => {
             expect(editorObj.value).toEqual('game2');
             expect(serverValue).toEqual('Basketball');
             expect(valueEle.innerHTML).toEqual('Basketball');
+        });
+    });
+
+    describe('Model - value child property update testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        let dataSource: string[] = ['Badminton', 'Cricket'];
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Default value with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'AutoComplete',
+                mode: 'Inline',
+                value: 'Badminton',
+                model: {
+                    dataSource: dataSource
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual('Badminton');
+            expect(valueEle.innerHTML).toEqual('Badminton');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-autocomplete', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('Badminton');
+            expect(editorObj.model.value).toEqual('Badminton');
+            expect((<HTMLInputElement>select('.e-autocomplete', document.body)).value).toEqual('Badminton');
+            (<HTMLInputElement>select('.e-autocomplete', document.body)).value = '';
+            editorObj.setProperties({ value: null }, true);
+            editorObj.atcModule.compObj.value = null;
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-autocomplete', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect((<HTMLInputElement>select('.e-autocomplete', document.body)).value).toEqual('');
         });
     });
 

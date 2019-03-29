@@ -402,8 +402,9 @@ describe("Accordion Testing", () => {
     });
     describe("Accordion Control template Testing ", () => {
         let accordion: Accordion;
+        let ele: HTMLElement;
         beforeEach((): void => {
-            let ele: HTMLElement = document.createElement("div");
+            ele = document.createElement("div");
             ele.id = "accordion";
             document.body.appendChild(ele);
         });
@@ -470,6 +471,21 @@ describe("Accordion Testing", () => {
             expect(acrdnInnerCtn.classList.contains(CLS_CTENT)).toBe(true);
             expect(acrdnItemHder.firstElementChild.classList.contains(CLS_TOOGLEICN)).toBe(true);
             expect(acrdnItem.childElementCount).toBe(2);
+        });
+        it('Accordion content template with single expand mode and additional div element testing', () => {
+            let cnttemplateaccordion: any;
+            ele.innerHTML = '<div class="e-accordion-container"><div><div><div>  Header name 1 </div></div><div><div>content 1 </div></div></div><div><div><div>  Header name 2 </div></div><div><div>content 2</div></div></div></div>';
+            cnttemplateaccordion = new Accordion({expandMode: "Single"}, ele);
+            cnttemplateaccordion.appendTo("#accordion");
+            let rootEle: any = document.querySelector('#accordion');
+            let acrdn_item1: HTMLElement = rootEle.querySelectorAll('.' + CLS_ITEM)[0];
+            let acrdn_item2: HTMLElement = rootEle.querySelectorAll('.' + CLS_ITEM)[1];
+            rootEle.querySelectorAll('.' + CLS_ITEM)[0].click();            
+            expect(acrdn_item1.classList.contains('e-expand-state')).toBe(true);
+            expect(acrdn_item2.classList.contains('e-expand-state')).toBe(false);
+            rootEle.querySelectorAll('.' + CLS_ITEM)[1].click();
+            expect(acrdn_item1.classList.contains('e-expand-state')).toBe(false);
+            expect(acrdn_item2.classList.contains('e-expand-state')).toBe(true);
         });
         it("Accordion content template with additional div element testing", () => {
             let ele: HTMLElement = document.getElementById("accordion");

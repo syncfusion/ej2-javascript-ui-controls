@@ -555,6 +555,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         let animModel: AnimationModel = { name: 'FadeIn', duration: 100 };
         let eventArgs: PopupEventArgs = { popup: this.popupObj, cancel: false, animation: animModel };
+        this.popupObj.wireScrollEvents();
         this.trigger('open', eventArgs);
         if (eventArgs.cancel) { return; }
         this.focusAtFirstListItem();
@@ -627,7 +628,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         let ariaAttributes: { [key: string]: string } = {
             'aria-disabled': 'false',
             'aria-owns': this.element.id + '_options',
-            'role': 'listbox',
+            'role': 'textbox',
             'aria-multiselectable': 'true',
             'aria-activedescendant': 'null',
             'aria-haspopup': 'true',
@@ -1144,18 +1145,20 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.checkPlaceholderSize();
     }
     private checkPlaceholderSize(): void {
-        if ((!this.value || !this.value.length) && this.showDropDownIcon &&
-            (this.componentWrapper.offsetWidth <= this.inputElement.offsetWidth)) {
+        if ((!this.value || !this.value.length) && this.showDropDownIcon && this.inputElement &&
+            (this.componentWrapper.offsetWidth <= this.inputElement.offsetWidth) &&
+            this.inputElement.size > 1) {
             let downIconWidth: number = this.dropIcon.offsetWidth +
                 parseInt(window.getComputedStyle(this.dropIcon).marginRight, 10);
             do {
                 this.inputElement.size -= 1;
             }
-            while ((downIconWidth + this.inputElement.offsetWidth) >= this.componentWrapper.offsetWidth);
+            while ((downIconWidth + this.inputElement.offsetWidth) >= this.componentWrapper.offsetWidth &&
+                this.inputElement.size > 1);
         }
     }
     private refreshInputHight(): void {
-        if ((!this.value || !this.value.length) && isNullOrUndefined(this.text)) {
+        if ((!this.value || !this.value.length) && (isNullOrUndefined(this.text) || this.text === '')) {
             this.searchWrapper.classList.remove(ZERO_SIZE);
         } else {
             this.searchWrapper.classList.add(ZERO_SIZE);
@@ -1699,7 +1702,11 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.onActionComplete(list, this.mainData);
             }
             this.updateDelimeter(this.delimiterChar);
-            this.makeTextBoxEmpty();
+            if (this.placeholder && this.floatLabelType === 'Never') {
+                this.makeTextBoxEmpty();
+            } else {
+                this.inputElement.value = '';
+            }
             e.preventDefault();
         }
     }
@@ -1709,7 +1716,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private refreshPlaceHolder(): void {
         if (this.placeholder && this.floatLabelType === 'Never') {
-            if ((this.value && this.value.length) || !isNullOrUndefined(this.text)) {
+            if ((this.value && this.value.length) || (!isNullOrUndefined(this.text) && this.text !== '')) {
                 this.inputElement.placeholder = '';
             } else {
                 this.inputElement.placeholder = this.placeholder;
@@ -2187,7 +2194,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private windowResize(): void {
         this.refreshPopup();
-        if (!this.inputFocus && this.viewWrapper && this.viewWrapper.parentElement) {
+        if ((!this.inputFocus || this.mode === 'CheckBox') && this.viewWrapper && this.viewWrapper.parentElement) {
             this.updateDelimView();
         }
     }
@@ -2681,11 +2688,19 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.viewWrapper.appendChild(
                     this.updateRemainTemplate( raminElement, this.viewWrapper, remaining, compiledString, totalCompiledString, totalWidth)
                 );
+                this.updateRemainWidth(this.viewWrapper, totalWidth);
                 this.updateRemainingText(raminElement, downIconWidth, remaining, compiledString, totalCompiledString);
             }
         } else {
             this.viewWrapper.innerHTML = '';
             this.viewWrapper.style.display = 'none';
+        }
+    }
+    private updateRemainWidth(viewWrapper: HTMLElement, totalWidth: number): void {
+        if (viewWrapper.classList.contains(TOTAL_COUNT_WRAPPER) && totalWidth < (viewWrapper.offsetWidth +
+            parseInt(window.getComputedStyle(viewWrapper).paddingLeft, 10)
+            + parseInt(window.getComputedStyle(viewWrapper).paddingLeft, 10))) {
+            viewWrapper.style.width = totalWidth + 'px';
         }
     }
     private updateRemainTemplate(
@@ -2707,9 +2722,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             viewWrapper.classList.remove(TOTAL_COUNT_WRAPPER);
         } else {
             viewWrapper.classList.add(TOTAL_COUNT_WRAPPER);
-            if (totalWidth) {
-                viewWrapper.style.width = totalWidth + 'px';
-            }
+            this.updateRemainWidth(viewWrapper, totalWidth);
         }
         return raminElement;
     }
@@ -3021,6 +3034,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.popupObj.hide();
             removeClass([document.body, this.popupObj.element], 'e-popup-full-page');
             EventHandler.remove(this.list, 'keydown', this.onKeyDown);
+            this.popupObj.unwireScrollEvents();
         }
     }
     /**
@@ -3133,7 +3147,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         let id: string = this.element.getAttribute('id') ? this.element.getAttribute('id') : getUniqueID('ej2_dropdownlist');
         this.element.id = id;
         this.hiddenElement = this.createElement('select', {
-            attrs: { 'aria-hidden': 'true', 'class': HIDDEN_ELEMENT, 'tabindex': '-1', 'multiple': 'true' }
+            attrs: { 'aria-hidden': 'true', 'class': HIDDEN_ELEMENT, 'tabindex': '-1', 'multiple': '' }
         }) as HTMLSelectElement;
         this.componentWrapper.appendChild(this.hiddenElement);
         this.validationAttribute(this.element, this.hiddenElement);

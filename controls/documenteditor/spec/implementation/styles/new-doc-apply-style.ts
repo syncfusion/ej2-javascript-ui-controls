@@ -40,7 +40,7 @@ describe('New Document - Edit and Apply Style', () => {
     });
     it('Apply Heading1', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         editor.editorModule.applyStyle('Heading 1');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
         expect(editor.selection.characterFormat.fontSize).toBe(16.0);
@@ -51,14 +51,14 @@ describe('New Document - Edit and Apply Style', () => {
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         (editor as any).viewer.onKeyDownInternal(event);
 
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
         expect(editor.selection.characterFormat.fontSize).toBe(11.0);
         expect(editor.selection.characterFormat.fontColor).toBe("#000000");
     });
     it('Apply Heading2', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         editor.editorModule.applyStyle('Heading 2');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
         expect(editor.selection.characterFormat.fontSize).toBe(13.0);
@@ -69,14 +69,14 @@ describe('New Document - Edit and Apply Style', () => {
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         (editor as any).viewer.onKeyDownInternal(event);
 
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
         expect(editor.selection.characterFormat.fontSize).toBe(11.0);
         expect(editor.selection.characterFormat.fontColor).toBe("#000000");
     });
     it('Apply Heading3', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         editor.editorModule.applyStyle('Heading 3');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
         expect(editor.selection.characterFormat.fontSize).toBe(12.0);
@@ -87,14 +87,14 @@ describe('New Document - Edit and Apply Style', () => {
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         (editor as any).viewer.onKeyDownInternal(event);
 
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
         expect(editor.selection.characterFormat.fontSize).toBe(11.0);
         expect(editor.selection.characterFormat.fontColor).toBe("#000000");
     });
     it('Apply Heading4', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         editor.editorModule.applyStyle('Heading 4');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
         expect(editor.selection.characterFormat.italic).toBe(true);
@@ -105,14 +105,14 @@ describe('New Document - Edit and Apply Style', () => {
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         (editor as any).viewer.onKeyDownInternal(event);
 
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
         expect(editor.selection.characterFormat.fontSize).toBe(11.0);
         expect(editor.selection.characterFormat.fontColor).toBe("#000000");
     });
     it('Apply Heading5', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         editor.editorModule.applyStyle('Heading 5');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
         expect(editor.selection.characterFormat.fontColor).toBe("#2F5496");
@@ -122,14 +122,14 @@ describe('New Document - Edit and Apply Style', () => {
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         (editor as any).viewer.onKeyDownInternal(event);
 
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
         expect(editor.selection.characterFormat.fontSize).toBe(11.0);
         expect(editor.selection.characterFormat.fontColor).toBe("#000000");
     });
     it('Apply Heading6', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         editor.editorModule.applyStyle('Heading 6');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
         expect(editor.selection.characterFormat.fontColor).toBe("#1F3763");
@@ -139,14 +139,14 @@ describe('New Document - Edit and Apply Style', () => {
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         (editor as any).viewer.onKeyDownInternal(event);
 
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri");
         expect(editor.selection.characterFormat.fontSize).toBe(11.0);
         expect(editor.selection.characterFormat.fontColor).toBe("#000000");
     });
     it('Apply Heading1 Char-Link Style', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Heading', false);
+        editor.editorModule.insertText('Heading');
         editor.editorModule.applyStyle('Heading 6');
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");
         expect(editor.selection.characterFormat.fontColor).toBe("#1F3763");
@@ -174,19 +174,19 @@ describe('New Document - Edit and Apply Style', () => {
     it('Apply Style-MutipleParagraph', () => {
         editor.openBlank();
         editor.editorModule.applyStyle('Heading 2');
-        editor.editorModule.insertText('First Paragrapgh', false);
+        editor.editorModule.insertText('First Paragrapgh');
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         (editor as any).viewer.onKeyDownInternal(event);
         editor.editorModule.applyStyle('Heading 3');
-        editor.editorModule.insertText('Second Paragrapgh', false);
+        editor.editorModule.insertText('Second Paragrapgh');
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         (editor as any).viewer.onKeyDownInternal(event);
         editor.editorModule.applyStyle('Heading 4');
-        editor.editorModule.insertText('Third Paragrapgh', false);
+        editor.editorModule.insertText('Third Paragrapgh');
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         (editor as any).viewer.onKeyDownInternal(event);
         editor.editorModule.applyStyle('Heading 5');
-        editor.editorModule.insertText('Fourth Paragrapgh', false);
+        editor.editorModule.insertText('Fourth Paragrapgh');
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         (editor as any).viewer.onKeyDownInternal(event);
         

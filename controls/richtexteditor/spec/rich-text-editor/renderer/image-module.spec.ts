@@ -538,6 +538,51 @@ client side. Customer easy to edit the contents and get the HTML content for
         });
     });
 
+
+    describe('Inserting image and applying heading', () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+        let actionComplete: any;
+        beforeAll(() => {
+            actionComplete = jasmine.createSpy("actionComplete");
+            rteObj = renderRTE({
+                actionComplete: actionComplete,
+                height: 400,
+                toolbarSettings: {
+                    items: ['Image', 'Bold', 'Formats']
+                },
+                insertImageSettings: { resize: false }
+            });
+            rteEle = rteObj.element;
+        });
+        afterAll(() => {
+            destroy(rteObj);
+        });
+        it('Inserting image and applying heading', () => {
+            expect(rteObj.element.querySelectorAll('.e-rte-content').length).toBe(1);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            expect(rteObj.element.lastElementChild.classList.contains('e-dialog')).toBe(true);
+            let dialogEle: Element = rteObj.element.querySelector('.e-dialog');
+            expect(dialogEle.firstElementChild.querySelector('.e-dlg-header').innerHTML === 'Insert Image').toBe(true);
+            expect(dialogEle.querySelector('.e-img-uploadwrap').firstElementChild.classList.contains('e-droptext')).toBe(true);
+            expect(dialogEle.querySelector('.imgUrl').firstElementChild.classList.contains('e-img-url')).toBe(true);
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            expect(rteObj.element.lastElementChild.classList.contains('.e-dialog')).not.toBe(true);
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let range: any = new NodeSelection().getRange(document);
+            let save: any = new NodeSelection().save(range, document);
+            let args: any = {
+                item: { url: 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png', selection: save },
+                preventDefault: function () { }
+            };
+            (<any>rteObj).formatter.editorManager.imgObj.createImage(args);
+            (rteObj.element.querySelector('.e-rte-dropdown-btn') as HTMLElement).click();
+            (document.querySelector('.e-h1') as HTMLElement).click();
+            expect(actionComplete).toHaveBeenCalled();
+        });
+    });
+
+
     describe('div content-rte testing', () => {
         let rteEle: HTMLElement;
         let rteObj: RichTextEditor;

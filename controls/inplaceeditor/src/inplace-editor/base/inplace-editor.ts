@@ -1,10 +1,11 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, Property, Event, EmitType, select } from '@syncfusion/ej2-base';
 import { detach, addClass, removeClass, EventHandler, setStyleAttribute, Complex, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, closest, extend, L10n, compile, Browser, Touch, TapEventArgs } from '@syncfusion/ej2-base';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DataManager, UrlAdaptor, Query, WebApiAdaptor, ODataV4Adaptor, ReturnOption } from '@syncfusion/ej2-data';
 import { Button, ButtonModel } from '@syncfusion/ej2-buttons';
 import { RichTextEditorModel } from '@syncfusion/ej2-richtexteditor';
-import { DatePicker, DatePickerModel, DateTimePicker } from '@syncfusion/ej2-calendars';
+import { DatePicker, DatePickerModel, DateTimePicker, DateRange } from '@syncfusion/ej2-calendars';
 import { DateTimePickerModel, DateRangePickerModel, TimePickerModel } from '@syncfusion/ej2-calendars';
 import { NumericTextBox, NumericTextBoxModel, TextBox, TextBoxModel } from '@syncfusion/ej2-inputs';
 import { createSpinner, hideSpinner, SpinnerArgs, showSpinner } from '@syncfusion/ej2-popups';
@@ -95,10 +96,11 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private dataAdaptor: UrlAdaptor | ODataV4Adaptor | WebApiAdaptor;
     private divComponents: string[] = ['RTE', 'Slider'];
     private clearComponents: string[] = ['AutoComplete', 'Mask', 'Text'];
-    private dateType: string[] = ['Date', 'DateTime', 'Time' ];
+    private dateType: string[] = ['Date', 'DateTime', 'Time'];
     private inputDataEle: string[] = ['Date', 'DateTime', 'DateRange', 'Time', 'Numeric'];
     private dropDownEle: string[] = ['AutoComplete', 'ComboBox', 'DropDownList', 'MultiSelect'];
     private moduleList: string[] = ['AutoComplete', 'Color', 'ComboBox', 'DateRange', 'MultiSelect', 'RTE', 'Slider', 'Time'];
+    private afterOpenEvent: EmitType<TooltipEventArgs>;
 
     /**
      * @hidden
@@ -344,6 +346,9 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             this.setProperties({ model: {} }, true);
         }
         this.titleEle = this.createElement('div', { className: classes.TITLE });
+        if (!isNullOrUndefined(this.popupSettings.model) && this.popupSettings.model.afterOpen) {
+            this.afterOpenEvent = this.popupSettings.model.afterOpen;
+        }
     }
     /**
      * To Initialize the In-place editor rendering
@@ -406,6 +411,9 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             this.renderControl(this.inlineWrapper);
             this.afterOpenHandler(null);
         } else {
+            if (!isNullOrUndefined(this.popupSettings.model) && this.popupSettings.model.afterOpen) {
+                this.popupSettings.model.afterOpen = this.afterOpenHandler.bind(this);
+            }
             let content: HTMLElement = this.createElement('div', { className: classes.POPUP });
             if (!this.isEmpty(this.popupSettings.title)) {
                 this.titleEle.innerHTML = this.popupSettings.title;
@@ -443,7 +451,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         let ctrlGroupEle: HTMLElement = this.createElement('div', { className: classes.CTRL_GROUP });
         let inputWrap: HTMLElement = this.createElement('div', { className: classes.INPUT });
         target.appendChild(this.containerEle);
-        this.containerEle.appendChild(this.loader);
         this.loadSpinner();
         this.containerEle.appendChild(this.formEle);
         this.formEle.appendChild(ctrlGroupEle);
@@ -459,6 +466,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             }
             this.componentRoot = ele;
             inputWrap.appendChild(ele);
+            inputWrap.appendChild(this.loader);
         }
         ctrlGroupEle.appendChild(inputWrap);
         ctrlGroupEle.appendChild(this.createElement('div', { className: classes.EDITABLE_ERROR }));
@@ -513,7 +521,9 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         if (this.isExtModule) {
             this.notify(events.render, { module: modulesList[this.type], target: ele, type: this.type });
         } else {
-            (this.model as DatePickerModel).showClearButton = true;
+            if (isNOU((this.model as DropDownListModel).showClearButton)) {
+                (this.model as DropDownListModel).showClearButton = true;
+            }
             switch (this.type) {
                 case 'Date':
                     this.componentObj = new DatePicker(this.model as DatePickerModel, ele as HTMLInputElement);
@@ -552,20 +562,35 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
                 break;
         }
     }
-    private loadSpinner(): void {
+    private loadSpinner(callType?: string): void {
         addClass([this.loader], [classes.SHOW]);
-        setStyleAttribute(this.loader, { 'width': (this.loaderWidth) + 'px' });
-        this.spinObj = { target: this.loader };
+        if (callType === 'validate' && (this.type === 'RTE' || this.type === 'Color' || this.type === 'Slider')) {
+            addClass([this.loader], [classes.RTE_SPIN_WRAP]);
+            addClass([this.getEditElement()], [classes.CTRL_OVERLAY]);
+            this.spinObj = { target: this.loader };
+        } else {
+            this.spinObj = { target: this.loader, width: Browser.isDevice ? '16px' : '14px' };
+        }
+        if (this.formEle) { addClass([this.formEle], [classes.LOAD]); }
+        if (this.btnElements) { addClass([this.btnElements], [classes.HIDE]); }
+        setStyleAttribute(this.loader, { 'width': '100%' });
         createSpinner(this.spinObj);
         showSpinner(this.spinObj.target);
-        if (this.formEle) { addClass([this.formEle], [classes.HIDE]); }
     }
-    private removeSpinner(): void {
+    private removeSpinner(callType?: string): void {
         this.loader.removeAttribute('style');
         hideSpinner(this.spinObj.target);
         detach(this.spinObj.target.firstChild);
-        if (this.formEle) { removeClass([this.formEle], [classes.HIDE]); }
+        if (callType === 'submit' && (this.type === 'RTE' || this.type === 'Color' || this.type === 'Slider')) {
+            removeClass([this.loader], [classes.RTE_SPIN_WRAP]);
+            removeClass([this.getEditElement()], [classes.CTRL_OVERLAY]);
+        }
+        if (this.formEle) { removeClass([this.formEle], [classes.LOAD]); }
+        if (this.btnElements) { removeClass([this.btnElements], [classes.HIDE]); }
         removeClass([this.loader], [classes.SHOW]);
+    }
+    private getEditElement(): Element {
+        return select('.' + classes.ELEMENTS, this.formEle);
     }
     private getLocale(prop: Object, val: string): string {
         return new L10n('inplace-editor', prop, this.locale).getConstant(val);
@@ -573,9 +598,15 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private checkValue(val: string): string {
         return (!this.isEmpty(val)) ? val : this.emptyText;
     }
+    public extendModelValue(val: string | number | boolean | Date | DateRange | string[] | Date[] | number[] | boolean[]): void {
+        let model: object = this.model;
+        extend(model, { value: val });
+        this.setProperties({ model: model }, true);
+    }
     private updateValue(): void {
         if (!isNOU(this.value)) {
             this.setProperties({ value: getCompValue(this.type, this.value) }, true);
+            this.extendModelValue(getCompValue(this.type, this.value));
         }
     }
     private updateModelValue(): void {
@@ -590,6 +621,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             this.notify(events.update, { type: this.type });
         } else if (this.componentObj) {
             this.setProperties({ value: this.componentObj.value }, true);
+            this.extendModelValue(this.componentObj.value);
         }
     }
     private getDropDownsValue(): string {
@@ -710,7 +742,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         if (!this.isEmpty(this.url) && !this.isEmpty(this.primaryKey as string)) {
             this.dataManager = new DataManager({ url: this.url, adaptor: this.dataAdaptor });
             if (this.adaptor === 'UrlAdaptor') {
-              this.dataManager.executeQuery(this.getQuery(eventArgs.data), this.successHandler.bind(this), this.failureHandler.bind(this));
+            this.dataManager.executeQuery(this.getQuery(eventArgs.data), this.successHandler.bind(this), this.failureHandler.bind(this));
             } else {
                 let crud: Promise<Object> = this.dataManager.insert(eventArgs.data) as Promise<Object>;
                 crud.then((e: ReturnOption) => this.successHandler(e)).catch((e: ReturnOption) => this.failureHandler(e));
@@ -816,10 +848,6 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         };
         errorClass([this.formEle, inputEle], classes.ERROR, value ? 'add' : 'remove');
     }
-    private hideForm(value: boolean): void {
-        if (isNOU(this.formEle)) { return; }
-        value ? addClass([this.formEle], [classes.HIDE]) : removeClass([this.formEle], [classes.HIDE]);
-    }
     private updateArrow(): void {
         let pos: TipPointerPosition = this.tipObj.tipPointerPosition;
         this.tipObj.tipPointerPosition = (pos === 'Middle') ? 'Auto' : 'Middle';
@@ -829,8 +857,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private triggerSuccess(args: ActionEventArgs): void {
         let val: string = args.value;
         this.trigger('actionSuccess', args);
-        this.removeSpinner();
-        this.hideForm(false);
+        this.removeSpinner('submit');
         this.renderValue(this.checkValue((args.value !== val) ? args.value : this.getRenderValue()));
         this.removeEditor();
     }
@@ -926,6 +953,10 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
             this.setAttribute(<HTMLElement>select('.e-slider-input', this.containerEle), ['name']);
         }
         this.setFocus();
+        if (this.afterOpenEvent) {
+            this.tipObj.setProperties({ afterOpen: this.afterOpenEvent }, true);
+            this.tipObj.trigger('afterOpen', e);
+        }
     }
     private popMouseDown(e: MouseEvent): void {
         let trgClass: DOMTokenList = (<Element>e.target).classList;
@@ -964,15 +995,16 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     private failureHandler(e: Object): void {
         let eventArgs: ActionEventArgs = { data: e, value: this.getSendValue() };
         this.trigger('actionFailure', eventArgs);
-        this.removeSpinner();
-        this.hideForm(false);
+        this.removeSpinner('submit');
         if (this.mode === 'Popup') { this.updateArrow(); }
     }
     private enterKeyDownHandler(e: KeyboardEvent): void {
-        if ((e.keyCode === 13 && e.which === 13) && closest(e.target as Element, '.' + classes.INPUT)) {
-            this.save();
-        } else if (e.keyCode === 27 && e.which === 27) {
-            this.cancelHandler();
+        if (!closest(e.target as Element, '.' + classes.INPUT + ' .e-richtexteditor')) {
+            if ((e.keyCode === 13 && e.which === 13) && closest(e.target as Element, '.' + classes.INPUT)) {
+                this.save();
+            } else if (e.keyCode === 27 && e.which === 27) {
+                this.cancelHandler();
+            }
         }
     }
     private valueKeyDownHandler(e: KeyboardEvent): void {
@@ -1042,8 +1074,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         }
         this.checkValidation();
         if (!this.formEle.classList.contains(classes.ERROR)) {
-            this.loadSpinner();
-            this.hideForm(true);
+            this.loadSpinner('validate');
             if (this.mode === 'Popup') { this.updateArrow(); }
             this.sendValue();
         }

@@ -1,4 +1,3 @@
-
 import { IFontMapping } from './interface';
 import { AccumulationTheme } from '../../accumulation-chart/model/enum';
 import { ChartTheme } from '../../chart/utils/enum';
@@ -90,6 +89,10 @@ export function getSeriesColor(theme: ChartTheme | AccumulationTheme): string[] 
             palette = ['#4472c4', '#ed7d31', '#ffc000', '#70ad47', '#5b9bd5',
                 '#c1c1c1', '#6f6fe2', '#e269ae', '#9e480e', '#997300'];
             break;
+        case 'Bootstrap4':
+            palette = ['#a16ee5', '#f7ce69', '#55a5c2', '#7ddf1e', '#ff6ea6',
+                '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
+            break;
         case 'Bootstrap':
             palette = ['#a16ee5', '#f7ce69', '#55a5c2', '#7ddf1e', '#ff6ea6',
                 '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
@@ -101,11 +104,20 @@ export function getSeriesColor(theme: ChartTheme | AccumulationTheme): string[] 
                 '#FA83C3', '#00C27A', '#43ACEF', '#D681EF', '#D8BC6E'];
             break;
         case 'MaterialDark':
-        case 'FabricDark':
-        case 'BootstrapDark':
-            palette = ['#B586FF', '#71F9A3', '#FF9572', '#5BD5FF', '#F9F871',
-                '#B6F971', '#8D71F9', '#FF6F91', '#FFC75F', '#D55DB1'];
+            palette = ['#00bdae', '#404041', '#357cd2', '#e56590', '#f8b883',
+            '#70ad47', '#dd8abd', '#7f84e8', '#7bb4eb', '#ea7a57'];
             break;
+        case 'FabricDark':
+            palette = ['#4472c4', '#ed7d31', '#ffc000', '#70ad47', '#5b9bd5',
+                '#c1c1c1', '#6f6fe2', '#e269ae', '#9e480e', '#997300'];
+            break;
+        case 'BootstrapDark':
+            palette = ['#a16ee5', '#f7ce69', '#55a5c2', '#7ddf1e', '#ff6ea6',
+                '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
+            break;
+            // palette = ['#B586FF', '#71F9A3', '#FF9572', '#5BD5FF', '#F9F871',
+            //     '#B6F971', '#8D71F9', '#FF6F91', '#FFC75F', '#D55DB1'];
+            // break;
         default:
             palette = ['#00bdae', '#404041', '#357cd2', '#e56590', '#f8b883',
                 '#70ad47', '#dd8abd', '#7f84e8', '#7bb4eb', '#ea7a57'];
@@ -169,8 +181,8 @@ export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyl
                 tooltipBoldLabel: '#282727',
                 tooltipLightLabel: '#333232',
                 tooltipHeaderLine: '#9A9A9A',
-                markerShadow: '#BFBFBF',
-                selectionRectFill: 'rgba(255, 217, 57, 0.3)',
+                markerShadow: null,
+                selectionRectFill: 'rgba(56,169,255, 0.1)',
                 selectionRectStroke: '#38A9FF',
                 selectionCircleStroke: '#282727'
             };
@@ -179,9 +191,9 @@ export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyl
             style = {
                 axisLabel: '#212529', axisTitle: '#ffffff', axisLine: '#CED4DA', majorGridLine: '#CED4DA',
                 minorGridLine: '#DEE2E6', majorTickLine: '#ADB5BD', minorTickLine: '#CED4DA', chartTitle: '#212529', legendLabel: '#212529',
-                background: '#FFFFFF', areaBorder: '#DEE2E6', errorBar: '#ffffff', crosshairLine: '#6C757D', crosshairFill: '#495057',
+                background: '#FFFFFF', areaBorder: '#DEE2E6', errorBar: '#000000', crosshairLine: '#6C757D', crosshairFill: '#495057',
                 crosshairLabel: '#FFFFFF', tooltipFill: 'rgba(0, 0, 0, 0.9)', tooltipBoldLabel: 'rgba(255,255,255)',
-                tooltipLightLabel: 'rgba(255,255,255, 0.9)', tooltipHeaderLine: 'rgba(255,255,255, 0.2)', markerShadow: '#BFBFBF',
+                tooltipLightLabel: 'rgba(255,255,255, 0.9)', tooltipHeaderLine: 'rgba(255,255,255, 0.2)', markerShadow: null,
                 selectionRectFill: 'rgba(255,255,255, 0.1)', selectionRectStroke: 'rgba(0, 123, 255)', selectionCircleStroke: '#495057'
             };
             break;

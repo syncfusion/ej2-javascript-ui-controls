@@ -6,7 +6,7 @@
         &.e-vertical .e-menu-item {
           & .e-caret {
             &::before {
-              content: '\e799';
+              content: '\e70b';
             }
           }
         }
@@ -23,7 +23,7 @@
       & .e-ul .e-menu-item {
         & .e-caret {
           &::before {
-            content: '\e799';
+            content: '\e70b';
           }
         }
       }
@@ -31,12 +31,12 @@
 
     & .e-menu-hscroll.e-hscroll .e-nav-right-arrow::before,
     & .e-menu-hscroll.e-hscroll .e-nav-left-arrow::before {
-      content: '\e799';
+      content: '\e70b';
     }
 
     & .e-menu-vscroll.e-vscroll .e-nav-up-arrow::before,
     & .e-menu-vscroll.e-vscroll .e-nav-down-arrow::before {
-      content: '\e798';
+      content: '\e744';
     }
   }
 
@@ -44,7 +44,7 @@
     &.e-vertical {
       & .e-caret {
         &::before {
-          content: '\e78c';
+          content: '\e71f';
         }
       }
     }
@@ -52,7 +52,7 @@
     &.e-ul {
       & .e-caret {
         &::before {
-          content: '\e78c';
+          content: '\e71f';
         }
       }
     }
@@ -63,7 +63,7 @@
     &.e-vertical {
       & .e-caret {
         &::before {
-          content: '\e78c';
+          content: '\e71f';
         }
       }
     }
@@ -71,7 +71,7 @@
     &.e-ul {
       & .e-caret {
         &::before {
-          content: '\e78c';
+          content: '\e71f';
         }
       }
     }

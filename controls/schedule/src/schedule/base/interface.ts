@@ -43,6 +43,21 @@ export interface CellClickEventArgs extends BaseEventArgs {
     groupIndex?: number;
 }
 
+export interface SelectEventArgs extends BaseEventArgs {
+    /** Returns the request type of the current action. */
+    requestType: string;
+    /** Defines the type of the event. */
+    event?: Event;
+    /** Returns the single or collection of HTML element(s). */
+    element: HTMLElement | HTMLElement[];
+    /** Determines whether to open the quick popup on multiple cell selection. */
+    showQuickPopup?: boolean;
+    /** Return the appropriate cell or event data based on the action. */
+    data?: { [key: string]: Object } | { [key: string]: Object }[];
+    /** Returns the clicked resource row index. */
+    groupIndex?: number;
+}
+
 export interface EventClickArgs extends BaseEventArgs {
     /** Returns the date of the event. */
     date?: Date;

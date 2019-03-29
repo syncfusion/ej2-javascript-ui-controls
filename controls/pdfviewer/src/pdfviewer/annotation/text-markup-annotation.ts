@@ -736,7 +736,7 @@ export class TextMarkupAnnotation {
      */
     public onTextMarkupAnnotationTouchEnd(event: TouchEvent): void {
         let pageNumber: number = this.pdfViewer.annotationModule.getEventPageNumber(event);
-        if (!isNullOrUndefined(pageNumber)) {
+        if (!isNullOrUndefined(pageNumber) && !isNaN(pageNumber)) {
             this.clearCurrentAnnotationSelection(pageNumber);
             let touchCanvas: HTMLElement = this.pdfViewerBase.getElement('_annotationCanvas_' + pageNumber);
             // tslint:disable-next-line:max-line-length
@@ -754,6 +754,9 @@ export class TextMarkupAnnotation {
             let number: number = this.selectTextMarkupCurrentPage;
             this.selectTextMarkupCurrentPage = null;
             this.clearAnnotationSelection(number);
+        } else {
+            this.clearCurrentAnnotation();
+            this.clearCurrentAnnotationSelection(pageNumber);
         }
     }
 
@@ -769,7 +772,7 @@ export class TextMarkupAnnotation {
             let currentAnnot: ITextMarkupAnnotation = this.getCurrentMarkupAnnotation(event.clientX, event.clientY, pageIndex, canvas);
             if (currentAnnot) {
                 eventTarget.style.cursor = 'pointer';
-                this.showPopupNote(event, currentAnnot);
+                // this.showPopupNote(event, currentAnnot);
             } else {
                 this.pdfViewer.annotationModule.hidePopupNote();
                 if (this.pdfViewerBase.isPanMode && !this.pdfViewerBase.getAnnotationToolStatus()) {
@@ -898,7 +901,7 @@ export class TextMarkupAnnotation {
 
     private enableAnnotationPropertiesTool(isEnable: boolean): void {
         // tslint:disable-next-line:max-line-length
-        if (this.pdfViewer.toolbarModule.annotationToolbarModule) {
+        if (this.pdfViewer.toolbarModule && this.pdfViewer.toolbarModule.annotationToolbarModule) {
             this.pdfViewer.toolbarModule.annotationToolbarModule.createMobileAnnotationToolbar(isEnable);
         }
         // tslint:disable-next-line:max-line-length

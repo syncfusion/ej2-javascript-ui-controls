@@ -440,6 +440,16 @@
       padding: 3px 6px;
     }
 
+    @if ($schedule-skin == 'bootstrap4') {
+      .e-tip-content {
+        padding: 4px 8px 0;
+      }
+
+      .e-arrow-tip {
+        overflow: visible;
+      }
+    }
+
     .e-tip-content,
     .e-tip-content label {
       color: $schedule-val-error-color;

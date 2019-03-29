@@ -483,7 +483,8 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         let invalidAttr: string[] = ['class', 'style', 'id', 'type'];
         let attr: { [key: string]: string; } = {};
         for (let a: number = 0; a < this.element.attributes.length; a++) {
-            if (invalidAttr.indexOf(this.element.attributes[a].name) === -1) {
+            if (invalidAttr.indexOf(this.element.attributes[a].name) === -1 &&
+            !( this.getModuleName() === 'dropdownlist' &&  this.element.attributes[a].name === 'readonly')) {
                 attr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
             }
         }

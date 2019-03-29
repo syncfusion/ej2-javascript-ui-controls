@@ -431,7 +431,7 @@ export class SearchSettings extends ChildProperty<SearchSettings> {
      * notequal<br/></td><td colspan=1 rowspan=1> 
      * Checks for strings not equal to the specified string. <br/></td></tr> 
      * </table> 
-     * @default contains 
+     * @default 'contains'
      */
     @Property('contains')
     public operator: string;
@@ -1125,14 +1125,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**    
      * Defines the scrollable height of the grid content.    
-     * @default auto    
+     * @default 'auto'    
      */
     @Property('auto')
     public height: string | number;
 
     /**    
      * Defines the Grid width.    
-     * @default auto    
+     * @default 'auto'    
      */
     @Property('auto')
     public width: string | number;
@@ -1869,7 +1869,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.allowExcelExport) {
             modules.push({
                 member: 'ExcelExport',
-                args: [this]
+                args: [this, this.serviceLocator]
             });
         }
         if (this.allowPdfExport) {
@@ -4053,10 +4053,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private mouseMoveHandler(e: MouseEvent): void {
         if (this.isEllipsisTooltip()) {
             let element: HTMLElement = parentsUntil((e.target as Element), 'e-ellipsistooltip') as HTMLElement;
-            if (this.prevElement !== element) {
+            if (this.prevElement !== element || e.type === 'mouseout') {
             this.toolTipObj.close();
             }
-            if (element) {
+            if (element && e.type !== 'mouseout') {
                 if (element.getAttribute('aria-describedby')) {
                     return;
                 }
@@ -4139,6 +4139,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             });
         EventHandler.add(this.getContent().firstElementChild, 'scroll', this.scrollHandler, this);
         EventHandler.add(this.element, 'mousemove', this.mouseMoveHandler, this);
+        EventHandler.add(this.element, 'mouseout', this.mouseMoveHandler, this);
     }
 
     /**
@@ -4151,6 +4152,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         EventHandler.remove(this.element, 'focusout', this.focusOutHandler);
         EventHandler.remove(this.getContent().firstElementChild, 'scroll', this.scrollHandler);
         EventHandler.remove(this.element, 'mousemove', this.mouseMoveHandler);
+        EventHandler.remove(this.element, 'mouseout', this.mouseMoveHandler);
     }
     /**
      * @hidden
@@ -4482,5 +4484,17 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public getPreviousRowData(): Object {
         let previousRowData: Object = this.getRowsObject()[this.getRows().length - 1].data;
         return previousRowData;
+    }
+
+    public hideScroll(): void {
+        let headerContent: HTMLElement = this.getHeaderContent() as HTMLElement;
+        let contentTable: HTMLElement = this.getContent().querySelector('.e-content') as HTMLElement;
+        if ((this.currentViewData.length * this.getRowHeight()) < this.height) {
+            headerContent.style.paddingRight = '';
+            contentTable.style.overflowY = 'auto';
+        } else {
+            headerContent.style.paddingRight = '16px';
+            contentTable.style.overflowY = 'scroll';
+        }
     }
 }

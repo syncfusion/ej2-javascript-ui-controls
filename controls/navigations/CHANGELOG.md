@@ -2,7 +2,27 @@
 
 ## [Unreleased]
 
+## 17.1.38 (2019-03-29)
+
+### Menu
+
+#### Bug Fixes
+
+- Support provided for dynamically updating the self referential data.
+
+### Accordion
+
+#### Bug Fixes
+
+- An issue with the expand action of Accordion when set to single mode, with the items being rendered using content template is fixed now.
+
 ## 17.1.32-beta (2019-03-13)
+
+### ContextMenu
+
+#### Bug Fixes
+
+- Submenu items styles are not proper in ContextMenu issue is fixed.
 
 ### Sidebar
 

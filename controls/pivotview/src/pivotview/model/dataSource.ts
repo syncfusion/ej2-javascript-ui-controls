@@ -537,6 +537,13 @@ export class DataSource extends ChildProperty<DataSource> implements IDataOption
     public alwaysShowValueHeader: boolean;
 
     /**
+     * It allows enable/disable show aggregation on PivotButton.
+     * @default true
+     */
+    @Property(true)
+    public showAggregationOnValueField: boolean;
+
+    /**
      * It allows to set the settings of number formatting.
      * @default []
      */

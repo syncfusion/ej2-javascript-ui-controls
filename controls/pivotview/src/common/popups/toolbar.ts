@@ -1,4 +1,4 @@
-import { Toolbar as tool, ClickEventArgs, MenuItemModel, Menu, ItemModel } from '@syncfusion/ej2-navigations';
+import { Toolbar as tool, ClickEventArgs, MenuItemModel, Menu, ItemModel, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { remove, createElement } from '@syncfusion/ej2-base';
 import * as events from '../../common/base/constant';
 import { Dialog } from '@syncfusion/ej2-popups';
@@ -15,6 +15,8 @@ PivotView.Inject(Common);
  */
 /** @hidden */
 export class Toolbar {
+    /** @hidden */
+    public action: string;
 
     private parent: PivotView;
     private toolbar: tool;
@@ -22,10 +24,10 @@ export class Toolbar {
     private reportList: DropDownList;
     private currentReport: string = '';
     private confirmPopUp: Dialog;
-    private action: string;
     private exportMenu: Menu;
     private subTotalMenu: Menu;
     private grandTotalMenu: Menu;
+    private dropArgs: ChangeEventArgs;
 
     constructor(parent: PivotView) {
         this.parent = parent;
@@ -43,6 +45,7 @@ export class Toolbar {
     }
 
     private createToolbar(): void {
+        this.parent.isModified = false;
         this.renderDialog();
         if (document.querySelector('#' + this.parent.element.id + 'pivot-toolbar') !== null) {
             remove(document.querySelector('#' + this.parent.element.id + 'pivot-toolbar'));
@@ -169,12 +172,24 @@ export class Toolbar {
     /* tslint:enable */
 
     private reportChange(args: ChangeEventArgs): void {
+        this.dropArgs = args;
+        if (this.parent.isModified && this.currentReport !== '') {
+            this.createConfirmDialog(
+                this.parent.localeObj.getConstant('alert'),
+                this.parent.localeObj.getConstant('newReportConfirm'));
+        } else {
+            this.reportLoad(args);
+        }
+    }
+
+    private reportLoad(args: ChangeEventArgs): void {
         if (this.action !== 'Save' && this.action !== 'Rename' && this.action !== 'New') {
             let loadArgs: LoadReportArgs = {
                 reportName: args.itemData.value as string
             };
             this.parent.trigger(events.loadReport, loadArgs);
             this.currentReport = loadArgs.reportName;
+            this.parent.isModified = false;
         }
     }
 
@@ -185,12 +200,13 @@ export class Toolbar {
                 reportName: this.currentReport
             };
             this.parent.trigger(events.saveReport, saveArgs);
+            this.parent.isModified = false;
         } else {
-            this.dialogShow(args);
+            this.dialogShow(args, 'saveAs');
         }
     }
 
-    private dialogShow(args: ClickEventArgs): void {
+    private dialogShow(args: ClickEventArgs, action?: string): void {
         this.dialog.header = args.item.tooltipText;
         let outerDiv: HTMLElement = createElement('div', {
             className: cls.GRID_REPORT_OUTER
@@ -201,10 +217,13 @@ export class Toolbar {
         });
         let input: HTMLElement = createElement('input', {
             className: cls.GRID_REPORT_INPUT + ' ' + cls.INPUT,
+            innerHTML: (action && action === 'rename' ? this.currentReport : ''),
             attrs: {
-                'placeholder': this.parent.localeObj.getConstant('emptyReportName')
+                'placeholder': this.parent.localeObj.getConstant('emptyReportName'),
+                'value': (action && action === 'rename' ? this.currentReport : '')
             },
         });
+        (input as HTMLTextAreaElement).setSelectionRange(input.textContent.length, input.textContent.length);
         outerDiv.appendChild(label);
         outerDiv.appendChild(input);
         this.dialog.content = outerDiv;
@@ -215,7 +234,7 @@ export class Toolbar {
     private renameReport(args: ClickEventArgs): void {
         this.parent.trigger(events.toolbarClick, args);
         if (this.currentReport && this.currentReport !== '') {
-            this.dialogShow(args);
+            this.dialogShow(args, 'rename');
         } else {
             this.parent.pivotCommon.errorDialog.createErrorDialog(
                 this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('emptyReport'));
@@ -245,9 +264,13 @@ export class Toolbar {
                 break;
             case (this.parent.element.id + 'new'):
                 this.action = 'New';
-                this.createConfirmDialog(
-                    this.parent.localeObj.getConstant('alert'),
-                    this.parent.localeObj.getConstant('newReportConfirm'));
+                if (this.parent.isModified) {
+                    this.createConfirmDialog(
+                        this.parent.localeObj.getConstant('alert'),
+                        this.parent.localeObj.getConstant('newReportConfirm'));
+                } else {
+                    this.createNewReport();
+                }
                 break;
             case (this.parent.element.id + 'load'):
                 this.action = 'Load';
@@ -311,16 +334,22 @@ export class Toolbar {
             reportInput.focus();
             return;
         }
+        let isNew: boolean = false;
         if ((this.dialog.header === this.parent.localeObj.getConstant('save') ||
             this.dialog.header === this.parent.localeObj.getConstant('saveAs')) &&
             reportInput.value && reportInput.value !== '') {
-            this.action = 'Save';
+            if (this.action === 'New') {
+                isNew = true;
+            } else {
+                this.action = 'Save';
+            }
             this.currentReport = reportInput.value;
             let saveArgs: SaveReportArgs = {
                 report: this.parent.getPersistData(),
                 reportName: reportInput.value
             };
             this.parent.trigger(events.saveReport, saveArgs);
+            this.parent.isModified = false;
         } else if (this.dialog.header === this.parent.localeObj.getConstant('rename') && reportInput.value && reportInput.value !== '') {
             this.action = 'Rename';
             let renameArgs: RenameReportArgs = {
@@ -332,6 +361,18 @@ export class Toolbar {
         }
         this.updateReportList();
         this.dialog.hide();
+        if (isNew) {
+            this.createNewReport();
+        }
+    }
+
+    private createNewReport(): void {
+        this.currentReport = '';
+        this.reportList.value = '';
+        this.reportList.text = '';
+        this.reportList.refresh();
+        this.parent.trigger(events.newReport);
+        this.parent.isModified = false;
     }
 
     private cancelBtnClick(): void {
@@ -365,13 +406,13 @@ export class Toolbar {
                 {
                     buttonModel: {
                         content: this.parent.localeObj.getConstant('ok'), isPrimary: true,
-                        cssClass: cls.OK_BUTTON_CLASS + ' ' + cls.OUTLINE_CLASS
+                        cssClass: cls.OK_BUTTON_CLASS
                     },
                     click: this.okButtonClick.bind(this)
                 },
                 {
                     buttonModel: {
-                        content: this.parent.localeObj.getConstant('cancel'), isPrimary: true,
+                        content: this.parent.localeObj.getConstant('cancel'),
                         cssClass: cls.CANCEL_BUTTON_CLASS
                     },
                     click: this.cancelButtonClick.bind(this)
@@ -382,34 +423,40 @@ export class Toolbar {
     }
 
     private okButtonClick(): void {
-        if (this.action === 'New') {
+        if (this.action === 'Remove') {
+            let removeArgs: RemoveReportArgs = {
+                reportName: this.currentReport
+            };
+            this.parent.trigger(events.removeReport, removeArgs);
+            this.currentReport = '';
+            this.parent.isModified = false;
+            this.action = '';
+            this.updateReportList();
+        } else if (this.action === 'New' || (this.action !== 'Save' && this.action !== 'Rename' && this.action !== 'New')) {
             if (this.currentReport && this.currentReport !== '') {
                 let saveArgs: SaveReportArgs = {
                     report: this.parent.getPersistData(),
                     reportName: this.currentReport
                 };
                 this.parent.trigger(events.saveReport, saveArgs);
+                this.parent.isModified = false;
+                if (this.action === 'New') {
+                    this.createNewReport();
+                } else {
+                    this.reportLoad(this.dropArgs);
+                }
             } else {
-                this.dialogShow({ item: { tooltipText: this.parent.localeObj.getConstant('save') }} as ClickEventArgs);
+                this.dialogShow({ item: { tooltipText: this.parent.localeObj.getConstant('save') } } as ClickEventArgs);
             }
-        } else if (this.action === 'Remove') {
-            let removeArgs: RemoveReportArgs = {
-                reportName: this.currentReport
-            };
-            this.parent.trigger(events.removeReport, removeArgs);
-            this.currentReport = '';
-            this.updateReportList();
         }
         this.confirmPopUp.hide();
     }
 
-    private  cancelButtonClick(): void {
+    private cancelButtonClick(): void {
         if (this.action === 'New') {
-            this.currentReport = '';
-            this.reportList.value = '';
-            this.reportList.text = '';
-            this.reportList.refresh();
-            this.parent.trigger(events.newReport);
+            this.createNewReport();
+        } else {
+            this.reportLoad(this.dropArgs);
         }
         this.confirmPopUp.hide();
     }
@@ -485,25 +532,29 @@ export class Toolbar {
                 items: [
                     {
                         text: this.parent.localeObj.getConstant('showSubTotals'),
-                        id: this.parent.element.id + 'subtotal'
+                        id: this.parent.element.id + 'subtotal',
+                        iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
                     },
                     {
                         text: this.parent.localeObj.getConstant('doNotShowSubTotals'),
-                        id: this.parent.element.id + 'notsubtotal'
+                        id: this.parent.element.id + 'notsubtotal',
+                        iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
                     },
                     {
                         text: this.parent.localeObj.getConstant('showSubTotalsRowsOnly'),
-                        id: this.parent.element.id + 'subtotalrow'
+                        id: this.parent.element.id + 'subtotalrow',
+                        iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
                     },
                     {
                         text: this.parent.localeObj.getConstant('showSubTotalsColumnsOnly'),
-                        id: this.parent.element.id + 'subtotalcolumn'
+                        id: this.parent.element.id + 'subtotalcolumn',
+                        iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
                     },
                 ]
             }
         ];
         this.subTotalMenu = new Menu(
-            { items: menu, enableRtl: this.parent.enableRtl, select: this.subTotalClick.bind(this) },
+            { items: menu, enableRtl: this.parent.enableRtl, select: this.subTotalClick.bind(this), beforeOpen: this.updateSubtotalSelection.bind(this) },
             '#' + this.parent.element.id + '_summary');
 
         let menuTotal: MenuItemModel[] = [
@@ -512,25 +563,29 @@ export class Toolbar {
                 items: [
                     {
                         text: this.parent.localeObj.getConstant('showGrandTotals'),
-                        id: this.parent.element.id + 'grandtotal'
+                        id: this.parent.element.id + 'grandtotal',
+                        iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
                     },
                     {
                         text: this.parent.localeObj.getConstant('doNotShowGrandTotals'),
-                        id: this.parent.element.id + 'notgrandtotal'
+                        id: this.parent.element.id + 'notgrandtotal',
+                        iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
                     },
                     {
                         text: this.parent.localeObj.getConstant('showGrandTotalsRowsOnly'),
-                        id: this.parent.element.id + 'grandtotalrow'
+                        id: this.parent.element.id + 'grandtotalrow',
+                        iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
                     },
                     {
                         text: this.parent.localeObj.getConstant('showGrandTotalsColumnsOnly'),
-                        id: this.parent.element.id + 'grandtotalcolumn'
+                        id: this.parent.element.id + 'grandtotalcolumn',
+                        iconCss: cls.PIVOT_SELECT_ICON + ' ' + cls.ICON
                     },
                 ]
             }
         ];
         this.grandTotalMenu = new Menu(
-            { items: menuTotal, enableRtl: this.parent.enableRtl, select: this.grandTotalClick.bind(this) },
+            { items: menuTotal, enableRtl: this.parent.enableRtl, select: this.grandTotalClick.bind(this), beforeOpen: this.updateGrandtotalSelection.bind(this) },
             '#' + this.parent.element.id + '_grandtotal');
 
         let reports: FetchReportArgs = this.fetchReports();
@@ -545,6 +600,54 @@ export class Toolbar {
             value: this.currentReport
         });
         this.reportList.appendTo('#' + this.parent.element.id + '_reportlist');
+    }
+
+    private updateSubtotalSelection(args: BeforeOpenCloseMenuEventArgs): void {
+        if (!args.element.querySelector('#' + this.parent.element.id + 'subtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.contains(cls.PIVOT_DISABLE_ICON)) {
+            args.element.querySelector('#' + this.parent.element.id + 'subtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.add(cls.PIVOT_DISABLE_ICON);
+        }
+        if (!args.element.querySelector('#' + this.parent.element.id + 'notsubtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.contains(cls.PIVOT_DISABLE_ICON)) {
+            args.element.querySelector('#' + this.parent.element.id + 'notsubtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.add(cls.PIVOT_DISABLE_ICON);
+        }
+        if (!args.element.querySelector('#' + this.parent.element.id + 'subtotalrow' + ' .' + cls.PIVOT_SELECT_ICON).classList.contains(cls.PIVOT_DISABLE_ICON)) {
+            args.element.querySelector('#' + this.parent.element.id + 'subtotalrow' + ' .' + cls.PIVOT_SELECT_ICON).classList.add(cls.PIVOT_DISABLE_ICON);
+        }
+        if (!args.element.querySelector('#' + this.parent.element.id + 'subtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON).classList.contains(cls.PIVOT_DISABLE_ICON)) {
+            args.element.querySelector('#' + this.parent.element.id + 'subtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON).classList.add(cls.PIVOT_DISABLE_ICON);
+        }
+        if (this.parent.dataSource.showSubTotals && this.parent.dataSource.showRowSubTotals && !this.parent.dataSource.showColumnSubTotals) {
+            args.element.querySelector('#' + this.parent.element.id + 'subtotalrow' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
+        } else if (this.parent.dataSource.showSubTotals && !this.parent.dataSource.showRowSubTotals && this.parent.dataSource.showColumnSubTotals) {
+            args.element.querySelector('#' + this.parent.element.id + 'subtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
+        } else if (this.parent.dataSource.showSubTotals && this.parent.dataSource.showRowSubTotals && this.parent.dataSource.showColumnSubTotals) {
+            args.element.querySelector('#' + this.parent.element.id + 'subtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
+        } else if (!this.parent.dataSource.showSubTotals && !this.parent.dataSource.showRowSubTotals && !this.parent.dataSource.showColumnSubTotals) {
+            args.element.querySelector('#' + this.parent.element.id + 'notsubtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
+        }
+    }
+
+    private updateGrandtotalSelection(args: BeforeOpenCloseMenuEventArgs): void {
+        if (!args.element.querySelector('#' + this.parent.element.id + 'grandtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.contains(cls.PIVOT_DISABLE_ICON)) {
+            args.element.querySelector('#' + this.parent.element.id + 'grandtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.add(cls.PIVOT_DISABLE_ICON);
+        }
+        if (!args.element.querySelector('#' + this.parent.element.id + 'notgrandtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.contains(cls.PIVOT_DISABLE_ICON)) {
+            args.element.querySelector('#' + this.parent.element.id + 'notgrandtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.add(cls.PIVOT_DISABLE_ICON);
+        }
+        if (!args.element.querySelector('#' + this.parent.element.id + 'grandtotalrow' + ' .' + cls.PIVOT_SELECT_ICON).classList.contains(cls.PIVOT_DISABLE_ICON)) {
+            args.element.querySelector('#' + this.parent.element.id + 'grandtotalrow' + ' .' + cls.PIVOT_SELECT_ICON).classList.add(cls.PIVOT_DISABLE_ICON);
+        }
+        if (!args.element.querySelector('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON).classList.contains(cls.PIVOT_DISABLE_ICON)) {
+            args.element.querySelector('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON).classList.add(cls.PIVOT_DISABLE_ICON);
+        }
+        if (this.parent.dataSource.showGrandTotals && this.parent.dataSource.showRowGrandTotals && !this.parent.dataSource.showColumnGrandTotals) {
+            args.element.querySelector('#' + this.parent.element.id + 'grandtotalrow' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
+        } else if (this.parent.dataSource.showGrandTotals && !this.parent.dataSource.showRowGrandTotals && this.parent.dataSource.showColumnGrandTotals) {
+            args.element.querySelector('#' + this.parent.element.id + 'grandtotalcolumn' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
+        } else if (this.parent.dataSource.showGrandTotals && this.parent.dataSource.showRowGrandTotals && this.parent.dataSource.showColumnGrandTotals) {
+            args.element.querySelector('#' + this.parent.element.id + 'grandtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
+        } else if (!this.parent.dataSource.showGrandTotals && !this.parent.dataSource.showRowGrandTotals && !this.parent.dataSource.showColumnGrandTotals) {
+            args.element.querySelector('#' + this.parent.element.id + 'notgrandtotal' + ' .' + cls.PIVOT_SELECT_ICON).classList.remove(cls.PIVOT_DISABLE_ICON);
+        }
     }
 
     private updateReportList(): void {

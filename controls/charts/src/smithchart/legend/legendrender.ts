@@ -319,6 +319,8 @@ private drawLegendTitle(
     smithchart.element.id + '_LegendItemText' + k.toString(), location.x + symbol['width'] / 2  + legend.shapePadding,
     location.y + textHeight / 4, 'start', legendEventArgs.text
             );
+    legend.textStyle.fontFamily = smithchart.themeStyle.fontFamily || legend.textStyle.fontFamily;
+    legend.textStyle.size = smithchart.themeStyle.fontSize || legend.textStyle.size;
     let element: Element = renderTextElement(options, legend.textStyle, smithchart.themeStyle.legendLabel, legendGroup);
     element.setAttribute('aria-label', legend.description || 'Click to show or hide the ' + options.text + ' series');
     legendGroup.appendChild(element);

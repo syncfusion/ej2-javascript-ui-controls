@@ -72,8 +72,8 @@ var Input;
     }
     function _blurFn() {
         let parent = getParentNode(this);
-        if ((parent.getElementsByTagName('input')[0]) ? parent.getElementsByTagName('input')[0].value === '' :
-            parent.getElementsByTagName('textarea')[0].value === '') {
+        if ((parent.getElementsByTagName('textarea')[0]) ? parent.getElementsByTagName('textarea')[0].value === '' :
+            parent.getElementsByTagName('input')[0].value === '') {
             let label = parent.getElementsByClassName('e-float-text')[0];
             if (label.classList.contains(CLASSNAMES.LABELTOP)) {
                 removeClass([label], CLASSNAMES.LABELTOP);
@@ -495,8 +495,8 @@ var Input;
     function removeFloating(input) {
         let container = input.container;
         if (!isNullOrUndefined(container) && container.classList.contains(CLASSNAMES.FLOATINPUT)) {
-            let inputEle = container.querySelector('input') ? container.querySelector('input') :
-                container.querySelector('textarea');
+            let inputEle = container.querySelector('textarea') ? container.querySelector('textarea') :
+                container.querySelector('input');
             let placeholder = container.querySelector('.' + CLASSNAMES.FLOATTEXT).textContent;
             let clearButton = container.querySelector('.e-clear-icon') !== null;
             detach(container.querySelector('.' + CLASSNAMES.FLOATLINE));
@@ -725,12 +725,12 @@ let NumericTextBox = class NumericTextBox extends Component {
             if (!isNullOrUndefined(this.element.getAttribute(prop))) {
                 switch (prop) {
                     case 'disabled':
-                        let enabled = this.element.getAttribute(prop) === 'disabled' ||
+                        let enabled = this.element.getAttribute(prop) === 'disabled' || this.element.getAttribute(prop) === '' ||
                             this.element.getAttribute(prop) === 'true' ? false : true;
                         this.setProperties({ enabled: enabled }, true);
                         break;
                     case 'readonly':
-                        let readonly = this.element.getAttribute(prop) === 'readonly'
+                        let readonly = this.element.getAttribute(prop) === 'readonly' || this.element.getAttribute(prop) === ''
                             || this.element.getAttribute(prop) === 'true' ? true : false;
                         this.setProperties({ readonly: readonly }, true);
                         break;
@@ -3340,8 +3340,10 @@ let Slider = class Slider extends Component {
         }
     }
     getThemeInitialization() {
-        this.isMaterial = this.getTheme(this.sliderContainer) === 'material';
-        this.isBootstrap = this.getTheme(this.sliderContainer) === 'bootstrap';
+        this.isMaterial = this.getTheme(this.sliderContainer) === 'material'
+            || this.getTheme(this.sliderContainer) === 'material-dark';
+        this.isBootstrap = this.getTheme(this.sliderContainer) === 'bootstrap'
+            || this.getTheme(this.sliderContainer) === 'bootstrap-dark';
         this.isBootstrap4 = this.getTheme(this.sliderContainer) === 'bootstrap4';
         this.isMaterialTooltip = this.isMaterial && this.type !== 'Range' && this.tooltip.isVisible;
     }
@@ -5973,6 +5975,7 @@ let FormValidator = FormValidator_1 = class FormValidator extends Base {
         let annotationMessage = input.getAttribute('data-val-' + ruleName);
         let customMessage;
         if (this.rules[input.name] && ruleName !== 'validateHidden' && ruleName !== 'hidden') {
+            this.getInputElement(input.name);
             customMessage = this.getErrorMessage(this.rules[input.name][ruleName], ruleName);
         }
         if (message) {
@@ -6175,8 +6178,8 @@ let FormValidator = FormValidator_1 = class FormValidator extends Base {
     }
     // Return default error message or custom error message 
     getErrorMessage(ruleValue, rule) {
-        let message = this.element[0].getAttribute('data-' + rule + '-message') ?
-            this.element[0].getAttribute('data-' + rule + '-message') :
+        let message = this.inputElement.getAttribute('data-' + rule + '-message') ?
+            this.inputElement.getAttribute('data-' + rule + '-message') :
             (ruleValue instanceof Array && typeof ruleValue[1] === 'string') ? ruleValue[1] :
                 (Object.keys(this.localyMessage).length !== 0) ? this.localyMessage[rule] : this.defaultMessages[rule];
         let formats = message.match(/{(\d)}/g);
@@ -6650,7 +6653,7 @@ let Uploader = class Uploader extends Component {
         this.l10n = new L10n('uploader', this.localeText, this.locale);
         this.preLocaleObj = getValue('currentLocale', this.l10n);
         this.checkHTMLAttributes();
-        let parentEle = this.element.parentElement;
+        let parentEle = closest(this.element, 'form');
         if (!isNullOrUndefined(parentEle)) {
             for (; parentEle && parentEle !== document.documentElement; parentEle = parentEle.parentElement) {
                 if (parentEle.tagName === 'FORM') {
@@ -6703,6 +6706,7 @@ let Uploader = class Uploader extends Component {
         if (this.element.hasAttribute('tabindex')) {
             this.tabIndex = this.element.getAttribute('tabindex');
         }
+        this.browserName = Browser.info.name;
     }
     getPersistData() {
         return this.addOnPersist([]);
@@ -6832,7 +6836,7 @@ let Uploader = class Uploader extends Component {
         let fileDropArea = this.createElement('span', { className: DROP_AREA });
         fileDropArea.innerHTML = this.localizedTexts('dropFilesHint');
         this.dropAreaWrapper.appendChild(fileDropArea);
-        this.uploadWrapper = this.createElement('div', { className: CONTROL_WRAPPER, attrs: { 'aria-activedescendant': 'li-focused' } });
+        this.uploadWrapper = this.createElement('div', { className: CONTROL_WRAPPER });
         this.dropAreaWrapper.parentElement.insertBefore(this.uploadWrapper, this.dropAreaWrapper);
         this.uploadWrapper.appendChild(this.dropAreaWrapper);
         this.setDropArea();
@@ -6907,6 +6911,7 @@ let Uploader = class Uploader extends Component {
     setMultipleSelection() {
         if (this.multiple && !this.element.hasAttribute('multiple')) {
             let newAttr = document.createAttribute('multiple');
+            newAttr.value = 'multiple';
             this.element.setAttributeNode(newAttr);
         }
         else if (!this.multiple) {
@@ -7095,12 +7100,10 @@ let Uploader = class Uploader extends Component {
     /* istanbul ignore next */
     dropElement(e) {
         this.dropZoneElement.classList.remove(DRAG_HOVER);
-        if (Browser.info.name === 'chrome') {
+        if (this.browserName === 'chrome') {
             this.element.files = e.dataTransfer.files;
         }
-        else {
-            this.onSelectFiles(e);
-        }
+        this.onSelectFiles(e);
         e.preventDefault();
         e.stopPropagation();
     }
@@ -7458,7 +7461,7 @@ let Uploader = class Uploader extends Component {
             detach(this.listParent);
             this.listParent = null;
         }
-        if (Browser.info.name !== 'msie' && !singleUpload) {
+        if (this.browserName !== 'msie' && !singleUpload) {
             this.element.value = '';
         }
         this.fileList = [];
@@ -7611,7 +7614,7 @@ let Uploader = class Uploader extends Component {
                 liElement.appendChild(textContainer);
                 let iconElement = this.createElement('span', { className: ' e-icons', attrs: { 'tabindex': this.btnTabIndex } });
                 /* istanbul ignore next */
-                if (Browser.info.name === 'msie') {
+                if (this.browserName === 'msie') {
                     iconElement.classList.add('e-msie');
                 }
                 iconElement.setAttribute('title', this.localizedTexts('remove'));
@@ -7653,12 +7656,19 @@ let Uploader = class Uploader extends Component {
             }
         }
     }
+    getSlicedName(nameElement) {
+        let text;
+        text = nameElement.textContent;
+        nameElement.dataset.tail = text.slice(text.length - 10);
+    }
     truncateName(name) {
         let nameElement = name;
-        let text;
-        if (nameElement.offsetWidth < nameElement.scrollWidth) {
-            text = nameElement.textContent;
-            nameElement.dataset.tail = text.slice(text.length - 10);
+        if (this.browserName !== 'edge' && nameElement.offsetWidth < nameElement.scrollWidth) {
+            this.getSlicedName(nameElement);
+            /* istanbul ignore next */
+        }
+        else if (nameElement.offsetWidth + 1 < nameElement.scrollWidth) {
+            this.getSlicedName(nameElement);
         }
     }
     getFileType(name) {
@@ -8017,7 +8027,12 @@ let Uploader = class Uploader extends Component {
         }
     }
     setExtensions(extensions) {
-        this.element.setAttribute('accept', extensions);
+        if (extensions !== '' && !isNullOrUndefined(extensions)) {
+            this.element.setAttribute('accept', extensions);
+        }
+        else {
+            this.element.removeAttribute('accept');
+        }
     }
     templateComplier(uploadTemplate) {
         if (uploadTemplate) {
@@ -8501,7 +8516,7 @@ let Uploader = class Uploader extends Component {
         }
         if (isNullOrUndefined(liElement.querySelector('.' + PAUSE_UPLOAD)) && isNullOrUndefined(this.template)) {
             this.pauseButton = this.createElement('span', { className: 'e-icons e-file-pause-btn', attrs: { 'tabindex': this.btnTabIndex } });
-            if (Browser.info.name === 'msie') {
+            if (this.browserName === 'msie') {
                 this.pauseButton.classList.add('e-msie');
             }
             liElement.insertBefore(this.pauseButton, liElement.querySelector('.' + ABORT_ICON));
@@ -8724,7 +8739,7 @@ let Uploader = class Uploader extends Component {
      */
     clearAll() {
         if (isNullOrUndefined(this.listParent)) {
-            if (Browser.info.name !== 'msie') {
+            if (this.browserName !== 'msie') {
                 this.element.value = '';
             }
             this.filesData = [];
@@ -9133,7 +9148,7 @@ let ColorPicker = class ColorPicker extends Component {
             click: (args) => {
                 this.trigger('change', {
                     currentValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) },
-                    previousValue: { hex: null, rgba: null }
+                    previousValue: { hex: null, rgba: null }, value: this.value
                 });
             }
         });
@@ -9780,7 +9795,8 @@ let ColorPicker = class ColorPicker extends Component {
         let hex = value.slice(0, 7);
         this.trigger('change', {
             currentValue: { hex: hex, rgba: this.convertToRgbString(this.rgb) },
-            previousValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) }
+            previousValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) },
+            value: value
         });
         this.setProperties({ 'value': value }, true);
         this.element.value = hex ? hex : '#000000';
@@ -10198,18 +10214,17 @@ let ColorPicker = class ColorPicker extends Component {
     }
     triggerEvent(cValue, pValue, rgba, isKey = false) {
         let hex = cValue.slice(0, 7);
-        let eventArgs = {
-            currentValue: { hex: hex, rgba: rgba },
-            previousValue: { hex: pValue.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(pValue)) }
-        };
         if (!this.showButtons && !isKey) {
-            eventArgs.previousValue = { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) };
-            this.trigger('change', eventArgs);
+            this.trigger('change', { currentValue: { hex: hex, rgba: rgba },
+                previousValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) }, value: cValue });
             this.setProperties({ 'value': cValue }, true);
             this.element.value = hex ? hex : '#000000';
         }
         else {
-            this.trigger('select', eventArgs);
+            this.trigger('select', {
+                currentValue: { hex: hex, rgba: rgba },
+                previousValue: { hex: pValue.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(pValue)) }
+            });
         }
     }
     /**
@@ -10480,7 +10495,10 @@ let ColorPicker = class ColorPicker extends Component {
         }
         else {
             this.removeTileSelection();
-            this.addTileSelection(select('span[aria-label="' + this.roundValue(newProp) + '"]', this.container));
+            let ele = select('span[aria-label="' + this.roundValue(newProp) + '"]', this.container);
+            if (ele) {
+                this.addTileSelection(ele);
+            }
         }
         this.element.value = newProp.slice(0, 7);
     }
@@ -10779,7 +10797,15 @@ let TextBox = class TextBox extends Component {
                     if (this.isHiddenInput) {
                         this.element.value = this.respectiveElement.value;
                     }
-                    this.raiseChangeEvent();
+                    /* istanbul ignore next */
+                    if (this.isAngular && this.preventChange === true) {
+                        this.previousValue = this.value;
+                        this.preventChange = false;
+                    }
+                    else if (isNullOrUndefined(this.isAngular) || !this.isAngular
+                        || (this.isAngular && !this.preventChange) || (this.isAngular && isNullOrUndefined(this.preventChange))) {
+                        this.raiseChangeEvent();
+                    }
                     break;
                 case 'readonly':
                     Input.setReadonly(this.readonly, this.respectiveElement);
@@ -10826,7 +10852,7 @@ let TextBox = class TextBox extends Component {
     }
     preRender() {
         this.cloneElement = this.element.cloneNode(true);
-        this.formElement = this.element.closest('form');
+        this.formElement = closest(this.element, 'form');
         if (!isNullOrUndefined(this.formElement)) {
             this.isForm = true;
         }
@@ -10869,6 +10895,14 @@ let TextBox = class TextBox extends Component {
             this.element.setAttribute('type', 'hidden');
             this.textarea.setAttribute('name', this.element.getAttribute('name'));
             this.element.removeAttribute('name');
+            let attribute = ['required', 'minlength', 'maxlength'];
+            for (let i = 0; i < attribute.length; i++) {
+                if (this.element.hasAttribute(attribute[i])) {
+                    let attr = this.element.getAttribute(attribute[i]);
+                    this.textarea.setAttribute(attribute[i], attr);
+                    this.element.removeAttribute(attribute[i]);
+                }
+            }
         }
     }
     checkAttributes(attrs) {
@@ -10903,6 +10937,9 @@ let TextBox = class TextBox extends Component {
                 showClearButton: this.showClearButton
             }
         });
+        if (this.isHiddenInput) {
+            this.respectiveElement.parentNode.insertBefore(this.element, this.respectiveElement);
+        }
         this.wireEvents();
         if (this.respectiveElement.value !== '') {
             this.value = this.respectiveElement.value;
@@ -10917,6 +10954,7 @@ let TextBox = class TextBox extends Component {
             this.initialValue = this.value;
             this.setInitialValue();
         }
+        this.previousValue = this.value;
     }
     setInitialValue() {
         if (!this.isAngular) {
@@ -10979,12 +11017,19 @@ let TextBox = class TextBox extends Component {
         this.trigger('blur', eventArgs);
     }
     inputHandler(args) {
+        // tslint:disable-next-line
+        let textboxObj = this;
         let eventArgs = {
             event: args,
             value: this.respectiveElement.value,
             previousValue: this.value,
             container: this.textboxWrapper.container
         };
+        /* istanbul ignore next */
+        if (this.isAngular) {
+            textboxObj.localChange({ value: this.respectiveElement.value });
+            this.preventChange = true;
+        }
         this.trigger('input', eventArgs);
         args.stopPropagation();
     }
@@ -11002,6 +11047,7 @@ let TextBox = class TextBox extends Component {
             isInteraction: interaction ? interaction : false,
             isInteracted: interaction ? interaction : false
         };
+        this.preventChange = false;
         this.trigger('change', eventArgs);
         this.previousValue = this.value;
     }

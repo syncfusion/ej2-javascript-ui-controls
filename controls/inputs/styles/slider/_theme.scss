@@ -1,7 +1,7 @@
 @include export-module('slider-theme') {
   /*! component theme */
   .e-control-wrapper.e-slider-container {
-    @if $skin-name == 'material' {
+    @if ($skin-name == 'material' or $skin-name == 'material-dark') {
       &.e-material-slider .e-slider .e-handle.e-handle-first {
         background: transparent;
         border-color: transparent;
@@ -32,25 +32,25 @@
     }
 
     .e-slider-button:hover {
-      @if $skin-name == 'highcontrast' {
+      @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
         background-color: $slider-range-bar-color;
         border-color: $slider-range-bar-color;
       }
 
       .e-button-icon::before {
-        @if $skin-name == 'highcontrast' {
+        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
           color: $slider-button-icon-font-color;
         }
       }
     }
 
     .e-slider-button:active {
-      @if $skin-name == 'highcontrast' {
+      @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
         background-color: $slider-range-bar-color;
       }
 
       .e-button-icon::before {
-        @if $skin-name == 'highcontrast' {
+        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
           color: $slider-button-icon-font-color;
         }
       }
@@ -59,29 +59,29 @@
     .e-slider {
       .e-range {
         background-color: $slider-range-bar-color;
-        @if $skin-name == 'highcontrast' {
+        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
           border-radius: 4px;
         }
       }
 
       .e-range.e-tab-range {
-        @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+        @if $skin-name == 'fabric' or $skin-name == 'fabric-dark' or $skin-name == 'highcontrast' or $skin-name == 'highcontrast-light' {
           background-color: $slider-tab-range-color;
         }
       }
 
       .e-handle {
         background-color: $slider-handle-bg-color;
-        @if $skin-name == 'bootstrap' {
+        @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
           border: 1px solid $slider-normal-handle-border-color;
         }
-        @if $skin-name == 'fabric' {
+        @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
           border: 2px solid $slider-normal-handle-border-color;
         }
-        @if $skin-name == 'highcontrast' {
+        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
           border: 2px solid $slider-normal-handle-border-color;
         }
-        @if $skin-name != 'bootstrap' {
+        @if $skin-name != 'bootstrap' and $skin-name != 'bootstrap-dark' {
           border-color: $slider-normal-handle-border-color;
         }
         // @if $skin-name == 'bootstrap4' {
@@ -95,14 +95,14 @@
 
         &.e-handle-first {
           &:hover {
-            @if $skin-name == 'bootstrap' {
+            @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
               background-color: $slider-handle-active-bg-color;
               border-color: $slider-handle-active-border-color;
             }
           }
 
           &:active {
-            @if $skin-name == 'bootstrap' {
+            @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
               background-color: $slider-handle-active-bg-color;
               border-color: $slider-handle-active-border-color;
             }
@@ -111,14 +111,14 @@
 
         &.e-handle-second {
           &:hover {
-            @if $skin-name == 'bootstrap' {
+            @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
               background-color: $slider-handle-active-bg-color;
               border-color: $slider-handle-active-border-color;
             }
           }
 
           &:active {
-            @if $skin-name == 'bootstrap' {
+            @if ($skin-name == 'bootstrap' or $skin-name == 'bootstrap-dark') {
               background-color: $slider-handle-active-bg-color;
               border-color: $slider-handle-active-border-color;
             }
@@ -129,13 +129,13 @@
 
     .e-slider {
       .e-handle:hover {
-        @if $skin-name == 'highcontrast' {
+        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
           background-color: $slider-hover-handle-color;
         }
       }
 
       .e-handle:active {
-        @if $skin-name == 'highcontrast' {
+        @if ($skin-name == 'highcontrast' or $skin-name == 'highcontrast-light') {
           background-color: $slider-active-handle-bg-color;
         }
       }
@@ -143,19 +143,19 @@
 
     &.e-slider-hover {
       .e-slider-track {
-        @if ($skin-name != 'highcontrast' and $skin-name != 'bootstrap4') {
+        @if ($skin-name != 'highcontrast' and $skin-name != 'highcontrast-light' and $skin-name != 'bootstrap4') {
           background-color: $slider-hover-color;
         }
       }
 
       .e-range {
-        @if ($skin-name != 'highcontrast' and $skin-name != 'bootstrap4') {
+        @if ($skin-name != 'highcontrast' and $skin-name != 'highcontrast-light' and $skin-name != 'bootstrap4') {
           background-color: $slider-range-bar-hover-color;
         }
       }
 
       .e-handle {
-        @if ($skin-name != 'highcontrast' and $skin-name != 'bootstrap4') {
+        @if ($skin-name != 'highcontrast' and $skin-name != 'highcontrast-light' and $skin-name != 'bootstrap4') {
           border-color: $slider-handle-hover-border-color;
         }
       }
@@ -166,19 +166,19 @@
 .e-control-wrapper.e-slider-container {
   &:not(.e-disabled):not(.e-read-only):active {
     .e-handle {
-      @if $skin-name == 'fabric' {
+      @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
         border-color: $slider-tab-border-color;
       }
     }
 
     .e-range {
-      @if $skin-name == 'fabric' {
+      @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
         background-color: $slider-tab-range-color;
       }
     }
 
     .e-slider-track {
-      @if $skin-name == 'fabric' {
+      @if ($skin-name == 'fabric' or $skin-name == 'fabric-dark') {
         background-color: $slider-tab-track-color;
       }
     }

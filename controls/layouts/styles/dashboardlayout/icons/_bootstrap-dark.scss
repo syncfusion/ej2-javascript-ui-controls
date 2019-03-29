@@ -64,14 +64,14 @@
           content: '\eb08';
           font-size: 12px;
           position: absolute;
-          right: 2px;
+          right: 0;
         }
 
         &.e-south-west::before {
           bottom: 0;
           content: '\eb08';
           font-size: 12px;
-          left: 2px;
+          left: 0;
           position: absolute;
           transform: rotateY(180deg);
         }

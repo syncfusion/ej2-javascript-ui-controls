@@ -212,23 +212,63 @@ export class Toolbar {
         let gID: string = this.id;
         let isSelected: boolean = gObj.selectionModule ? gObj.selectionModule.selectedRowIndexes.length === 1 ||
             gObj.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
-        let hasData: number = gObj.currentViewData && gObj.currentViewData.length;
-        edit.allowAdding ? enableItems.push(gID + '_add') : disableItems.push(gID + '_add');
-        edit.allowEditing && hasData && isSelected ? enableItems.push(gID + '_edit') : disableItems.push(gID + '_edit');
-        let isDeleteSelected: boolean = gObj.selectionModule ? gObj.selectionModule.selectedRowIndexes.length > 0 ||
-            gObj.selectionModule.getSelectedRowCellIndexes().length > 0 ? true : false : false;
-        edit.allowDeleting && hasData && isDeleteSelected ? enableItems.push(gID + '_delete') : disableItems.push(gID + '_delete');
+        let toolbarItems: ItemModel[] = this.toolbar.items;
+        let toolbarDefaultItems: string[] = [gID + '_add', gID + '_edit', gID + '_delete',
+        gID + '_update', gID + '_cancel'];
         if (!isNullOrUndefined(this.parent.editModule)) {
-            if (gObj.editModule.cellEditModule.isCellEdit) {
-                enableItems.push(gID + '_update');
-                enableItems.push(gID + '_cancel');
+            let hasData: number = gObj.currentViewData && gObj.currentViewData.length;
+            edit.allowAdding ? enableItems.push(gID + '_add') : disableItems.push(gID + '_add');
+            edit.allowEditing && hasData && isSelected ? enableItems.push(gID + '_edit') : disableItems.push(gID + '_edit');
+            let isDeleteSelected: boolean = gObj.selectionModule ? gObj.selectionModule.selectedRowIndexes.length > 0 ||
+                gObj.selectionModule.getSelectedRowCellIndexes().length > 0 ? true : false : false;
+            edit.allowDeleting && hasData && isDeleteSelected ? enableItems.push(gID + '_delete') : disableItems.push(gID + '_delete');
+            if (gObj.editSettings.mode === 'Auto' && !isNullOrUndefined(gObj.editModule.cellEditModule)
+                && gObj.editModule.cellEditModule.isCellEdit) {
+                // New initialization for enableItems and disableItems during isCellEdit
+                enableItems = [];
+                enableItems.push(gID + '_update', gID + '_cancel');
+                disableItems = [];
+                for (let t: number = 0; t < toolbarItems.length; t++) {
+                    if (toolbarItems[t].id !== gID + '_update' && toolbarItems[t].id !== gID + '_cancel' &&
+                        toolbarDefaultItems.indexOf(toolbarItems[t].id) !== -1) {
+                        disableItems.push(toolbarItems[t].id);
+                    }
+                }
             } else {
-                disableItems.push(gID + '_update');
-                disableItems.push(gID + '_cancel');
+                disableItems.push(gID + '_update', gID + '_cancel');
+                for (let t: number = 0; t < toolbarItems.length; t++) {
+                    if (enableItems.indexOf(toolbarItems[t].id) === -1 && disableItems.indexOf(toolbarItems[t].id) === -1) {
+                        enableItems.push(toolbarItems[t].id);
+                    }
+                }
             }
+        } else {
+            disableItems.push(gID + '_delete');
+            disableItems.push(gID + '_add');
+            disableItems.push(gID + '_edit');
+            disableItems.push(gID + '_update');
+            disableItems.push(gID + '_cancel');
         }
-        this.enableItems(enableItems, true);
-        this.enableItems(disableItems, false);
+        for (let e: number = 0; e < enableItems.length; e++) {
+            let index: number;
+            for (let t: number = 0; t < toolbarItems.length; t++) {
+                if (toolbarItems[t].id === enableItems[e]) {
+                    index = t;
+                    break;
+                }
+            }
+            this.toolbar.hideItem(index, false);
+        }
+        for (let d: number = 0; d < disableItems.length; d++) {
+            let index: number;
+            for (let t: number = 0; t < toolbarItems.length; t++) {
+                if (toolbarItems[t].id === disableItems[d]) {
+                    index = t;
+                    break;
+                }
+            }
+            this.toolbar.hideItem(index, true);
+        }
     }
 
     /**

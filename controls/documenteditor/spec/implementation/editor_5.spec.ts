@@ -12,41 +12,41 @@ import {
  */
 function tableWithPara(editor: DocumentEditor) {
     editor.editorModule.insertTable(5, 5);
-    editor.editorModule.insertText('the', false);
+    editor.editorModule.insertText('the');
     editor.selection.handleDownKey();
-    editor.editorModule.insertText('quick', false);
+    editor.editorModule.insertText('quick');
     editor.selection.handleDownKey();
-    editor.editorModule.insertText('brown', false);
+    editor.editorModule.insertText('brown');
     editor.selection.handleDownKey();
-    editor.editorModule.insertText('fox', false);
+    editor.editorModule.insertText('fox');
     editor.selection.handleDownKey();
-    editor.editorModule.insertText('jumps', false);
+    editor.editorModule.insertText('jumps');
     editor.selection.handleDownKey();
-    editor.editorModule.insertText('over', false);
+    editor.editorModule.insertText('over');
     editor.editorModule.handleEnterKey();
-    editor.editorModule.insertText('the', false);
+    editor.editorModule.insertText('the');
     editor.editorModule.handleEnterKey();
-    editor.editorModule.insertText('lazy', false);
+    editor.editorModule.insertText('lazy');
     editor.editorModule.handleEnterKey();
-    editor.editorModule.insertText('dog', false);
+    editor.editorModule.insertText('dog');
     editor.editorModule.handleEnterKey();
-    editor.editorModule.insertText('the', false);
+    editor.editorModule.insertText('the');
     editor.editorModule.handleEnterKey();
-    editor.editorModule.insertText('quick', false);
+    editor.editorModule.insertText('quick');
     editor.editorModule.handleEnterKey();
-    editor.editorModule.insertText('brown', false);
+    editor.editorModule.insertText('brown');
     editor.editorModule.handleEnterKey();
-    editor.editorModule.insertText('fox', false);
+    editor.editorModule.insertText('fox');
     editor.editorModule.handleEnterKey();
-    editor.editorModule.insertText('jumps', false);
+    editor.editorModule.insertText('jumps');
     editor.editorModule.handleEnterKey();
-    editor.editorModule.insertText('over', false);
+    editor.editorModule.insertText('over');
     editor.editorModule.handleEnterKey();
-    editor.editorModule.insertText('the', false);
+    editor.editorModule.insertText('the');
     editor.editorModule.handleEnterKey();
-    editor.editorModule.insertText('lazy', false);
+    editor.editorModule.insertText('lazy');
     editor.editorModule.handleEnterKey();
-    editor.editorModule.insertText('dog', false);
+    editor.editorModule.insertText('dog');
 }
 describe('Insert table validation', () => {
     let editor: DocumentEditor = undefined;
@@ -98,8 +98,8 @@ describe('Insert table validation', () => {
         expect((((((editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as TableWidget).childWidgets[0] as TableRowWidget).childWidgets[0] as TableCellWidget).childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children.length).toBe(1);
     });
     it('paragraph,table, paragraph combinations with undo, redo validation', () => {
-        editor.editorModule.insertText('The quick brown fox jumps over the lazy dog', false);
-        editor.editorModule.insertText('The quick brown fox jumps over the lazy dog', false);
+        editor.editorModule.insertText('The quick brown fox jumps over the lazy dog');
+        editor.editorModule.insertText('The quick brown fox jumps over the lazy dog');
         tableWithPara(editor);
         let count: number = 1;
         while (count <= 30) {
@@ -116,8 +116,8 @@ describe('Insert table validation', () => {
     });
     it('paragraph, image, table, paragraph combinations with undo, redo validation', () => {
         let imageString: string = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAIAAAADnC86AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADQSURBVFhH7ZbRDYQgDIYZ5UZhFEdxlBuFUUhY4N7vwWtTURJz5tem8GAbTYS0/eGjWsN7hJVSAuku3c2FuyF31BvqBNu90/mLmnSRjKDbMZULt2csz/kV8hRbVjSkSZkxRC0yKcbl+6FLhttSDIV5W6vYnKeZVWkR1WyFGbhIHrAbCzPhEcL1XCvqptYMd7xXExUXM4+pT3ENe53OP5yGqJ8kDDZGpIld6E730uFR/uuDs1J6OmolQDzcUeOslJ6OWgkQD3fUOCulJ6Ome4j9AGEu0k90WN54AAAAAElFTkSuQmCC';
-        editor.editorModule.insertText('The quick brown fox jumps over the lazy dog', false);
-        editor.editorModule.insertText('The quick brown fox jumps over the lazy dog', false);
+        editor.editorModule.insertText('The quick brown fox jumps over the lazy dog');
+        editor.editorModule.insertText('The quick brown fox jumps over the lazy dog');
         editor.editor.insertImage(imageString, 100, 100);
         tableWithPara(editor);
         let count: number = 1;
@@ -192,8 +192,8 @@ describe('Insert table with header validation', () => {
     it('paragraph,table, paragraph combinations on header with undo, redo validation', () => {
         let event: any = { offsetX: 573, offsetY: 56 };
         editor.viewer.onDoubleTap(event);
-        editor.editorModule.insertText('The quick brown fox jumps over the lazy dog', false);
-        editor.editorModule.insertText('The quick brown fox jumps over the lazy dog', false);
+        editor.editorModule.insertText('The quick brown fox jumps over the lazy dog');
+        editor.editorModule.insertText('The quick brown fox jumps over the lazy dog');
         tableWithPara(editor);
         let count: number = 1;
         while (count <= 30) {
@@ -212,8 +212,8 @@ describe('Insert table with header validation', () => {
         let imageString: string = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAIAAAADnC86AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAADQSURBVFhH7ZbRDYQgDIYZ5UZhFEdxlBuFUUhY4N7vwWtTURJz5tem8GAbTYS0/eGjWsN7hJVSAuku3c2FuyF31BvqBNu90/mLmnSRjKDbMZULt2csz/kV8hRbVjSkSZkxRC0yKcbl+6FLhttSDIV5W6vYnKeZVWkR1WyFGbhIHrAbCzPhEcL1XCvqptYMd7xXExUXM4+pT3ENe53OP5yGqJ8kDDZGpIld6E730uFR/uuDs1J6OmolQDzcUeOslJ6OWgkQD3fUOCulJ6Ome4j9AGEu0k90WN54AAAAAElFTkSuQmCC';
         let event: any = { offsetX: 573, offsetY: 56 };
         editor.viewer.onDoubleTap(event);
-        editor.editorModule.insertText('The quick brown fox jumps over the lazy dog', false);
-        editor.editorModule.insertText('The quick brown fox jumps over the lazy dog', false);
+        editor.editorModule.insertText('The quick brown fox jumps over the lazy dog');
+        editor.editorModule.insertText('The quick brown fox jumps over the lazy dog');
         editor.editor.insertImage(imageString, 100, 100);
         tableWithPara(editor);
         let count: number = 1;
@@ -292,8 +292,8 @@ describe('Insert table with footer validation', () => {
         editor.viewer.viewerContainer.scrollTop = 850;
         let event: any = { offsetX: 506, offsetY: 980 };
         editor.viewer.onDoubleTap(event);
-        editor.editorModule.insertText('The quick brown fox jumps over the lazy dog', false);
-        editor.editorModule.insertText('The quick brown fox jumps over the lazy dog', false);
+        editor.editorModule.insertText('The quick brown fox jumps over the lazy dog');
+        editor.editorModule.insertText('The quick brown fox jumps over the lazy dog');
         tableWithPara(editor);
         let count: number = 1;
         while (count <= 30) {
@@ -313,8 +313,8 @@ describe('Insert table with footer validation', () => {
     //     editor.viewer.viewerContainer.scrollTop = 850;
     //     let event: any = { offsetX: 506, offsetY: 980 };
     //     editor.viewer.onDoubleTap(event);
-    //     editor.editorModule.insertText('The quick brown fox jumps over the lazy dog', false);
-    //     editor.editorModule.insertText('The quick brown fox jumps over the lazy dog', false);
+    //     editor.editorModule.insertText('The quick brown fox jumps over the lazy dog');
+    //     editor.editorModule.insertText('The quick brown fox jumps over the lazy dog');
     //     editor.selectionModule.insertImage(imageString, 100, 100);
     //     tableWithPara(editor);
     //     let count: number = 1;
@@ -761,7 +761,7 @@ describe('Insert Table Validation with selectedd content replace', () => {
         }, 1000);
     });
     it('Insert Table in selected content', () => {
-        editor.editor.insertText('sample', false);
+        editor.editor.insertText('sample');
         editor.selection.selectAll();
         editor.editorModule.insertTable(2, 2);
         expect(editor.selection.start.paragraph.isInsideTable).toBe(true);

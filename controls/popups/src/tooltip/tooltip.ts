@@ -50,6 +50,7 @@ const TIP_RIGHT: string = 'e-tip-right';
 const POPUP_ROOT: string = 'e-popup';
 const POPUP_OPEN: string = 'e-popup-open';
 const POPUP_CLOSE: string = 'e-popup-close';
+const POPUP_LIB: string = 'e-lib';
 /**
  * Describes the element positions.
  */
@@ -381,6 +382,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     }
     private renderPopup(target: HTMLElement): void {
         let elePos: OffsetPosition = this.mouseTrail ? { top: 0, left: 0 } : this.getTooltipPosition(target);
+        this.tooltipEle.classList.remove(POPUP_LIB);
         this.popupObj = new Popup(this.tooltipEle as HTMLElement, {
             height: this.height,
             width: this.width,
@@ -644,7 +646,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (isNullOrUndefined(this.tooltipEle)) {
             this.ctrlId = this.element.getAttribute('id') ? getUniqueID(this.element.getAttribute('id')) : getUniqueID('tooltip');
             this.tooltipEle = this.createElement('div', {
-                className: TOOLTIP_WRAP + ' ' + POPUP_ROOT, attrs: {
+                className: TOOLTIP_WRAP + ' ' + POPUP_ROOT + ' ' + POPUP_LIB, attrs: {
                     role: 'tooltip', 'aria-hidden': 'false', 'id': this.ctrlId + '_content'
                 }, styles: 'width:' + formatUnit(this.width) + ';height:' + formatUnit(this.height) + ';position:absolute;'
             });

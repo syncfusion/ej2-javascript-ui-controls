@@ -17,6 +17,8 @@ const cellClick = 'cellClick';
 /** @hidden */
 const cellDoubleClick = 'cellDoubleClick';
 /** @hidden */
+const select = 'select';
+/** @hidden */
 const actionBegin = 'actionBegin';
 /** @hidden */
 const actionComplete = 'actionComplete';
@@ -1467,6 +1469,26 @@ class KeyboardInteraction {
             EventHandler.remove(allDayRow, 'mousemove', this.onMouseSelection);
             EventHandler.remove(allDayRow, 'mouseup', this.onMoveup);
         }
+        if (this.isPreventAction(e)) {
+            return;
+        }
+        let selectedCells = [].slice.call(this.parent.element.querySelectorAll('.e-selected-cell'));
+        let queryStr = '.' + WORK_CELLS_CLASS + ',.' + ALLDAY_CELLS_CLASS + ',.' + HEADER_CELLS_CLASS;
+        let target = closest(e.target, queryStr);
+        this.parent.activeCellsData = this.parent.getCellDetails((selectedCells.length > 1) ? this.parent.getSelectedElements() : target);
+        let cellData = {};
+        this.parent.eventWindow.convertToEventData(this.parent.activeCellsData, cellData);
+        let args = {
+            data: cellData,
+            element: this.parent.activeCellsData.element,
+            showQuickPopup: false, event: e,
+            requestType: 'cellSelect'
+        };
+        this.parent.trigger(select, args);
+        if (args.showQuickPopup) {
+            let cellArgs = extend(this.parent.activeCellsData, { cancel: false, event: e, name: 'cellClick' });
+            this.parent.notify(cellClick, cellArgs);
+        }
     }
     processEnter(e) {
         if (this.parent.activeViewOptions.readonly || this.isPreventAction(e)) {
@@ -1719,6 +1741,9 @@ class KeyboardInteraction {
             target = this.getWorkCellFromAppointmentElement(selectedEventElements[selectedEventElements.length - 1]);
             this.parent.eventBase.removeSelectedAppointmentClass();
         }
+        if (!target) {
+            return;
+        }
         if (target.classList.contains(WORK_CELLS_CLASS) && !this.parent.element.querySelector('.' + POPUP_OPEN)) {
             let tableRows = this.parent.getTableRows();
             let curRowIndex = tableRows.indexOf(target.parentElement);
@@ -1749,6 +1774,9 @@ class KeyboardInteraction {
             this.parent.eventBase.removeSelectedAppointmentClass();
         }
         let tableRows = this.parent.getTableRows();
+        if (!target) {
+            return;
+        }
         if (target.classList.contains(WORK_CELLS_CLASS) && !this.parent.element.querySelector('.' + POPUP_OPEN)) {
             let curRowIndex = tableRows.indexOf(target.parentElement);
             if (curRowIndex >= 0 && curRowIndex < tableRows.length - 1) {
@@ -1902,7 +1930,7 @@ class KeyboardInteraction {
     calculateNextPrevDate(currentCell, target, type) {
         let initialId = this.initialTarget.getAttribute('data-group-index');
         if (this.parent.activeViewOptions.group.resources.length > 0 && this.parent.currentView === 'Month') {
-            if (target.getAttribute('data-group-index') !== initialId) {
+            if (currentCell && target && target.getAttribute('data-group-index') !== initialId) {
                 let currentDate = new Date(parseInt(currentCell.getAttribute('data-date'), 10));
                 let nextPrevDate = (type === 'right') ? new Date(currentDate.setDate(currentDate.getDate() + 1))
                     : new Date(currentDate.setDate(currentDate.getDate() - 1));
@@ -3753,6 +3781,9 @@ class EventBase {
             else {
                 this.processTimezone(event);
             }
+            if (!isNullOrUndefined(event[fields.recurrenceRule]) && event[fields.recurrenceRule] === '') {
+                event[fields.recurrenceRule] = null;
+            }
             if (!isNullOrUndefined(event[fields.recurrenceRule]) && isNullOrUndefined(event[fields.recurrenceID])) {
                 processed = processed.concat(this.generateOccurrence(event));
             }
@@ -4255,6 +4286,12 @@ class EventBase {
         }
         let raiseClickEvent = (isMultiple) => {
             this.activeEventData(eventData, isMultiple);
+            let selectArgs = {
+                data: this.parent.activeEventData.event,
+                element: this.parent.activeEventData.element,
+                event: eventData, requestType: 'eventSelect'
+            };
+            this.parent.trigger(select, selectArgs);
             let args = extend(this.parent.activeEventData, { cancel: false, originalEvent: eventData });
             this.parent.trigger(eventClick, args);
             return args.cancel;
@@ -4342,15 +4379,14 @@ class EventBase {
         this.parent.activeEventData = { event: eventObject, element: target };
     }
     generateOccurrence(event, viewDate) {
-        let fields = this.parent.eventFields;
-        let startDate = event[fields.startTime];
-        let endDate = event[fields.endTime];
-        let occurrenceCollection = [];
-        let currentViewDate = isNullOrUndefined(viewDate) ? this.parent.activeView.startDate() : viewDate;
-        let eventRule = event[fields.recurrenceRule];
+        let startDate = event[this.parent.eventFields.startTime];
+        let endDate = event[this.parent.eventFields.endTime];
+        let eventRule = event[this.parent.eventFields.recurrenceRule];
         let duration = endDate.getTime() - startDate.getTime();
-        currentViewDate = new Date(+currentViewDate - duration);
-        let dates = generate(startDate, eventRule, event[fields.recurrenceException], this.parent.firstDayOfWeek, undefined, currentViewDate, this.parent.calendarMode);
+        viewDate = new Date((viewDate || this.parent.activeView.startDate()).getTime() - duration);
+        let exception = event[this.parent.eventFields.recurrenceException];
+        let maxCount = ((+this.parent.activeView.endDate()) - (+resetTime(new Date(+viewDate)))) / MS_PER_DAY;
+        let dates = generate(startDate, eventRule, exception, this.parent.firstDayOfWeek, undefined, viewDate, this.parent.calendarMode);
         if (this.parent.currentView === 'Agenda' && eventRule.indexOf('COUNT') === -1 && eventRule.indexOf('UNTIL') === -1) {
             if (isNullOrUndefined(event.generatedDates)) {
                 event.generatedDates = { start: new Date(dates[0]), end: new Date(dates[dates.length - 1]) };
@@ -4364,15 +4400,14 @@ class EventBase {
                 }
             }
         }
-        let date = dates.shift();
-        while (date) {
+        let occurrenceCollection = [];
+        for (let date of dates) {
             let clonedObject = extend({}, event, null, true);
-            clonedObject[fields.startTime] = new Date(date);
-            clonedObject[fields.endTime] = new Date(new Date(date).setMilliseconds(duration));
-            clonedObject[fields.recurrenceID] = clonedObject[fields.id];
+            clonedObject[this.parent.eventFields.startTime] = new Date(date);
+            clonedObject[this.parent.eventFields.endTime] = new Date(new Date(date).setMilliseconds(duration));
+            clonedObject[this.parent.eventFields.recurrenceID] = clonedObject[this.parent.eventFields.id];
             clonedObject.Guid = this.generateGuid();
             occurrenceCollection.push(clonedObject);
-            date = dates.shift();
         }
         return occurrenceCollection;
     }
@@ -5154,7 +5189,8 @@ class QuickPopups {
         tempObj[this.parent.eventFields.isAllDay] = this.parent.activeCellsData.isAllDay;
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             let targetCell = args.element instanceof Array ? args.element[0] : args.element;
-            this.parent.resourceBase.setResourceValues(tempObj, true, parseInt(targetCell.getAttribute('data-group-index'), 10));
+            let groupIndex = parseInt(targetCell.getAttribute('data-group-index'), 10);
+            this.parent.resourceBase.setResourceValues(tempObj, true, isNaN(groupIndex) ? null : groupIndex);
         }
         return this.parent.eventBase.isBlockRange(tempObj);
     }
@@ -7160,8 +7196,12 @@ class EventWindow {
             endObj.value = new Date(startObj.value.getTime() + (MS_PER_MINUTE * eventProp.duration));
             endObj.dataBind();
         }
+        if (this.parent.editorTemplate && this.element.querySelector('.e-recurrenceeditor') && !this.recurrenceEditor) {
+            this.recurrenceEditor = this.getInstance('e-recurrenceeditor');
+        }
     }
     onBeforeClose() {
+        this.resetForm();
         this.parent.eventBase.focusElement();
     }
     getEventWindowContent() {
@@ -7934,6 +7974,8 @@ class EventWindow {
         this.parent.activeEventData = { event: undefined, element: undefined };
         this.parent.currentAction = null;
         this.dialogObject.hide();
+    }
+    resetForm() {
         this.fieldValidator.destroyToolTip();
         this.resetFormFields();
         if (!this.parent.isAdaptive && this.recurrenceEditor) {
@@ -8571,7 +8613,7 @@ class VirtualScroll {
         let conTable = this.parent.element.querySelector('.' + CONTENT_TABLE_CLASS);
         this.renderedLength = resWrap.querySelector('tbody').children.length;
         let firstTDIndex = parseInt(resWrap.querySelector('tbody td').getAttribute('data-group-index'), 10);
-        let scrollHeight = (this.parent.enableAdaptiveRows) ?
+        let scrollHeight = (this.parent.rowAutoHeight) ?
             (conTable.offsetHeight - conWrap.offsetHeight) : this.bufferCount * this.itemSize;
         addClass([conWrap], 'e-transition');
         let resCollection = [];
@@ -8592,7 +8634,7 @@ class VirtualScroll {
     }
     upScroll(conWrap, firstTDIndex) {
         let index = (~~(conWrap.scrollTop / this.itemSize) + Math.ceil(conWrap.clientHeight / this.itemSize)) - this.renderedLength;
-        if (this.parent.enableAdaptiveRows) {
+        if (this.parent.rowAutoHeight) {
             index = (index > firstTDIndex) ? firstTDIndex - this.bufferCount : index;
         }
         index = (index > 0) ? index : 0;
@@ -8602,7 +8644,7 @@ class VirtualScroll {
             this.translateY = conWrap.scrollTop;
         }
         else {
-            let height = (this.parent.enableAdaptiveRows) ? this.averageRowHeight : this.itemSize;
+            let height = (this.parent.rowAutoHeight) ? this.averageRowHeight : this.itemSize;
             this.translateY = (conWrap.scrollTop - (this.bufferCount * height) > 0) ?
                 conWrap.scrollTop - (this.bufferCount * height) : 0;
         }
@@ -8616,7 +8658,7 @@ class VirtualScroll {
             return null;
         }
         let nextSetResIndex = ~~(conWrap.scrollTop / this.itemSize);
-        if (this.parent.enableAdaptiveRows) {
+        if (this.parent.rowAutoHeight) {
             nextSetResIndex = ~~((conWrap.scrollTop - this.translateY) / this.averageRowHeight) + firstTDIndex;
             nextSetResIndex = (nextSetResIndex > firstTDIndex + this.bufferCount) ? nextSetResIndex : firstTDIndex + this.bufferCount;
         }
@@ -9123,7 +9165,7 @@ class ResourceBase {
         let resColl = this.resourceCollection;
         let resDiv = createElement('div', { className: RESOURCE_COLUMN_WRAP_CLASS });
         let tbl = this.parent.activeView.createTableLayout(RESOURCE_COLUMN_TABLE_CLASS);
-        if (!this.parent.uiStateValues.isGroupAdaptive && this.parent.enableAdaptiveRows && this.parent.activeView.isTimelineView()
+        if (!this.parent.uiStateValues.isGroupAdaptive && this.parent.rowAutoHeight && this.parent.activeView.isTimelineView()
             && this.parent.activeViewOptions.group.resources.length > 0) {
             addClass([tbl], AUTO_HEIGHT);
         }
@@ -10626,13 +10668,18 @@ let Schedule = class Schedule extends Component {
                     this.dateHeaderTemplateFn = this.templateParser(this.activeViewOptions.dateHeaderTemplate);
                     state.isLayout = true;
                     break;
+                case 'resourceHeaderTemplate':
+                    this.activeViewOptions.resourceHeaderTemplate = newProp.resourceHeaderTemplate;
+                    this.resourceHeaderTemplateFn = this.templateParser(this.activeViewOptions.resourceHeaderTemplate);
+                    state.isLayout = true;
+                    break;
                 case 'timezone':
                     this.eventBase.timezonePropertyChange(oldProp.timezone);
                     break;
                 case 'enableRtl':
                     state.isRefresh = true;
                     break;
-                case 'enableAdaptiveRows':
+                case 'rowAutoHeight':
                     state.isLayout = true;
                     break;
                 default:
@@ -10887,7 +10934,8 @@ let Schedule = class Schedule extends Component {
         if (isNullOrUndefined(startTime) || isNullOrUndefined(endTime)) {
             return undefined;
         }
-        let endDateFromColSpan = this.activeView.isTimelineView() && !isNullOrUndefined(lastTd.getAttribute('colSpan'));
+        let endDateFromColSpan = this.activeView.isTimelineView() && !isNullOrUndefined(lastTd.getAttribute('colSpan')) &&
+            this.headerRows.length > 0;
         let duration = endDateFromColSpan ? parseInt(lastTd.getAttribute('colSpan'), 10) : 1;
         if (!this.activeViewOptions.timeScale.enable || endDateFromColSpan || lastTd.classList.contains(ALLDAY_CELLS_CLASS) ||
             lastTd.classList.contains(HEADER_CELLS_CLASS)) {
@@ -11259,7 +11307,7 @@ __decorate([
 ], Schedule.prototype, "showWeekNumber", void 0);
 __decorate([
     Property(false)
-], Schedule.prototype, "enableAdaptiveRows", void 0);
+], Schedule.prototype, "rowAutoHeight", void 0);
 __decorate([
     Property()
 ], Schedule.prototype, "editorTemplate", void 0);
@@ -11311,6 +11359,9 @@ __decorate([
 __decorate([
     Event()
 ], Schedule.prototype, "cellDoubleClick", void 0);
+__decorate([
+    Event()
+], Schedule.prototype, "select", void 0);
 __decorate([
     Event()
 ], Schedule.prototype, "actionBegin", void 0);
@@ -11514,7 +11565,8 @@ class ActionBase {
     getOriginalElement(element) {
         let originalElement;
         let guid = element.getAttribute('data-guid');
-        if (this.parent.activeView.isTimelineView()) {
+        let isMorePopup = element.offsetParent && element.offsetParent.classList.contains(MORE_EVENT_POPUP_CLASS);
+        if (isMorePopup || this.parent.activeView.isTimelineView()) {
             originalElement = [].slice.call(this.parent.element.querySelectorAll('[data-guid="' + guid + '"]'));
         }
         else {
@@ -11889,8 +11941,8 @@ class Resize extends ActionBase {
             this.actionObj.start = this.parent.activeViewOptions.timeScale.enable ? this.calculateIntervalTime(resizeTime) : resizeTime;
         }
         else {
-            let resizeEnd = (this.actionObj.event[this.parent.eventFields.isAllDay] && resizeTime.getHours() === 0 &&
-                resizeTime.getMinutes() === 0) ? addDays(resizeTime, 1) : resizeTime;
+            let resizeEnd = (resizeTime.getHours() === 0 && resizeTime.getMinutes() === 0) ?
+                addDays(resizeTime, 1) : resizeTime;
             this.actionObj.end = this.parent.activeViewOptions.timeScale.enable && this.parent.currentView !== 'Month' ?
                 this.calculateIntervalTime(resizeEnd) : resizeEnd;
         }
@@ -12574,7 +12626,7 @@ class DragAndDrop extends ActionBase {
         let trCollection = this.parent.element.querySelectorAll('.e-content-wrap .e-content-table tr:not(.e-hidden)');
         let translateY = getTranslateY(dragArea.querySelector('table'));
         translateY = (isNullOrUndefined(translateY)) ? 0 : translateY;
-        let rowHeight = (this.parent.enableAdaptiveRows) ?
+        let rowHeight = (this.parent.rowAutoHeight) ?
             ~~(dragArea.querySelector('table').offsetHeight / trCollection.length) : this.actionObj.cellHeight;
         let rowIndex = Math.floor(Math.floor((this.actionObj.Y + (dragArea.scrollTop - translateY)) -
             dragArea.getBoundingClientRect().top) / rowHeight);
@@ -12591,7 +12643,7 @@ class DragAndDrop extends ActionBase {
         this.actionObj.groupIndex = (td && !isNaN(parseInt(td.getAttribute('data-group-index'), 10)))
             ? parseInt(td.getAttribute('data-group-index'), 10) : this.actionObj.groupIndex;
         let top = trCollection.item(rowIndex).offsetTop;
-        if (this.parent.enableAdaptiveRows) {
+        if (this.parent.rowAutoHeight) {
             let cursorElement = this.getCursorElement(e);
             if (cursorElement) {
                 top = cursorElement.classList.contains(WORK_CELLS_CLASS) ? cursorElement.offsetTop :
@@ -13030,7 +13082,7 @@ class ViewBase {
         this.parent.resourceBase.renderResourceTree();
     }
     addAutoHeightClass(element) {
-        if (!this.parent.uiStateValues.isGroupAdaptive && this.parent.enableAdaptiveRows && this.parent.activeView.isTimelineView()
+        if (!this.parent.uiStateValues.isGroupAdaptive && this.parent.rowAutoHeight && this.parent.activeView.isTimelineView()
             && this.parent.activeViewOptions.group.resources.length > 0) {
             addClass([element], AUTO_HEIGHT);
         }
@@ -13070,6 +13122,10 @@ class WorkCellInteraction {
             isNullOrUndefined(this.parent.viewOptions[navigateView.charAt(0).toLowerCase() + navigateView.slice(1)])) {
             if (this.parent.activeViewOptions.readonly) {
                 this.parent.quickPopup.quickPopupHide();
+                return;
+            }
+            if (this.parent.isAdaptive && (e.target.classList.contains(MORE_INDICATOR_CLASS) ||
+                closest(e.target, '.' + MORE_INDICATOR_CLASS))) {
                 return;
             }
             let isWorkCell = target.classList.contains(WORK_CELLS_CLASS) ||
@@ -13777,7 +13833,7 @@ class MonthEvent extends EventBase {
         }
         let conWrap = this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS);
         let scrollTop = conWrap.scrollTop;
-        if (this.parent.enableAdaptiveRows && this.parent.virtualScrollModule && !isNullOrUndefined(this.parent.currentAction)) {
+        if (this.parent.rowAutoHeight && this.parent.virtualScrollModule && !isNullOrUndefined(this.parent.currentAction)) {
             conWrap.scrollTop = conWrap.scrollTop - 1;
         }
         if (this.parent.activeViewOptions.group.resources.length > 0) {
@@ -13786,7 +13842,7 @@ class MonthEvent extends EventBase {
         else {
             this.renderEventsHandler(this.parent.activeView.renderDates, this.parent.activeViewOptions.workDays);
         }
-        if (this.parent.enableAdaptiveRows) {
+        if (this.parent.rowAutoHeight) {
             this.updateBlockElements();
             let data = {
                 cssProperties: this.parent.getCssProperties(),
@@ -14090,13 +14146,13 @@ class MonthEvent extends EventBase {
             let cellTd = this.workCells[day];
             let appTop = (overlapCount * (appHeight + EVENT_GAP));
             let height = this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
-            if ((this.cellHeight > height) || this.parent.enableAdaptiveRows) {
+            if ((this.cellHeight > height) || this.parent.rowAutoHeight) {
                 let appointmentElement = this.createAppointmentElement(event, resIndex);
                 this.applyResourceColor(appointmentElement, event, 'backgroundColor', this.groupOrder);
                 this.wireAppointmentEvents(appointmentElement, false, event);
                 setStyleAttribute(appointmentElement, { 'width': appWidth + 'px', 'top': appTop + 'px' });
                 this.renderEventElement(event, appointmentElement, cellTd);
-                if (this.parent.enableAdaptiveRows) {
+                if (this.parent.rowAutoHeight) {
                     let firstChild = cellTd.parentElement.firstChild;
                     this.updateCellHeight(firstChild, height);
                 }
@@ -16444,7 +16500,7 @@ class TimelineEvent extends MonthEvent {
             appLeft = (this.parent.enableRtl) ? 0 : position;
             appRight = (this.parent.enableRtl) ? position : 0;
             let height = ((overlapCount + 1) * (appHeight + EVENT_GAP$1)) + this.moreIndicatorHeight;
-            if ((this.cellHeight > height) || this.parent.enableAdaptiveRows) {
+            if ((this.cellHeight > height) || this.parent.rowAutoHeight) {
                 let appointmentElement = this.createAppointmentElement(event, resIndex);
                 this.applyResourceColor(appointmentElement, event, 'backgroundColor', this.groupOrder);
                 setStyleAttribute(appointmentElement, {
@@ -16452,7 +16508,7 @@ class TimelineEvent extends MonthEvent {
                 });
                 this.wireAppointmentEvents(appointmentElement, false, event);
                 this.renderEventElement(event, appointmentElement, cellTd);
-                if (this.parent.enableAdaptiveRows) {
+                if (this.parent.rowAutoHeight) {
                     let firstChild = this.getFirstChild(resIndex);
                     this.updateCellHeight(firstChild, height);
                 }
@@ -17261,14 +17317,25 @@ class ICalendarExport {
             let endZone = (eventObj[fields.endTimezone] || timeZone);
             let calendarEvent = [
                 'BEGIN:VEVENT',
-                'DTEND;TZID="' + endZone + '":' + this.convertDateToString(eventObj[fields.endTime]),
-                'DTSTART;TZID="' + startZone + '":' + this.convertDateToString(eventObj[fields.startTime]),
                 'LOCATION:' + (eventObj[fields.location] || ''),
                 'SUMMARY:' + (eventObj[fields.subject] || ''),
                 'UID:' + uId,
                 'DESCRIPTION:' + (eventObj[fields.description] || ''),
                 'END:VEVENT'
             ];
+            if (eventObj[fields.isAllDay]) {
+                calendarEvent.splice(4, 0, 'DTEND;VALUE=DATE:' + this.convertDateToString(eventObj[fields.endTime], true));
+                calendarEvent.splice(4, 0, 'DTSTART;VALUE=DATE:' + this.convertDateToString(eventObj[fields.startTime], true));
+            }
+            else if (!eventObj[fields.isAllDay] && !eventObj[fields.recurrenceRule]) {
+                calendarEvent.splice(4, 0, 'DTEND:' + this.convertDateToString(eventObj[fields.endTime]));
+                calendarEvent.splice(4, 0, 'DTSTART:' + this.convertDateToString(eventObj[fields.startTime]));
+            }
+            else {
+                calendarEvent.splice(4, 0, 'DTEND;TZID="' + endZone + '":' + this.convertDateToString(eventObj[fields.endTime]));
+                calendarEvent.splice(4, 0, 'DTSTART;TZID="' + startZone + '":'
+                    + this.convertDateToString(eventObj[fields.startTime]));
+            }
             if (eventObj[fields.recurrenceRule]) {
                 calendarEvent.splice(4, 0, 'RRULE:' + eventObj[fields.recurrenceRule]);
             }
@@ -17276,12 +17343,12 @@ class ICalendarExport {
                 let exDate = eventObj[fields.recurrenceException].split(',');
                 for (let i = 0; i < exDate.length - 1; i++) {
                     calendarEvent.splice(5, 0, 'EXDATE:' +
-                        this.convertDateToString(getDateFromRecurrenceDateString(exDate[i])));
+                        this.convertDateToString(getDateFromRecurrenceDateString(exDate[i]), eventObj[fields.isAllDay]));
                 }
             }
             if (eventObj[fields.recurrenceID]) {
                 calendarEvent.splice(4, 0, 'RECURRENCE-ID;TZID="' + startZone + '":'
-                    + this.convertDateToString(eventObj[fields.startTime]));
+                    + this.convertDateToString(eventObj[fields.startTime], eventObj[fields.isAllDay]));
             }
             let customFields = this.customFieldFilter(eventObj, fields);
             if (customFields.length > 0) {
@@ -17309,14 +17376,14 @@ class ICalendarExport {
         let eventFields = Object.keys(eventObj);
         return eventFields.filter((value) => (defaultFields.indexOf(value) === -1) && (value !== 'Guid'));
     }
-    convertDateToString(eventDate) {
+    convertDateToString(eventDate, allDay) {
         let year = ('0000' + (eventDate.getFullYear().toString())).slice(-4);
         let month = ('00' + ((eventDate.getMonth() + 1).toString())).slice(-2);
         let date = ('00' + ((eventDate.getDate()).toString())).slice(-2);
         let hours = ('00' + (eventDate.getHours().toString())).slice(-2);
         let minutes = ('00' + (eventDate.getMinutes().toString())).slice(-2);
         let seconds = ('00' + (eventDate.getSeconds().toString())).slice(-2);
-        let timeString = year + month + date + 'T' + hours + minutes + seconds;
+        let timeString = (allDay) ? year + month + date : year + month + date + 'T' + hours + minutes + seconds;
         return timeString;
     }
     download(icsString, fileName) {
@@ -17371,12 +17438,14 @@ class ICalendarImport {
         this.parent = parent;
     }
     initializeCalendarImport(fileContent) {
-        let fileReader = new FileReader();
-        fileReader.onload = (event) => {
-            let iCalString = fileReader.result;
-            this.iCalendarParser(iCalString);
-        };
-        fileReader.readAsText(fileContent);
+        if (fileContent) {
+            let fileReader = new FileReader();
+            fileReader.onload = (event) => {
+                let iCalString = fileReader.result;
+                this.iCalendarParser(iCalString);
+            };
+            fileReader.readAsText(fileContent, 'ISO-8859-8');
+        }
     }
     iCalendarParser(iCalString) {
         let fields = this.parent.eventFields;
@@ -17551,5 +17620,5 @@ class ICalendarImport {
  * Export Schedule components
  */
 
-export { Schedule, cellClick, cellDoubleClick, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, Resize, DragAndDrop, HeaderRenderer, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, Timezone, timezoneData, ExcelExport, ICalendarExport, ICalendarImport, RecurrenceEditor, Gregorian, Islamic };
+export { Schedule, cellClick, cellDoubleClick, select, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, Resize, DragAndDrop, HeaderRenderer, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, Timezone, timezoneData, ExcelExport, ICalendarExport, ICalendarImport, RecurrenceEditor, Gregorian, Islamic };
 //# sourceMappingURL=ej2-schedule.es2015.js.map

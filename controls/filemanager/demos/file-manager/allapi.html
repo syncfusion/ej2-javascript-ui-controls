@@ -97,9 +97,9 @@
                 </td>
             </tr>
             <tr>
-                <td>refreshContent: </td>
+                <td>refreshFiles: </td>
                 <td>
-                    <input type="button" value="refreshContent" onclick="refreshContentFn(this);" />
+                    <input type="button" value="refreshFiles" onclick="refreshFilesFn(this);" />
                 </td>
             </tr>
         </table>
@@ -234,9 +234,9 @@
             var text = document.getElementById('enableToolbarItems').value;
             if (feObj) feObj.enableToolbarItems(text.split(','));
         }
-        function refreshContentFn() {
+        function refreshFilesFn() {
             var feObj = document.getElementById('file').ej2_instances[0];
-            if (feObj) feObj.refreshContent();
+            if (feObj) feObj.refreshFiles();
         }
     </script>
 </body>

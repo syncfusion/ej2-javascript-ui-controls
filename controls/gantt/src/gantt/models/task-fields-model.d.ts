@@ -21,7 +21,7 @@ export interface TaskFieldsModel {
      * Defines mapping property to get task's parent id value from data source.
      * @default null     
      */
-    parentId?: string;
+    parentID?: string;
 
     /**
      * Defines mapping property to get task name value from data source.

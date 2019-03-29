@@ -16,7 +16,7 @@ import { WAbstractList } from '../../../src/document-editor/implementation/list/
  */
 function createDocument(editor: DocumentEditor) {
     editor.openBlank();
-    editor.editorModule.insertText('Adventure Works cycles', false);
+    editor.editorModule.insertText('Adventure Works cycles');
 }
 
 describe('NumberBullet dialog', () => {

@@ -39,6 +39,14 @@
     }
 
     &.e-small {
+      #{&}.e-dropdown-popup ul {
+        padding: $drop-down-btn-ul-small-padding;
+
+        & .e-item  {
+          padding: $drop-down-btn-small-li-padding;
+        }
+      }
+
       &.e-vertical {
         line-height: 1;
         padding: $drop-down-btn-vertical-btn-padding;
@@ -153,6 +161,7 @@
     & .e-item  {
       height: $drop-down-btn-bigger-li-height;
       line-height: $drop-down-btn-bigger-li-height;
+      padding: $drop-down-btn-bigger-li-padding;
 
       & .e-menu-icon {
         font-size: $drop-down-btn-menu-icon-bigger-font-size;

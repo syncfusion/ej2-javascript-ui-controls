@@ -7,7 +7,7 @@
     min-height: $tbar-bgr-size;
 
     .e-tbar-btn {
-      @if $skin-name == 'bootstrap4' {
+      @if $tbar-skin == 'bootstrap4' {
         .e-tbar-btn-text {
           font-size: $tbar-icons-bgr-font-size;
         }
@@ -19,7 +19,7 @@
 
       &.e-btn-icon {
 
-        @if $skin-name == 'bootstrap4' {
+        @if $tbar-skin == 'bootstrap4' {
           font-size: $tbar-icons-bgr-font-size;
         }
       }
@@ -125,7 +125,7 @@
       .e-tbar-btn-text {
         line-height: $tbar-btn-txt-line-height;
 
-        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+        @if $tbar-skin == 'bootstrap' or $tbar-skin == 'bootstrap4' {
           line-height: inherit;
         }
       }
@@ -134,7 +134,7 @@
     .e-toolbar-pop {
 
       .e-toolbar-item {
-        @if $skin-name == 'material' {
+        @if $tbar-skin == 'material' {
           height: 48px;
         }
 
@@ -150,7 +150,7 @@
         .e-tbar-btn.e-btn {
           min-height: $tbar-btn-pop-bgr-minheight;
           padding: $tbar-pop-btn-bgr-padding;
-          @if $skin-name == 'bootstrap' {
+          @if $tbar-skin == 'bootstrap' {
             line-height: 34px;
           }
 
@@ -160,7 +160,7 @@
           }
 
           .e-icon-left {
-            @if $skin-name == 'material' {
+            @if $tbar-skin == 'material' {
               padding-right: 16px;
             }
           }
@@ -182,7 +182,7 @@
         white-space: normal;
 
         .e-toolbar-item:not(.e-separator) {
-          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+          @if $tbar-skin == 'fabric' or $tbar-skin == 'highcontrast' {
             margin: $tbar-multirow-item-top-btm-mrgn-bigger;
           }
         }
@@ -242,16 +242,6 @@
           }
       }
 
-      &.e-tbar-pos {
-        .e-toolbar-left,
-        .e-toolbar-center,
-        .e-toolbar-right {
-          @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
-            top: 1px;
-          }
-        }
-      }
-
       .e-toolbar-item {
         min-height: $tbar-bgr-items-size;
 
@@ -288,13 +278,13 @@
           min-width: $tbar-btn-bgr-minwidth;
           padding: $tbar-btn-bgr-padding;
 
-          @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+          @if $tbar-skin == 'bootstrap' or $tbar-skin == 'bootstrap4' {
             line-height: 34px;
 
             &:focus {
               padding: 0 6px;
 
-              @if $skin-name == 'bootstrap4' {
+              @if $tbar-skin == 'bootstrap4' {
                 padding: 0 4.5px;
               }
             }
@@ -302,7 +292,7 @@
             &:hover {
               padding: 0 6px;
 
-              @if $skin-name == 'bootstrap4' {
+              @if $tbar-skin == 'bootstrap4' {
                 padding: 0 4.5px;
               }
             }
@@ -310,7 +300,7 @@
             &:active {
               padding: 0 6px;
 
-              @if $skin-name == 'bootstrap4' {
+              @if $tbar-skin == 'bootstrap4' {
                 padding: 0 4.5px;
               }
             }
@@ -344,7 +334,7 @@
         padding-right: $tbar-item-bgr-mrgn;
         padding-top: 0;
 
-        @if $skin-name != 'material' {
+        @if $tbar-skin != 'material' {
           margin-left: -1px;
         }
 
@@ -369,7 +359,7 @@
 
         .e-toolbar-item:not(.e-separator) {
 
-          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+          @if $tbar-skin == 'fabric' or $tbar-skin == 'highcontrast' {
             margin: $tbar-item-bgr-padding-bigger;
           }
 
@@ -407,7 +397,7 @@
             min-width: $tbar-btn-bgr-minwidth;
             padding: $tbar-btn-bgr-padding;
 
-            @if $skin-name == 'bootstrap' {
+            @if $tbar-skin == 'bootstrap' {
               &:focus {
                 padding: 0 6px;
               }
@@ -421,7 +411,7 @@
               }
 
             }
-            @if $skin-name == 'bootstrap4' {
+            @if $tbar-skin == 'bootstrap4' {
               &:hover,
               &:focus,
               &:active {
@@ -461,7 +451,7 @@
       .e-toolbar-extended {
 
         padding-right: $tbar-item-bgr-mrgn;
-        @if $skin-name != 'material'  {
+        @if $tbar-skin != 'material'  {
           margin-left: 0;
         }
 
@@ -528,7 +518,7 @@
       .e-toolbar-extended {
         padding-right: $tbar-item-nrml-mrgn;
 
-        @if $skin-name != 'material'  {
+        @if $tbar-skin != 'material'  {
           margin-left: 0;
         }
 
@@ -570,7 +560,7 @@
         padding-right: $tbar-item-nrml-mrgn;
         padding-top: 0;
 
-        @if $skin-name != 'material'  {
+        @if $tbar-skin != 'material'  {
           margin-left: -1px;
         }
 
@@ -599,7 +589,7 @@
 
         .e-toolbar-item:not(.e-separator) {
 
-          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+          @if $tbar-skin == 'fabric' or $tbar-skin == 'highcontrast' {
             margin: $tbar-item-nrml-padding-small;
           }
 
@@ -651,7 +641,7 @@
           .e-tbar-btn.e-btn {
             line-height: $tbar-btn-nrml-line-height;
 
-            @if $skin-name == 'bootstrap' $skin-name == 'bootstrap4' {
+            @if $tbar-skin == 'bootstrap' $tbar-skin == 'bootstrap4' {
               &:focus {
                 padding: 0 1.5px;
               }
@@ -793,7 +783,7 @@
           justify-content: flex-start;
           min-height: $tbar-btn-pop-nrml-minheight;
           padding: $tbar-pop-btn-nrml-padding;
-          @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+          @if $tbar-skin == 'bootstrap' or $tbar-skin == 'bootstrap4' {
             border: 0;
             border-radius: 0;
             margin: 0;
@@ -806,7 +796,7 @@
           }
 
           .e-icon-left {
-            @if $skin-name == 'material' {
+            @if $tbar-skin == 'material' {
               padding-right: 16px;
             }
           }
@@ -841,7 +831,7 @@
         height: auto;
         justify-content: center;
 
-        @if $skin-name == 'material' {
+        @if $tbar-skin == 'material' {
           height: 36px;
         }
 
@@ -1002,7 +992,7 @@
       .e-toolbar-pop {
 
         .e-toolbar-item .e-tbar-btn.e-btn .e-icon-left {
-          @if $skin-name == 'material' {
+          @if $tbar-skin == 'material' {
             padding-left: 16px;
             padding-right: 0;
           }
@@ -1012,7 +1002,7 @@
       .e-hor-nav {
         left: $tbar-zero-value;
         right: auto;
-        @if $skin-name == 'bootstrap' $skin-name == 'bootstrap4' {
+        @if $tbar-skin == 'bootstrap' $tbar-skin == 'bootstrap4' {
           border-radius: $tbar-radius 0 0 $tbar-radius;
         }
       }
@@ -1070,7 +1060,7 @@
         white-space: normal;
 
         .e-toolbar-item:not(.e-separator) {
-          @if $skin-name == 'fabric' or $skin-name == 'highcontrast' {
+          @if $tbar-skin == 'fabric' or $tbar-skin == 'highcontrast' {
             margin: $tbar-multirow-item-top-btm-mrgn-small;
           }
         }
@@ -1273,7 +1263,7 @@
           min-width: $tbar-btn-nrml-minwidth;
           padding: $tbar-btn-nrml-padding;
 
-          @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+          @if $tbar-skin == 'bootstrap' {
             line-height: 27px;
 
             &:focus {
@@ -1288,14 +1278,23 @@
               padding: 0 1.5px;
             }
           }
+          @if $tbar-skin == 'bootstrap4' {
+            line-height: 27px;
 
-          @if $skin-name == 'highcontrast' {
+            &:focus,
+            &:active,
+            &:hover {
+              padding: 0 2px;
+            }
+          }
+
+          @if $tbar-skin == 'highcontrast' {
             &:focus {
               outline: none;
             }
           }
 
-          @if $skin-name == 'fabric' {
+          @if $tbar-skin == 'fabric' {
             &:focus {
               outline: none;
             }

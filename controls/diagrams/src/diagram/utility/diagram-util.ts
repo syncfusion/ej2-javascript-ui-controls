@@ -11,7 +11,7 @@ import {
     PortVisibility, ConnectorConstraints, NodeConstraints, Shapes,
     UmlActivityShapes, PortConstraints, DiagramConstraints, DiagramTools
 } from './../enum/enum';
-import { FlowShapes, SelectorConstraints, ThumbsConstraints, FlipDirection } from './../enum/enum';
+import { FlowShapes, SelectorConstraints, ThumbsConstraints, FlipDirection, DistributeOptions } from './../enum/enum';
 import { Alignment, SegmentInfo } from '../rendering/canvas-interface';
 import { PathElement } from './../core/elements/path-element';
 import { DiagramNativeElement } from './../core/elements/native-element';
@@ -421,18 +421,26 @@ function offsetPoint(
 
 
 /** @private */
-export function sort(objects: (NodeModel | ConnectorModel)[]): (NodeModel | ConnectorModel)[] {
+export function sort(objects: (NodeModel | ConnectorModel)[], option: DistributeOptions): (NodeModel | ConnectorModel)[] {
     let i: number = 0;
     let j: number = 0;
     let temp: NodeModel | ConnectorModel;
     for (i = 0; i < objects.length; i++) {
         let b: Rect = getBounds(objects[i].wrapper);
-        for (j = i; j < objects.length; j++) {
+        for (j = 0; j < objects.length; j++) {
             let bounds: Rect = getBounds(objects[j].wrapper);
-            if (b.center.x > bounds.center.x) {
-                temp = objects[i];
-                objects[i] = objects[j];
-                objects[j] = temp;
+            if (option === 'Top' || option === 'Bottom' || option === 'BottomToTop' || option === 'Middle') {
+                if (b.center.y > bounds.center.y) {
+                    temp = objects[i];
+                    objects[i] = objects[j];
+                    objects[j] = temp;
+                }
+            } else {
+                if (b.center.x > bounds.center.x) {
+                    temp = objects[i];
+                    objects[i] = objects[j];
+                    objects[j] = temp;
+                }
             }
         }
     }
@@ -1157,7 +1165,7 @@ export function updateContent(newValues: Node, actualObject: Node, diagram: Diag
         } else if (actualObject.shape.type === 'Native') {
             let nativeElement: HTMLElement;
             for (let i: number = 0; i < diagram.views.length; i++) {
-                nativeElement = getDiagramElement(actualObject.wrapper.children[0].id + '_groupElement', diagram.views[i]);
+                nativeElement = getDiagramElement(actualObject.wrapper.children[0].id + '_native_element', diagram.views[i]);
                 if ((newValues.shape as NativeModel).content !== undefined && nativeElement) {
                     nativeElement.removeChild(nativeElement.children[0]);
                     (actualObject.wrapper.children[0] as DiagramNativeElement).content = (newValues.shape as NativeModel).content;

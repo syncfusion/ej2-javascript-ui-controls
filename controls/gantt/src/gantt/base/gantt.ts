@@ -19,7 +19,7 @@ import { HolidayModel, DayWorkingTimeModel, FilterSettingsModel, SelectionSettin
 import { TaskFields, TimelineSettings, Holiday, EventMarker, DayWorkingTime, EditSettings, SelectionSettings } from '../models/models';
 import { FilterSettings, SplitterSettings, TooltipSettings, LabelSettings, LabelSettingsModel } from '../models/models';
 import { SearchSettingsModel, SearchSettings } from '../models/models';
-import { ItemModel } from '@syncfusion/ej2-navigations';
+import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { DateProcessor } from './date-processor';
 import { ChartRows } from '../renderer/chart-rows';
 import { Dependency } from '../actions/dependency';
@@ -139,7 +139,7 @@ export class Gantt extends Component<HTMLElement>
     /** @hidden */
     public predecessorsCollection?: IGanttData[];
     /** @hidden */
-    public enablePredecessorValidation?: boolean;
+    public isInPredecessorValidation?: boolean;
     /** @hidden */
     public isValidationEnabled?: boolean;
     /** @hidden */
@@ -236,6 +236,13 @@ export class Gantt extends Component<HTMLElement>
      */
     @Property(false)
     public allowSorting: boolean;
+
+    /**
+     * If `enablePredecessorValidation` is set to true, it allows to validate the predecessor link.
+     * @default true
+     */
+    @Property(true)
+    public enablePredecessorValidation: boolean;
 
     /**
      * If `showColumnMenu` set to true, then it will enable the column menu options in each columns.
@@ -838,6 +845,12 @@ export class Gantt extends Component<HTMLElement>
     @Event()
     public columnMenuOpen: EmitType<ColumnMenuOpenEventArgs>;
 
+    /**
+     * Triggers when toolbar item was clicked
+     * @event
+     */
+    @Event()
+    public toolbarClick: EmitType<ClickEventArgs>;
     /** 
      * Triggers when click on column menu.
      * @event 
@@ -903,7 +916,12 @@ export class Gantt extends Component<HTMLElement>
                 // console.log("Save edited cell");
                 break;
             case 'cancelRequest':
-                // console.log("Cancel edited cell");
+                if (!isNullOrUndefined(this.editModule) && !isNullOrUndefined(this.editModule.cellEditModule)) {
+                    this.editModule.cellEditModule.isCellEdit = false;
+                    if (!isNullOrUndefined(this.toolbarModule)) {
+                        this.toolbarModule.refreshToolbarItems();
+                    }
+                }
                 break;
             case 'addRow':
                 // console.log(" an empty row at the top row if the rows are not selected. If a row is selected," +
@@ -984,7 +1002,7 @@ export class Gantt extends Component<HTMLElement>
         this.updatedConnectorLineCollection = [];
         this.connectorLineIds = [];
         this.predecessorsCollection = [];
-        this.enablePredecessorValidation = true;
+        this.isInPredecessorValidation = this.enablePredecessorValidation;
         this.isValidationEnabled = true;
         this.isLoad = true;
         this.editedTaskBarItem = null;
@@ -1039,18 +1057,38 @@ export class Gantt extends Component<HTMLElement>
         };
     }
     /**
+     * To validate height and width
+     */
+    private validateDimentionValue(value: string | number): string {
+        if (!isNullOrUndefined(value)) {
+            if (typeof (value) === 'string' && value !== 'auto' && value.indexOf('%') === -1) {
+                return value.indexOf('px') === -1 ? value + 'px' : value;
+            } else if (typeof (value) === 'number') {
+                return value + 'px';
+            } else {
+                return value.toString();
+            }
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * To calculate dimensions of Gantt control
      */
     private calculateDimensions(): void {
-        let settingsHeight: number | string = this.height;
-        let settingsWidth: number | string = this.width;
+        let settingsHeight: string = this.validateDimentionValue(this.height);
+        let settingsWidth: string = this.validateDimentionValue(this.width);
+        if (!isNullOrUndefined(this.width) && typeof (this.width) === 'string' && this.width.indexOf('%') !== -1) {
+            settingsWidth = this.width;
+        }
         let elementStyleHeight: string = this.element.style.height;
         let elementStyleWidth: string = this.element.style.width;
         if (settingsWidth) {
-            this.element.style.width = settingsWidth.toString();
+            this.element.style.width = settingsWidth;
         }
         if (settingsHeight) {
-            this.element.style.height = settingsHeight.toString();
+            this.element.style.height = settingsHeight;
         }
         if (!settingsHeight && !elementStyleHeight) {
             this.element.style.height = 'auto'; // old 450px
@@ -1097,7 +1135,7 @@ export class Gantt extends Component<HTMLElement>
         // predecessor calculation
         if (this.taskFields.dependency) {
             this.predecessorModule.updatePredecessors();
-            if (this.enablePredecessorValidation) {
+            if (this.isInPredecessorValidation) {
                 this.predecessorModule.updatedRecordsDateByPredecessor();
             }
         }
@@ -1109,7 +1147,7 @@ export class Gantt extends Component<HTMLElement>
         this.notify('dataReady', {});
         this.renderTreeGrid();
         this.wireEvents();
-        if (this.taskFields.dependency && this.enablePredecessorValidation) {
+        if (this.taskFields.dependency && this.isInPredecessorValidation) {
             let dialogElement: HTMLElement = createElement('div', {
                 id: this.element.id + '_dialogValidationRule',
             });
@@ -1799,6 +1837,7 @@ export class Gantt extends Component<HTMLElement>
         if (this.taskFields.dependency) {
             this.ganttChartModule.reRenderConnectorLines();
         }
+        this.notify('selectRowByIndex', {});
     }
 
     /**
@@ -1919,6 +1958,7 @@ export class Gantt extends Component<HTMLElement>
      */
     public expandByIndex(index: number): void {
         let args: object = this.contructExpandCollapseArgs(null, index);
+        this.ganttChartModule.isExpandCollapseFromChart = true;
         this.ganttChartModule.expandGanttRow(args);
     }
     /**
@@ -1928,6 +1968,7 @@ export class Gantt extends Component<HTMLElement>
      */
     public expandByID(id: string | number): void {
         let args: object = this.contructExpandCollapseArgs(id);
+        this.ganttChartModule.isExpandCollapseFromChart = true;
         this.ganttChartModule.expandGanttRow(args);
     }
     /**
@@ -1937,6 +1978,7 @@ export class Gantt extends Component<HTMLElement>
      */
     public collapseByIndex(index: number): void {
         let args: object = this.contructExpandCollapseArgs(null, index);
+        this.ganttChartModule.isExpandCollapseFromChart = true;
         this.ganttChartModule.collapseGanttRow(args);
     }
     /**
@@ -1946,6 +1988,7 @@ export class Gantt extends Component<HTMLElement>
      */
     public collapseByID(id: string | number): void {
         let args: object = this.contructExpandCollapseArgs(id);
+        this.ganttChartModule.isExpandCollapseFromChart = true;
         this.ganttChartModule.collapseGanttRow(args);
     }
 
@@ -2003,6 +2046,28 @@ export class Gantt extends Component<HTMLElement>
     }
 
     /**
+     * Public method to open Add dialog.
+     * @return {void}
+     * @public
+     */
+    public openAddDialog(): void {
+        if (this.editModule && this.editModule.dialogModule && this.editSettings.allowAdding) {
+            this.editModule.dialogModule.openAddDialog();
+        }
+    }
+
+    /**
+     * Public method to open Edit dialog.
+     * @return {void}
+     * @public
+     */
+    public openEditDialog(taskId: number | string | Object): void {
+        if (this.editModule && this.editModule.dialogModule && this.editSettings.allowEditing) {
+            this.editModule.dialogModule.openEditDialog(taskId);
+        }
+    }
+
+    /**
      * Changes the TreeGrid column positions by field names.
      * @return {void}
      * @private
@@ -2011,11 +2076,11 @@ export class Gantt extends Component<HTMLElement>
         let chartRow: Element;
         let record: IGanttData;
         let rowIndex: number;
-        if (!index) {
+        if (isNullOrUndefined(index)) {
             record = this.getRecordByID(id.toString());
             chartRow = this.getRowByID(id);
             rowIndex = getValue('rowIndex', chartRow);
-        } else if (index) {
+        } else if (!isNullOrUndefined(index)) {
             chartRow = this.getRowByIndex(index);
             rowIndex = getValue('rowIndex', chartRow);
             record = this.currentViewData[rowIndex];

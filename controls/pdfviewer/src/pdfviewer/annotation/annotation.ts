@@ -19,6 +19,9 @@ export interface IActionElements {
 export class Annotation {
     private pdfViewer: PdfViewer;
     private pdfViewerBase: PdfViewerBase;
+    /**
+     * @private
+     */
     public textMarkupAnnotationModule: TextMarkupAnnotation;
     private popupNote: HTMLElement;
     private popupNoteAuthor: HTMLElement;
@@ -82,6 +85,10 @@ export class Annotation {
     public deleteAnnotation(): void {
         if (this.textMarkupAnnotationModule) {
             this.textMarkupAnnotationModule.deleteTextMarkupAnnotation();
+            if (this.pdfViewer.toolbarModule.annotationToolbarModule) {
+                this.pdfViewer.toolbarModule.annotationToolbarModule.selectAnnotationDeleteItem(false);
+                this.pdfViewer.toolbarModule.annotationToolbarModule.enableAnnotationPropertiesTools(false);
+            }
         }
     }
 

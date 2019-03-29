@@ -143,8 +143,7 @@ describe('Linear gauge control', () => {
         it('set annotation value ', (): void => {
             let content: string = '<div id="annotation1">Linear gauge</div>';
             gauge.annotations[0].axisIndex = 0;
-            gauge.annotations[0].axisValue = 1;
-            gauge.setAnnotationValue(0, content);
+            gauge.setAnnotationValue(0, content, 1);
         });
 
         it('set annotation value in horizontal ', (): void => {

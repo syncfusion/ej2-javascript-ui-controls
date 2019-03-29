@@ -1,5 +1,5 @@
 import { Toolbar as BaseToolbar, ItemModel, ClickEventArgs, MenuEventArgs, DisplayMode } from '@syncfusion/ej2-navigations';
-import { select, selectAll, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
+import { select, selectAll, isNullOrUndefined as isNOU, closest } from '@syncfusion/ej2-base';
 import { createDialog } from '../pop-up/dialog';
 import * as events from '../base/constant';
 import * as CLS from '../base/classes';
@@ -69,6 +69,12 @@ export class Toolbar {
         this.parent.trigger('toolbarClick', eventArgs);
         if (eventArgs.cancel) { return; }
         switch (tool) {
+            case 'sortby':
+                let target: Element = closest((args.originalEvent.target as Element), '.' + CLS.TB_ITEM);
+                if (target && target.classList.contains('e-toolbar-popup')) {
+                    args.cancel = true;
+                }
+                break;
             case 'newfolder':
                 createDialog(this.parent, 'NewFolder');
                 break;
@@ -105,7 +111,7 @@ export class Toolbar {
             /* istanbul ignore next */
             case 'download':
                 if (this.parent.selectedItems.length > 0) {
-                    if (this.parent.fileView === 'LargeIcons') {
+                    if (this.parent.view === 'LargeIcons') {
                         let elementRecords: Object[] = [];
                         let elements: Element[] = selectAll('.e-active', this.parent.largeiconsviewModule.listElements);
                         for (let ele: number = 0; ele < elements.length; ele++) {
@@ -212,7 +218,6 @@ export class Toolbar {
     }
 
     private updateLayout(view: string): void {
-        this.parent.fileView = view;
         this.parent.setProperties({ view: view }, true);
         let searchWord: string;
         if (this.parent.breadcrumbbarModule.searchObj.value && this.parent.breadcrumbbarModule.searchObj.value === '') {
@@ -254,7 +259,7 @@ export class Toolbar {
                     let spanElement: string = '<span class="e-tbar-btn-text e-tbar-ddb-text">' + itemText + '</span>';
                     item = {
                         id: itemId, tooltipText: itemTooltip,
-                        template: '<button id="' + itemId + '" class="e-tbar-btn e-tbtn-txt">' + spanElement + '</button>',
+                        template: '<button id="' + itemId + '" class="e-tbar-btn e-tbtn-txt" tabindex="-1">' + spanElement + '</button>',
                     };
                     break;
                 case 'Refresh':
@@ -265,10 +270,11 @@ export class Toolbar {
                     item = { id: itemId, tooltipText: itemTooltip, overflow: 'Show', align: 'Right', template: txt };
                     break;
                 case 'View':
+                    let id: string = this.parent.element.id + CLS.VIEW_ID;
                     item = {
                         id: itemId, tooltipText: itemTooltip, prefixIcon: this.parent.view === 'Details' ? CLS.ICON_GRID : CLS.ICON_LARGE,
                         overflow: 'Show', align: 'Right',
-                        template: '<button id="' + this.parent.element.id + CLS.VIEW_ID + '" class="e-tbar-btn e-tbtn-txt"></button>'
+                        template: '<button id="' + id + '" class="e-tbar-btn e-tbtn-txt" tabindex="-1"></button>'
                     };
                     break;
                 case 'Details':
@@ -340,11 +346,15 @@ export class Toolbar {
         } else if (this.parent.selectedItems.length > 1) {
             this.hideItems(this.multiple, false);
             this.hideItems(this.selection, true);
-            let ele: Element = select('.' + CLS.STATUS, this.toolbarObj.element);
-            if (ele) {
-                ele.textContent = this.parent.selectedItems.length + ' ' + getLocaleText(this.parent, 'Selection');
-                this.toolbarObj.hideItem(ele.parentElement, false);
+        }
+        let ele: Element = select('.' + CLS.STATUS, this.toolbarObj.element);
+        if (this.parent.selectedItems.length > 0 && ele) {
+            if (this.parent.selectedItems.length === 1) {
+                ele.textContent = this.parent.selectedItems.length + ' ' + getLocaleText(this.parent, 'Item-Selection');
+            } else {
+                ele.textContent = this.parent.selectedItems.length + ' ' + getLocaleText(this.parent, 'Items-Selection');
             }
+            this.toolbarObj.hideItem(ele.parentElement, false);
         }
     }
 

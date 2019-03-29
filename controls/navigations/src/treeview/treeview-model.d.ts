@@ -100,19 +100,19 @@ export interface ActionSettingsModel {
 
     /**
      * Specifies the type of animation.
-     * @default : 'SlideDown';
+     * @default 'SlideDown'
      */
     effect?: Effect;
 
     /**
      * Specifies the duration to animate.
-     * @default : 400;
+     * @default 400
      */
     duration?: number;
 
     /**
      * Specifies the animation timing function.
-     * @default : 'linear';
+     * @default 'linear'
      */
     easing?: string;
 

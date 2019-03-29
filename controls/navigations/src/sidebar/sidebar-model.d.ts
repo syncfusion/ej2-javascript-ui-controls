@@ -60,9 +60,7 @@ export interface SidebarModel extends ComponentModel{
     enableGestures?: boolean;
 
     /**
-     * Gets or sets the Sidebar component is open or close. 
-     * > When the Sidebar type is set to `Auto`,
-     * the component will be expanded in the desktop and collapsed in the mobile mode regardless of the isOpen property.
+     * Gets or sets the Sidebar component is open or close.
      * @default false
      */
     isOpen?: boolean;
@@ -133,12 +131,14 @@ export interface SidebarModel extends ComponentModel{
      * Specifies the width of the Sidebar. By default, the width of the Sidebar sets based on the size of its content.
      * Width can also be set in pixel values.
      * @default 'auto'
+     * @aspType string
      */
     width?: string | number;
 
     /**
      * Specifies the z-index of the Sidebar. It is applicable only when sidebar act as overlay type.
-     * @default 1000
+     * @default '1000'
+     * @aspType string
      */
     zIndex?: string | number;
 

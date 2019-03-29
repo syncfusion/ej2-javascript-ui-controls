@@ -78,13 +78,13 @@ export class PageSetupDialog {
         let ejtabContainer: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_MarginTabContainer' });
         this.target.appendChild(ejtabContainer);
         this.marginTab = <HTMLDivElement>createElement('div', {
-            id: this.target.id + '_marginPropertyTab', styles: 'position: relative;width:400px;'
+            id: this.target.id + '_marginPropertyTab', styles: 'position: relative;'
         });
         this.paperTab = <HTMLDivElement>createElement('div', {
-            id: this.target.id + '_paperSizePropertyTab', styles: 'position: relative;width:400px;'
+            id: this.target.id + '_paperSizePropertyTab', styles: 'position: relative;'
         });
         this.layoutTab = <HTMLDivElement>createElement('div', {
-            id: this.target.id + '_CellPropertiesDialogTab', styles: 'position: relative;width:400px;'
+            id: this.target.id + '_CellPropertiesDialogTab', styles: 'position: relative;'
         });
         // tslint:disable-next-line:max-line-length
         let ejtab: HTMLDivElement = <HTMLDivElement>createElement('div', { id: this.target.id + '_PageSetupDialogTab', className: 'e-de-page-setup-ppty-tab' });
@@ -143,7 +143,7 @@ export class PageSetupDialog {
 
         let topLabel: HTMLLabelElement = createElement('label', {
             innerHTML: locale.getConstant('Top'), className: 'e-de-page-setup-dlg-sub-header',
-            id: this.target.id + '_TopLabel', styles: 'padding-top:0px;width:190px;'
+            id: this.target.id + '_TopLabel', styles: 'padding-top:0px;'
         }) as HTMLLabelElement;
         let topTextBox: HTMLInputElement = createElement('input', {
             attrs: { 'type': 'text' }, id: this.target.id + '_Top'
@@ -161,7 +161,7 @@ export class PageSetupDialog {
         leftMarginDiv.appendChild(bottomBoxLabel);
         leftMarginDiv.appendChild(bottomTextBox);
         let leftBoxLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
-            innerHTML: locale.getConstant('Left'), className: 'e-de-page-setup-dlg-sub-header', styles: 'padding-top:0px;width:190px;',
+            innerHTML: locale.getConstant('Left'), className: 'e-de-page-setup-dlg-sub-header', styles: 'padding-top:0px;',
             id: this.target.id + '_leftLabel'
         });
         let leftTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
@@ -240,7 +240,7 @@ export class PageSetupDialog {
 
         let widthLabel: HTMLLabelElement = createElement('label', {
             innerHTML: locale.getConstant('Width'), className: 'e-de-page-setup-dlg-sub-header',
-            id: this.target.id + '_widthLabel', styles: 'padding-top:0px;width:190px;'
+            id: this.target.id + '_widthLabel', styles: 'padding-top:0px;'
         }) as HTMLLabelElement;
         let widthTextBox: HTMLInputElement = createElement('input', {
             attrs: { 'type': 'text' }, id: this.target.id + '_Width'
@@ -250,7 +250,7 @@ export class PageSetupDialog {
         leftSizeDiv.appendChild(widthTextBox);
 
         let heightLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
-            innerHTML: locale.getConstant('Height'), className: 'e-de-page-setup-dlg-sub-header', styles: 'padding-top:0px;width:190px;',
+            innerHTML: locale.getConstant('Height'), className: 'e-de-page-setup-dlg-sub-header', styles: 'padding-top:0px;',
             id: this.target.id + '_heightLabel'
         });
         let heightTextBox: HTMLInputElement = <HTMLInputElement>createElement('input', {
@@ -334,7 +334,7 @@ export class PageSetupDialog {
 
         let headerLabel: HTMLLabelElement = createElement('label', {
             innerHTML: locale.getConstant('Header'), className: 'e-de-page-setup-dlg-sub-header',
-            id: this.target.id + '_headerLabel', styles: 'padding-top:0px;width:190px;'
+            id: this.target.id + '_headerLabel', styles: 'padding-top:0px;'
         }) as HTMLLabelElement;
         let headerBox: HTMLInputElement = createElement('input', {
             attrs: { 'type': 'text' }, id: this.target.id + '_header'
@@ -344,7 +344,7 @@ export class PageSetupDialog {
         leftLayoutDiv.appendChild(headerBox);
 
         let footerLabel: HTMLLabelElement = <HTMLLabelElement>createElement('label', {
-            innerHTML: locale.getConstant('Footer'), className: 'e-de-page-setup-dlg-sub-header', styles: 'padding-top:0px;width:190px;',
+            innerHTML: locale.getConstant('Footer'), className: 'e-de-page-setup-dlg-sub-header', styles: 'padding-top:0px;',
             id: this.target.id + '_footerLabel'
         });
         let footerBox: HTMLInputElement = <HTMLInputElement>createElement('input', {

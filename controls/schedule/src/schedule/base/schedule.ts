@@ -40,7 +40,7 @@ import { ICalendarExport } from '../exports/calendar-export';
 import { ICalendarImport } from '../exports/calendar-import';
 import { IRenderer, ActionEventArgs, NavigatingEventArgs, CellClickEventArgs, RenderCellEventArgs, ScrollCss } from '../base/interface';
 import { EventClickArgs, EventRenderedArgs, PopupOpenEventArgs, UIStateArgs, DragEventArgs, ResizeEventArgs } from '../base/interface';
-import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs, ExportOptions } from '../base/interface';
+import { EventFieldsMapping, TdData, ResourceDetails, ResizeEdges, StateArgs, ExportOptions, SelectEventArgs } from '../base/interface';
 import { ResourceBase } from '../base/resource';
 import * as events from '../base/constant';
 import * as cls from '../base/css-constant';
@@ -332,7 +332,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @default false
      */
     @Property(false)
-    public enableAdaptiveRows: boolean;
+    public rowAutoHeight: boolean;
     /**
      * The template option to render the customized editor window. The form elements defined within this template should be accompanied
      *  with `e-field` class, so as to fetch and process it from internally.
@@ -464,6 +464,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Event()
     public cellDoubleClick: EmitType<CellClickEventArgs>;
+    /**
+     * Triggers when multiple cells or events are selected on the Scheduler.
+     * @event
+     */
+    @Event()
+    public select: EmitType<SelectEventArgs>;
     /**
      * Triggers on beginning of every scheduler action.
      * @event
@@ -1296,13 +1302,18 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                     this.dateHeaderTemplateFn = this.templateParser(this.activeViewOptions.dateHeaderTemplate);
                     state.isLayout = true;
                     break;
+                case 'resourceHeaderTemplate':
+                    this.activeViewOptions.resourceHeaderTemplate = newProp.resourceHeaderTemplate;
+                    this.resourceHeaderTemplateFn = this.templateParser(this.activeViewOptions.resourceHeaderTemplate);
+                    state.isLayout = true;
+                    break;
                 case 'timezone':
                     this.eventBase.timezonePropertyChange(oldProp.timezone);
                     break;
                 case 'enableRtl':
                     state.isRefresh = true;
                     break;
-                case 'enableAdaptiveRows':
+                case 'rowAutoHeight':
                     state.isLayout = true;
                     break;
                 default:
@@ -1550,7 +1561,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (isNullOrUndefined(startTime) || isNullOrUndefined(endTime)) {
             return undefined;
         }
-        let endDateFromColSpan: boolean = this.activeView.isTimelineView() && !isNullOrUndefined(lastTd.getAttribute('colSpan'));
+        let endDateFromColSpan: boolean = this.activeView.isTimelineView() && !isNullOrUndefined(lastTd.getAttribute('colSpan')) &&
+            this.headerRows.length > 0;
         let duration: number = endDateFromColSpan ? parseInt(lastTd.getAttribute('colSpan'), 10) : 1;
         if (!this.activeViewOptions.timeScale.enable || endDateFromColSpan || lastTd.classList.contains(cls.ALLDAY_CELLS_CLASS) ||
             lastTd.classList.contains(cls.HEADER_CELLS_CLASS)) {

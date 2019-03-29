@@ -52,12 +52,12 @@ export class AxisRenderer {
     public drawAxisLine(axis: Axis, index: number, element: Element, gauge: CircularGauge): void {
         let startAngle: number = axis.startAngle;
         let endAngle: number = axis.endAngle;
+        let color: string = axis.lineStyle.color || this.gauge.themeStyle.lineColor;
         if (axis.lineStyle.width > 0) {
             startAngle = !isCompleteAngle(startAngle, endAngle) ? startAngle : [0, endAngle = 360][0];
             appendPath(
                 new PathOption(
-                    gauge.element.id + '_AxisLine_' + index, 'transparent', axis.lineStyle.width,
-                    axis.lineStyle.color || this.gauge.themeStyle.lineColor,
+                    gauge.element.id + '_AxisLine_' + index, 'transparent', axis.lineStyle.width, color,
                     null, axis.lineStyle.dashArray,
                     getPathArc(gauge.midPoint, startAngle - 90, endAngle - 90, axis.currentRadius),
                     '', 'pointer-events:none;'),
@@ -85,6 +85,7 @@ export class AxisRenderer {
         let label: VisibleLabels;
         let radius: number = axis.currentRadius;
         let labelPadding: number = 10;
+        let color: string = style.font.color || this.gauge.themeStyle.labelColor;
         if (style.position === 'Outside') {
             radius += (axis.nearSize - (axis.maxLabelSize.height + axis.lineStyle.width / 2)) +
                 (labelPadding / 2);
@@ -102,14 +103,14 @@ export class AxisRenderer {
             angle = Math.round(getAngleFromValue(label.value, max, min, axis.startAngle, axis.endAngle, axis.direction === 'ClockWise'));
             location = getLocationFromAngle(angle, radius, gauge.midPoint);
             anchor = this.findAnchor(location, style, angle, label);
+            style.font.fontFamily = this.gauge.themeStyle.labelFontFamily || style.font.fontFamily;
             textElement(
                 new TextOption(
                     gauge.element.id + '_Axis_' + index + '_Label_' + i,
                     location.x, location.y, anchor, label.text,
                     style.autoAngle ? 'rotate(' + (angle + 90) + ',' + (location.x) + ',' + location.y + ')' : '', 'auto'),
                 style.font, style.useRangeColor ? getRangeColor(
-                    label.value, <Range[]>axis.ranges,
-                    style.font.color || this.gauge.themeStyle.labelColor) : style.font.color || this.gauge.themeStyle.labelColor,
+                    label.value, <Range[]>axis.ranges, color) : color,
                 labelElement, 'pointer-events:none;'
             );
         }
@@ -149,14 +150,14 @@ export class AxisRenderer {
         let minorInterval: number = minorLineStyle.interval !== null ?
             minorLineStyle.interval : (axis.visibleRange.interval / 2);
         let isRangeColor: boolean = minorLineStyle.useRangeColor;
+        let color: string = minorLineStyle.color || this.gauge.themeStyle.minorTickColor;
         if (minorLineStyle.width && minorLineStyle.height && minorInterval) {
             for (let i: number = axis.visibleRange.min, max: number = axis.visibleRange.max; i <= max; i += minorInterval) {
                 if (this.majorValues.indexOf(+i.toFixed(3)) < 0) {
                     appendPath(
                         new PathOption(
                             gauge.element.id + '_Axis_Minor_TickLine_' + index + '_' + i, 'transparent', minorLineStyle.width,
-                            isRangeColor ? getRangeColor(i, <Range[]>axis.ranges, minorLineStyle.color ||
-                            this.gauge.themeStyle.minorTickColor) : minorLineStyle.color || this.gauge.themeStyle.minorTickColor,
+                            isRangeColor ? getRangeColor(i, <Range[]>axis.ranges, color) : color,
                             null, '0', this.calculateTicks(i, <Tick>minorLineStyle, axis), '', 'pointer-events:none;'
                         ),
                         minorTickElements, gauge
@@ -179,6 +180,7 @@ export class AxisRenderer {
         let majorLineStyle: TickModel = axis.majorTicks;
         let isRangeColor: boolean = majorLineStyle.useRangeColor;
         this.majorValues = [];
+        let color: string = majorLineStyle.color || this.gauge.themeStyle.majorTickColor;
         if (majorLineStyle.width && majorLineStyle.height && axis.visibleRange.interval) {
             for (let i: number = axis.visibleRange.min, max: number = axis.visibleRange.max,
                 interval: number = axis.visibleRange.interval; i <= max; i += interval) {
@@ -186,8 +188,7 @@ export class AxisRenderer {
                 appendPath(
                     new PathOption(
                         gauge.element.id + '_Axis_Major_TickLine_' + index + '_' + i, 'transparent', majorLineStyle.width,
-                        isRangeColor ? getRangeColor(i, <Range[]>axis.ranges, majorLineStyle.color ||
-                        this.gauge.themeStyle.majorTickColor) : majorLineStyle.color || this.gauge.themeStyle.majorTickColor,
+                        isRangeColor ? getRangeColor(i, <Range[]>axis.ranges, color) : color,
                         null, '0', this.calculateTicks(i, <Tick>majorLineStyle, axis), '', 'pointer-events:none;'
                     ),
                     majorTickElements, gauge

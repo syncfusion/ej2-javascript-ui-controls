@@ -212,12 +212,12 @@ function getOptions(parent: IFileManager, text: string, e?: ReadArgs | SelectedE
             let intl: Internationalization = new Internationalization();
             let parseDate: Date = intl.parseDate(details.modified, { format: 'MM/dd/yyy hh:mm:ss' });
             let formattedString: string = intl.formatDate(new Date(details.modified), { format: 'MMMM dd, yyyy HH:mm:ss' });
-            options.header = details.name.split('.')[0];
+            options.header = details.name;
             options.content = '<table>' +
                 '<tr><td>' + getLocaleText(parent, 'Type') + '</td><td class="' + CLS.VALUE + '" title="' +
                 (details.isFile ? 'File' : 'Folder') + '">' + (details.isFile ? 'File' : 'Folder') + '</td></tr>' +
-                '<tr><td>' + getLocaleText(parent, 'Size') + '</td><td>' + details.size
-                + '<span class="' + CLS.VALUE + '" title ="' + details.size + '"></span></td></tr>' +
+                '<tr><td>' + getLocaleText(parent, 'Size') + '</td><td><span class="' + CLS.VALUE + '" title ="' +
+                details.size + '">' + details.size + '</span></td></tr>' +
                 '<tr><td>' + getLocaleText(parent, 'Location') + '</td><td class="' + CLS.VALUE + '" title="' +
                 details.location + '">' + details.location + '</td></tr>' +
                 '<tr><td>' + getLocaleText(parent, 'Modified') + '</td><td class="' + CLS.VALUE + '" >'
@@ -447,7 +447,9 @@ export function createImageDialog(parent: IFileManager, header: string, imageUrl
 
 function openImage(parent: IFileManager): void {
     setTimeout(() => {
-        parent.viewerObj.element.focus();
+        if (parent.viewerObj) {
+            parent.viewerObj.element.focus();
+        }
     });
     updateImage(parent);
 }
@@ -455,6 +457,9 @@ function openImage(parent: IFileManager): void {
 function updateImage(parent: IFileManager): void {
     let content: HTMLElement = <HTMLElement>select('.e-dlg-content', parent.viewerObj.element);
     let imgWrap: HTMLElement = <HTMLElement>select('.e-image-wrap', parent.viewerObj.element);
-    imgWrap.style.width = (content.offsetWidth - 36) + 'px';
-    imgWrap.style.height = (content.offsetHeight - 20) + 'px';
+    let cssObj: CSSStyleDeclaration = window.getComputedStyle(content, null);
+    let paddingWidth : number = cssObj ? (2 * parseFloat(cssObj.paddingRight)) : 36;
+    let paddingHeight: number = cssObj ? (2 * parseFloat(cssObj.paddingBottom)) : 20;
+    imgWrap.style.width = (content.offsetWidth - paddingWidth) + 'px';
+    imgWrap.style.height = (content.offsetHeight - paddingHeight) + 'px';
 }

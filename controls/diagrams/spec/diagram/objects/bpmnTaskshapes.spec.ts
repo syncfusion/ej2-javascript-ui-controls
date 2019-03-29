@@ -108,7 +108,6 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking before, after,   BPMN shape as Activity with Task and task Type as Service ', (done: Function) => {
-
             let wrapper: Canvas = ((diagram.nodes[1] as NodeModel).wrapper.children[0] as Canvas).children[0] as Canvas;
             expect((wrapper.children[0].actualSize.width === 100
                 && wrapper.children[0].actualSize.height === 100 &&
@@ -116,7 +115,9 @@ describe('Diagram Control', () => {
                 //second node
                 (wrapper.children[1].actualSize.width === 20
                     && wrapper.children[1].actualSize.height === 20 &&
-                    wrapper.children[1].offsetX === 265 && wrapper.children[1].offsetY === 65)
+                    wrapper.children[1].offsetX === 265 && wrapper.children[1].offsetY === 65) &&
+                    //third node
+                    (Math.round(wrapper.children[2].actualSize.width) === 20 && Math.round(wrapper.children[2].actualSize.height) === 20)
             ).toBe(true);
             done();
         });
@@ -436,7 +437,6 @@ describe('Diagram Control', () => {
         });
 
         it('Checking before, after,  type - Service and loop - ParallelMultiInstance and call - true', (done: Function) => {
-
             let wrapper: Canvas = ((diagram.nodes[1] as NodeModel).wrapper.children[0] as Canvas).children[0] as Canvas;
             expect((wrapper.children[0].actualSize.width === 100
                 && wrapper.children[0].actualSize.height === 100 &&
@@ -447,15 +447,14 @@ describe('Diagram Control', () => {
                     && wrapper.children[1].actualSize.height === 20 &&
                     wrapper.children[1].offsetX === 265 && wrapper.children[1].offsetY === 265) &&
                 //third node
-                (wrapper.children[2].actualSize.width === 12
-                    && wrapper.children[2].actualSize.height === 12 &&
-                    (wrapper.children[2].offsetX === 303 || wrapper.children[2].offsetX === 300) && wrapper.children[2].offsetY === 339)
+                (wrapper.children[3].actualSize.width === 12
+                    && wrapper.children[3].actualSize.height === 12 &&
+                    (wrapper.children[3].offsetX === 303 || wrapper.children[3].offsetX === 300) && wrapper.children[3].offsetY === 339)
             ).toBe(true);
             done();
         });
 
         it('Checking before, after,call-true and compensation-false and type-Service and loop-ParallelMultiInstance', (done: Function) => {
-
             let wrapper: Canvas = ((diagram.nodes[2] as NodeModel).wrapper.children[0] as Canvas).children[0] as Canvas;
             expect((wrapper.children[0].actualSize.width === 100
                 && wrapper.children[0].actualSize.height === 100 &&
@@ -465,20 +464,19 @@ describe('Diagram Control', () => {
                     && wrapper.children[1].actualSize.height === 20 &&
                     wrapper.children[1].offsetX === 465 && wrapper.children[1].offsetY === 265) &&
                 //third node
-                (wrapper.children[2].actualSize.width === 12
-                    && wrapper.children[2].actualSize.height === 12 &&
-                    (wrapper.children[2].offsetX === 503 || wrapper.children[2].offsetX === 500) && wrapper.children[2].offsetY === 339) &&
-                //fourth node
                 (wrapper.children[3].actualSize.width === 12
                     && wrapper.children[3].actualSize.height === 12 &&
-                    wrapper.children[3].offsetX === 500 && wrapper.children[3].offsetY === 339 &&
-                    wrapper.children[3].visible === false)
+                    (wrapper.children[3].offsetX === 503 || wrapper.children[3].offsetX === 500) && wrapper.children[3].offsetY === 339) &&
+                //fourth node
+                (wrapper.children[4].actualSize.width === 12
+                    && wrapper.children[4].actualSize.height === 12 &&
+                    wrapper.children[4].offsetX === 500 && wrapper.children[4].offsetY === 339 &&
+                    wrapper.children[4].visible === false)
             ).toBe(true);
             done();
         });
 
         it('Checking before, after,call-true and compensation-true and type-Service and loop-ParallelMultiInstance', (done: Function) => {
-
             let wrapper: Canvas = ((diagram.nodes[3] as NodeModel).wrapper.children[0] as Canvas).children[0] as Canvas;
             expect((wrapper.children[0].actualSize.width === 100
                 && wrapper.children[0].actualSize.height === 100 &&
@@ -489,14 +487,14 @@ describe('Diagram Control', () => {
                     && wrapper.children[1].actualSize.height === 20 &&
                     wrapper.children[1].offsetX === 665 && wrapper.children[1].offsetY === 265) &&
                 //third node
-                (wrapper.children[2].actualSize.width === 12
-                    && wrapper.children[2].actualSize.height === 12 &&
-                    (wrapper.children[2].offsetX === 690 || wrapper.children[2].offsetX === 700) && wrapper.children[2].offsetY === 339) &&
-                //fourth node
                 (wrapper.children[3].actualSize.width === 12
                     && wrapper.children[3].actualSize.height === 12 &&
-                    wrapper.children[3].offsetX === 707 && wrapper.children[3].offsetY === 339 &&
-                    wrapper.children[3].visible === true)
+                    (wrapper.children[3].offsetX === 690 || wrapper.children[3].offsetX === 700) && wrapper.children[3].offsetY === 339) &&
+                //fourth node
+                (wrapper.children[4].actualSize.width === 12
+                    && wrapper.children[4].actualSize.height === 12 &&
+                    wrapper.children[4].offsetX === 707 && wrapper.children[4].offsetY === 339 &&
+                    wrapper.children[4].visible === true)
             ).toBe(true);
             done();
         });

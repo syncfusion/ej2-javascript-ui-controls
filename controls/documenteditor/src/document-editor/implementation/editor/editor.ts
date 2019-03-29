@@ -733,7 +733,7 @@ export class Editor {
                 clearTimeout(this.animationTimer);
             }
             classList(this.selection.caret, [], ['e-de-cursor-animation']);
-            this.owner.editorModule.insertText(text, false);
+            this.owner.editorModule.insertText(text);
             /* tslint:disable:align */
             this.animationTimer = setTimeout(() => {
                 if (this.animationTimer) {
@@ -788,12 +788,19 @@ export class Editor {
     }
     /**
      * Inserts the specified text at cursor position
-     * @param  {string} text
-     * @param  {boolean} isReplace
+     * @param  {string} text - text to insert
+     */
+    public insertText(text: string): void {
+        if (isNullOrUndefined(text) || text === '') {
+            return;
+        }
+        this.insertTextInternal(text, false);
+    }
+    /**
      * @private
      */
     //tslint:disable: max-func-body-length
-    public insertText(text: string, isReplace: boolean): void {
+    public insertTextInternal(text: string, isReplace: boolean): void {
         let selection: Selection = this.viewer.selection;
         let insertPosition: TextPosition; let isRemoved: boolean = true;
         this.isListTextSelected();
@@ -927,7 +934,7 @@ export class Editor {
         let paragraphInfo: ParagraphInfo = this.getParagraphInfo(this.selection.start);
         let startPosition: string = this.getHierarchicalIndex(paragraphInfo.paragraph, paragraphInfo.offset.toString());
         // Insert IME text in current selection
-        this.insertText(text, false);
+        this.insertText(text);
         this.viewer.lastComposedText = text;
         // update selection start
         let start: TextPosition = this.selection.start;
@@ -10224,9 +10231,9 @@ export interface ParagraphFormatProperties {
      */
     lineSpacing?: number;
     /**
-     * Defines the spacing type(Single,Double etc..) between the lines
+     * Defines the spacing type(AtLeast,Exactly or Multiple) between the lines
      */
-    lineSpacingType?: number;
+    lineSpacingType?: LineSpacingType;
     /**
      * Defines the bidirectional property of paragraph
      */

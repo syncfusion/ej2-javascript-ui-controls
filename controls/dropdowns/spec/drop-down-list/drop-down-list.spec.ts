@@ -4506,10 +4506,8 @@ describe('DDList', () => {
             }, 4000);
         });
     });
-    describe('DDL-Clear button', () => {
-        let count =0;
+    describe('bug(EJ2-21907): Dropdowns html5 validation attributes are added.', () => {
         let ddlObj: any;
-        let isChangeCalled: boolean = false;
         let ddlEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddl' });
         let empList: { [key: string]: Object }[] = [
             { Id: 'Game1', Game: 'American Football' },
@@ -4523,27 +4521,25 @@ describe('DDList', () => {
             document.body.appendChild(ddlEle);
             ddlObj = new DropDownList({
                 dataSource: empList,
-                fields: { text: 'Game', value: 'Id' },
-                value: "Game3",
-                showClearButton: true,
-                change: function () {
-                    isChangeCalled = true;
-                    count++;
-                }
+                fields: { text: 'Game', value: 'Id' }
             });
             ddlObj.appendTo(ddlEle);
         });
         afterAll(() => {
-            ddlObj.destroy();
-            ddlEle.remove();
+            if (ddlEle) {
+                ddlEle.remove();
+                document.body.innerHTML = '';
+            }
         });
-
-        it('Change event triggered once- checking', () => {
-            ddlObj.focusIn();
-            var event = new Event('mousedown');
-            ddlObj.inputWrapper.clearButton.dispatchEvent(event);
-            expect(isChangeCalled).toBe(true)
-            expect(count).toBe(1);
+        it('Check attributes', () => {
+            expect(isNullOrUndefined(ddlObj.inputWrapper.container.getAttribute('readonly'))).toBe(true);
+            expect(isNullOrUndefined(ddlObj.inputWrapper.container.getAttribute('aria-placeholder'))).toBe(true);
+            expect(isNullOrUndefined(ddlObj.inputWrapper.container.getAttribute('autocorrect'))).toBe(true);
+            expect(isNullOrUndefined(ddlObj.inputWrapper.container.getAttribute('autocomplete'))).toBe(true);
+            expect(isNullOrUndefined(ddlObj.inputWrapper.container.getAttribute('autocapitalize'))).toBe(true);
+            expect(isNullOrUndefined(ddlObj.inputWrapper.container.getAttribute('spellcheck'))).toBe(true);
+            expect(!isNullOrUndefined(ddlObj.inputElement.getAttribute('role'))).toBe(true);
+            expect(!isNullOrUndefined(ddlObj.inputElement.getAttribute('type'))).toBe(true);
         });
     });
     it('memory leak', () => {     

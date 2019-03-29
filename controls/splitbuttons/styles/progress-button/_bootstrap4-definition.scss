@@ -1,6 +1,7 @@
 $progress-btn-color: $white !default;
 $progress-btn-bgcolor: rgba($white, .25) !default;
-$progress-btn-bgcolor-normal: rgba($gray-600, .25) !default;
+$progress-btn-bgcolor-normal: rgba($white, .25) !default;
+$progress-btn-warning-progress-color: rgba($gray-900, .25) !default;
 $progress-btn-circle-opacity: 0 !default;
 
 $progress-btn-transition: all .3s linear !default;
@@ -18,5 +19,5 @@ $progress-btn-bigger-small-spin-btn-padding: 16px !default;
 $progress-btn-flat-primary-progress-color: $primary-font !default;
 $progress-btn-flat-success-progress-color: $white !default;
 $progress-btn-flat-info-progress-color: $white !default;
-$progress-btn-flat-warning-progress-color: $white !default;
+$progress-btn-flat-warning-progress-color: $gray-900 !default;
 $progress-btn-flat-danger-progress-color: $white !default;

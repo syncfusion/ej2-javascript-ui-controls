@@ -103,4 +103,24 @@
   .e-pivotview-csv-export::before {
     content: '\e701';
   }
+
+  .e-pivotview-select-icon::before {
+    content: '\e614';
+  }
+
+  .e-pivotview-export::before {
+    content: '\e711';
+  }
+
+  .e-pivotview-grid::before {
+    content: '\e708';
+  }
+
+  .e-pivotview-expand::before {
+    content: '\e556';
+  }
+
+  .e-pivotview-collapse::before {
+    content: '\e554';
+  }
 }

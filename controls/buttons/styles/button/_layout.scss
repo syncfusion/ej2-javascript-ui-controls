@@ -48,11 +48,17 @@
         &.e-icon-left {
           margin-left: $btn-icon-margin;
           width: $btn-icon-width;
+          @if $skin-name == 'bootstrap4' {
+            padding: 0 $btn-bigger-icon-top-bottom-padding;
+          }
         }
 
         &.e-icon-right {
           margin-right: $btn-icon-margin;
           width: $btn-icon-width;
+          @if $skin-name == 'bootstrap4' {
+            padding: 0 $btn-bigger-icon-top-bottom-padding;
+          }
         }
 
         &.e-icon-top {
@@ -123,11 +129,17 @@
           &.e-icon-left {
             margin-left: $btn-small-icon-margin;
             width: $btn-small-icon-width;
+            @if $skin-name == 'bootstrap4' {
+              padding: 0 $btn-bigger-icon-top-bottom-padding;
+            }
           }
 
           &.e-icon-right {
             margin-right: $btn-small-icon-margin;
             width: $btn-small-icon-width;
+            @if $skin-name == 'bootstrap4' {
+              padding: 0 $btn-bigger-icon-top-bottom-padding;
+            }
           }
 
           &.e-icon-top {
@@ -199,11 +211,17 @@
       &.e-icon-left {
         margin-left: $btn-bigger-icon-margin;
         width: $btn-bigger-icon-width;
+        @if $skin-name == 'bootstrap4' {
+          padding: 0 $btn-bigger-icon-top-bottom-padding;
+        }
       }
 
       &.e-icon-right {
         margin-right: $btn-bigger-icon-margin;
         width: $btn-bigger-icon-width;
+        @if $skin-name == 'bootstrap4' {
+          padding: 0 $btn-bigger-icon-top-bottom-padding;
+        }
       }
 
       &.e-icon-top {
@@ -264,11 +282,17 @@
         &.e-icon-left {
           margin-left: $btn-bigger-small-icon-margin;
           width: $btn-bigger-small-icon-width;
+          @if $skin-name == 'bootstrap4' {
+            padding: 0 $btn-bigger-icon-top-bottom-padding;
+          }
         }
 
         &.e-icon-right {
           margin-right: $btn-bigger-small-icon-margin;
           width: $btn-bigger-small-icon-width;
+          @if $skin-name == 'bootstrap4' {
+            padding: 0 $btn-bigger-icon-top-bottom-padding;
+          }
         }
 
         &.e-icon-top {

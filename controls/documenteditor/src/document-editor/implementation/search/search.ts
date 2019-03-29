@@ -125,7 +125,7 @@ export class Search {
         if (index < 0) {
             return 0;
         }
-        this.owner.editorModule.insertText(replaceText, true);
+        this.owner.editorModule.insertTextInternal(replaceText, true);
         let endTextPosition: TextPosition = result.end;
         let startPosition: TextPosition = new TextPosition(this.viewer.owner);
         startPosition.setPositionParagraph(endTextPosition.currentWidget, endPosition.offset - replaceText.length);
@@ -184,7 +184,7 @@ export class Search {
         for (let i: number = count - 1; i >= 0; i--) {
             let result: TextSearchResult = results.innerList[i];
             this.navigate(results.innerList[i]);
-            this.owner.editorModule.insertText(replaceText, true);
+            this.owner.editorModule.insertTextInternal(replaceText, true);
             if (result.isHeader || result.isFooter) {
                 this.viewer.layout.updateHeaderFooterToParent(this.viewer.selection.start.paragraph.bodyWidget as HeaderFooterWidget);
             }

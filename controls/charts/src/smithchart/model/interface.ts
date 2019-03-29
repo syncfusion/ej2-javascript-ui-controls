@@ -127,4 +127,9 @@ export interface ISmithchartThemeStyle {
     tooltipBoldLabel: string;
     tooltipLightLabel: string;
     tooltipHeaderLine: string;
+    fontFamily?: string;
+    fontSize?: string;
+    labelFontFamily?: string;
+    tooltipFillOpacity?: number;
+    tooltipTextOpacity?: number;
 }

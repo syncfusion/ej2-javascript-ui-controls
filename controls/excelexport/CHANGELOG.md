@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## 17.1.32-beta (2019-03-13)
+## 17.1.1-beta (2019-01-29)
 
 ### Excel Export
 

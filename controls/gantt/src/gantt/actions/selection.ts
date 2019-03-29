@@ -258,8 +258,8 @@ export class Selection {
     }
 
     private highlightSelectedRows(e: PointerEvent, fromChart: boolean): void {
-        let rows: HTMLCollection = (e.target as Element).closest('tbody').children;
-        let selectedRow: Element = (e.target as Element).closest('tr.e-chart-row');
+        let rows: HTMLCollection = closest((e.target as Element), 'tbody').children;
+        let selectedRow: Element = closest((e.target as Element), 'tr.e-chart-row');
         let rIndex: number = [].slice.call(rows).indexOf(selectedRow);
         this.isMultiCtrlRequest = e.ctrlKey || this.enableSelectMultiTouch;
         this.isMultiShiftRequest = e.shiftKey;
@@ -414,7 +414,7 @@ export class Selection {
                 (e.target as HTMLElement).classList.contains('e-treegridcollapse') || !isNullOrUndefined(parent);
             this.popUpClickHandler(e);
             if (this.parent.selectionSettings.mode !== 'Cell' && isSelected) {
-                if ((e.target as Element).closest('tr.e-chart-row')) {
+                if (closest((e.target as Element), 'tr.e-chart-row')) {
                     this.highlightSelectedRows(e, true);
                 } else {
                     this.highlightSelectedRows(e, false);

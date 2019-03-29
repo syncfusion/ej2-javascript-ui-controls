@@ -1,17 +1,19 @@
 import { IAxisSet, IGridValues, IPivotValues, IValueSortSettings, } from '../../base/engine';
 import { PivotEngine, IFieldOptions, IFormatSettings } from '../../base/engine';
 import { PivotView } from '../base/pivotview';
-import { Reorder, QueryCellInfoEventArgs, headerRefreshed, CellSelectEventArgs, RowSelectEventArgs } from '@syncfusion/ej2-grids';
+import { Reorder, headerRefreshed, CellSelectEventArgs, RowSelectEventArgs } from '@syncfusion/ej2-grids';
 import { Grid, Resize, ColumnModel, Column, ExcelExport, PdfExport, ContextMenu, ResizeArgs, Freeze } from '@syncfusion/ej2-grids';
 import { PdfHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelHeaderQueryCellInfoEventArgs, HeaderCellInfoEventArgs, Selection, RowDeselectEventArgs } from '@syncfusion/ej2-grids';
-import { CellDeselectEventArgs } from '@syncfusion/ej2-grids';
+import { CellDeselectEventArgs, QueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { createElement, setStyleAttribute, remove, isNullOrUndefined, EventHandler, append } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
-import { DataBoundEventArgs } from '@syncfusion/ej2-navigations';
+import { DataBoundEventArgs, BeforeOpenCloseMenuEventArgs, MenuEventArgs  } from '@syncfusion/ej2-navigations';
 import { GridSettingsModel } from '../model/gridsettings-model';
 import { HyperCellClickEventArgs, PivotCellSelectedEventArgs } from '../../common/base/interface';
+import { AggregateMenu } from '../../common/popups/aggregate-menu';
+import { SummaryTypes } from '../../base/types';
 
 /**
  * Module to render PivotGrid control
@@ -30,16 +32,19 @@ export class Render {
     private colPos: number = 0;
     private lastSpan: number = 0;
     private resColWidth: number;
+    private aggMenu: AggregateMenu;
+    private field : string;
     /* tslint:disable-next-line */
     private timeOutObj: any;
     /** Constructor for render module */
     constructor(parent: PivotView) {
         this.parent = parent;
-        this.resColWidth = (this.parent.showGroupingBar && this.parent.groupingBarModule) ? (this.parent.isAdaptive ? 180 : 250) :
+        this.resColWidth = (this.parent.showGroupingBar && this.parent.groupingBarModule) ? (this.parent.isAdaptive ? 180 : 249) :
             (this.parent.isAdaptive ? 140 : 200);
         this.engine = parent.engineModule;
         this.gridSettings = parent.gridSettings;
         this.formatList = this.getFormatList();
+        this.aggMenu = new AggregateMenu(this.parent);
     }
 
     /** @hidden */
@@ -127,14 +132,14 @@ export class Render {
             allowTextWrap: this.gridSettings.allowTextWrap,
             allowReordering: this.gridSettings.allowReordering,
             allowSelection: this.gridSettings.allowSelection,
-            contextMenuItems: this.gridSettings.contextMenuItems,
+            contextMenuItems: this.gridSettings.contextMenuItems as any,
             selectedRowIndex: this.gridSettings.selectedRowIndex,
             selectionSettings: this.gridSettings.selectionSettings as any,
             printMode: this.gridSettings.printMode,
             rowHeight: this.gridSettings.rowHeight,
             gridLines: this.gridSettings.gridLines,
-            contextMenuClick: this.gridSettings.contextMenuClick ? this.gridSettings.contextMenuClick.bind(this.parent) : undefined,
-            contextMenuOpen: this.gridSettings.contextMenuOpen ? this.gridSettings.contextMenuOpen.bind(this.parent) : undefined,
+            contextMenuClick: this.contextMenuClick.bind(this),
+            contextMenuOpen: this.contextMenuOpen.bind(this),
             beforeCopy: this.gridSettings.beforeCopy ? this.gridSettings.beforeCopy.bind(this.parent) : undefined,
             beforePrint: this.gridSettings.beforePrint ? this.gridSettings.beforePrint.bind(this.parent) : undefined,
             printComplete: this.gridSettings.printComplete ? this.gridSettings.printComplete.bind(this.parent) : undefined,
@@ -232,6 +237,296 @@ export class Render {
         this.parent.notify(events.contentReady, {});
     }
 
+    private contextMenuOpen ( args: BeforeOpenCloseMenuEventArgs){
+        for( let item of args.items)
+        {
+            let cellTarget:Element = this.parent.lastCellClicked;
+            let elem: Element = null;
+            let bool: boolean;
+            if (cellTarget.classList.contains('e-stackedheadercelldiv') || cellTarget.classList.contains('e-cellvalue') ||
+            cellTarget.classList.contains('e-headercelldiv') || cellTarget.classList.contains('e-icons') || cellTarget.classList.contains('e-rhandler')) {
+                elem = cellTarget.parentElement;
+            } else if (cellTarget.classList.contains('e-headercell') || cellTarget.classList.contains('e-rowcell') || cellTarget.classList.contains('e-columnsheader') ||
+            cellTarget.classList.contains('e-rowsheader') || cellTarget.classList.contains('e-valuescontent') || cellTarget.classList.contains('e-valuesheader')) {
+                elem = cellTarget;
+            } else if (cellTarget.classList.contains('e-headertext')) {
+                elem = cellTarget.parentElement.parentElement ;
+            } 
+            if (elem.classList.contains('e-valuesheader') || elem.classList.contains('e-stot')) {
+                bool = true;
+            }
+            let rowIndex: number = Number(elem.getAttribute('index'));
+            let colIndex: number = Number(elem.getAttribute('aria-colindex'));
+            let pivotValue1: IAxisSet = this.parent.pivotValues[rowIndex][colIndex] as IAxisSet;
+            let select: string = item.id;
+            switch(select){
+                case 'expand':
+                    if(elem.querySelectorAll('.'+cls.EXPAND).length>0){
+                        if(args.element.querySelectorAll(cls.CONTEXT_COLLAPSE_ID)){
+                            args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.add(cls.MENU_DISABLE);
+                        }
+                        if(args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.contains(cls.MENU_DISABLE)){
+                            args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.remove(cls.MENU_DISABLE);
+                        }
+                        if(args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.contains(cls.MENU_HIDE)){ 
+                            args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.remove(cls.MENU_HIDE);
+                            args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.remove(cls.MENU_HIDE);
+                        }
+                    } else {
+                        
+                        if(bool){
+                            args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.add(cls.MENU_HIDE);
+                        }
+                        else {
+                            args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.add(cls.MENU_DISABLE);
+                        }
+                    }
+                    break;
+                case 'collapse':
+                    if(elem.querySelectorAll('.'+cls.COLLAPSE).length>0){
+                        if(args.element.querySelector(cls.CONTEXT_EXPAND_ID)){
+                            args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.add(cls.MENU_DISABLE);
+                        }
+                        if(args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.contains(cls.MENU_DISABLE)){
+                            args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.remove(cls.MENU_DISABLE);
+                        }
+                        if(args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.contains(cls.MENU_HIDE)){ 
+                            args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.remove(cls.MENU_HIDE);
+                            args.element.querySelector(cls.CONTEXT_EXPAND_ID).classList.remove(cls.MENU_HIDE);
+                        }
+                    }else {
+                        
+                        if(bool){
+                            args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.add(cls.MENU_HIDE);
+                        }
+                        else {
+                            args.element.querySelector(cls.CONTEXT_COLLAPSE_ID).classList.add(cls.MENU_DISABLE);
+                        }
+                    }
+                    break;
+                case 'drillthrough':
+                    if(!this.parent.allowDrillThrough) {
+                        if(args.element.querySelector(cls.CONTEXT_DRILLTHROUGH_ID)) {
+                            args.element.querySelector(cls.CONTEXT_DRILLTHROUGH_ID).classList.add(cls.MENU_DISABLE);
+                        }
+                    }
+                     else if (!(elem.classList.contains('e-summary'))) {
+                            if ((elem as HTMLElement).innerText === "") {
+                                if (args.element.querySelector(cls.CONTEXT_DRILLTHROUGH_ID)) {
+                                    args.element.querySelector(cls.CONTEXT_DRILLTHROUGH_ID).classList.add(cls.MENU_DISABLE);
+                                }
+                            }
+                        }
+                    else {
+                        if(args.element.querySelector(cls.CONTEXT_DRILLTHROUGH_ID).classList.contains(cls.MENU_DISABLE)) {
+                            args.element.querySelector(cls.CONTEXT_DRILLTHROUGH_ID).classList.remove(cls.MENU_DISABLE);
+                        }
+                    }
+                    break;
+                case 'sortasc':
+                    if (!this.parent.enableValueSorting) {
+                        if(args.element.querySelector(cls.CONTEXT_SORT_ASC_ID)) {
+                            args.element.querySelector(cls.CONTEXT_SORT_ASC_ID).classList.add(cls.MENU_DISABLE);
+                        }
+                    } else if (elem.querySelectorAll('.e-icon-descending').length > 0) {
+                        if (args.element.querySelector(cls.CONTEXT_SORT_DESC_ID)) {
+                            args.element.querySelector(cls.CONTEXT_SORT_DESC_ID).classList.add(cls.MENU_DISABLE);
+                        }
+                        else {
+                            args.element.querySelector(cls.CONTEXT_SORT_DESC_ID).classList.remove(cls.MENU_DISABLE);
+                        }
+                        if (args.element.querySelector(cls.CONTEXT_SORT_ASC_ID).classList.contains(cls.MENU_DISABLE)) {
+                            args.element.querySelector(cls.CONTEXT_SORT_ASC_ID).classList.remove(cls.MENU_DISABLE);
+                        }
+                    }
+                    else if (args.element.querySelector(cls.CONTEXT_SORT_DESC_ID).classList.contains(cls.MENU_DISABLE)) {
+                        args.element.querySelector(cls.CONTEXT_SORT_DESC_ID).classList.remove(cls.MENU_DISABLE);
+                    }
+                    break;
+                case 'sortdesc':
+                    if (!this.parent.enableValueSorting) {
+                        if (args.element.querySelector(cls.CONTEXT_SORT_DESC_ID)) {
+                            args.element.querySelector(cls.CONTEXT_SORT_DESC_ID).classList.add(cls.MENU_DISABLE);
+                        }
+                    }
+                    else if (elem.querySelectorAll('.e-icon-ascending').length > 0) {
+                        if (args.element.querySelector(cls.CONTEXT_SORT_ASC_ID)) {
+                            args.element.querySelector(cls.CONTEXT_SORT_ASC_ID).classList.add(cls.MENU_DISABLE);
+                        }
+                        else {
+                            args.element.querySelector(cls.CONTEXT_SORT_ASC_ID).classList.remove(cls.MENU_DISABLE);
+                        }
+                        if (args.element.querySelector(cls.CONTEXT_SORT_DESC_ID).classList.contains(cls.MENU_DISABLE)) {
+                            args.element.querySelector(cls.CONTEXT_SORT_DESC_ID).classList.remove(cls.MENU_DISABLE);
+                        }
+                    }
+                    else if (args.element.querySelector(cls.CONTEXT_SORT_ASC_ID).classList.contains(cls.MENU_DISABLE)) {
+                        args.element.querySelector(cls.CONTEXT_SORT_ASC_ID).classList.remove(cls.MENU_DISABLE);
+                    }
+                    break;
+                case 'CalculatedField':
+                    if (!this.parent.allowCalculatedField) {
+                        args.element.querySelector(cls.CONTEXT_CALC_ID).classList.add(cls.MENU_DISABLE);
+                    } 
+                    break;
+                case 'pdf':
+                    if (!this.parent.allowPdfExport) {
+                        args.element.querySelector(cls.CONTEXT_PDF_ID).classList.add(cls.MENU_DISABLE);
+                    } 
+                    break;
+                case 'excel':
+                    if (!this.parent.allowExcelExport) {
+                        args.element.querySelector(cls.CONTEXT_EXCEL_ID).classList.add(cls.MENU_DISABLE);
+                    }
+                    break;
+                case 'csv':
+                    if (!this.parent.allowExcelExport) {
+                        args.element.querySelector(cls.CONTEXT_CSV_ID).classList.add(cls.MENU_DISABLE);
+                    }
+                    break;
+                case 'exporting':
+                    if ((!this.parent.allowExcelExport) && (!this.parent.allowPdfExport)) {
+                        args.element.querySelector(cls.CONTEXT_EXPORT_ID).classList.add(cls.MENU_DISABLE);  
+                    } 
+                    break;
+                case 'aggregate':
+                    if ((elem as HTMLElement).innerText === "") {
+                        if (args.element.querySelector(cls.CONTEXT_AGGREGATE_ID)) {
+                            args.element.querySelector(cls.CONTEXT_AGGREGATE_ID).classList.add(cls.MENU_DISABLE);
+                        }
+                    }
+                    else {
+                        if (args.element.querySelector(cls.CONTEXT_AGGREGATE_ID).classList.contains(cls.MENU_DISABLE)) {
+                            args.element.querySelector(cls.CONTEXT_AGGREGATE_ID).classList.remove(cls.MENU_DISABLE);
+                        }
+                    }
+                    break;
+            }
+        }
+        this.parent.trigger(events.contextMenuOpen,args);
+    }
+
+    private contextMenuClick(args:MenuEventArgs){
+        // this.parent.gridSettings.contextMenuClick();
+        let target:Element = this.parent.lastCellClicked;
+        let selected: string = args.item.id;
+        let event: MouseEvent = new MouseEvent('dblclick', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        let ele: Element = null;
+        if (target.classList.contains('e-stackedheadercelldiv') || target.classList.contains('e-cellvalue') ||
+            target.classList.contains('e-headercelldiv') || target.classList.contains('e-icons') || target.classList.contains('e-rhandler')) {
+            ele = target.parentElement;
+        } else if (target.classList.contains('e-headercell') || target.classList.contains('e-rowcell')) {
+            ele = target;
+        } else if (target.classList.contains('e-headertext')) {
+            ele = target.parentElement.parentElement ;
+        }
+        let rowIndx: number = Number(ele.getAttribute('index'));
+        let colIndx: number = Number(ele.getAttribute('aria-colindex'));
+        let pivotValue: IAxisSet = this.parent.pivotValues[rowIndx][colIndx] as IAxisSet;
+        if(  args.item.id === 'AggSum' || args.item.id === 'AggProduct' || args.item.id === 'AggCount' || 
+            args.item.id === 'AggDistinctCount' || args.item.id === 'AggAvg' || args.item.id === 'AggMin' || 
+            args.item.id === 'AggMax' || args.item.id === 'AggMoreOption' ){
+                this.field = this.parent.engineModule.fieldList[pivotValue.actualText.toString()].caption;
+        }
+        switch (selected) {
+            case 'pdf':
+                this.parent.pdfExport();
+                break;
+            case 'excel':
+                this.parent.excelExport();
+                break;
+            case 'csv':
+                this.parent.csvExport();
+                break;
+            case 'drillthrough':
+                ele.dispatchEvent(event);
+                break;
+            case 'sortasc':
+                this.parent.setProperties({
+                    dataSource:{
+                        valueSortSettings: {
+                            headerText: (pivotValue as IAxisSet).valueSort.levelName as string,
+                            headerDelimiter: this.parent.dataSource.valueSortSettings.headerDelimiter
+                        }
+                    }
+                });
+                this.parent.dataSource.valueSortSettings.sortOrder = 'Ascending';
+                break;
+            case 'sortdesc':
+                this.parent.setProperties({
+                    dataSource:{
+                        valueSortSettings: {
+                            headerText: (pivotValue as IAxisSet).valueSort.levelName as string,
+                            headerDelimiter: this.parent.dataSource.valueSortSettings.headerDelimiter
+                        }
+                    }
+                });
+                this.parent.dataSource.valueSortSettings.sortOrder = 'Descending';
+                break;
+            case 'expand':
+                if(ele.querySelectorAll('.'+cls.EXPAND)){
+                    let exp = ele.querySelectorAll('.'+cls.EXPAND)[0] as Element
+                    this.parent.onDrill(exp);
+                }
+                break;
+            case 'collapse':
+                if(ele.querySelectorAll('.'+cls.COLLAPSE)){
+                    let colp = ele.querySelectorAll('.'+cls.COLLAPSE)[0] as Element
+                    this.parent.onDrill(colp);
+                }
+                break;
+            case 'CalculatedField':
+                this.parent.calculatedFieldModule.createCalculatedFieldDialog();
+                break;
+            case 'AggSum':
+                this.updateAggregate('Sum');
+                break;
+            case 'AggProduct':
+                this.updateAggregate('Product');
+                break;
+            case 'AggCount':
+                this.updateAggregate('Count');
+                break;
+            case 'AggDistinctCount':
+                this.updateAggregate('DistinctCount');
+                break;
+            case 'AggAvg':
+                this.updateAggregate('Avg');
+                break;
+            case 'AggMin':
+                this.updateAggregate('Min');
+                break;
+            case 'AggMax':
+                this.updateAggregate('Max');
+                break;
+            case 'AggMoreOption':
+                ele.setAttribute('id',this.field);
+                ele.setAttribute('data-caption',this.field);
+                ele.setAttribute('data-field',this.field);
+                ele.setAttribute('data-type',this.parent.engineModule.fieldList[pivotValue.actualText.toString()].aggregateType);
+                ele.setAttribute('data-basefield',this.parent.engineModule.fieldList[pivotValue.actualText.toString()].baseField);
+                ele.setAttribute('data-baseItem',this.parent.engineModule.fieldList[pivotValue.actualText.toString()].baseItem);
+                this.aggMenu.createValueSettingsDialog(ele as HTMLElement,this.parent.element);
+                break;
+
+        }
+        this.parent.trigger(events.contextMenuClick, args);
+    }
+
+    private updateAggregate(aggregate: string){
+        let valuefields: IFieldOptions[] = this.parent.dataSource.values;
+        for (let valueCnt = 0; valueCnt < this.parent.dataSource.values.length; valueCnt++) {
+            if (this.parent.dataSource.values[valueCnt].name === this.field) {
+                let dataSourceItem: IFieldOptions = (<{ [key: string]: IFieldOptions }>valuefields[valueCnt]) 
+                dataSourceItem.type = aggregate as SummaryTypes;
+            }
+        }
+    }
+
     private injectGridModules(parent: PivotView): void {
         Grid.Inject(Freeze);
         if (parent.allowExcelExport) {
@@ -261,7 +556,7 @@ export class Render {
         this.parent.grid.allowTextWrap = this.gridSettings.allowTextWrap;
         this.parent.grid.allowReordering = this.gridSettings.allowReordering;
         this.parent.grid.allowSelection = this.gridSettings.allowSelection;
-        this.parent.grid.contextMenuItems = this.gridSettings.contextMenuItems;
+        this.parent.grid.contextMenuItems = this.gridSettings.contextMenuItems as any;
         this.parent.grid.selectedRowIndex = this.gridSettings.selectedRowIndex;
         this.parent.grid.selectionSettings = this.gridSettings.selectionSettings as any;
         this.parent.grid.printMode = this.gridSettings.printMode;
@@ -550,6 +845,14 @@ export class Render {
                         this.parent.gridHeaderCellInfo.push({ targetCell: tCell });
                     }
                 }
+                let  field : string;
+                let len: number = this.parent.dataSource.values.length
+                for (let vCnt=0;vCnt<len;vCnt++){
+                    if(this.parent.dataSource.values[vCnt].name === cell.actualText)
+                    {
+                        tCell.classList.add(cls.VALUESHEADER);
+                    }
+                }
                 this.unWireEvents(tCell);
                 this.wireEvents(tCell);
             }
@@ -610,7 +913,8 @@ export class Render {
         return dataContent;
     }
 
-    private frameEmptyData(): any[] {
+    /** @hidden */
+    public frameEmptyData(): any[] {
         let dataContent: any = [{
             0: { formattedText: this.parent.localeObj.getConstant('grandTotal') },
             1: { formattedText: this.parent.localeObj.getConstant('emptyData') }
@@ -737,7 +1041,8 @@ export class Render {
         return width;
     }
 
-    private frameEmptyColumns(): ColumnModel[] {
+    /** @hidden */
+    public frameEmptyColumns(): ColumnModel[] {
         let columns: ColumnModel[] = [];
         let colWidth: number = this.calculateColWidth(2);
         columns.push({ field: '0.formattedText', headerText: '', minWidth: 30, width: this.resColWidth });

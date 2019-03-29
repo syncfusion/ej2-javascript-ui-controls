@@ -40,7 +40,7 @@ describe('BookMark add validation', () => {
         }, 2000);
     });
     it('Add Bookmark validation', () => {
-        editor.editorModule.insertText('Sample', true);
+        editor.editorModule.insertTextInternal('Sample',true);
         editor.selection.selectAll();
         editor.bookmarkDialogModule.show();
         (editor.bookmarkDialogModule as any).addBookmark();
@@ -92,7 +92,7 @@ describe('Goto and Delete BookMark validation', () => {
         }, 2000);
     });
     it('GoTo validation Bookmark validation', () => {
-        editor.editorModule.insertText('Sample', true);
+        editor.editorModule.insertTextInternal('Sample',true);
         editor.selection.selectAll();
         editor.bookmarkDialogModule.show();
         (editor.bookmarkDialogModule as any).textBoxInput.value = 'first';
@@ -155,17 +155,17 @@ describe('Edit validation in Bookmark', () => {
         }, 1000);
     });
     it('Book Mark insert validation', () => {
-        editor.editorModule.insertText('Sample Work', false);
+        editor.editorModule.insertText('Sample Work');
         editor.selection.selectAll();
         editor.bookmarkDialogModule.show();
         (editor.bookmarkDialogModule as any).addBookmark();
         editor.selection.handleHomeKey();
-        editor.editorModule.insertText('s', false);
+        editor.editorModule.insertText('s');
         expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] instanceof BookmarkElementBox).toBe(true);
     });
     it('Backspace in bookmark validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Back', false);
+        editor.editorModule.insertText('Back');
         editor.selection.selectAll();
         editor.bookmarkDialogModule.show();
         (editor.bookmarkDialogModule as any).addBookmark();
@@ -224,12 +224,12 @@ describe('DeleteSelected content on backspace ', () => {
         }, 1000);
     });
     it('Book Mark insert validation', () => {
-        editor.editorModule.insertText('Sample Work', false);
+        editor.editorModule.insertText('Sample Work');
         editor.selection.selectAll();
         editor.bookmarkDialogModule.show();
         (editor.bookmarkDialogModule as any).addBookmark();
         editor.selection.handleHomeKey();
-        editor.editorModule.insertText('sample 1', false);
+        editor.editorModule.insertText('sample 1');
         expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] instanceof BookmarkElementBox).toBe(true);
     });
     it('Backspace at bookmark start validation', () => {
@@ -299,9 +299,9 @@ describe('DeleteSelected content on backspace at bookmar end', () => {
         }, 1000);
     });
     it('Book Mark insert validation', () => {
-        editor.editorModule.insertText('Sample Work', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('sample', false);
+        editor.editorModule.insertText('Sample Work');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('sample');
         editor.selection.handleControlLeftKey();
         editor.selection.handleRightKey();
         editor.selection.handleShiftHomeKey();
@@ -380,12 +380,12 @@ describe('DeleteSelected content on delete at bookmark start', () => {
         }, 1000);
     });
     it('Book Mark insert validation', () => {
-        editor.editorModule.insertText('Sample Work', false);
+        editor.editorModule.insertText('Sample Work');
         editor.selection.selectAll();
         editor.bookmarkDialogModule.show();
         (editor.bookmarkDialogModule as any).addBookmark();
         editor.selection.handleHomeKey();
-        editor.editorModule.insertText('sample 1', false);
+        editor.editorModule.insertText('sample 1');
         expect(((viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1] instanceof BookmarkElementBox).toBe(true);
     });
     it('Backspace at bookmark start validation', () => {
@@ -455,9 +455,9 @@ describe('DeleteSelected content on onDelete at bookmar end', () => {
         }, 1000);
     });
     it('Book Mark insert validation', () => {
-        editor.editorModule.insertText('Sample Work', false);
-        editor.editorModule.insertText(' ', false);
-        editor.editorModule.insertText('sample', false);
+        editor.editorModule.insertText('Sample Work');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('sample');
         editor.selection.handleControlLeftKey();
         editor.selection.handleRightKey();
         editor.selection.handleShiftHomeKey();

@@ -2,13 +2,7 @@
 
 ## [Unreleased]
 
-## 17.1.1-beta (2019-01-29)
-
-### Sparkline
-
-#### New Features
-
-- Provided right to left rendering support for Sparkline.
+## 17.1.32-beta (2019-03-13)
 
 ### Chart
 
@@ -16,6 +10,29 @@
 
 - Stacking Line series type has been added to the chart.
 - 100% Stacking Line series type has been added to the chart.
+- Support has been provided to wrap axis labels to multiple lines.
+- Chart now supports animation on data updation.
+
+#### Bug Fixes
+
+- Zooming icons are not visible on refreshing chart is fixed.
+- Chart not exported to SVG in IE11 is fixed.
+- Now the secondary axis is removed after changing the series type from pareto to line.
+- Legend color is not changing while changing point color using point render event is fixed.
+
+### Stock Chart
+
+#### New Features
+
+- Stock chart now allows stock events to highlight important dates.
+
+## 17.1.1-beta (2019-01-29)
+
+### Sparkline
+
+#### New Features
+
+- The right-to-left (RTL) rendering support has been provided
 
 ## 16.4.48 (2019-01-22)
 
@@ -26,7 +43,7 @@
 - Scatter chart's edge position render issue is fixed
 - Datalabel did not show properly in Edge browser is fixed
 - Trendline not rendering while using NaN as input issue is fixed
-- DataSource not refreshed in angular chart has been fixed
+- DataSource not refreshed in angular chart has been fixed.
 
 ## 16.4.47 (2019-01-16)
 

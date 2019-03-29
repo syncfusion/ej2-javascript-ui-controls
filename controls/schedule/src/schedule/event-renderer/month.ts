@@ -51,7 +51,7 @@ export class MonthEvent extends EventBase {
         }
         let conWrap: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
         let scrollTop: number = conWrap.scrollTop;
-        if (this.parent.enableAdaptiveRows && this.parent.virtualScrollModule && !isNullOrUndefined(this.parent.currentAction)) {
+        if (this.parent.rowAutoHeight && this.parent.virtualScrollModule && !isNullOrUndefined(this.parent.currentAction)) {
             conWrap.scrollTop = conWrap.scrollTop - 1;
         }
         if (this.parent.activeViewOptions.group.resources.length > 0) {
@@ -59,7 +59,7 @@ export class MonthEvent extends EventBase {
         } else {
             this.renderEventsHandler(this.parent.activeView.renderDates, this.parent.activeViewOptions.workDays);
         }
-        if (this.parent.enableAdaptiveRows) {
+        if (this.parent.rowAutoHeight) {
             this.updateBlockElements();
             let data: NotifyEventArgs = {
                 cssProperties: this.parent.getCssProperties(),
@@ -375,13 +375,13 @@ export class MonthEvent extends EventBase {
             let appTop: number = (overlapCount * (appHeight + EVENT_GAP));
             let height: number =
                 this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
-            if ((this.cellHeight > height) || this.parent.enableAdaptiveRows) {
+            if ((this.cellHeight > height) || this.parent.rowAutoHeight) {
                 let appointmentElement: HTMLElement = this.createAppointmentElement(event, resIndex);
                 this.applyResourceColor(appointmentElement, event, 'backgroundColor', this.groupOrder);
                 this.wireAppointmentEvents(appointmentElement, false, event);
                 setStyleAttribute(appointmentElement, { 'width': appWidth + 'px', 'top': appTop + 'px' });
                 this.renderEventElement(event, appointmentElement, cellTd);
-                if (this.parent.enableAdaptiveRows) {
+                if (this.parent.rowAutoHeight) {
                     let firstChild: HTMLElement = cellTd.parentElement.firstChild as HTMLElement;
                     this.updateCellHeight(firstChild, height);
                 }

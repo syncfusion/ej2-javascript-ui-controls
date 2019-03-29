@@ -1119,6 +1119,10 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     public requiredModules(): ModuleDeclaration[] {
       let modules: ModuleDeclaration[] = [];
       if (this.isDestroyed) { return modules; }
+      modules.push({
+          member: 'filter',
+          args: [this, this.filterSettings]
+      });
       if (!isNullOrUndefined(this.toolbar)) {
           modules.push({
               member: 'toolbar',
@@ -1159,12 +1163,6 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
         modules.push({
           member: 'resize',
           args: [this]
-        });
-      }
-      if (this.allowFiltering || (this.toolbar && this.toolbar.indexOf('Search') !== -1)) {
-        modules.push({
-          member: 'filter',
-          args: [this, this.filterSettings]
         });
       }
       if (this.allowExcelExport) {
@@ -1277,6 +1275,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     let edit: GridEditModel = {};
     this.grid.dataSource = isRemoteData(this) ? this.dataSource : this.flatData;
     this.grid.enableRtl = this.enableRtl;
+    this.grid.allowKeyboard = this.allowKeyboard;
     this.grid.columns = this.getGridColumns(this.columns as Column[]);
     this.grid.allowExcelExport = this.allowExcelExport;
     this.grid.allowPdfExport = this.allowPdfExport;
@@ -1456,6 +1455,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     };
     this.grid.actionBegin = (args: Object): void => {
       let requestType: string = getObject('requestType', args);
+      let target: HTMLElement = getObject('target', args);
       if (requestType === 'reorder') {
         this.notify('getColumnIndex', {});
       }
@@ -1463,6 +1463,10 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
         && (this.grid.filterSettings.columns.length === 0 || this.grid.searchSettings.key.length === 0)) {
         this.notify('clearFilters', { flatData: this.grid.dataSource });
         this.grid.dataSource = this.dataResults.result;
+      }
+      if (!isNullOrUndefined(target) && requestType === 'sorting' && target.parentElement.classList.contains('e-hierarchycheckbox')) {
+        setValue('cancel', true, args);
+        return;
       }
       this.trigger(events.actionBegin, args);
       this.notify(events.beginEdit, args);

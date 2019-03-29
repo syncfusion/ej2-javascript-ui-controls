@@ -183,8 +183,11 @@ export class SparklineRenderer {
             id: spark.element.id + '_sparkline_g',
             'clip-path': 'url(#' + this.clipId + ')'
         });
+        let color: string = this.sparkline.fill;
+        color = (this.sparkline.fill === '#00bdae' && this.sparkline.theme === 'Bootstrap4')
+            ? this.sparkline.sparkTheme.axisLineColor : color;
         let pathOption: PathOption = new PathOption(
-            spark.element.id + '_sparkline_line', 'transparent', args.lineWidth, args.fill, spark.opacity);
+            spark.element.id + '_sparkline_line', 'transparent', args.lineWidth, color, spark.opacity);
         let d: string = '';
         for (let i: number = 0, len: number = points.length; i < len; i++) {
             if (i === 0) {
@@ -511,6 +514,7 @@ export class SparklineRenderer {
         let size: Size = measureText('sparkline_measure_text', labelStyle);
         let rectOptions: RectOption = new RectOption('', dataLabel.fill, dataLabel.border, dataLabel.opacity, null);
         let edgeLabelOption: { x: number, render: boolean };
+        labelStyle.fontFamily = spark.sparkTheme.labelFontFamily || labelStyle.fontFamily;
         for (let i: number = 0, length: number = points.length; i < length; i++) {
             temp = points[i];
             option.id = textId + i;

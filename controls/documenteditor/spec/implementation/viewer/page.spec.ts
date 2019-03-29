@@ -33,9 +33,9 @@ describe('Numbering apply validation in different scenario', () => {
     });
     it('Get next Rendered widget validation in splitted table ', () => {
         editor.editorModule.insertTable(2, 2);
-        editor.editorModule.insertText('Syncfusion', false);
+        editor.editorModule.insertText('Syncfusion');
         editor.selection.handleTabKey(true, false);
-        editor.editorModule.insertText('Syncfusion', false);
+        editor.editorModule.insertText('Syncfusion');
         for (let i: number = 0; i < 60; i++) {
             editor.editorModule.onEnter();
         }
@@ -68,7 +68,7 @@ describe('Get Minimum and maximum width form cell', () => {
     });
     it('Get minimum and maximum width from cell', () => {
         editor.editor.insertTable(2, 2);
-        editor.editor.insertText('Adventure Works Cycles, the fictitious company on which the AdventureWorks sample databases are based, is a large, multinational manufacturing company.', false);
+        editor.editor.insertText('Adventure Works Cycles, the fictitious company on which the AdventureWorks sample databases are based, is a large, multinational manufacturing company.');
         editor.editor.insertHyperlink('https://syncfusion.com', 'Syncfusion', true, false);
         let widthInfo: WidthInfo = editor.selection.start.paragraph.associatedCell.getMinimumAndMaximumWordWidth(0, 0);
         expect(widthInfo.minimumWordWidth).toBeGreaterThan(70);

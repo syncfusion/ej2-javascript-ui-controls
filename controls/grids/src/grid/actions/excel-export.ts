@@ -17,6 +17,8 @@ import { Query, DataManager, Group } from '@syncfusion/ej2-data';
 import { Grid } from '../base/grid';
 import { Cell } from '../models/cell';
 import { getPrintGridModel, getUid } from '../base/util';
+import { L10n } from '@syncfusion/ej2-base';
+import { ServiceLocator } from '../services/service-locator';
 
 /**
  * @hidden
@@ -47,14 +49,18 @@ export class ExcelExport {
     private groupedColLength: number;
     private globalResolve: Function;
     private gridPool: Object = {};
+    private locator: ServiceLocator;
+    private l10n: L10n;
 
     /**
      * Constructor for the Grid Excel Export module.
      * @hidden
      */
-    constructor(parent?: IGrid) {
+    constructor(parent?: IGrid, locator?: ServiceLocator) {
         this.parent = parent;
         this.helper = new ExportHelper(parent);
+        this.locator = locator;
+        this.l10n = this.locator.getService<L10n>('localization');
     }
     /**
      * For internal use only - Get the module name.
@@ -475,6 +481,13 @@ export class ExcelExport {
                     cell = excelCellArgs.cell;
                     cell.index = index + level + (<{childGridLevel?: number}>gObj).childGridLevel;
                     cell.value = excelCellArgs.value;
+                    if (excelCellArgs.data === '' && (<{childGridLevel?: number}>gObj).childGridLevel && index === 1) {
+                        let style: ExcelStyle = {};
+                        style.hAlign = 'left' as ExcelHAlign;
+                        excelCellArgs = {style: style};
+                        cell.colSpan = gObj.getVisibleColumns().length;
+                        cell.value = this.l10n.getConstant('EmptyRecord');
+                    }
                     if (excelCellArgs.colSpan > 1) {
                         cell.colSpan = excelCellArgs.colSpan;
                     }
@@ -521,6 +534,9 @@ export class ExcelExport {
         return (result: ReturnType): Object => {
             (<Grid>childGridObj).beforeDataBound = null;
             (<{cancel?: boolean}>result).cancel = true;
+            if (result.result.length === 0 ) {
+                result.result = [''];
+            }
             (<{childRows?: ExcelRow[] }>excelRow).childRows = this.processGridExport(childGridObj, excelExportProps, result);
             let intent: number = this.parent.groupSettings.columns.length;
             (<{childRows?: ExcelRow[] }>excelRow).childRows.forEach((row: ExcelRow) => {

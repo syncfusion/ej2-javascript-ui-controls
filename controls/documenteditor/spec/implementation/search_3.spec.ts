@@ -1573,7 +1573,7 @@ describe('Search Public API validation Replace All Validation ', () => {
         }, 1000);
     });
     it('Replace Operation with out search result', () => {
-        editor.editorModule.insertText('Syncfusion sft pvt ltd', false);
+        editor.editorModule.insertText('Syncfusion sft pvt ltd');
         let spy = jasmine.createSpy('searchChange');
         editor.searchResultsChange = spy;
         editor.search.searchResults.replaceAll("Software");
@@ -1581,11 +1581,11 @@ describe('Search Public API validation Replace All Validation ', () => {
         expect(spy).not.toHaveBeenCalled();
     });
     it('Search result change event validtion', () => {
-        editor.editorModule.insertText('Syncfusion sft pvt ltd', false);
-        editor.editorModule.insertText('Syncfusion sft pvt ltd', false);
-        editor.editorModule.insertText('Syncfusion sft pvt ltd', false);
-        editor.editorModule.insertText('Syncfusion sft pvt ltd', false);
-        editor.editorModule.insertText('Syncfusion sft pvt ltd', false);
+        editor.editorModule.insertText('Syncfusion sft pvt ltd');
+        editor.editorModule.insertText('Syncfusion sft pvt ltd');
+        editor.editorModule.insertText('Syncfusion sft pvt ltd');
+        editor.editorModule.insertText('Syncfusion sft pvt ltd');
+        editor.editorModule.insertText('Syncfusion sft pvt ltd');
         editor.searchModule.findAll('sft');
         expect(editor.search.searchResults.length).toBe(6);
         let spy = jasmine.createSpy('findOperation');
@@ -1595,12 +1595,12 @@ describe('Search Public API validation Replace All Validation ', () => {
         expect(editor.search.searchResults.length).toBe(0);
     });
     it('Search result change event validtion', () => {
-        editor.editorModule.insertText('Syncfusion sft pvt ltd', false);
-        editor.editorModule.insertText('Syncfusion sft pvt ltd', false);
-        editor.editorModule.insertText('Syncfusion sft pvt ltd', false);
-        editor.editorModule.insertText('Syncfusion sft pvt ltd', false);
-        editor.editorModule.insertText('Syncfusion sft pvt ltd', false);
-        editor.editorModule.insertText('Syncfusion sft pvt ltd', false);
+        editor.editorModule.insertText('Syncfusion sft pvt ltd');
+        editor.editorModule.insertText('Syncfusion sft pvt ltd');
+        editor.editorModule.insertText('Syncfusion sft pvt ltd');
+        editor.editorModule.insertText('Syncfusion sft pvt ltd');
+        editor.editorModule.insertText('Syncfusion sft pvt ltd');
+        editor.editorModule.insertText('Syncfusion sft pvt ltd');
         editor.searchModule.findAll('sft');
         let spy = jasmine.createSpy('replaceOperation');
         editor.searchResultsChange = spy;

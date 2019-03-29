@@ -165,7 +165,7 @@ describe('Style Load Testing', () => {
         event = { keyCode: 13, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
 
-        editor.editorModule.insertText('NewList', false);
+        editor.editorModule.insertText('NewList');
 
         //Add new Line
         expect(editor.selection.characterFormat.fontFamily).toBe("Calibri Light");

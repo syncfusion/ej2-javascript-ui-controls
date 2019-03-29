@@ -465,7 +465,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
         }
         this.remove(this.element, CLS_EXTENDEDPOPOPEN);
         this.remove(this.element, CLS_EXTEANDABLE_TOOLBAR);
-        let tempEle: HTMLElement = this.element.querySelector('.e-toolbar-multirow');
+        let tempEle : HTMLElement = this.element.querySelector('.e-toolbar-multirow');
         if (tempEle) { this.remove(tempEle, CLS_MULTIROW); }
         if (this.popObj) {
             this.popupRefresh(this.popObj.element, true);
@@ -634,7 +634,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     private eleFocus(closest: HTEle, pos: Str): void {
         let sib: HTEle = Object(closest)[pos + 'ElementSibling'];
         let contains: Function = (el: HTEle) => {
-            return el.classList.contains(CLS_SEPARATOR) || el.classList.contains(CLS_DISABLE) || el.getAttribute('disabled');
+            // tslint:disable-next-line:max-line-length
+            return el.classList.contains(CLS_SEPARATOR) || el.classList.contains(CLS_DISABLE) || el.getAttribute('disabled') || el.classList.contains(CLS_HIDDEN) || !isVisible(el);
+            // tslint:enable-next-line:max-line-length
         };
         if (sib) {
             let skipEle: boolean = contains(sib);

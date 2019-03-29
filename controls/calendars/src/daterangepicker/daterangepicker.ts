@@ -3736,7 +3736,6 @@ export class DateRangePicker extends CalendarBase {
             let focusArguments: FocusEventArgs = {
                 model: this
             };
-            this.trigger('focus', focusArguments);
         }
     }
     /**

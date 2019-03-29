@@ -614,4 +614,39 @@ describe('Grid checkbox selection functionality', () => {
         });
 
     });
+
+    describe('Grid shows incorrect result while getting selected records with selectAll', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData,
+                    columns: [
+                        { type: 'checkbox'},
+                        { field: 'EmployeeID', isPrimaryKey: true, headerText: 'Employee ID', textAlign: 'Right', width: 135, },
+                        { field: 'FirstName', headerText: 'Name', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 180 },
+                    ],
+                    allowSelection: true,
+                    pageSettings: { pageSize: 5 },
+                    allowPaging: true,
+                    selectionSettings: { persistSelection: true },
+                    actionComplete: actionComplete
+                }, done);
+        });
+
+        it('EJ2-23166 - selecting all records and checking selected records in rowSelected event', (done: Function) => {
+            let rowSelected = (): void => {
+                expect(gridObj.selectionModule.getSelectedRecords().length).toBe(9);
+                done();
+            }
+            gridObj.rowSelected = rowSelected;
+            (gridObj.selectionModule as any).applySpaceSelection((gridObj.element.querySelector('.e-checkselectall') as HTMLElement));
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
 });

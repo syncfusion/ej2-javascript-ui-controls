@@ -6,7 +6,7 @@ import {NavigationPane} from '../../../src/file-manager/layout/navigation-pane';
 import {DetailsView} from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement, Browser, Instance } from '@syncfusion/ej2-base';
-import { toolbarItems, toolbarItems1, data1, data2, data3, data4, data5, data10, data11, data12 } from '../data';
+import { toolbarItems, toolbarItems1, data1, data2, data3, data4, data5, data10, data11, data12, data17, data18, data19 } from '../data';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -265,6 +265,144 @@ describe('FileManager control single selection LargeIcons view', () => {
         it('mouse click on toolbar clear all button', () => {
             let item: any = document.getElementById('file_toolbar').querySelector('.e-fe-clear');
             expect(item).not.toBe(null);
+        });
+    });    
+    describe('mobile testing', () => {
+        let mouseEventArgs: any, tapEvent: any;
+        let feObj: any;
+        let ele: HTMLElement;
+        let originalTimeout: any;
+        let iosPhoneUa: string = 'Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3';
+        let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
+        beforeEach((done: Function): void => {
+            jasmine.Ajax.install();
+            Browser.userAgent = iosPhoneUa;
+            feObj = undefined;
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                allowMultiSelection: false,
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+            }, '#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                done();
+            }, 500);
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            Browser.userAgent = Chromebrowser;
+            if (feObj) feObj.destroy();
+            ele.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('Search file testing', (done: Function) => {
+            let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+            expect(largeLi.length).toEqual(5);
+            let searchEle: any = feObj.element.querySelector("#file_search");
+            let searchObj: any = searchEle.ej2_instances[0];
+            searchEle.value = 'doc';
+            searchObj.value = 'doc';
+            let eventArgs: any = { value: 'doc', container: searchEle };
+            searchObj.input(eventArgs);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data18)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                expect(largeLi.length).toEqual(3);
+                searchEle.value = '';
+                searchObj.value = '';
+                eventArgs = { value: '', container: searchEle };
+                searchObj.input(eventArgs);
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                    expect(largeLi.length).toEqual(5);
+                    done();
+                }, 500);
+            }, 500);
+        });
+        it('Search folder navigation', (done: Function) => {
+            let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+            expect(largeLi.length).toEqual(5);
+            let searchEle: any = feObj.element.querySelector("#file_search");
+            let searchObj: any = searchEle.ej2_instances[0];
+            searchEle.value = 'doc';
+            searchObj.value = 'doc';
+            let eventArgs: any = { value: 'doc', container: searchEle };
+            searchObj.input(eventArgs);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data18)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                expect(largeLi.length).toEqual(3);
+                mouseEventArgs.target = largeLi[0];
+                tapEvent.tapCount = 2;
+                feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                setTimeout(function () {
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request.respondWith({
+                        status: 200,
+                        responseText: JSON.stringify(data1)
+                    });
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request.respondWith({
+                        status: 200,
+                        responseText: JSON.stringify(data17)
+                    });
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    this.request = jasmine.Ajax.requests.mostRecent();
+                    this.request.respondWith({
+                        status: 200,
+                        responseText: JSON.stringify(data19)
+                    });
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(function () {
+                        let largeLi: any = document.getElementById('file_largeicons').querySelectorAll('.e-list-item');
+                        expect(largeLi.length).toEqual(1);
+                        done();
+                    }, 500);
+                }, 500);
+            }, 500);
         });
     });
 });

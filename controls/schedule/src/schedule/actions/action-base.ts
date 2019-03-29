@@ -171,7 +171,8 @@ export class ActionBase {
     public getOriginalElement(element: HTMLElement): HTMLElement[] {
         let originalElement: HTMLElement[];
         let guid: string = element.getAttribute('data-guid');
-        if (this.parent.activeView.isTimelineView()) {
+        let isMorePopup: boolean = element.offsetParent && element.offsetParent.classList.contains(cls.MORE_EVENT_POPUP_CLASS);
+        if (isMorePopup || this.parent.activeView.isTimelineView()) {
             originalElement = [].slice.call(this.parent.element.querySelectorAll('[data-guid="' + guid + '"]'));
         } else {
             let tr: HTMLElement = closest(element, 'tr') as HTMLElement;

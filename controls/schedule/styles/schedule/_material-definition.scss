@@ -44,10 +44,13 @@ $schedule-popup-footer-padding: 8px 18px 8px 22px !default;
 $schedule-date-header-line-height: 20px !default;
 $schedule-date-header-margin: 3px 3px 2px !default;
 
+$schedule-timezone-enable-nrml-height: 50px !default;
+$schedule-timezone-enable-bgr-height: 60px !default;
 $schedule-appointment-details-padding: 0 4px !default;
 $schedule-appointment-bg-color: $primary !default;
 $schedule-appointment-font-color: $primary-font !default;
 $schedule-appointment-border-color: $primary-50 !default;
+$schedule-appointment-border-radius: 2px !default;
 $schedule-appointment-active-border-color: #000 !default;
 $schedule-month-agenda-app-indicator-color: $primary !default;
 $schedule-month-appointment-height: 22px !default;

@@ -48,8 +48,20 @@ describe('MultiSelect module', () => {
             expect(document.activeElement.tagName === 'INPUT').toEqual(true);
         });
         it('Clear icon availability testing', () => {
-            expect(editorObj.multiSelectModule.compObj.showClearButton === true).toEqual(true);
-            expect(selectAll('.e-chips-close', ele).length === 1).toEqual(true);
+            expect(editorObj.multiSelectModule.compObj.showClearButton).toBe(true);
+            expect(selectAll('.e-chips-close', ele).length).toBe(1);
+        });
+        it('Clear icon availability testing for false', () => {
+            editorObj.multiSelectModule.compObj.showClearButton = false;
+            editorObj.multiSelectModule.compObj.dataBind();
+            expect(editorObj.multiSelectModule.compObj.showClearButton).toBe(false);
+            expect(selectAll('.e-clear-icon ', ele).length).toBe(0);
+        });
+       it('Clear icon availability testing for true', () => {
+            editorObj.multiSelectModule.compObj.showClearButton = true;
+            editorObj.multiSelectModule.compObj.dataBind();
+            expect(editorObj.multiSelectModule.compObj.showClearButton).toBe(true);
+            expect(selectAll('.e-chips-close', ele).length).toBe(1);
         });
         it('Value property testing', () => {
             expect(editorObj.value[0] === 'test').toEqual(true);
@@ -61,6 +73,20 @@ describe('MultiSelect module', () => {
             editorObj.multiSelectModule.compObj.dataBind();
             editorObj.save();
             expect(valueEle.innerHTML === 'testing').toEqual(true);
+        });
+        it('Without compObj data to update value method testing', () => {
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multiselect', ele).length === 2).toEqual(true);
+            expect(editorObj.value).toEqual(['testing']);
+            expect(editorObj.multiSelectModule.compObj.value).toEqual(['testing']);
+            editorObj.multiSelectModule.compObj.value = ['Tested'];
+            expect(editorObj.multiSelectModule.compObj.value).toEqual(['Tested']);
+            editorObj.multiSelectModule.compObj = undefined;
+            editorObj.multiSelectModule.updateValue({ type: 'MultiSelect' });
+            expect(editorObj.value).toEqual(['testing']);
         });
     });
     describe('Popup - Basic testing', () => {
@@ -107,7 +133,17 @@ describe('MultiSelect module', () => {
             closeEle.click();
             expect(selectAll('.e-multiselect', document.body).length === 2).toEqual(true);
         });
-        it('Tip element click testing', () => {
+        it('Wrapper element click testing', () => {
+            let trg: HTMLElement = <HTMLElement>select('.' + classes.WRAPPER, document.body);
+            trg.click();
+            expect(selectAll('.e-tooltip-wrap', document.body).length === 1).toEqual(true);
+        });
+        it('Wrapper element mousedown testing', () => {
+            let trg: HTMLElement = <HTMLElement>select('.' + classes.WRAPPER, document.body);
+            trg.dispatchEvent(new MouseEvent('mousedown'));
+            expect(selectAll('.e-tooltip-wrap', document.body).length === 1).toEqual(true);
+        });
+        it('Tip element mousedown testing', () => {
             let trg: HTMLElement = <HTMLElement>select('.e-tip-content', document.body);
             trg.dispatchEvent(new MouseEvent('mousedown'));
             expect(selectAll('.e-tooltip-wrap', document.body).length === 1).toEqual(true);
@@ -856,6 +892,42 @@ describe('MultiSelect module', () => {
             buttonEle.dispatchEvent(new MouseEvent('mousedown'));
             expect(editorObj.value).toEqual([]);
             expect(valueEle.innerHTML).toEqual('Enter some text');
+        });
+    });
+
+    describe('Model - value child property update testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        let dataSource: string[] = ['Badminton', 'Cricket'];
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Default value with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'MultiSelect',
+                mode: 'Inline',
+                value: ['Badminton'],
+                model: {
+                    dataSource: dataSource
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual([ 'Badminton' ]);
+            expect(valueEle.innerHTML).toEqual('Badminton');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-multi-hidden', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual([ 'Badminton' ]);
+            expect(editorObj.model.value).toEqual([ 'Badminton' ]);
+            editorObj.setProperties({ value: null }, true);
+            editorObj.multiSelectModule.compObj.value = null;
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(editorObj.model.value).toEqual(null);
         });
     });
 

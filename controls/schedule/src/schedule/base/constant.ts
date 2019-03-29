@@ -6,6 +6,8 @@ export const cellClick: string = 'cellClick';
 /** @hidden */
 export const cellDoubleClick: string = 'cellDoubleClick';
 /** @hidden */
+export const select: string = 'select';
+/** @hidden */
 export const actionBegin: string = 'actionBegin';
 /** @hidden */
 export const actionComplete: string = 'actionComplete';

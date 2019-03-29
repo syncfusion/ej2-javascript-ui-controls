@@ -40,18 +40,24 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
                 dataLabelColor: '#ffffff',
                 rangeBandColor: '#ffffff',
                 tooltipFill: '#ffffff',
+                background: '#000000',
                 tooltipFontColor: '#363F4C',
                 trackerLineColor: '#ffffff'
             };
             break;
-        case 'Bootstrap4':
+        case 'bootstrap4':
             themeColors = {
                 axisLineColor: '#6C757D',
                 dataLabelColor: '#212529',
                 rangeBandColor: '#212529',
                 tooltipFill: '#000000',
+                background: '#FFFFFF',
                 tooltipFontColor: '#FFFFFF',
-                trackerLineColor: '#212529'
+                trackerLineColor: '#212529',
+                fontFamily: 'HelveticaNeue-Medium',
+                tooltipFillOpacity: 1,
+                tooltipTextOpacity: 0.9,
+                labelFontFamily: 'HelveticaNeue'
             };
             break;
         default: {
@@ -59,6 +65,7 @@ export function getThemeColor(theme: SparklineTheme): IThemes {
                 axisLineColor: '#000000',
                 dataLabelColor: '#424242',
                 rangeBandColor: '#000000',
+                background: '#FFFFFF',
                 tooltipFill: '#363F4C',
                 tooltipFontColor: '#ffffff',
                 trackerLineColor: '#000000'

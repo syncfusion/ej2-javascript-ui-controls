@@ -736,6 +736,38 @@ describe('Grid base module', () => {
         });
     });
 
+    describe('grid scrollbar placeholder hide', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0,5),
+                    height: 500,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID' },
+                        { headerText: 'CustomerID', field: 'CustomerID' },
+                        { headerText: 'EmployeeID', field: 'EmployeeID' },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                        { headerText: 'ShipCity', field: 'ShipCity' },
+                    ],
+                    allowSelection: true,
+                }, done);
+        });
+
+        it('when total row height is smaller than Grid’s height', () => {
+            let contentTable: HTMLElement = gridObj.getContent().querySelector('.e-content') as HTMLElement;
+            expect(contentTable.style.overflowY === 'scroll').toBeTruthy();
+            if ((gridObj.currentViewData.length * gridObj.getRowHeight()) < gridObj.height) {
+                gridObj.hideScroll();
+            }
+            expect(contentTable.style.overflowY === 'auto').toBeTruthy();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
 
 });
 

@@ -127,7 +127,7 @@ export class Highlight {
         if (this.maps.legendSettings.visible ? (this.maps.legendModule.legendElement !== this.maps.legendModule.oldShapeElement) : true) {
         let eventArgs: ISelectionEventArgs = {
             opacity: this.highlightSettings.opacity,
-            fill: targetEle.id.indexOf('NavigationIndex') === -1 ? this.highlightSettings.fill : 'none',
+                fill: targetEle.id.indexOf('NavigationIndex') === -1 ? this.highlightSettings.fill : 'none',
             border: { color: this.highlightSettings.border.color, width: this.highlightSettings.border.width },
             name: itemHighlight,
             target: targetEle.id,

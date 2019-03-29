@@ -57,9 +57,10 @@ export class Annotations {
         if (!argsData.cancel) {
             templateFn = getTemplateFunction(argsData.content);
             if (templateFn && templateFn(this.gauge).length) {
-                templateElement = templateFn(this.gauge);
-                while (templateElement.length > 0) {
-                    childElement.appendChild(templateElement[0]);
+                templateElement = Array.prototype.slice.call(templateFn(this.gauge));
+                let length: number = templateElement.length;
+                for (let i: number = 0; i < length; i++) {
+                    childElement.appendChild(templateElement[i]);
                 }
             } else {
                 childElement.appendChild(createElement('div', {

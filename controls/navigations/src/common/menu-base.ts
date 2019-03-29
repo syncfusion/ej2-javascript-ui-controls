@@ -196,7 +196,7 @@ export class MenuAnimationSettings extends ChildProperty<MenuAnimationSettings> 
  */
 @NotifyPropertyChanges
 export abstract class MenuBase extends Component<HTMLUListElement> implements INotifyPropertyChanged {
-    private ngElement: HTMLElement;
+    private clonedElement: HTMLElement;
     private targetElement: HTMLElement;
     private delegateClickHandler: Function;
     private delegateMoverHandler: Function;
@@ -344,20 +344,23 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
      * @private
      */
     protected preRender(): void {
-        if (this.element.tagName === 'EJS-CONTEXTMENU') {
-            this.element.style.display = 'none';
-            this.element.classList.remove('e-' + this.getModuleName());
-            this.element.classList.remove('e-control');
-            let ejInst: Object = getValue('ej2_instances', this.element);
-            let ul: Element = this.createElement('ul');
-            this.ngElement = this.element;
-            this.element = ul as HTMLUListElement;
-            this.element.classList.add('e-control');
-            this.element.classList.add('e-' + this.getModuleName());
-            setValue('ej2_instances', ejInst, this.element);
-            if (!this.element.id) {
-                this.element.id = getUniqueID(this.getModuleName());
+        if (!this.isMenu) {
+            let ul: HTMLUListElement;
+            if (this.element.tagName === 'EJS-CONTEXTMENU') {
+                ul = this.createElement('ul', {
+                    id: getUniqueID(this.getModuleName()), className: 'e-control e-lib e-' + this.getModuleName() }) as HTMLUListElement;
+                let ejInst: Object = getValue('ej2_instances', this.element);
+                removeClass([this.element], ['e-control', 'e-lib', 'e-' + this.getModuleName()]);
+                this.clonedElement = this.element; this.element = ul;
+                setValue('ej2_instances', ejInst, this.element);
+            } else {
+                ul = this.createElement('ul', { id: getUniqueID(this.getModuleName()) }) as HTMLUListElement;
+                append([].slice.call((this.element.cloneNode(true) as Element).children), ul);
+                let refEle: Element = this.element.nextElementSibling;
+                refEle ? this.element.parentElement.insertBefore(ul, refEle) : this.element.parentElement.appendChild(ul);
+                this.clonedElement = ul;
             }
+            this.clonedElement.style.display = 'none';
         }
         if (this.element.tagName === 'EJS-MENU') {
             let ele: Element = this.element;
@@ -372,7 +375,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             ele = ul;
             wrapper.appendChild(ele);
             setValue('ej2_instances', ejInstance, ele);
-            this.ngElement = wrapper;
+            this.clonedElement = wrapper;
             this.element = ele as HTMLUListElement;
             if (!this.element.id) {
                 this.element.id = getUniqueID(this.getModuleName());
@@ -609,7 +612,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 }
                 fli.classList.add(SELECTED);
                 if (e.action === ENTER) {
-                    eventArgs = { element: fli as HTMLElement, item: item };
+                    eventArgs = { element: fli as HTMLElement, item: item, event: e };
                     this.trigger('select', eventArgs);
                 }
                 (fli as HTMLElement).focus();
@@ -625,7 +628,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                         fli.classList.remove(FOCUSED);
                     }
                     fli.classList.add(SELECTED);
-                    eventArgs = { element: fli as HTMLElement, item: item };
+                    eventArgs = { element: fli as HTMLElement, item: item, event: e };
                     this.trigger('select', eventArgs);
                     this.closeMenu(null, e);
                 }
@@ -964,7 +967,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private createItems(items: MenuItemModel[] | objColl): HTMLElement {
         let level: number = this.navIdx ? this.navIdx.length : 0;
         let showIcon: boolean = this.hasField(items, this.getField('iconCss', level));
-        let id: string = 'id';
+        let id: string = 'id'; let iconCss: string = 'iconCss';
         let listBaseOptions: ListBaseOptions = {
             showIcon: showIcon,
             moduleName: 'menu',
@@ -973,7 +976,6 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             itemCreating: (args: { curData: obj, fields: obj }): void => {
                 if (!args.curData[(<obj>args.fields)[id] as string]) {
                     args.curData[(<obj>args.fields)[id] as string] = getUniqueID('menuitem');
-                    this.clearChanges();
                 }
                 args.curData.htmlAttributes = {
                     role: 'menuitem',
@@ -981,6 +983,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 };
                 if (this.isMenu && !(<obj>args.curData)[this.getField('separator', level)]) {
                     (<obj>args.curData.htmlAttributes)['aria-label'] = (<obj>args.curData)[args.fields.text as string];
+                }
+                if (args.curData[(<obj>args.fields)[iconCss] as string] === '') {
+                    args.curData[(<obj>args.fields)[iconCss] as string] = null;
                 }
             },
             itemCreated: (args: { curData: MenuItemModel | obj, item: Element, fields: obj }): void => {
@@ -1011,6 +1016,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 this.trigger('beforeItemRender', eventArgs);
             }
         };
+        this.setProperties({'items': this.items}, true);
         let ul: HTMLElement = ListBase.createList(
             this.createElement, items as objColl, listBaseOptions, !this.template);
         ul.setAttribute('tabindex', '0');
@@ -1099,7 +1105,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 this.setLISelected(cli);
                 let navIdx: number[] = this.getIndex(cli.id, true);
                 let item: MenuItemModel = this.getItem(navIdx);
-                let eventArgs: MenuEventArgs = { element: cli as HTMLElement, item: item };
+                let eventArgs: MenuEventArgs = { element: cli as HTMLElement, item: item, event: e };
                 this.trigger('select', eventArgs);
             }
             if (isInstLI && (e.type === 'mouseover' || Browser.isDevice || this.showItemOnClick)) {
@@ -1278,7 +1284,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     if (!Object.keys(oldProp.items).length) {
                         let ul: HTMLElement = this.element;
                         ul.innerHTML = '';
-                        let lis: HTMLElement[] = [].slice.call(this.createItems(newProp.items).children);
+                        let lis: HTMLElement[] = [].slice.call(this.createItems(this.items).children);
                         lis.forEach((li: HTMLElement): void => {
                             ul.appendChild(li);
                         });
@@ -1330,12 +1336,12 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
      * Used to unwire the bind events.
      * @private
      */
-    protected unWireEvents(): void {
+    protected unWireEvents(targetSelctor: string = this.target): void {
         let wrapper: HTMLElement = this.getWrapper() as HTMLElement;
-        if (this.target) {
+        if (targetSelctor) {
             let target: HTMLElement;
             let touchModule: Touch;
-            let targetElems: HTMLElement[] = selectAll(this.target);
+            let targetElems: HTMLElement[] = selectAll(targetSelctor);
             for (let i: number = 0, len: number = targetElems.length; i < len; i++) {
                 target = targetElems[i];
                 if (Browser.isIos) {
@@ -1625,6 +1631,23 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         }
     }
 
+    private removeAttributes(): void {
+        ['top', 'left', 'display', 'z-index'].forEach((key: string) => {
+            this.element.style.removeProperty(key);
+        });
+        ['role', 'tabindex', 'class', 'style'].forEach((key: string) => {
+            if (key === 'class' && this.element.classList.contains('e-menu-parent')) {
+                this.element.classList.remove('e-menu-parent');
+            }
+            if (['class', 'style'].indexOf(key) === -1 || !this.element.getAttribute(key)) {
+                this.element.removeAttribute(key);
+            }
+            if (this.isMenu && key === 'class' && this.element.classList.contains('e-vertical')) {
+                this.element.classList.remove('e-vertical');
+            }
+        });
+    }
+
     /**
      * Destroys the widget.
      * @returns void
@@ -1633,30 +1656,34 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     public destroy(): void {
         let wrapper: Element = this.getWrapper();
         if (wrapper) {
-            super.destroy();
             this.unWireEvents();
-            if (this.ngElement && !this.isMenu) {
-                this.ngElement.style.display = 'block';
+            if (!this.isMenu) {
+                this.clonedElement.style.display = '';
+                if (this.clonedElement.tagName === 'EJS-CONTEXTMENU') {
+                    addClass([this.clonedElement], ['e-control', 'e-lib', 'e-' + this.getModuleName()]);
+                    this.element = this.clonedElement as HTMLUListElement;
+                } else {
+                    if (this.refreshing && this.clonedElement.childElementCount && this.clonedElement.children[0].tagName === 'LI') {
+                        this.setProperties({ 'items': [] }, true);
+                    }
+                    if (document.getElementById(this.clonedElement.id)) {
+                        let refEle: Element = this.clonedElement.nextElementSibling;
+                        refEle && refEle !== wrapper ? this.clonedElement.parentElement.insertBefore(this.element, refEle) :
+                            this.clonedElement.parentElement.appendChild(this.element);
+                        this.element.innerHTML = '';
+                        append([].slice.call(this.clonedElement.children), this.element);
+                        detach(this.clonedElement);
+                        this.removeAttributes();
+                    }
+                }
+                this.clonedElement = null;
             } else {
                 this.closeMenu();
                 this.element.innerHTML = '';
-                ['top', 'left', 'display', 'z-index'].forEach((key: string) => {
-                    this.element.style.removeProperty(key);
-                });
-                ['role', 'tabindex', 'class', 'style'].forEach((key: string) => {
-                    if (key === 'class' && this.element.classList.contains('e-menu-parent')) {
-                        this.element.classList.remove('e-menu-parent');
-                    }
-                    if (['class', 'style'].indexOf(key) === -1 || !this.element.getAttribute(key)) {
-                        this.element.removeAttribute(key);
-                    }
-                    if (this.isMenu && key === 'class' && this.element.classList.contains('e-vertical')) {
-                        this.element.classList.remove('e-vertical');
-                    }
-                });
+                this.removeAttributes();
                 wrapper.parentNode.insertBefore(this.element, wrapper);
             }
-            if (this.isMenu && this.ngElement) {
+            if (this.isMenu && this.clonedElement) {
                 detach(this.element);
                 (wrapper as HTMLElement).style.display = '';
                 wrapper.classList.remove('e-' + this.getModuleName() + '-wrapper');
@@ -1664,6 +1691,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             } else {
                 detach(wrapper);
             }
+            super.destroy();
         }
     }
 }
@@ -1674,6 +1702,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 export interface MenuEventArgs extends BaseEventArgs {
     element: HTMLElement;
     item: MenuItemModel;
+    event?: Event;
 }
 
 /**

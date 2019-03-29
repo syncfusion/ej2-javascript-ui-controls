@@ -119,11 +119,11 @@ describe('Data-Binding', () => {
                         endDate: 'EndDate',
                         duration: 'Duration',
                         progress: 'Progress',
-                        parentId: 'ParentID'
+                        parentID: 'ParentID'
                     },
                     includeWeekend: true,
                     timelineSettings: {
-                        topTier: {
+                        topTier: {  
                             unit: 'Week',
                             format: 'dd/MM/yyyy'
                         },

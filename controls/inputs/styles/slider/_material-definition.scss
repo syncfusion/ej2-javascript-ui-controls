@@ -1,4 +1,3 @@
-$skin-name: 'material' !default;
 $slider-bg-color: rgba($grey-black, .26) !default;
 $slider-disabled-bg-color: rgba($grey-black, .26) !default;
 $slider-disabled-opacity: 1 !default;
@@ -145,3 +144,11 @@ $slider-limit-bar-vertical-width: 2px !default;
 $slider-limit-bar-left: calc(50% - 1px) !default;
 $slider-limit-bar-color: rgba($grey-black, .26) !default;
 $slider-tick-font-color: $grey-light-font !default;
+
+// dummy variable declaration to avoid compilation issue in SASS
+$slider-handle-mobile-height: none !default;
+$slider-handle-mobile-width: none !default;
+$slider-button-hleft-bg-image: none !default;
+$slider-button-hright-bg-image: none !default;
+$slider-button-vdown-bg-image:  none !default;
+$slider-button-vup-bg-image:  none !default;

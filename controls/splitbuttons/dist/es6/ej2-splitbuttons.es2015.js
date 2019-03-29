@@ -452,6 +452,7 @@ let DropDownButton = class DropDownButton extends Component {
     onPropertyChanged(newProp, oldProp) {
         let btnModel = ['content', 'cssClass', 'iconCss', 'iconPosition', 'disabled', 'enableRtl'];
         this.button.setProperties(getModel(newProp, btnModel));
+        this.dropDown.setProperties(getModel(newProp, ['enableRtl']));
         let popupElement = this.getPopUpElement();
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -483,14 +484,9 @@ let DropDownButton = class DropDownButton extends Component {
                         addClass([popupElement], newProp.cssClass.split(' '));
                     }
                     break;
-                case 'enableRtl':
-                    popupElement.classList.toggle(classNames.RTL);
-                    break;
                 case 'target':
-                    this.target = newProp.target;
-                    detach(this.getULElement());
-                    popupElement.appendChild(this.getTargetElement());
                     this.dropDown.content = this.getTargetElement();
+                    this.dropDown.dataBind();
                     break;
                 case 'items':
                     this.dropDown.refresh();

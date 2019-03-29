@@ -19,6 +19,7 @@ export type CalendarType = 'Islamic' | 'Gregorian';
 
 //class constant defination.
 const OTHERMONTH: string = 'e-other-month';
+const OTHERDECADE: string = 'e-other-year';
 const ROOT: string = 'e-calendar';
 const DEVICE: string = 'e-device';
 const HEADER: string = 'e-header';
@@ -931,7 +932,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             let dayLink: HTMLElement = this.createElement('span');
             dayLink.textContent = this.globalize.formatDate(localDate, { type: 'dateTime', skeleton: 'y' });
             if ((year < startFullYr) || (year > endFullYr)) {
-                addClass([tdEle], OTHERMONTH);
+                addClass([tdEle], OTHERDECADE);
             } else if (year < new Date(this.checkValue(this.min)).getFullYear() ||
                 year > new Date(this.checkValue(this.max)).getFullYear()) {
                 addClass([tdEle], DISABLED);
@@ -961,8 +962,10 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         return this.createElement('td', attrs);
     }
     protected firstDay(date: Date): Date {
-        let collection: Element[] = <NodeListOf<HTMLTableDataCellElement> & Element[]>
-            this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERMONTH + '');
+        let collection: Element[] = this.currentView() !== 'Decade' ? <NodeListOf<HTMLTableDataCellElement> & Element[]>
+            this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERMONTH + '') :
+            <NodeListOf<HTMLTableDataCellElement> & Element[]>
+            this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERDECADE + '');
         if (collection.length) {
             for (let i: number = 0; i < collection.length; i++) {
                 if (!collection[i].classList.contains(DISABLED)) {
@@ -989,7 +992,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         return (!isNullOrUndefined(value) && value instanceof Date && !isNaN(+value)) ? value : null;
     }
     protected findLastDay(date: Date): Date {
-        let collection: Element[] = <NodeListOf<HTMLTableDataCellElement> & Element[]>
+        let collection: Element[] = this.currentView() === 'Decade' ? <NodeListOf<HTMLTableDataCellElement> & Element[]>
+            this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERDECADE + '') :
+            <NodeListOf<HTMLTableDataCellElement> & Element[]>
             this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERMONTH + '');
         if (collection.length) {
             for (let i: number = collection.length - 1; i >= 0; i--) {
@@ -1376,7 +1381,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             this.keyboardModule.destroy();
             this.element.removeAttribute('data-role');
             (!isNullOrUndefined(this.calendarEleCopy.getAttribute('tabindex'))) ?
-            this.element.setAttribute('tabindex', this.tabIndex) : this.element.removeAttribute('tabindex');
+                this.element.setAttribute('tabindex', this.tabIndex) : this.element.removeAttribute('tabindex');
         }
         this.element.innerHTML = '';
         super.destroy();
@@ -1818,13 +1823,13 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected checkView(): void {
         if (this.start !== 'Decade' && this.start !== 'Year') {
-            this.start = 'Month';
+            this.setProperties({ start: 'Month' }, true);
         }
         if (this.depth !== 'Decade' && this.depth !== 'Year') {
-            this.depth = 'Month';
+            this.setProperties({ depth: 'Month' }, true);
         }
         if (this.getViewNumber(this.depth) > this.getViewNumber(this.start)) {
-            this.depth = 'Month';
+            this.setProperties({ depth: 'Month' }, true);
         }
     }
 }

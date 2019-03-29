@@ -202,6 +202,12 @@ export interface PdfViewerModel extends ComponentModel{
     enableToolbar?: boolean;
 
     /**
+     * Enable or disables the Navigation toolbar of PdfViewer.
+     * @default true
+     */
+    enableNavigationToolbar?: boolean;
+
+    /**
      * Enable or disables the download option of PdfViewer.
      * @default true
      */

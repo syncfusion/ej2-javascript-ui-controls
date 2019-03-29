@@ -2,6 +2,10 @@
   /*! daterangepicker theme */
   .e-date-range-wrapper {
     & .e-input-group-icon.e-icons.e-active {
+      @if $skin-name == 'bootstrap4' {
+        background: $range-icon-active-bg-color;
+        border-color: $range-active-border-color;
+      }
       color: $range-active-icon-color;
     }
 
@@ -35,7 +39,7 @@
         }& .e-range-hover:not(.e-selected):hover span.e-day,
         & .e-range-hover.e-focused-date:not(.e-selected) span.e-day,
         & .e-range-hover.e-focused-date.e-today span.e-day {
-          background-color: darken($range-hover-color, 15%);
+          background-color: $range-hover-content-color;
           border: $range-calendar-hover-border-color;
           color: $range-calendar-dark-color;
         }& .e-range-hover.e-today:hover span.e-day,
@@ -107,6 +111,9 @@
     }& .e-start-btn,
     & .e-end-btn {
       background: $range-bg-color;
+      @if $skin-name == 'bootstrap4' {
+        color: $range-button-font-color;
+      }
     }& .e-start-btn.e-active,
     & .e-start-btn.e-active:active,
     & .e-end-btn.e-active,

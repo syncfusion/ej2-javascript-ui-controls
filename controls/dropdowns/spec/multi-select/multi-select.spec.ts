@@ -5094,6 +5094,140 @@ describe('MultiSelect', () => {
             (<any>listObj).focusIn();
         });
     });
+    describe('EJ2-23146 - floating label misplaced when it is focused', () => {
+        let listObj: MultiSelect;
+        let divElement: HTMLDivElement = <HTMLDivElement>createElement('div', { id: 'licensediv'});
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'license', attrs: { type: 'text'}});
+        let data: { [key: string]: Object }[] = [{ id: 'list1', text: '"JAVA"', icon: 'icon' }, { id: 'list2', text: 'C#' },
+        { id: 'list3', text: 'C++' }, { id: 'list4', text: '.NET', icon: 'icon' }, { id: 'list5', text: 'Oracle' },
+        { id: 'list6', text: 'GO' }, { id: 'list7', text: 'Haskell' }, { id: 'list8', text: 'Racket' }, { id: 'list8', text: 'F#' }];
+        beforeAll(() => {
+            divElement.appendChild(element);
+            document.body.appendChild(divElement);
+            listObj = new MultiSelect({
+                placeholder: "Choose Option",
+                dataSource: data,
+                floatLabelType: 'Always',
+                mode: 'Box',
+                fields: { text:"text", value:"text" },
+                value: ['"JAVA"']
+            });
+            listObj.appendTo(element);
+            listObj.dataBind();
+        });
+        afterAll(() => {
+            if (divElement) {
+                listObj.destroy();
+                divElement.remove();
+            }
+        });
+        it('remove Value selection', (done) => {
+            listObj.removed = (): void => {
+                expect(divElement.querySelector('.e-float-text.e-label-top')).not.toBe(null);
+                done();
+            };
+            (<any>listObj).onChipRemove({
+                preventDefault: function () { },
+                which: 22,
+                target: divElement.querySelector('.e-chips-collection .e-chips .e-chips-close')
+            });
+        });
+    });
+    describe('EJ2-23849 - Multiselect placeholder exception', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'license', attrs: { type: 'text'}});
+        let data: { [key: string]: Object }[] = [{ id: 'list1', text: '"JAVA"', icon: 'icon' }, { id: 'list2', text: 'C#' },
+        { id: 'list3', text: 'C++' }, { id: 'list4', text: '.NET', icon: 'icon' }, { id: 'list5', text: 'Oracle' },
+        { id: 'list6', text: 'GO' }, { id: 'list7', text: 'Haskell' }, { id: 'list8', text: 'Racket' }, { id: 'list8', text: 'F#' }];
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                placeholder: "Choose Option",
+                dataSource: data,
+                width: 1,
+                fields: { text:"text", value:"text" }
+            });
+            listObj.appendTo(element);
+            listObj.dataBind();
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+
+        it('Check Placeholder issue', () => {
+            expect((<any>listObj).inputElement.size).not.toBe(0);
+        });
+    });
+    describe('bug(EJ2-21907): Dropdowns html5 validation attributes are added.', () => {
+        let listObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'license', attrs: { type: 'text'}});
+        let data: { [key: string]: Object }[] = [{ id: 'list1', text: '"JAVA"', icon: 'icon' }, { id: 'list2', text: 'C#' },
+        { id: 'list3', text: 'C++' }, { id: 'list4', text: '.NET', icon: 'icon' }, { id: 'list5', text: 'Oracle' },
+        { id: 'list6', text: 'GO' }, { id: 'list7', text: 'Haskell' }, { id: 'list8', text: 'Racket' }, { id: 'list8', text: 'F#' }];
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                placeholder: "Choose Option",
+                dataSource: data,
+                fields: { text:"text", value:"text" }
+            });
+            listObj.appendTo(element);
+            listObj.dataBind();
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+        it('Check attributes', () => {
+            expect(listObj.hiddenElement.getAttribute('multiple')).toBe('');
+        });
+    });
+    describe('EJ2-24251 - Multiselect placeholder not update, when remove the selected value.', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'license', attrs: { type: 'text'}});
+        let data: { [key: string]: Object }[] = [{ id: 'list1', text: 'JAVA', icon: 'icon' }, { id: 'list2', text: 'C#' },
+        { id: 'list3', text: 'C++' }, { id: 'list4', text: '.NET', icon: 'icon' }, { id: 'list5', text: 'Oracle' },
+        { id: 'list6', text: 'GO' }, { id: 'list7', text: 'Haskell' }, { id: 'list8', text: 'Racket' }, { id: 'list8', text: 'F#' }];
+        beforeAll(() => {
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                placeholder: "Choose Option",
+                dataSource: data,
+                value: ['JAVA'],
+                fields: { text:"text", value:"text" }
+            });
+            listObj.appendTo(element);
+            listObj.dataBind();
+        });
+        afterAll(() => {
+            if (element) {
+                listObj.destroy();
+                element.remove();
+            }
+        });
+        it('remove Value selection', (done) => {
+            listObj.change = (): void => {
+                expect(listObj.value.length).toBe(0);
+                expect((<any>listObj).inputElement.placeholder).toBe('Choose Option');
+                expect((<any>listObj).searchWrapper.classList.contains('e-zero-size')).toBe(false);
+                done();
+            }
+            listObj.focus = (): void => {
+                let closeELe: HTMLElement = document.querySelector('.e-chips .e-chips-close');
+                let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+                clickEvent.initEvent('mousedown', true, true);
+                closeELe.dispatchEvent(clickEvent);
+                (<any>listObj).onBlur();
+            }
+
+            (<any>listObj).focusIn();
+        });
+    });
     it('memory leak', () => {     
         profile.sample();
         let average: any = inMB(profile.averageChange)

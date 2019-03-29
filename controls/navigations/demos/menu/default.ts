@@ -141,6 +141,12 @@ document.getElementById('fabricdark').onclick = (e : Event) => {
     menuObj.refresh();
     document.getElementById('theme').setAttribute('href', './theme-files/fabric-dark.css');
 };
+document.getElementById('bootstrap4').onclick = (e : Event) => {
+    document.body.classList.remove('darkBG');
+    enableRipple(false);
+    menuObj.refresh();
+    document.getElementById('theme').setAttribute('href', './theme-files/bootstrap4.css');
+};
 
 // function to handle the CheckBox change event
 function onChange(args: ChangeEventArgs): void {

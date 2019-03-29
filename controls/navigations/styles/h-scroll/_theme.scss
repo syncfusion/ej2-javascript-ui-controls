@@ -66,7 +66,7 @@
           border-color: $hscroll-hover-border-color;
           color: $hscroll-hover-font;
 
-          @if $skin-name == 'highcontrast' {
+          @if $hscroll-skin == 'highcontrast' {
 
             &:active {
               background: $hscroll-press-bg;
@@ -85,13 +85,13 @@
           border: $hscroll-hover-border;
           color: $hscroll-hover-font;
 
-          @if $skin-name == 'bootstrap4' {
+          @if $hscroll-skin == 'bootstrap4' {
             .e-icons {
               color: inherit;
             }
           }
 
-          @if $skin-name == 'highcontrast' {
+          @if $hscroll-skin == 'highcontrast' {
             border: 2px solid $hscroll-nav-hover-border-color;
 
             &:active {
@@ -106,13 +106,13 @@
           border-color: $hscroll-hover-border-color;
           color: $hscroll-hover-font;
 
-          @if $skin-name == 'bootstrap4' {
+          @if $hscroll-skin == 'bootstrap4' {
             .e-icons {
               color: inherit;
             }
           }
 
-          @if $skin-name == 'highcontrast' {
+          @if $hscroll-skin == 'highcontrast' {
             background: $hscroll-nav-focus-bg-color;
             border: $hscroll-dash-border;
           }
@@ -123,7 +123,7 @@
           border: $hscroll-active-border;
           box-shadow: $hscroll-active-box-shadow;
           color: $hscroll-active-font-color;
-          @if $skin-name == 'highcontrast' {
+          @if $hscroll-skin == 'highcontrast' {
             .e-icons {
               color: $hscroll-nav-active-color;
             }

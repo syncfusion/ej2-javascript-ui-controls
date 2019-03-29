@@ -74,7 +74,7 @@ describe('Chart', () => {
                         name: 'gold',
                         type: 'Candle',
                         animation: { enable: false },
-                        improveChartPerformance: false
+                        enableComplexProperty: true
                     }],
                     indicators: [{
                         type: 'Ema',

@@ -841,11 +841,6 @@ export class TextSearch {
         // tslint:disable-next-line:max-line-length
         let button: HTMLElement = createElement('button', { id: this.pdfViewer.element.id + '_' + id, className: 'e-btn e-icon-btn e-pv-search-btn ' + className });
         let iconSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_' + id + 'Icon', className: 'e-pv-icon-search ' + className + '-icon' });
-        if (this.pdfViewer.enableRtl) {
-            if (className === 'e-pv-prev-search') {
-                iconSpan.style.paddingRight = '5px';
-            }
-        }
         (button as HTMLButtonElement).disabled = true;
         button.appendChild(iconSpan);
         return button;

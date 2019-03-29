@@ -4,14 +4,6 @@
 
 ## [Unreleased]
 
-## 17.1.32-beta (2019-03-13)
-
-### CircularGauge
-
-#### Bug Fixes
-
-- Issue with the ng-template on using with annotation option has been fixed.
-
 ## 16.4.54 (2019-02-19)
 
 ### CircularGauge

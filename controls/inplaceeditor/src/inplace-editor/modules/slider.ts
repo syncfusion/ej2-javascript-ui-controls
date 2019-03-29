@@ -28,6 +28,7 @@ export class Slider implements IComponent {
     public updateValue(e: NotifyParams): void {
         if (this.compObj && e.type === 'Slider') {
             this.parent.setProperties({ value: this.compObj.value }, true);
+            this.parent.extendModelValue(this.compObj.value);
         }
     }
 

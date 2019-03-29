@@ -1,5 +1,5 @@
 import { Component, Property, setStyleAttribute, ChildProperty, compile } from '@syncfusion/ej2-base';
-import { NotifyPropertyChanges, addClass, Collection, isNullOrUndefined, append } from '@syncfusion/ej2-base';
+import { NotifyPropertyChanges, addClass, Collection, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Event, EmitType, EventHandler, selectAll, removeClass, select, Browser, detach, formatUnit } from '@syncfusion/ej2-base';
 import { SplitterModel, PanePropertiesModel } from './splitter-model';
 
@@ -158,6 +158,7 @@ export class Splitter extends Component<HTMLElement> {
     private splitInstance: PaneDetails;
     private leftArrow: string;
     private rightArrow: string;
+    private iconsDelay: number = 300;
 
     /**
      * Specifies the height of the Splitter component that accepts both string and number values.
@@ -175,7 +176,7 @@ export class Splitter extends Component<HTMLElement> {
     public width: string;
 
     /**
-     * Configures the individual pane behaviors such as content, size, resizable, minimum, and maximum validation.
+     * Configures the individual pane behaviors such as content, size, resizable, minimum, maximum validation, collapsible and collapsed.
      * @default []
      */
     @Collection<PanePropertiesModel>([], PaneProperties)
@@ -420,7 +421,7 @@ export class Splitter extends Component<HTMLElement> {
     }
 
     private onDocumentClick(e: Event | MouseEvent): void {
-        if (!(<HTMLElement>e.target).classList.contains(SPLIT_BAR)) {
+        if (!(<HTMLElement>e.target).classList.contains(SPLIT_BAR) && !isNullOrUndefined(this.currentSeparator)) {
             this.currentSeparator.classList.remove(SPLIT_BAR_HOVER);
             this.currentSeparator.classList.remove(SPLIT_BAR_ACTIVE);
         }
@@ -782,8 +783,14 @@ export class Splitter extends Component<HTMLElement> {
     }
 
     private addMouseActions(separator: HTMLElement): void {
-        separator.addEventListener('mouseover', () => {
-            addClass([separator], [SPLIT_BAR_HOVER]);
+        // tslint:disable-next-line
+        let sTout: any;
+        separator.addEventListener('mouseenter', () => {
+            /* istanbul ignore next */
+            sTout = setTimeout(() => { addClass([separator], [SPLIT_BAR_HOVER]); }, this.iconsDelay);
+        });
+        separator.addEventListener('mouseleave', () => {
+            clearTimeout(sTout);
         });
         separator.addEventListener('mouseout', () => {
             removeClass([separator], [SPLIT_BAR_HOVER]);
@@ -851,7 +858,9 @@ export class Splitter extends Component<HTMLElement> {
     }
 
     private clickHandler(e: Event): void {
-        (<HTMLElement>e.target).classList.add(SPLIT_BAR_HOVER);
+        if (!(<HTMLElement>e.target).classList.contains(NAVIGATE_ARROW)) {
+            (<HTMLElement>e.target).classList.add(SPLIT_BAR_HOVER);
+        }
         let icon: HTMLElement = (<HTMLElement>e.target);
         if (icon.classList.contains(ARROW_LEFT) || icon.classList.contains(ARROW_UP)) {
             this.collapseAction(e);
@@ -1501,17 +1510,39 @@ export class Splitter extends Component<HTMLElement> {
 
     private setTemplate(template: string | HTMLElement, toElement: HTMLElement): void {
         toElement.innerHTML = '';
+        this.templateCompile(toElement, template);
+    }
+
+    // tslint:disable-next-line
+    private templateCompile(ele: HTMLElement, cnt: any): void {
+        let tempEle: HTMLElement = this.createElement('div');
+        this.compileElement(tempEle, cnt, 'content');
+        if (tempEle.childNodes.length !== 0) {
+            for (let item : number = 0; item < tempEle.childNodes.length; item ++) {
+                ele.appendChild(tempEle.childNodes[item]);
+            }
+        }
+    }
+
+    private compileElement(ele: HTMLElement, val: string | HTMLElement, prop: string): void {
+        if (typeof(val) === 'string') {
+            val = (val).trim();
+        }
         let templateFn: Function;
-        if (this.element.nodeName === 'EJS-SPLITTER' || typeof(template) !== 'object') {
-            templateFn = compile(template as string);
+        if (!isNullOrUndefined((<HTMLElement>val).outerHTML)) {
+            templateFn = compile((<HTMLElement>val).outerHTML);
         } else {
-            templateFn = compile((<HTMLElement>template).outerHTML as string);
+            templateFn = compile(val as string);
         }
-        let fromElements: HTMLElement[] = [];
-        for (let item of templateFn({})) {
-            fromElements.push(item);
+        let templateFUN: HTMLElement[];
+        if (!isNullOrUndefined(templateFn)) {
+            templateFUN = templateFn({}, this, prop);
         }
-        append([].slice.call(fromElements), toElement);
+        if (!isNullOrUndefined(templateFn) && templateFUN.length > 0) {
+            [].slice.call(templateFUN).forEach((el: HTMLElement): void => {
+                ele.appendChild(el);
+            });
+        }
     }
 
     private paneCollapsible(pane: HTMLElement, index: number): void {

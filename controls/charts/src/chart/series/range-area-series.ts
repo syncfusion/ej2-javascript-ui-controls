@@ -22,7 +22,7 @@ export class RangeAreaSeries extends LineBase {
         let command: string = 'M';
         let closed: boolean = undefined;
 
-        let visiblePoints: Points[] = this.improveChartPerformance(series);
+        let visiblePoints: Points[] = this.enableComplexProperty(series);
 
         for (let i: number = 0, length: number = visiblePoints.length; i < length; i++) {
             point = visiblePoints[i];

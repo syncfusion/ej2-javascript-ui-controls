@@ -3,7 +3,7 @@
  */
 import { Component, INotifyPropertyChanged } from '@syncfusion/ej2-base';
 import { ChildProperty } from '@syncfusion/ej2-base';
-import { QueryBuilderModel, ShowButtonsModel, ColumnsModel, RulesModel, RuleModel } from './query-builder-model';
+import { QueryBuilderModel, ShowButtonsModel, ColumnsModel, RuleModel } from './query-builder-model';
 import { EmitType, BaseEventArgs } from '@syncfusion/ej2-base';
 import { Query, Predicate, DataManager } from '@syncfusion/ej2-data';
 export declare class Columns extends ChildProperty<Columns> {
@@ -26,7 +26,7 @@ export declare class Columns extends ChildProperty<Columns> {
      * Specifies the values in columns or bind the values from sub controls.
      * @default null
      */
-    values: string[] | number[];
+    values: string[] | number[] | boolean[];
     /**
      * Specifies the operators in columns.
      * @default null
@@ -55,7 +55,7 @@ export declare class Columns extends ChildProperty<Columns> {
      */
     step: number;
 }
-export declare class Rules extends ChildProperty<Rules> {
+export declare class Rule extends ChildProperty<Rule> {
     /**
      * Specifies the condition value in group.
      * @default 'and'
@@ -63,9 +63,9 @@ export declare class Rules extends ChildProperty<Rules> {
     condition: string;
     /**
      * Specifies the rules in group.
-     * @default 'rule'
+     * @default []
      */
-    rules: RulesModel[];
+    rules: RuleModel[];
     /**
      * Specifies the field value in group.
      * @default null
@@ -90,19 +90,7 @@ export declare class Rules extends ChildProperty<Rules> {
      * Specifies the sub controls value in group.
      * @default null
      */
-    value: string[] | number[] | string | number;
-}
-export declare class Rule extends ChildProperty<Rule> {
-    /**
-     * Specifies the condition value in group.
-     * @default 'and'
-     */
-    condition: string;
-    /**
-     * Specifies the initial rule, which is JSON data.
-     * @default 'rule'
-     */
-    rules: RulesModel[];
+    value: string[] | number[] | string | number | boolean;
 }
 export declare class ShowButtons extends ChildProperty<ShowButtons> {
     /**
@@ -176,6 +164,11 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      * @event
      */
     change: EmitType<ChangeEventArgs>;
+    /**
+     * Triggers when changing the condition(AND/OR), field, value, operator is changed
+     * @event
+     */
+    ruleChange: EmitType<RuleChangeEventArgs>;
     /**
      * Specifies the showButtons settings of the query builder component.
      * The showButtons can be enable Enables or disables the ruleDelete, groupInsert, and groupDelete buttons.
@@ -284,6 +277,8 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private templateDestroy;
     private getDistinctValues;
     private renderMultiSelect;
+    private multiSelectOpen;
+    private createSpinner;
     private closePopup;
     private processTemplate;
     private renderStringValue;
@@ -293,6 +288,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private renderValues;
     private updateValues;
     private updateRules;
+    private filterRules;
     private ruleValueUpdate;
     private validatValue;
     private findGroupByIdx;
@@ -307,7 +303,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      * Adds single or multiple rules.
      * @returns void.
      */
-    addRules(rule: RulesModel[], groupID: string): void;
+    addRules(rule: RuleModel[], groupID: string): void;
     /**
      * Adds single or multiple groups, which contains the collection of rules.
      * @returns void.
@@ -329,6 +325,12 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private deleteRule;
     private setGroupRules;
     /**
+     * return the valid rule or rules collection.
+     * @returns RuleModel.
+     */
+    getValidRules(currentRule: RuleModel): RuleModel;
+    private getRuleCollection;
+    /**
      * Set the rule or rules collection.
      * @returns void.
      */
@@ -344,10 +346,10 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      */
     deleteGroups(groupIdColl: string[]): void;
     /**
-     * Gets the predicate from collection of rules.
-     * @returns object.
+     * return the Query from current rules collection.
+     * @returns Promise.
      */
-    getFilteredRecords(): object[];
+    getFilteredRecords(): Promise<Object>;
     /**
      * Deletes the rule or rules based on the rule ID.
      * @returns void.
@@ -434,5 +436,10 @@ export interface ChangeEventArgs extends BaseEventArgs {
     value?: string | number | Date | boolean | string[];
     selectedIndex?: number;
     cancel?: boolean;
+    type?: string;
+}
+export interface RuleChangeEventArgs extends BaseEventArgs {
+    previousRule?: RuleModel;
+    rule: RuleModel;
     type?: string;
 }

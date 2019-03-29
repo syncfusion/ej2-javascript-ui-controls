@@ -19,7 +19,6 @@ export class MultiSelect implements IComponent {
     }
 
     public render(e: NotifyParams): void {
-        (this.parent.model as MultiSelectModel).showClearButton = true;
         this.compObj = new EJ2MultiSelect(this.parent.model as MultiSelectModel, e.target);
     }
 
@@ -30,6 +29,7 @@ export class MultiSelect implements IComponent {
     public updateValue(e: NotifyParams): void {
         if (this.compObj && e.type === 'MultiSelect') {
             this.parent.setProperties({ value: this.compObj.value }, true);
+            this.parent.extendModelValue(this.compObj.value);
         }
     }
 

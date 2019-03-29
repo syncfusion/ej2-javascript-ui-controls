@@ -342,9 +342,9 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
                 open: this.onOpen.bind(this),
                 beforeClose: this.beforePopupClose.bind(this),
                 click: (args: ClickEventArgs) => {
-                    this.trigger('change', <ColorPickerEventArgs>{
+                    this.trigger('change', {
                         currentValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) },
-                        previousValue: { hex: null, rgba: null }
+                        previousValue: { hex: null, rgba: null }, value: this.value
                     });
                 }
             });
@@ -1027,9 +1027,10 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
 
     private triggerChangeEvent(value: string): void {
         let hex: string = value.slice(0, 7);
-        this.trigger('change', <ColorPickerEventArgs>{
+        this.trigger('change', {
             currentValue: { hex: hex, rgba: this.convertToRgbString(this.rgb) },
-            previousValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) }
+            previousValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) },
+            value: value
         });
         this.setProperties({ 'value': value }, true);
         this.element.value = hex ? hex : '#000000';
@@ -1450,17 +1451,16 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
 
     private triggerEvent(cValue: string, pValue: string, rgba: string, isKey: boolean = false): void {
         let hex: string = cValue.slice(0, 7);
-        let eventArgs: ColorPickerEventArgs = {
-            currentValue: { hex: hex, rgba: rgba },
-            previousValue: { hex: pValue.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(pValue)) }
-        };
         if (!this.showButtons && !isKey) {
-            eventArgs.previousValue = { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) };
-            this.trigger('change', eventArgs);
+            this.trigger('change', { currentValue: { hex: hex, rgba: rgba },
+                previousValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) }, value: cValue });
             this.setProperties({ 'value': cValue }, true);
             this.element.value = hex ? hex : '#000000';
         } else {
-            this.trigger('select', eventArgs);
+            this.trigger('select', {
+                currentValue: { hex: hex, rgba: rgba },
+                previousValue: { hex: pValue.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(pValue)) }
+            });
         }
     }
 
@@ -1687,7 +1687,8 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             this.updateInput(newProp);
         } else {
             this.removeTileSelection();
-            this.addTileSelection(select('span[aria-label="' + this.roundValue(newProp) + '"]', this.container));
+            let ele: Element = select('span[aria-label="' + this.roundValue(newProp) + '"]', this.container);
+            if (ele) { this.addTileSelection(ele); }
         }
         this.element.value = newProp.slice(0, 7);
     }

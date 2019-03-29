@@ -1,5 +1,5 @@
 import { Component, Property, Event, EmitType, EventHandler, L10n, setValue, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { NotifyPropertyChanges, INotifyPropertyChanged, detach, Internationalization, getUniqueID } from '@syncfusion/ej2-base';
+import { NotifyPropertyChanges, INotifyPropertyChanged, detach, Internationalization, getUniqueID, closest } from '@syncfusion/ej2-base';
 import { FloatLabelType, Input, InputObject } from '../input/input';
 import { TextBoxModel} from './textbox-model';
 
@@ -59,6 +59,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     private previousValue: string = null;
     private cloneElement: HTMLInputElement;
     private globalize: Internationalization;
+    private preventChange: boolean;
     private isAngular: boolean = false;
     private isHiddenInput: boolean = false;
     private textarea: HTMLTextAreaElement;
@@ -221,7 +222,14 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                     if (this.isHiddenInput) {
                     this.element.value = this.respectiveElement.value;
                     }
-                    this.raiseChangeEvent();
+                    /* istanbul ignore next */
+                    if (this.isAngular && this.preventChange === true) {
+                        this.previousValue = this.value;
+                        this.preventChange = false;
+                    } else if (isNullOrUndefined(this.isAngular) || !this.isAngular
+                    || (this.isAngular && !this.preventChange) || (this.isAngular && isNullOrUndefined(this.preventChange))) {
+                        this.raiseChangeEvent();
+                    }
                     break;
                 case 'readonly':
                     Input.setReadonly(this.readonly, this.respectiveElement);
@@ -271,7 +279,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     protected preRender(): void {
         this.cloneElement = <HTMLInputElement>this.element.cloneNode(true);
-        this.formElement = this.element.closest('form');
+        this.formElement = closest(this.element, 'form') as HTMLFormElement;
         if (!isNullOrUndefined(this.formElement)) {
             this.isForm = true;
         }
@@ -314,6 +322,14 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             this.element.setAttribute('type', 'hidden');
             this.textarea.setAttribute('name', this.element.getAttribute('name'));
             this.element.removeAttribute('name');
+            let attribute: string[] = ['required', 'minlength', 'maxlength'];
+            for (let i: number = 0; i < attribute.length; i++) {
+            if (this.element.hasAttribute(attribute[i])) {
+            let attr: string = this.element.getAttribute(attribute[i]);
+            this.textarea.setAttribute(attribute[i], attr);
+            this.element.removeAttribute(attribute[i]);
+            }
+          }
         }
     }
 
@@ -348,6 +364,9 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                 showClearButton: this.showClearButton
             }
         });
+        if (this.isHiddenInput) {
+            this.respectiveElement.parentNode.insertBefore( this.element , this.respectiveElement);
+        }
         this.wireEvents();
         if (this.respectiveElement.value !== '') {
             this.value = this.respectiveElement.value;
@@ -362,6 +381,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             this.initialValue = this.value;
             this.setInitialValue();
         }
+        this.previousValue = this.value;
     }
 
     private setInitialValue() : void {
@@ -427,12 +447,19 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
     }
 
     private inputHandler(args: KeyboardEvent): void {
+        // tslint:disable-next-line
+        let textboxObj: any = this;
         let eventArgs: InputEventArgs = {
             event: args,
             value: this.respectiveElement.value,
             previousValue: this.value,
             container: this.textboxWrapper.container
         };
+        /* istanbul ignore next */
+        if (this.isAngular) {
+            textboxObj.localChange({ value: this.respectiveElement.value });
+            this.preventChange = true;
+        }
         this.trigger('input', eventArgs);
         args.stopPropagation();
     }
@@ -452,6 +479,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             isInteraction: interaction ? interaction : false,
             isInteracted: interaction ? interaction : false
         };
+        this.preventChange = false;
         this.trigger('change', eventArgs);
         this.previousValue = this.value;
     }

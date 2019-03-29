@@ -48,8 +48,20 @@ describe('ComboBox module', () => {
             expect(document.activeElement.tagName === 'INPUT').toEqual(true);
         });
         it('Clear icon availability testing', () => {
-            expect(editorObj.comboBoxModule.compObj.showClearButton === true).toEqual(true);
-            expect(selectAll('.e-clear-icon', ele).length === 1).toEqual(true);
+            expect(editorObj.comboBoxModule.compObj.showClearButton).toBe(true);
+            expect(selectAll('.e-clear-icon', ele).length).toBe(1);
+        });
+        it('Clear icon availability testing for false', () => {
+            editorObj.comboBoxModule.compObj.showClearButton = false;
+            editorObj.comboBoxModule.compObj.dataBind();
+            expect(editorObj.comboBoxModule.compObj.showClearButton).toBe(false);
+            expect(selectAll('.e-clear-icon', ele).length).toBe(0);
+        });
+        it('Clear icon availability testing for true', () => {
+            editorObj.comboBoxModule.compObj.showClearButton = true;
+            editorObj.comboBoxModule.compObj.dataBind();
+            expect(editorObj.comboBoxModule.compObj.showClearButton).toBe(true);
+            expect(selectAll('.e-clear-icon', ele).length).toBe(1);
         });
         it('Value property testing', () => {
             expect(editorObj.comboBoxModule.compObj.value === 'test').toEqual(true);
@@ -61,6 +73,20 @@ describe('ComboBox module', () => {
             editorObj.comboBoxModule.compObj.dataBind();
             editorObj.save();
             expect(valueEle.innerHTML === 'testing').toEqual(true);
+        });
+        it('Without compObj data to update value method testing', () => {
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-combobox', ele).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('testing');
+            expect(editorObj.comboBoxModule.compObj.value).toEqual('testing');
+            editorObj.comboBoxModule.compObj.value = 'Tested';
+            expect(editorObj.comboBoxModule.compObj.value).toEqual('Tested');
+            editorObj.comboBoxModule.compObj = undefined;
+            editorObj.save();
+            expect(editorObj.value).toEqual('testing');
         });
     });
     describe('Duplicate ID availability testing', () => {
@@ -789,6 +815,49 @@ describe('ComboBox module', () => {
             expect(editorObj.value).toEqual('game2');
             expect(serverValue).toEqual('Basketball');
             expect(valueEle.innerHTML).toEqual('Basketball');
+        });
+    });
+
+    describe('Model - value child property update testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        let dataSource: string[] = ['Badminton', 'Cricket'];
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Default value with initial render testing', () => {
+            editorObj = renderEditor({
+                type: 'ComboBox',
+                mode: 'Inline',
+                value: 'Badminton',
+                model: {
+                    dataSource: dataSource
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual('Badminton');
+            expect(valueEle.innerHTML).toEqual('Badminton');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-combobox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('Badminton');
+            expect(editorObj.model.value).toEqual('Badminton');
+            expect((<HTMLInputElement>select('.e-combobox', document.body)).value).toEqual('Badminton');
+            (<HTMLInputElement>select('.e-combobox', document.body)).value = '';
+            editorObj.setProperties({ value: null }, true);
+            editorObj.comboBoxModule.compObj.value = null;
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-combobox', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect((<HTMLInputElement>select('.e-combobox', document.body)).value).toEqual('');
         });
     });
 

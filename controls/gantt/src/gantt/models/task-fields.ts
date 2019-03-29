@@ -24,7 +24,7 @@ export class TaskFields extends ChildProperty<TaskFields> {
      * @default null     
      */
     @Property(null)
-    public parentId: string;
+    public parentID: string;
 
     /** 
      * Defines mapping property to get task name value from data source.

@@ -480,4 +480,73 @@ describe('Linear gauge control', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     });
+
+    describe('Checking axis properties', () => {
+        let gauge: LinearGauge;
+        let element: HTMLElement;
+        let svg: HTMLElement;
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            element = createElement('div', { id: 'container' });
+            document.body.appendChild(element);
+            gauge = new LinearGauge({
+                orientation: 'Horizontal',
+                axes: [{
+                    line: {
+                        color: '#9E9E9E'
+                    },
+                    pointers: [{
+                        value: 10,
+                        height: 15,
+                        width: 15,
+                        placement: 'Near',
+                        color: '#757575',
+                        offset: -50,
+                        markerType: 'Triangle'
+                    }],
+                    majorTicks: {
+                        color: '#9E9E9E',
+                        interval: 10
+                    },
+                    minorTicks: {
+                        color: '#9E9E9E',
+                        interval: 2
+                    },
+                    labelStyle: {
+                        font: {
+                            color: '#424242'
+                        },
+                        offset: 48
+                    }
+                }],
+                annotations: [{
+                    content: '<div id="pointer" style="width:70px"><h1 style="font-size:14px;color:#424242">10 MPH</h1></div>',
+                    axisIndex: 0,
+                    axisValue: 10,
+                    x: 10, zIndex: '1',
+                    y: -70
+                }]
+            });
+            gauge.appendTo('#container');
+        });
+        afterAll((): void => {
+            element.remove();
+        });
+
+        it('checking with axis color', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_MajorTicksLine_0');
+                expect(svg !== null).toBe(true);
+            };
+            gauge.refresh();
+        });
+
+        it('Checking with axis Label color', (): void => {
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_AxisLine_0');
+                expect(svg.getAttribute('fill')).toBe('#9E9E9E');
+            };
+            gauge.refresh();
+        });
+    });
 });

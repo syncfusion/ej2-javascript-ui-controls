@@ -609,4 +609,100 @@ describe('Column virtualization', () => {
             destroy(grid);
         });
     });
+    describe('Ensure the virtual table after changing the datasource dynamically', () => {
+        let grid: Grid;
+        let button: HTMLElement;
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    dataSource: data,
+                    enableVirtualization: true,
+                    allowFiltering: true,
+                    allowSorting: true,
+                    selectionSettings: { persistSelection: true, type: 'Multiple'},
+                    height: 300
+                },
+                done
+            );
+        });
+        it('Ensured the virtual table count', (done: Function) => {
+            let dataBound = () => {
+                expect(grid.element.querySelectorAll('.e-virtualtable').length).toBe(1);
+                expect(grid.element.querySelectorAll('.e-virtualtrack').length).toBe(1);
+                grid.dataBound = null;
+                done();
+            }
+            grid.dataBound = dataBound;
+            button = createElement('button', { id: 'btn' });
+            button.textContent = "Click";
+            document.body.appendChild(button);
+            document.getElementById('btn').addEventListener('click', function(e){
+                grid.columns = [];
+                grid.pageSettings.currentPage = 1;
+                grid.dataSource = data1;
+            });
+            button.click();
+        });
+        afterAll(() => {
+            destroy(grid);
+        });
+    });
+
+    describe('Ensure the virtual table while rendering the Grid', () => {
+        let grid: Grid;
+        let button: HTMLElement;
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    dataSource: data,
+                    enableColumnVirtualization: true,
+                    allowFiltering: true,
+                    width:600,
+                    allowSorting: true,                    
+                    height: 300
+                },
+                done
+            );
+        });
+        it('Ensured the virtual table while rendering', (done: Function) => {
+            let dataBound = () => {
+                expect(grid.element.querySelectorAll('.e-virtualtable').length).toBeTruthy(1);                
+                grid.dataBound = null;
+                done();
+            }
+            grid.dataSource = (<Object[]>grid.dataSource).splice(0,600);
+            grid.dataBound = dataBound;           
+        });
+        afterAll(() => {
+            destroy(grid);
+        });
+    });
+
+    describe('Grouping enabled', () => {
+        let grid: Grid;
+        let rows: HTMLTableRowElement;
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    dataSource: data1,
+                    columns: count5000,
+                    enableVirtualization: true,                    
+                    height: 300,                    
+                    allowGrouping: true,
+                    groupSettings: { columns: ['Column6'] }
+                },
+                () => {
+                    (<HTMLElement>grid.getContent().firstChild).scrollTop = 90;                    
+                    done();
+                }
+            );
+        });
+        it('Check the scrollTop value', () => {
+            let content: string = 'content';
+            expect(grid.scrollModule[content].scrollTop).toBe(90);           
+        });
+        afterAll(() => {
+            destroy(grid);
+        });
+    });
 });

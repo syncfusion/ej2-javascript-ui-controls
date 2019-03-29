@@ -327,6 +327,8 @@ public theme: SmithchartTheme;
         let options: TextOption = new TextOption(
                 this.element.id + '_Smithchart_' + type, titleEventArgs.x, titleEventArgs.y, 'start', titleEventArgs.text
             );
+        font.fontFamily = this.themeStyle.fontFamily || title.textStyle.fontFamily;
+        font.size = this.themeStyle.fontSize || title.textStyle.size;
         let element: Element = renderTextElement(options, font, this.themeStyle.chartTitle, groupEle);
         element.setAttribute('aria-label', title.description || title.text);
         let titleLocation: {x: number, y: number, textSize: SmithchartSize} = {x: x, y: y, textSize: textSize};
@@ -373,7 +375,7 @@ public theme: SmithchartTheme;
     private renderBorder(): void {
         let border: SmithchartBorderModel = this.border;
         let color: string = this.theme.toLowerCase() === 'highcontrast' ? '#000000' : '#FFFFFF';
-        this.background = this.background ? this.background : color;
+        this.background = this.background ? this.background : this.themeStyle.background;
         let borderRect: RectOption = new RectOption(this.element.id + '_SmithchartBorder', this.background, border, 1,
                                                     new SmithchartRect(
                                                         border.width / 2, border.width / 2,

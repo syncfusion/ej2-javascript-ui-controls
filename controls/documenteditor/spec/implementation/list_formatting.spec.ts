@@ -1136,79 +1136,79 @@ describe('List Text validation', () => {
     });
     it('bullet-Dot', () => {
         editor.openBlank();
-        editor.editorModule.insertText('one', false);
+        editor.editorModule.insertText('one');
         editor.editor.applyBullet('\uf0b7', 'Symbol');
         expect(editor.selection.paragraphFormat.listText).toBe('\uf0b7');
     });
     it('bullet-Circle', () => {
         editor.openBlank();
-        editor.editorModule.insertText('one', false);
+        editor.editorModule.insertText('one');
         editor.editor.applyBullet("\uf06f" + "\u0020", 'Symbol');
         expect(editor.selection.paragraphFormat.listText).toBe("\uf06f" + "\u0020");
     });
     it('bullet-Square', () => {
         editor.openBlank();
-        editor.editorModule.insertText('one', false);
+        editor.editorModule.insertText('one');
         editor.editor.applyBullet('\uf0a7', 'Wingdings')
         expect(editor.selection.paragraphFormat.listText).toBe('\uf0a7');
     });
     it('bullet-Flower', () => {
         editor.openBlank();
-        editor.editorModule.insertText('one', false);
+        editor.editorModule.insertText('one');
         editor.editor.applyBullet('\uf076', 'Wingdings');
         expect(editor.selection.paragraphFormat.listText).toBe('\uf076');
     });
     it('bullet-Arrow', () => {
         editor.openBlank();
-        editor.editorModule.insertText('one', false);
+        editor.editorModule.insertText('one');
         editor.editor.applyBullet('\uf0d8', 'Wingdings');
         expect(editor.selection.paragraphFormat.listText).toBe('\uf0d8');
     });
     it('bullet-Tick', () => {
         editor.openBlank();
-        editor.editorModule.insertText('one', false);
+        editor.editorModule.insertText('one');
         editor.editor.applyBullet('\uf0fc', 'Wingdings');
         expect(editor.selection.paragraphFormat.listText).toBe('\uf0fc');
     });
     it('numbered-NumberDot', () => {
         editor.openBlank();
-        editor.editorModule.insertText('one', false);
+        editor.editorModule.insertText('one');
         editor.editor.applyNumbering('%1.', 'Arabic');
         expect(editor.selection.paragraphFormat.listText).toBe('1.');
     });
     it('numbered-NumberBrace', () => {
         editor.openBlank();
-        editor.editorModule.insertText('one', false);
+        editor.editorModule.insertText('one');
         editor.editor.applyNumbering('%1)', 'Arabic');
         expect(editor.selection.paragraphFormat.listText).toBe('1)');
     });
     it('numbered-UpRoman', () => {
         editor.openBlank();
-        editor.editorModule.insertText('one', false);
+        editor.editorModule.insertText('one');
         editor.editor.applyNumbering('%1.', 'UpRoman');
         expect(editor.selection.paragraphFormat.listText).toBe('I.');
     });
     it('numbered-UpLetter', () => {
         editor.openBlank();
-        editor.editorModule.insertText('one', false);
+        editor.editorModule.insertText('one');
         editor.editor.applyNumbering('%1.', 'UpLetter');
         expect(editor.selection.paragraphFormat.listText).toBe('A.');
     });
     it('numbered-LowLetterBrace', () => {
         editor.openBlank();
-        editor.editorModule.insertText('one', false);
+        editor.editorModule.insertText('one');
         editor.editor.applyNumbering('%1)', 'LowLetter');
         expect(editor.selection.paragraphFormat.listText).toBe('a)');
     });
     it('numbered-LowLetterDot', () => {
         editor.openBlank();
-        editor.editorModule.insertText('one', false);
+        editor.editorModule.insertText('one');
         editor.editor.applyNumbering('%1.', 'LowLetter');
         expect(editor.selection.paragraphFormat.listText).toBe('a.');
     });
     it('numbered-LowRoman', () => {
         editor.openBlank();
-        editor.editorModule.insertText('one', false);
+        editor.editorModule.insertText('one');
         editor.editor.applyNumbering('%1.', 'LowRoman');
         expect(editor.selection.paragraphFormat.listText).toBe('i.');
     });
@@ -1243,13 +1243,13 @@ describe('List Edit operation validation', () => {
         editor.editor.applyNumbering('%1.', 'Arabic');
         editor.selection.handleEndKey();
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('A', false);
+        editor.editorModule.insertText('A');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('A', false);
+        editor.editorModule.insertText('A');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('A', false);
+        editor.editorModule.insertText('A');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('A', false);
+        editor.editorModule.insertText('A');
         editor.editorModule.onEnter();
         expect(editor.viewer.pages[0].bodyWidgets[0].childWidgets.length).toBe(6);
         for (let i: number = 0; i < editor.viewer.pages[0].bodyWidgets[0].childWidgets.length; i++) {
@@ -1295,7 +1295,7 @@ describe('List Edit operation validation', () => {
         editor.editorModule.insertTable(2, 2);
         let lastBlock: BlockWidget = editor.viewer.pages[0].bodyWidgets[0].lastChild as BlockWidget;
         expect(((lastBlock.firstChild as LineWidget).children[0] as ListTextElementBox).text).toBe((6) + '.');
-        editor.editorModule.insertText('S', false);
+        editor.editorModule.insertText('S');
         expect(((lastBlock.firstChild as LineWidget).children[0] as ListTextElementBox).text).toBe((6) + '.');
     });
 });
@@ -1331,9 +1331,9 @@ describe('List paste issue', () => {
         editor.editor.applyNumbering('%1.', 'Arabic');
         editor.selection.handleEndKey();
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('A', false);
+        editor.editorModule.insertText('A');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('A', false);
+        editor.editorModule.insertText('A');
         editor.enableLocalPaste = true;
         editor.selection.selectAll();
         editor.selection.copy();
@@ -1415,9 +1415,9 @@ describe('List paste Mutiple Page then Undo and redo operation', () => {
         editor.editor.applyNumbering('%1.', 'Arabic');
         editor.selection.handleEndKey();
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('A', false);
+        editor.editorModule.insertText('A');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('A', false);
+        editor.editorModule.insertText('A');
         editor.enableLocalPaste = true;
         editor.selection.selectAll();
         editor.selection.copy();

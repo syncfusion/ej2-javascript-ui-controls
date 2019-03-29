@@ -270,6 +270,7 @@ describe('Menu', () => {
             menu.showItems(['home', 'purchase'], true);
             expect(ul.children[0].classList.contains('e-menu-hide')).toBeFalsy();
             expect(ul.children[2].classList.contains('e-menu-hide')).toBeFalsy();
+            menu.destroy();
         });
 
         it('Enable and Disable items', () => {
@@ -356,6 +357,58 @@ describe('Menu', () => {
             menu.orientation = 'Horizontal';
             menu.dataBind();
             expect(ul.classList.contains('e-vertical')).toBeFalsy();
+        });
+        it('items', () => {
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items }, '#menu');
+            expect(menu.items[0].text).toEqual('Home');
+            expect(ul.children[1].textContent).toEqual('Book Categories');
+            menu.items =  [
+                { text: 'File', iconCss: 'e-file', items: [{ text: 'Open', iconCss: 'em-icons e-open' },{ separator: true },{ text: 'Exit' }] },
+                { text: 'Edit' },{ text: 'View',
+                  items: [{ text: 'Toolbars', items: [{ text: 'Menu Bar' },{ text: 'Bookmarks Toolbar' },{ text: 'Customize' }] },
+                    { text: 'Zoom', items: [{ text: 'Zoom In' },{ text: 'Zoom Out' },{ text: 'Reset' }] }, { text: 'Full Screen' }]
+                },{ text: 'Tools' },{ text: 'Help' }
+            ];
+            menu.dataBind();
+            expect(menu.items[0].text).toEqual('File');
+            expect(menu.items.length).toEqual(ul.childElementCount);
+            expect(ul.children[1].textContent).toEqual('Edit');
+        });
+        it('Self referential menu items', () => {
+            document.body.appendChild(ul);
+            menu = new Menu({ items: flatDatasource }, '#menu');
+            expect(menu.items[1].text).toEqual('Edit');
+            expect(ul.children[2].textContent).toEqual('Go');
+            menu.items = [
+                { id: 'parent1', text: 'Appliances', parentId: null },
+                { id: 'parent2', text: 'Accessories', parentId: null },
+                { id: 'parent3', text: 'Fashion', parentId: null },
+                { id: 'parent6', text: 'Kitchen', parentId: 'parent1' },
+                { id: 'parent7', text: 'Washing Machine', parentId: 'parent1' },
+                { id: 'parent8', text: 'Air Conditioners', parentId: 'parent1' },
+                { id: 'parent9', text: 'Electric Cookers', parentId: 'parent6' },
+                { id: 'parent10', text: 'Coffee Makers', parentId: 'parent6' },
+                { id: 'parent11', text: 'Blenders', parentId: 'parent6' },
+                { id: 'parent17', text: 'Mobile', parentId: 'parent2' },
+                { id: 'parent18', text: 'Computer', parentId: 'parent2' }
+            ];
+            menu.dataBind();
+            expect(menu.items[0].text).toEqual('Appliances');
+            expect(menu.items[2].text).toEqual('Fashion');
+            expect(menu.items.length).toEqual(ul.childElementCount);
+            expect(ul.children[1].textContent).toEqual('Accessories');
+            expect(ul.children[2].textContent).toEqual('Fashion');
+            let li: HTMLElement = ul.children[0] as HTMLElement;
+            triggerMouseEvent(li, 'mouseover');
+            let popup: Element[] = menu.getPopups();
+            expect(popup.length).toBe(1);
+            expect(li.classList.contains('e-selected')).toEqual(true);
+            li = popup[0].querySelector('.e-menu-item');
+            triggerMouseEvent(li, 'mouseover');
+            popup = menu.getPopups();
+            expect(popup.length).toBe(2);
+            expect(li.classList.contains('e-selected')).toEqual(true);
         });
         it('showItemOnClick', () => {
             document.body.appendChild(ul);

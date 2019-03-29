@@ -517,10 +517,11 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      trgt.classList.remove('e-target');
      if (trgt.classList.contains(CLS_CONTENT) || trgt.classList.contains(CLS_CTENT) || cntclkCheck) {
       return; }
-     [].slice.call(this.element.children).forEach((el: HTEle) => {
-      if (el.classList.contains(CLS_ACTIVE)) {
-        acrdActive.push(el); }
-     });
+     let acrdcontainer: HTMLElement = <HTMLElement>this.element.querySelector('.' + CLS_CONTAINER);
+     let acrdnchild: HTMLCollection = (acrdcontainer) ? acrdcontainer.children : this.element.children;
+     [].slice.call(acrdnchild).forEach((el: HTEle) => {
+        if (el.classList.contains(CLS_ACTIVE)) { acrdActive.push(el); }
+      });
      let acrdAniEle: HTEle[] = [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM + ' [' + CLS_ANIMATE + ']'));
      if (acrdAniEle.length > 0) {
        for (let el of acrdAniEle) {

@@ -28,7 +28,7 @@ describe('Filtering performance', () => {
         }
         beforeAll(() => {
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 6000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 8000;
             document.body.appendChild(autoEle);
             autoObj = new AutoComplete({
                 dataSource: list,

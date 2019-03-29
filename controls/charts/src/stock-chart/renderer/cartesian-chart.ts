@@ -168,8 +168,9 @@ export class CartesianChart {
             series.dataSource = data ? data : ((stockChart.tempDataSource[series.index] ||
                 stockChart.dataSource) as Object[]).filter((data: Object) => {
                 return (
-                    data[series.xName].getTime() >= start && data[series.xName].getTime() <= end
-                );
+                    new Date(Date.parse(data[series.xName])).getTime() >= start &&
+                    new Date(Date.parse(data[series.xName])).getTime() <= end
+                    );
             });
             series.animation.enable = false;
             if (series.trendlines.length !== 0) {

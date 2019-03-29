@@ -3,7 +3,7 @@ import { createElement, remove } from '@syncfusion/ej2-base';
 import { World_Map, randomcountriesData, topPopulation, flightRoutes, intermediatestops1, internetUser } from '../data/data.spec';
 import { MouseEvents } from '../../../spec/maps/base/events.spec';
 import { Legend, Marker } from '../../../src/maps/index';
-import  {profile , inMB, getMemoryProfile} from '../common.spec';
+import { profile, inMB, getMemoryProfile } from '../common.spec';
 Maps.Inject(Legend, Marker);
 
 export function getElementByID(id: string): Element {
@@ -385,7 +385,7 @@ describe('Map marker properties tesing', () => {
                 expect(element.childElementCount).toBe(3);
             };
         });
-       
+
     });
     describe('Marker testing', () => {
         let id: string = 'legend';
@@ -442,7 +442,7 @@ describe('Map marker properties tesing', () => {
                 expect(element.childElementCount).toBe(4);
             };
         });
-       
+
     });
     describe('Marker testing', () => {
         let id: string = 'legend';
@@ -1197,7 +1197,7 @@ describe('Map marker properties tesing', () => {
             document.body.appendChild(ele);
             map = new Maps({
                 baseLayerIndex: 0,
-                theme:'FabricDark',
+                theme: 'BootstrapDark',
                 layers: [
                     {
                         shapeData: World_Map,
@@ -1206,9 +1206,9 @@ describe('Map marker properties tesing', () => {
                         dataSource: randomcountriesData,
                         tooltipSettings: {
                             visible: true
-                        },                        
+                        },
                         shapeSettings: {
-                           // autofill: true,
+                            // autofill: true,
                             //fill: 'grey',
                             border: {
                                 width: 1,
@@ -1260,7 +1260,7 @@ describe('Map marker properties tesing', () => {
             document.body.appendChild(ele);
             map = new Maps({
                 baseLayerIndex: 0,
-                theme:'FabricDark',
+                theme: 'FabricDark',
                 layers: [
                     {
                         shapeData: World_Map,
@@ -1269,9 +1269,9 @@ describe('Map marker properties tesing', () => {
                         dataSource: randomcountriesData,
                         tooltipSettings: {
                             visible: true
-                        },                        
+                        },
                         shapeSettings: {
-                           // autofill: true,
+                            // autofill: true,
                             //fill: 'grey',
                             border: {
                                 width: 1,
@@ -1279,7 +1279,7 @@ describe('Map marker properties tesing', () => {
                             },
                             colorValuePath: 'continent',
                             colorMapping: [{
-                               value: 'Europe', color: 'orange', label: 'Europe Continent'
+                                value: 'Europe', color: 'orange', label: 'Europe Continent'
                             },
                             {
                                 value: 'Asia', color: 'yellow', showLegend: false
@@ -1291,15 +1291,15 @@ describe('Map marker properties tesing', () => {
                                 value: 'Asia', color: 'teal', label: 'Asia Continent'
                             },
                             {
-                                value: 'Oceania',  color: 'aqua', label: 'Oceania Continent'
+                                value: 'Oceania', color: 'aqua', label: 'Oceania Continent'
                             },
                             {
-                                value: 'Africa',  color: 'blue', label: 'Africa Continent'
+                                value: 'Africa', color: 'blue', label: 'Africa Continent'
                             },
                             {
-                                value: 'North America',  color: 'blue', label: 'North America Continent'
+                                value: 'North America', color: 'blue', label: 'North America Continent'
                             }
-                        ]
+                            ]
                         }
                     }
                 ],
@@ -1319,7 +1319,7 @@ describe('Map marker properties tesing', () => {
                 expect(element.childElementCount).toBeGreaterThanOrEqual(1);
             };
             map.layers[0].shapeSettings.colorMapping[0].value = 'Asia'
-            map.layers[0].shapeSettings.colorMapping[0].label= 'Asia continents'
+            map.layers[0].shapeSettings.colorMapping[0].label = 'Asia continents'
             debugger;
             map.refresh();
         });

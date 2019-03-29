@@ -1799,7 +1799,7 @@ export class PivotEngine {
                     caption = textArray[textArray.length - 1];
                 }
             }
-            if (this.values.length > 1 && caption && this.fieldList[caption]) {
+            if (((this.values.length === 1 && this.columns.length === 0) || this.values.length > 1) && caption && this.fieldList[caption]) {
                 for (let i: number = 0; i < textArray.length - 1; i++) {
                     hText = hText === '' ? textArray[i] : (hText + this.valueSortSettings.headerDelimiter + textArray[i]);
                 }

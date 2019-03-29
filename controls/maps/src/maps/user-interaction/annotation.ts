@@ -47,9 +47,10 @@ export class Annotations {
         this.map.trigger(annotationRendering, argsData);
         templateFn = getTemplateFunction(argsData.content);
         if (templateFn && templateFn(this.map).length) {
-            templateElement = templateFn(this.map);
-            while (templateElement.length > 0) {
-                childElement.appendChild(templateElement[0]);
+            templateElement = Array.prototype.slice.call(templateFn(this.map));
+            let length: number = templateElement.length;
+            for (let i: number = 0; i < length; i++) {
+                childElement.appendChild(templateElement[i]);
             }
         } else {
             childElement.appendChild(createElement('div', {

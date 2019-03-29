@@ -13,7 +13,7 @@ import { LineWidget } from '../../../src/index';
  */
 function getDocument(editor: DocumentEditor) {
     editor.openBlank();
-    editor.editorModule.insertText('sample', false);
+    editor.editorModule.insertText('sample');
 }
 
 /**
@@ -234,8 +234,8 @@ describe('Edit Hyperlink validation', () => {
     it('handle context menu validation', () => {
         menu.handleContextMenuItem('container_contextmenu_hyperlink');
         expect(() => { editor.hyperlinkDialogModule.hide(); }).not.toThrowError();
-        editor.editorModule.insertText('www.google.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('www.google.com');
+        editor.editorModule.insertText(' ');
         editor.selection.handleHomeKey();
         menu.handleContextMenuItem('container_contextmenu_edit_hyperlink');
         expect(() => { editor.hyperlinkDialogModule.hide(); }).not.toThrowError();
@@ -310,8 +310,8 @@ describe('Edit Hyperlink validation without history', () => {
         dialog.hide();
     });
     it('Auto format hyperlink ', () => {
-        editor.editorModule.insertText('www.google.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('www.google.com');
+        editor.editorModule.insertText(' ');
         expect(editor.enableEditorHistory).toBe(false);
     });
     it('insert Hyperlink without history', () => {
@@ -321,9 +321,9 @@ describe('Edit Hyperlink validation without history', () => {
     });
     it('Insert Hyperlink on multiple paragraph', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion', false);
+        editor.editorModule.insertText('Syncfusion');
         editor.editorModule.handleEnterKey();
-        editor.editorModule.insertText('Syncfusion', false);
+        editor.editorModule.insertText('Syncfusion');
         editor.selection.selectAll();
         dialog.show();
         dialog.loadHyperlinkDialog();

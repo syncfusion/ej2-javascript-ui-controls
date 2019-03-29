@@ -1,6 +1,9 @@
 import { createElement, remove, EmitType, Browser } from '@syncfusion/ej2-base';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
-import { Schedule, TimelineViews, TimelineMonth, EJ2Instance, CellClickEventArgs, ScheduleModel } from '../../../src/schedule/index';
+import {
+    Schedule, TimelineViews, TimelineMonth, EJ2Instance, CellClickEventArgs, ScheduleModel,
+    SelectEventArgs, PopupOpenEventArgs
+} from '../../../src/schedule/index';
 import * as cls from '../../../src/schedule/base/css-constant';
 import { disableScheduleAnimation, triggerMouseEvent, createSchedule, createGroupSchedule, destroy } from '../util.spec';
 import {
@@ -539,12 +542,12 @@ describe('Schedule timeline day view', () => {
         });
     });
 
-    describe('Checking enableAdaptiveRows property', () => {
+    describe('Checking rowAutoHeight property', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
             let options: ScheduleModel = {
                 currentView: 'TimelineDay',
-                enableAdaptiveRows: true,
+                rowAutoHeight: true,
                 views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
                 selectedDate: new Date(2018, 4, 1),
             };
@@ -571,7 +574,7 @@ describe('Schedule timeline day view', () => {
                 expect(moreIndicatorList.length).toEqual(1);
                 done();
             };
-            schObj.enableAdaptiveRows = false;
+            schObj.rowAutoHeight = false;
             schObj.dataBound = dataBound;
             schObj.dataBind();
         });
@@ -825,6 +828,61 @@ describe('Schedule timeline day view', () => {
             }
             remove(document.querySelector('#Schedule'));
         });
+
+        it('cell select', () => {
+            let eventName1: string;
+            let eventName2: string;
+            let eventName3: string;
+            schObj = new Schedule({
+                select: (args: SelectEventArgs) => {
+                    eventName1 = args.name;
+                },
+                cellClick: (args: CellClickEventArgs) => {
+                    eventName2 = args.name;
+                },
+                popupOpen: (args: PopupOpenEventArgs) => {
+                    eventName3 = args.name;
+                },
+                currentView: 'TimelineDay',
+                views: ['TimelineDay'], selectedDate: new Date(2018, 5, 5)
+            });
+            schObj.appendTo('#Schedule');
+            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
+            triggerMouseEvent(workCells[3], 'mousedown');
+            triggerMouseEvent(workCells[3], 'mouseup');
+            (schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement).click();
+            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(eventName1).toEqual('select');
+            expect(eventName2).toEqual('cellClick');
+            expect(eventName3).toEqual('popupOpen');
+        });
+
+        it('multi cell select', () => {
+            let eventName: string;
+            schObj = new Schedule({
+                select: (args: SelectEventArgs) => {
+                    eventName = args.name;
+                },
+                currentView: 'TimelineDay',
+                views: ['TimelineDay'], selectedDate: new Date(2018, 5, 5)
+            });
+            schObj.appendTo('#Schedule');
+            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
+            triggerMouseEvent(workCells[3], 'mousedown');
+            triggerMouseEvent(workCells[5], 'mousemove');
+            triggerMouseEvent(workCells[5], 'mouseup');
+            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
+            expect(eventName).toEqual('select');
+        });
+
         it('cell click', () => {
             let cellStartTime: number;
             let cellEndTime: number;
@@ -971,7 +1029,7 @@ describe('Schedule timeline day view', () => {
             triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
 
-        it('Checking enableAdaptiveRows property', (done: Function) => {
+        it('Checking rowAutoHeight property', (done: Function) => {
             let dataBound: (args: Object) => void = (args: Object) => {
                 let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(9);
@@ -981,7 +1039,7 @@ describe('Schedule timeline day view', () => {
                 expect(moreIndicatorList.length).toEqual(0);
                 done();
             };
-            schObj.enableAdaptiveRows = true;
+            schObj.rowAutoHeight = true;
             schObj.dataBound = dataBound;
             schObj.dataBind();
         });
@@ -1334,7 +1392,7 @@ describe('Schedule timeline day view', () => {
             let cancelButton: HTMLElement = dialogElement.querySelector('.e-event-cancel') as HTMLElement;
             cancelButton.click();
         });
-        it('Checking enableAdaptiveRows property', (done: Function) => {
+        it('Checking rowAutoHeight property', (done: Function) => {
             let dataBound: (args: Object) => void = (args: Object) => {
                 let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(8);
@@ -1344,7 +1402,7 @@ describe('Schedule timeline day view', () => {
                 expect(moreIndicatorList.length).toEqual(0);
                 done();
             };
-            schObj.enableAdaptiveRows = true;
+            schObj.rowAutoHeight = true;
             schObj.dataBound = dataBound;
             schObj.dataBind();
         });
@@ -1478,7 +1536,7 @@ describe('Schedule timeline day view', () => {
             expect(moreEventList.length).toEqual(2);
             triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
-        it('Checking enableAdaptiveRows property', (done: Function) => {
+        it('Checking rowAutoHeight property', (done: Function) => {
             let dataBound: (args: Object) => void = (args: Object) => {
                 let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(9);
@@ -1488,7 +1546,7 @@ describe('Schedule timeline day view', () => {
                 expect(moreIndicatorList.length).toEqual(0);
                 done();
             };
-            schObj.enableAdaptiveRows = true;
+            schObj.rowAutoHeight = true;
             schObj.dataBound = dataBound;
             schObj.dataBind();
         });
@@ -2797,7 +2855,7 @@ describe('Schedule timeline day view', () => {
             schObj.dataBound = dataBound;
         });
 
-        it('Checking enableAdaptiveRows property', (done: Function) => {
+        it('Checking rowAutoHeight property', (done: Function) => {
             let dataBound: (args: Object) => void = (args: Object) => {
                 let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(15);
@@ -2807,7 +2865,7 @@ describe('Schedule timeline day view', () => {
                 expect(moreIndicatorList.length).toEqual(0);
                 done();
             };
-            schObj.enableAdaptiveRows = true;
+            schObj.rowAutoHeight = true;
             schObj.dataBound = dataBound;
             schObj.dataBind();
         });
@@ -2916,7 +2974,7 @@ describe('Schedule timeline day view', () => {
             expect(moreIndicators[0].getAttribute('data-end-date')).toEqual(new Date(2018, 4, 1, 13, 30).getTime().toString());
         });
 
-        it('Checking enableAdaptiveRows property', (done: Function) => {
+        it('Checking rowAutoHeight property', (done: Function) => {
             let dataBound: (args: Object) => void = (args: Object) => {
                 let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(15);
@@ -2926,7 +2984,7 @@ describe('Schedule timeline day view', () => {
                 expect(moreIndicatorList.length).toEqual(0);
                 done();
             };
-            schObj.enableAdaptiveRows = true;
+            schObj.rowAutoHeight = true;
             schObj.dataBound = dataBound;
             schObj.dataBind();
         });
@@ -3019,7 +3077,7 @@ describe('Schedule timeline day view', () => {
             expect(moreIndicators[0].getAttribute('data-end-date')).toEqual(new Date(2018, 4, 2).getTime().toString());
         });
 
-        it('Checking enableAdaptiveRows property', (done: Function) => {
+        it('Checking rowAutoHeight property', (done: Function) => {
             let dataBound: (args: Object) => void = (args: Object) => {
                 let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
                 expect(eventElementList.length).toEqual(15);
@@ -3029,7 +3087,7 @@ describe('Schedule timeline day view', () => {
                 expect(moreIndicatorList.length).toEqual(0);
                 done();
             };
-            schObj.enableAdaptiveRows = true;
+            schObj.rowAutoHeight = true;
             schObj.dataBound = dataBound;
             schObj.dataBind();
         });

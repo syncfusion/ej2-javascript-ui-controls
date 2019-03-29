@@ -499,6 +499,7 @@ export class Toolbar {
     private onRefresh(): void {
         this.refreshToolbarOverflow();
         this.parent.setContentHeight();
+        this.parent.formatter.undoRedoRefresh(this.parent);
     }
     /**
      * Called internally if any of the property value changed.

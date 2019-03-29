@@ -888,28 +888,30 @@ describe('TextBox ', () => {
             inputObj.appendTo('#textbox');
             let childElements = inputObj.textboxWrapper.container.children;
             expect((inputObj.textboxWrapper.container.classList.contains('e-input-group'))).toBe(true);
-            expect((childElements[0].tagName === 'TEXTAREA')).toBe(true);
+            expect((childElements[1].tagName === 'TEXTAREA')).toBe(true);
         });
         it('Structure testing for floatInput auto', () => {
             inputObj = new TextBox({ multiline: true, floatLabelType: 'Auto' });
             inputObj.appendTo('#textbox');
             let childElements = inputObj.textboxWrapper.container.children;
-            expect((childElements[0].tagName === 'TEXTAREA')).toBe(true);
-            expect((childElements[1].tagName === 'SPAN') &&
-             (childElements[1].classList.contains('e-float-line'))).toBe(true);
-            expect((childElements[2].tagName === 'LABEL') &&
-             (childElements[2].classList.contains('e-float-text'))).toBe(true);
+            expect((childElements[0].tagName === 'INPUT')).toBe(true);
+            expect((childElements[1].tagName === 'TEXTAREA')).toBe(true);
+            expect((childElements[2].tagName === 'SPAN') &&
+             (childElements[2].classList.contains('e-float-line'))).toBe(true);
+            expect((childElements[3].tagName === 'LABEL') &&
+             (childElements[3].classList.contains('e-float-text'))).toBe(true);
         });
         it('Structure testing for floatInput always', () => {
             inputObj = new TextBox({ multiline: true, floatLabelType: 'Always' });
             inputObj.appendTo('#textbox');
             let childElements = inputObj.textboxWrapper.container.children;
-            expect((childElements[0].tagName === 'TEXTAREA')).toBe(true);
-            expect((childElements[1].tagName === 'SPAN') &&
-             (childElements[1].classList.contains('e-float-line'))).toBe(true);
-            expect((childElements[2].tagName === 'LABEL') &&
-             (childElements[2].classList.contains('e-float-text'))).toBe(true);
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect((childElements[0].tagName === 'INPUT')).toBe(true);
+            expect((childElements[1].tagName === 'TEXTAREA')).toBe(true);
+            expect((childElements[2].tagName === 'SPAN') &&
+             (childElements[2].classList.contains('e-float-line'))).toBe(true);
+            expect((childElements[3].tagName === 'LABEL') &&
+             (childElements[3].classList.contains('e-float-text'))).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
         });
         it('Check the type attribute dynamically -',() =>{
             inputObj = new TextBox({ multiline: true, type: 'number' });
@@ -971,23 +973,23 @@ describe('TextBox ', () => {
             expect(inputObj.element.getAttribute('type')).toBe('hidden');
             expect(inputObj.textarea.tagName === 'TEXTAREA').toBe(true);
             expect(inputObj.textboxWrapper.container.classList.contains('e-float-input')).toBe(true);
-            expect(childElements[2].textContent === 'Enter your address').toBe(true);
-            expect(childElements[2].classList.contains('e-label-top')).toBe(false);
+            expect(childElements[3].textContent === 'Enter your address').toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(false);
             inputObj.textarea.focus();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.value = 'Hello';
             inputObj.dataBind();
             expect(inputObj.textarea.value).toEqual('Hello');
             expect(inputObj.value).toEqual('Hello');
             expect(inputObj.element.value).toEqual('Hello');
             inputObj.textarea.blur();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.value = '';
             inputObj.dataBind();
             expect(inputObj.textarea.value).toEqual('');
             expect(inputObj.value).toEqual('');
             expect(inputObj.element.value).toEqual('');
-            expect(childElements[2].classList.contains('e-label-top')).toBe(false);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(false);
         });
         it('Render multiLine textbox initially with floatLabelType always', () => {
             inputObj = new TextBox({ multiline: true, floatLabelType: 'Always' , placeholder: 'Enter your address'});
@@ -997,22 +999,22 @@ describe('TextBox ', () => {
             expect(inputObj.element.getAttribute('type')).toBe('hidden');
             expect(inputObj.textarea.tagName === 'TEXTAREA').toBe(true);
             expect(inputObj.textboxWrapper.container.classList.contains('e-float-input')).toBe(true);
-            expect(childElements[2].textContent === 'Enter your address').toBe(true);         
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].textContent === 'Enter your address').toBe(true);         
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.textarea.focus();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.value = 'Hello';
             inputObj.dataBind();
             expect(inputObj.textarea.value).toEqual('Hello');
             expect(inputObj.value).toEqual('Hello');
             expect(inputObj.element.value).toEqual('Hello');
             inputObj.textarea.blur();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.value = '';
             inputObj.dataBind();
             expect(inputObj.textarea.value).toEqual('');
             expect(inputObj.value).toEqual('');
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
         });
         it('Render multiLine textbox initially with floatLabelType never', () => {
             inputObj = new TextBox({ multiline: true, floatLabelType: 'Never' });
@@ -1041,21 +1043,21 @@ describe('TextBox ', () => {
             expect(inputObj.element.getAttribute('type')).toBe('hidden');
             expect(inputObj.textarea.tagName === 'TEXTAREA').toBe(true);
             expect(inputObj.textboxWrapper.container.classList.contains('e-float-input')).toBe(true);
-            expect(childElements[2].textContent === 'Enter your address').toBe(true);
+            expect(childElements[3].textContent === 'Enter your address').toBe(true);
             expect(inputObj.textarea.value).toEqual('Hello');
             expect(inputObj.value).toEqual('Hello');
             expect(inputObj.element.value).toEqual('Hello');
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.textarea.focus();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.textarea.blur();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.value = '';
             inputObj.dataBind();
             expect(inputObj.textarea.value).toEqual('');
             expect(inputObj.value).toEqual('');
             expect(inputObj.element.value).toEqual('');
-            expect(childElements[2].classList.contains('e-label-top')).toBe(false);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(false);
         });
         it('Render multiLine textbox initially with value and floatLabelType always', () => {
             inputObj = new TextBox({ multiline: true, value: 'Hello' , floatLabelType: 'Always' , placeholder: 'Enter your address'});
@@ -1065,21 +1067,21 @@ describe('TextBox ', () => {
             expect(inputObj.element.getAttribute('type')).toBe('hidden');
             expect(inputObj.textarea.tagName === 'TEXTAREA').toBe(true);
             expect(inputObj.textboxWrapper.container.classList.contains('e-float-input')).toBe(true);
-            expect(childElements[2].textContent === 'Enter your address').toBe(true);  
+            expect(childElements[3].textContent === 'Enter your address').toBe(true);  
             expect(inputObj.textarea.value).toEqual('Hello');   
             expect(inputObj.value).toEqual('Hello'); 
             expect(inputObj.element.value).toEqual('Hello');
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.textarea.focus();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.textarea.blur();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.value = '';
             inputObj.dataBind();
             expect(inputObj.textarea.value).toEqual('');
             expect(inputObj.value).toEqual('');
             expect(inputObj.element.value).toEqual('');
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
         });
         it('Render multiLine textbox initially with value floatLabelType never', () => {
             inputObj = new TextBox({ multiline: true, value: 'Hello' , floatLabelType: 'Never' });
@@ -1113,23 +1115,23 @@ describe('TextBox ', () => {
             expect(inputObj.element.getAttribute('type')).toBe('hidden');
             expect(inputObj.textarea.tagName === 'TEXTAREA').toBe(true);
             expect(inputObj.textboxWrapper.container.classList.contains('e-float-input')).toBe(true);
-            expect(childElements[2].textContent === 'Enter your address').toBe(true);       
-            expect(childElements[2].classList.contains('e-label-top')).toBe(false);
+            expect(childElements[3].textContent === 'Enter your address').toBe(true);       
+            expect(childElements[3].classList.contains('e-label-top')).toBe(false);
             inputObj.textarea.focus();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.value = 'Hello'
             inputObj.dataBind();
             expect(inputObj.textarea.value).toEqual('Hello');
             expect(inputObj.value).toEqual('Hello');
             expect(inputObj.element.value).toEqual('Hello');
             inputObj.textarea.blur();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.value = '';
             inputObj.dataBind();
             expect(inputObj.textarea.value).toEqual(''); 
             expect(inputObj.value).toEqual('');  
             expect(inputObj.element.value).toEqual('');
-            expect(childElements[2].classList.contains('e-label-top')).toBe(false); 
+            expect(childElements[3].classList.contains('e-label-top')).toBe(false); 
         });
         it('Dynamically enable floatLabelType always with multiLine textbox', () => {
             inputObj = new TextBox({ multiline: true, placeholder: 'Enter your address' });
@@ -1141,23 +1143,23 @@ describe('TextBox ', () => {
             expect(inputObj.element.getAttribute('type')).toBe('hidden');
             expect(inputObj.textarea.tagName === 'TEXTAREA').toBe(true);
             expect(inputObj.textboxWrapper.container.classList.contains('e-float-input')).toBe(true);
-            expect(childElements[2].textContent === 'Enter your address').toBe(true);
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].textContent === 'Enter your address').toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.textarea.focus();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.value = 'Hello'
             inputObj.dataBind();
             expect(inputObj.textarea.value).toEqual('Hello');
             expect(inputObj.value).toEqual('Hello');
             expect(inputObj.element.value).toEqual('Hello');
             inputObj.textarea.blur();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.value = '';
             inputObj.dataBind();
             expect(inputObj.textarea.value).toEqual('');   
             expect(inputObj.value).toEqual('');
             expect(inputObj.element.value).toEqual('');
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true); 
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true); 
         });
         it('Dynamically enable floatLabelType never with multiLine textbox', () => {
             inputObj = new TextBox({ multiline: true });
@@ -1180,21 +1182,21 @@ describe('TextBox ', () => {
             expect(inputObj.element.getAttribute('type')).toBe('hidden');
             expect(inputObj.textarea.tagName === 'TEXTAREA').toBe(true);
             expect(inputObj.textboxWrapper.container.classList.contains('e-float-input')).toBe(true);
-            expect(childElements[2].textContent === 'Enter your address').toBe(true);      
+            expect(childElements[3].textContent === 'Enter your address').toBe(true);      
             expect(inputObj.textarea.value).toEqual('Hello');
             expect(inputObj.value).toEqual('Hello'); 
             expect(inputObj.element.value).toEqual('Hello');
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.textarea.focus();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.textarea.blur();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.value = '';
             inputObj.dataBind();
             expect(inputObj.textarea.value).toEqual(''); 
             expect(inputObj.value).toEqual('');  
             expect(inputObj.element.value).toEqual('');
-            expect(childElements[2].classList.contains('e-label-top')).toBe(false); 
+            expect(childElements[3].classList.contains('e-label-top')).toBe(false); 
         });
         it('Dynamically enable floatLabelType always with value and multiLine textbox', () => {
             inputObj = new TextBox({ multiline: true, value: 'Hello' , placeholder: 'Enter your address' });
@@ -1206,21 +1208,21 @@ describe('TextBox ', () => {
             expect(inputObj.element.getAttribute('type')).toBe('hidden');
             expect(inputObj.textarea.tagName === 'TEXTAREA').toBe(true);
             expect(inputObj.textboxWrapper.container.classList.contains('e-float-input')).toBe(true);
-            expect(childElements[2].textContent === 'Enter your address').toBe(true);
+            expect(childElements[3].textContent === 'Enter your address').toBe(true);
             expect(inputObj.textarea.value).toEqual('Hello');
             expect(inputObj.value).toEqual('Hello');
             expect(inputObj.element.value).toEqual('Hello');
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.textarea.focus();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);       
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);       
             inputObj.textarea.blur();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.value = '';
             inputObj.dataBind();
             expect(inputObj.textarea.value).toEqual('');   
             expect(inputObj.value).toEqual('');
             expect(inputObj.element.value).toEqual('');
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true); 
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true); 
         });
         it('Dynamically enable floatLabelType never with value and multiLine textbox', () => {
             inputObj = new TextBox({ multiline: true, value: 'Hello'});
@@ -1251,30 +1253,30 @@ describe('TextBox ', () => {
             inputObj.appendTo('#textbox');
             let childElements = inputObj.textboxWrapper.container.children;
             expect(inputObj.textboxWrapper.container.classList.contains('e-float-input')).toBe(true);
-            expect(childElements[2].classList.contains('e-label-top')).toBe(false);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(false);
             inputObj.floatLabelType = 'Always';
             inputObj.dataBind();
             expect(inputObj.element.tagName === 'INPUT').toBe(true);
             expect(inputObj.element.getAttribute('type')).toBe('hidden');
             expect(inputObj.textarea.tagName === 'TEXTAREA').toBe(true);
             expect(inputObj.textboxWrapper.container.classList.contains('e-float-input')).toBe(true);
-            expect(childElements[2].textContent === 'Enter your address').toBe(true);       
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].textContent === 'Enter your address').toBe(true);       
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.element.focus();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.value = 'Hello';
             inputObj.dataBind();
             expect(inputObj.textarea.value).toEqual('Hello');
             expect(inputObj.value).toEqual('Hello');
             expect(inputObj.element.value).toEqual('Hello');
             inputObj.textarea.blur();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.value = '';
             inputObj.dataBind();
             expect(inputObj.textarea.value).toEqual(''); 
             expect(inputObj.value).toEqual('');
             expect(inputObj.element.value).toEqual('');
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true); 
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true); 
         });
         it('Dynamically enable floatLabelType never with initially rendered floatlabeltype auto', () => {
             inputObj = new TextBox({ multiline: true, floatLabelType: 'Auto' , placeholder: 'Enter your address' });
@@ -1293,28 +1295,28 @@ describe('TextBox ', () => {
             inputObj.appendTo('#textbox');
             let childElements = inputObj.textboxWrapper.container.children;
             expect(inputObj.textboxWrapper.container.classList.contains('e-float-input')).toBe(true);
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.floatLabelType = 'Always';
             inputObj.dataBind();
             expect(inputObj.element.tagName === 'INPUT').toBe(true);
             expect(inputObj.element.getAttribute('type')).toBe('hidden');
             expect(inputObj.textarea.tagName === 'TEXTAREA').toBe(true);
             expect(inputObj.textboxWrapper.container.classList.contains('e-float-input')).toBe(true);
-            expect(childElements[2].textContent === 'Enter your address').toBe(true);  
+            expect(childElements[3].textContent === 'Enter your address').toBe(true);  
             expect(inputObj.textarea.value).toEqual('Hello');
             expect(inputObj.value).toEqual('Hello');     
             expect(inputObj.element.value).toEqual('Hello');
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.textarea.focus();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);    
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);    
             inputObj.textarea.blur();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.value = '';
             inputObj.dataBind();
             expect(inputObj.textarea.value).toEqual(''); 
             expect(inputObj.value).toEqual('');  
             expect(inputObj.element.value).toEqual('');
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true); 
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true); 
         });
         it('Dynamically enable floatLabelType never with value and initially rendered floatlabeltype auto', () => {
             inputObj = new TextBox({ multiline: true, value: 'Hello' , floatLabelType: 'Auto' , placeholder: 'Enter your address' });
@@ -1345,30 +1347,30 @@ describe('TextBox ', () => {
             inputObj.appendTo('#textbox');
             let childElements = inputObj.textboxWrapper.container.children;
             expect(inputObj.textboxWrapper.container.classList.contains('e-float-input')).toBe(true);
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.floatLabelType = 'Auto';
             inputObj.dataBind();
             expect(inputObj.element.tagName === 'INPUT').toBe(true);
             expect(inputObj.element.getAttribute('type')).toBe('hidden');
             expect(inputObj.textarea.tagName === 'TEXTAREA').toBe(true);
             expect(inputObj.textboxWrapper.container.classList.contains('e-float-input')).toBe(true);
-            expect(childElements[2].textContent === 'Enter your address').toBe(true);       
-            expect(childElements[2].classList.contains('e-label-top')).toBe(false);
+            expect(childElements[3].textContent === 'Enter your address').toBe(true);       
+            expect(childElements[3].classList.contains('e-label-top')).toBe(false);
             inputObj.textarea.focus();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.value = 'Hello';
             inputObj.dataBind();
             expect(inputObj.textarea.value).toEqual('Hello');
             expect(inputObj.value).toEqual('Hello');
             expect(inputObj.element.value).toEqual('Hello');
             inputObj.textarea.blur();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.value = '';
             inputObj.dataBind();
             expect(inputObj.textarea.value).toEqual(''); 
             expect(inputObj.value).toEqual('');  
             expect(inputObj.element.value).toEqual('');
-            expect(childElements[2].classList.contains('e-label-top')).toBe(false); 
+            expect(childElements[3].classList.contains('e-label-top')).toBe(false); 
         });
         it('Dynamically enable floatLabelType never with initially rendered floatlabeltype always', () => {
             inputObj = new TextBox({ multiline: true, floatLabelType: 'Always' , placeholder: 'Enter your address' });
@@ -1387,28 +1389,28 @@ describe('TextBox ', () => {
             inputObj.appendTo('#textbox');
             let childElements = inputObj.textboxWrapper.container.children;
             expect(inputObj.textboxWrapper.container.classList.contains('e-float-input')).toBe(true);
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.floatLabelType = 'Auto';
             inputObj.dataBind();
             expect(inputObj.element.tagName === 'INPUT').toBe(true);
             expect(inputObj.element.getAttribute('type')).toBe('hidden');
             expect(inputObj.textarea.tagName === 'TEXTAREA').toBe(true);
             expect(inputObj.textboxWrapper.container.classList.contains('e-float-input')).toBe(true);
-            expect(childElements[2].textContent === 'Enter your address').toBe(true);  
+            expect(childElements[3].textContent === 'Enter your address').toBe(true);  
             expect(inputObj.textarea.value).toEqual('Hello');
             expect(inputObj.value).toEqual('Hello');     
             expect(inputObj.element.value).toEqual('Hello');
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.textarea.focus();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);    
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);    
             inputObj.textarea.blur();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.value = '';
             inputObj.dataBind();
             expect(inputObj.textarea.value).toEqual(''); 
             expect(inputObj.value).toEqual('');  
             expect(inputObj.element.value).toEqual('');
-            expect(childElements[2].classList.contains('e-label-top')).toBe(false); 
+            expect(childElements[3].classList.contains('e-label-top')).toBe(false); 
         });
         it('Dynamically enable floatLabelType never with value and initially rendered floatlabeltype always', () => {
             inputObj = new TextBox({ multiline: true, value: 'Hello' , floatLabelType: 'Always' , placeholder: 'Enter your address' });
@@ -1445,23 +1447,23 @@ describe('TextBox ', () => {
             expect(inputObj.element.getAttribute('type')).toBe('hidden');
             expect(inputObj.textarea.tagName === 'TEXTAREA').toBe(true);
             expect(inputObj.textboxWrapper.container.classList.contains('e-float-input')).toBe(true);
-            expect(childElements[2].textContent === 'Enter your address').toBe(true);       
-            expect(childElements[2].classList.contains('e-label-top')).toBe(false);
+            expect(childElements[3].textContent === 'Enter your address').toBe(true);       
+            expect(childElements[3].classList.contains('e-label-top')).toBe(false);
             inputObj.textarea.focus();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.value = 'Hello';
             inputObj.dataBind();
             expect(inputObj.textarea.value).toEqual('Hello');
             expect(inputObj.value).toEqual('Hello');
             expect(inputObj.element.value).toEqual('Hello');
             inputObj.textarea.blur();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.value = '';
             inputObj.dataBind();
             expect(inputObj.textarea.value).toEqual(''); 
             expect(inputObj.value).toEqual('');  
             expect(inputObj.element.value).toEqual('');
-            expect(childElements[2].classList.contains('e-label-top')).toBe(false); 
+            expect(childElements[3].classList.contains('e-label-top')).toBe(false); 
         });
         it('Dynamically enable floatLabelType always with initially rendered floatlabeltype never', () => {
             inputObj = new TextBox({ multiline: true, floatLabelType: 'Never' , placeholder: 'Enter your address' });
@@ -1474,23 +1476,23 @@ describe('TextBox ', () => {
             expect(inputObj.element.getAttribute('type')).toBe('hidden');
             expect(inputObj.textarea.tagName === 'TEXTAREA').toBe(true);
             expect(inputObj.textboxWrapper.container.classList.contains('e-float-input')).toBe(true);
-            expect(childElements[2].textContent === 'Enter your address').toBe(true);       
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].textContent === 'Enter your address').toBe(true);       
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.textarea.focus();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.value = 'Hello';
             inputObj.dataBind();
             expect(inputObj.textarea.value).toEqual('Hello');
             expect(inputObj.value).toEqual('Hello');
             expect(inputObj.element.value).toEqual('Hello');
             inputObj.textarea.blur();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.value = '';
             inputObj.dataBind();
             expect(inputObj.textarea.value).toEqual(''); 
             expect(inputObj.value).toEqual('');  
             expect(inputObj.element.value).toEqual('');
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true); 
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true); 
         });
 
         it('Dynamically enable floatLabelType auto with value and initially rendered floatlabeltype never', () => {
@@ -1504,21 +1506,21 @@ describe('TextBox ', () => {
             expect(inputObj.element.getAttribute('type')).toBe('hidden');
             expect(inputObj.textarea.tagName === 'TEXTAREA').toBe(true);
             expect(inputObj.textboxWrapper.container.classList.contains('e-float-input')).toBe(true);
-            expect(childElements[2].textContent === 'Enter your address').toBe(true);   
+            expect(childElements[3].textContent === 'Enter your address').toBe(true);   
             expect(inputObj.textarea.value).toEqual('Hello');
             expect(inputObj.value).toEqual('Hello');    
             expect(inputObj.element.value).toEqual('Hello');
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.textarea.focus();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.textarea.blur();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.value = '';
             inputObj.dataBind();
             expect(inputObj.textarea.value).toEqual(''); 
             expect(inputObj.value).toEqual('');  
             expect(inputObj.element.value).toEqual('');
-            expect(childElements[2].classList.contains('e-label-top')).toBe(false); 
+            expect(childElements[3].classList.contains('e-label-top')).toBe(false); 
         });
         it('Dynamically enable floatLabelType always with value and initially rendered floatlabeltype never', () => {
             inputObj = new TextBox({ multiline: true, value: 'Hello' , floatLabelType: 'Never' , placeholder: 'Enter your address' });
@@ -1531,21 +1533,21 @@ describe('TextBox ', () => {
             expect(inputObj.element.getAttribute('type')).toBe('hidden');
             expect(inputObj.textarea.tagName === 'TEXTAREA').toBe(true);
             expect(inputObj.textboxWrapper.container.classList.contains('e-float-input')).toBe(true);
-            expect(childElements[2].textContent === 'Enter your address').toBe(true);   
+            expect(childElements[3].textContent === 'Enter your address').toBe(true);   
             expect(inputObj.textarea.value).toEqual('Hello');
             expect(inputObj.value).toEqual('Hello');    
             expect(inputObj.element.value).toEqual('Hello');
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.textarea.focus();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.textarea.blur();
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true);
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true);
             inputObj.value = '';
             inputObj.dataBind();
             expect(inputObj.textarea.value).toEqual(''); 
             expect(inputObj.value).toEqual('');  
             expect(inputObj.element.value).toEqual('');
-            expect(childElements[2].classList.contains('e-label-top')).toBe(true); 
+            expect(childElements[3].classList.contains('e-label-top')).toBe(true); 
         });
     });
 
@@ -1898,6 +1900,35 @@ describe('TextBox ', () => {
             expect(inputObj.value).toBe('Syncfusion');
             expect(isNullOrUndefined(inputObj.textboxWrapper.container.querySelector('.e-label-top'))).toBe(false);
             expect(isNullOrUndefined(inputObj.textboxWrapper.container.querySelector('.e-label-bottom'))).toBe(true);
+        });
+    });
+
+    describe('Checking the previousValue', () => {
+        let inputObj: any;
+        let originalTimeout: number;
+        let onChange: EmitType<Object>;
+        beforeAll((): void => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
+            let element: HTMLElement = createElement('input', {id: 'textbox'});
+            document.body.appendChild(element);
+            onChange = jasmine.createSpy('change');
+            inputObj = new TextBox({showClearButton: true, value: 'Syncfusion', change: onChange, floatLabelType: 'Auto'});
+            inputObj.appendTo(document.getElementById('textbox'));
+        })
+        afterAll((): void => {
+            inputObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('in source local variable', (done) => {
+            expect(inputObj.previousValue).toBe('Syncfusion');
+            expect(inputObj.value).toBe('Syncfusion');
+            inputObj.value = 'Content changed';
+            inputObj.dataBind();
+            expect(inputObj.element.value).toBe('Content changed');
+            expect(onChange).toHaveBeenCalled();
+            expect(inputObj.previousValue).toBe('Content changed');
+            done();
         });
     });
 

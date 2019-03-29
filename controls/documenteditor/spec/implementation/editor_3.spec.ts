@@ -44,7 +44,7 @@ describe('paragraph format validation with selection including table', () => {
     it('Center alignment Property validation', () => {
         editor.openBlank();
         editor.editor.insertTable(2, 2);
-        editor.editorModule.insertText('Sample document', false);
+        editor.editorModule.insertText('Sample document');
         editor.selection.handleHomeKey();
         editor.selection.handleShiftEndKey();
         event = { keyCode: 66, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
@@ -56,13 +56,13 @@ describe('paragraph format validation with selection including table', () => {
     });
     it('Center alignment Property validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Sample document', false);
-        editor.editorModule.insertText('Sample document', false);
-        editor.editorModule.insertText('Sample document', false);
+        editor.editorModule.insertText('Sample document');
+        editor.editorModule.insertText('Sample document');
+        editor.editorModule.insertText('Sample document');
         editor.editorModule.onEnter();
         editor.editor.insertTable(2, 2);
-        editor.editorModule.insertText('Sample document', false);
-        editor.editorModule.insertText('Sample document', false);
+        editor.editorModule.insertText('Sample document');
+        editor.editorModule.insertText('Sample document');
         editor.editorModule.onEnter();
         event = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
@@ -76,15 +76,15 @@ describe('paragraph format validation with selection including table', () => {
     it('paragraph inside table paragraph format validation', () => {
         editor.openBlank();
         editor.editor.insertTable(2, 2);
-        editor.editorModule.insertText('Adventure Works cycles', false);
+        editor.editorModule.insertText('Adventure Works cycles');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Adventure Works cycles', false);
+        editor.editorModule.insertText('Adventure Works cycles');
         editor.editorModule.onEnter();
         event = { keyCode: 39, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
-        editor.editorModule.insertText('Adventure Works cycles', false);
+        editor.editorModule.insertText('Adventure Works cycles');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Adventure Works cycles', false);
+        editor.editorModule.insertText('Adventure Works cycles');
         editor.editorModule.onEnter();
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: true, shiftKey: true, which: 0 };
         editor.viewer.onKeyDownInternal(event);
@@ -126,10 +126,10 @@ describe('paragraph format validation with selection including table', () => {
     it('paragraph inside table paragraph format validation', () => {
         editor.openBlank();
         editor.editor.insertTable(2, 2);
-        editor.editorModule.insertText('Adventure Works cycles', false);
+        editor.editorModule.insertText('Adventure Works cycles');
         editor.editorModule.onEnter();
         editor.editor.insertTable(2, 2);
-        editor.editorModule.insertText('Adventure Works cycles', false);
+        editor.editorModule.insertText('Adventure Works cycles');
         editor.editorModule.onEnter();
         event = { keyCode: 40, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
         editor.viewer.onKeyDownInternal(event);
@@ -194,12 +194,12 @@ describe('paragraph format validation with selection in nested table', () => {
     it('Nested Table validation', () => {
         editor.openBlank();
         editor.editor.insertTable(2, 2);
-        editor.editorModule.insertText('Adventure Works cycles', false);
+        editor.editorModule.insertText('Adventure Works cycles');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Adventure Works cycles', false);
+        editor.editorModule.insertText('Adventure Works cycles');
         editor.editorModule.onEnter();
         editor.editor.insertTable(2, 2);
-        editor.editorModule.insertText('Adventure Works cycles', false);
+        editor.editorModule.insertText('Adventure Works cycles');
         editor.editorModule.onEnter();
         event = { keyCode: 38, preventDefault: function () { }, ctrlKey: false, shiftKey: true, which: 0 };
         editor.viewer.onKeyDownInternal(event);
@@ -251,7 +251,7 @@ describe('character format validation font size increment and decrement', () => 
     });
     it('Font size decrement validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Sample document', false);
+        editor.editorModule.insertText('Sample document');
         event = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
         let prevFontSize = editor.selection.characterFormat.fontSize;
@@ -269,7 +269,7 @@ describe('character format validation font size increment and decrement', () => 
     });
     it('Font size  decrement validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Sample document', false);
+        editor.editorModule.insertText('Sample document');
         event = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
         let prevFontSize = editor.selection.characterFormat.fontSize;
@@ -288,7 +288,7 @@ describe('character format validation font size increment and decrement', () => 
     });
     it('Font size  increment with font size 72 validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Sample document', false);
+        editor.editorModule.insertText('Sample document');
         event = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
         let prevFontSize = editor.selection.characterFormat.fontSize;
@@ -338,7 +338,7 @@ describe('selection character format property applying validation', () => {
 
     it('bold,italic,underline,fontsize validation validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Sample document', false);
+        editor.editorModule.insertText('Sample document');
         let prevFormat = editor.selection.characterFormat;
         event = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
@@ -351,7 +351,7 @@ describe('selection character format property applying validation', () => {
     });
     it('strikethrough,baselineAlignment,highlightColor,fontColor and validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Sample document', false);
+        editor.editorModule.insertText('Sample document');
         let prevFormat = editor.selection.characterFormat;
         event = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
@@ -366,7 +366,7 @@ describe('selection character format property applying validation', () => {
 
     it('paragraph format leftindent,rightindent , beforespacing and after spacing validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Sample document', false);
+        editor.editorModule.insertText('Sample document');
         let prevFormat = editor.selection.paragraphFormat;
         event = { keyCode: 65, preventDefault: function () { }, ctrlKey: true, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
@@ -379,7 +379,7 @@ describe('selection character format property applying validation', () => {
     });
     it('apply left indent for list', () => {
         editor.openBlank();
-        editor.editorModule.insertText('sample', false);
+        editor.editorModule.insertText('sample');
         editor.selection.handleHomeKey();
         editor.editor.applyNumbering('%1.', 'Arabic');
         editor.editorModule.onApplyParagraphFormat('leftIndent', 24, true, false);
@@ -387,7 +387,7 @@ describe('selection character format property applying validation', () => {
     });
     it('while insert table selected content remove false testing', () => {
         editor.openBlank();
-        editor.editorModule.insertText('sample', false);
+        editor.editorModule.insertText('sample');
         editor.editorModule.onEnter();
         editor.editor.insertTable(2, 2);
         editor.selection.handleUpKey();
@@ -397,15 +397,15 @@ describe('selection character format property applying validation', () => {
     });
     it('left indent on multiple selection validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('sample', false);
+        editor.editorModule.insertText('sample');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('sample', false);
+        editor.editorModule.insertText('sample');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('sample', false);
+        editor.editorModule.insertText('sample');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('sample', false);
+        editor.editorModule.insertText('sample');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('sample', false);
+        editor.editorModule.insertText('sample');
         editor.editorModule.onEnter();
         editor.selection.handleUpKey();
         editor.selection.handleUpKey();
@@ -424,8 +424,8 @@ describe('selection character format property applying validation', () => {
     });
     it('backspace testing on hyperlink validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('www.google.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('www.google.com');
+        editor.editorModule.insertText(' ');
         editor.selection.handleHomeKey();
         editor.selection.handleRightKey();
         editor.selection.handleRightKey();
@@ -464,9 +464,9 @@ describe('Delete and paste with history preservation', () => {
     });
     it('paste testing inside paragraph', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('Adventure');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('Adventure');
         editor.editorModule.onEnter();
         editor.enableLocalPaste = true;
         editor.selection.selectAll();
@@ -514,11 +514,11 @@ describe('Paste undo and redo validation ', () => {
     // });
     it('cut and enable paste true valdiation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('Adventure');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('Adventure');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Adventure', false);
+        editor.editorModule.insertText('Adventure');
         editor.selection.moveUp();
         editor.selection.handleControlShiftHomeKey();
         editor.editor.cut();
@@ -583,7 +583,7 @@ describe('Delete table at specfic row valdiation', () => {
         editor.openBlank();
         let event: any = { keyCode: 9, preventDefault: function () { }, ctrlKey: false, shiftKey: false, which: 0 };
         editor.viewer.onKeyDownInternal(event);
-        editor.editorModule.insertText('www.google.com', false);
+        editor.editorModule.insertText('www.google.com');
         expect(() => { editor.editorModule.onEnter() }).not.toThrowError();
     });
 
@@ -785,11 +785,11 @@ describe('shift widget validation ', () => {
     });
     it('shift paragraph widgets validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Adventure Works Cycles', false);
+        editor.editorModule.insertText('Adventure Works Cycles');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Adventure Works Cycles, the fictitious company on which the AdventureWorks sample databases are based, is a large, multinational manufacturing company. The company manufactures and sells metal and composite bicycles to North American, European and Asian commercial markets. While its base operation is located in Bothell, Washington with 290 employees, several regional sales teams are located throughout their market base.', false);
+        editor.editorModule.insertText('Adventure Works Cycles, the fictitious company on which the AdventureWorks sample databases are based, is a large, multinational manufacturing company. The company manufactures and sells metal and composite bicycles to North American, European and Asian commercial markets. While its base operation is located in Bothell, Washington with 290 employees, several regional sales teams are located throughout their market base.');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Adventure Works Cycles, the fictitious company on which the AdventureWorks sample databases are based, is a large, multinational manufacturing company. The company manufactures and sells metal and composite bicycles to North American, European and Asian commercial markets. While its base operation is located in Bothell, Washington with 290 employees, several regional sales teams are located throughout their market base.', false);
+        editor.editorModule.insertText('Adventure Works Cycles, the fictitious company on which the AdventureWorks sample databases are based, is a large, multinational manufacturing company. The company manufactures and sells metal and composite bicycles to North American, European and Asian commercial markets. While its base operation is located in Bothell, Washington with 290 employees, several regional sales teams are located throughout their market base.');
         editor.editorModule.onEnter();
         editor.selection.handleControlHomeKey();
         editor.selection.handleDownKey();
@@ -800,11 +800,11 @@ describe('shift widget validation ', () => {
     });
     it('shift paragraph to next page validation', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Adventure Works Cycles', false);
+        editor.editorModule.insertText('Adventure Works Cycles');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Adventure Works Cycles, the fictitious company on which the AdventureWorks sample databases are based, is a large, multinational manufacturing company. The company manufactures and sells metal and composite bicycles to North American, European and Asian commercial markets. While its base operation is located in Bothell, Washington with 290 employees, several regional sales teams are located throughout their market base.', false);
+        editor.editorModule.insertText('Adventure Works Cycles, the fictitious company on which the AdventureWorks sample databases are based, is a large, multinational manufacturing company. The company manufactures and sells metal and composite bicycles to North American, European and Asian commercial markets. While its base operation is located in Bothell, Washington with 290 employees, several regional sales teams are located throughout their market base.');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Adventure Works Cycles, the fictitious company on which the AdventureWorks sample databases are based, is a large, multinational manufacturing company. The company manufactures and sells metal and composite bicycles to North American, European and Asian commercial markets. While its base operation is located in Bothell, Washington with 290 employees, several regional sales teams are located throughout their market base.', false);
+        editor.editorModule.insertText('Adventure Works Cycles, the fictitious company on which the AdventureWorks sample databases are based, is a large, multinational manufacturing company. The company manufactures and sells metal and composite bicycles to North American, European and Asian commercial markets. While its base operation is located in Bothell, Washington with 290 employees, several regional sales teams are located throughout their market base.');
         editor.selection.handleControlHomeKey();
         editor.selection.handleDownKey();
         onEnter(editor);
@@ -843,14 +843,14 @@ describe('combine widgets validation ', () => {
         viewer = editor.viewer as PageLayoutViewer;
         editor.editor.insertTable(2, 2);
         editor.selection.handleDownKey();
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('Sample');
         editor.editorModule.onEnter();
         editor.editor.insertTable(2, 2);
         editor.selection.handleDownKey();
         editor.selection.handleDownKey();
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('Sample');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('Sample');
         editor.selection.handleUpKey();
         editor.selection.handleUpKey();
         editor.selection.handleUpKey();
@@ -864,23 +864,23 @@ describe('combine widgets validation ', () => {
     it('Combine table cell widgets validation', () => {
         editor.openBlank();
         viewer = editor.viewer as PageLayoutViewer;
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('Sample');
         editor.editorModule.onEnter();
         editor.editor.insertTable(2, 2);
         editor.editor.insertTable(2, 2);
-        editor.editorModule.insertText('Adventure Works Cycles, the fictitious company on which the AdventureWorks sample databases are based, is a large, multinational manufacturing company. The company manufactures and sells metal and composite bicycles to North American, European and Asian commercial markets. While its base operation is located in Bothell, Washington with 290 employees, several regional sales teams are located throughout their market base.', false);
+        editor.editorModule.insertText('Adventure Works Cycles, the fictitious company on which the AdventureWorks sample databases are based, is a large, multinational manufacturing company. The company manufactures and sells metal and composite bicycles to North American, European and Asian commercial markets. While its base operation is located in Bothell, Washington with 290 employees, several regional sales teams are located throughout their market base.');
         editor.selection.handleControlHomeKey();
         editor.selection.handleEndKey();
         for (let i: number = 0; i < 30; i++) {
             editor.editorModule.onEnter();
         }
-        editor.editorModule.insertText('sa', false);
+        editor.editorModule.insertText('sa');
         expect(viewer.pages.length).toBe(2);
     });
     it('get row width selected else validation', () => {
         editor.openBlank();
         viewer = editor.viewer as PageLayoutViewer;
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('Sample');
         editor.editorModule.onEnter();
         editor.editor.insertTable(2, 2);
 
@@ -920,7 +920,7 @@ describe('Paste and replace else part validation ', () => {
     it('Delete with selection containing table and paragraph', () => {
         editor.openBlank();
         viewer = editor.viewer as PageLayoutViewer;
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('Sample');
         editor.editorModule.onEnter();
         editor.editor.insertTable(2, 2);
 
@@ -942,10 +942,10 @@ describe('Paste and replace else part validation ', () => {
         editor.openBlank();
         editor.editorModule.copiedData = '';
         viewer = editor.viewer as PageLayoutViewer;
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('Sample');
         editor.selection.selectAll();
         editor.editor.cut();
-        editor.editorModule.insertText('Sample', false);
+        editor.editorModule.insertText('Sample');
         editor.editorModule.onEnter();
         editor.editorModule.insertTable(2, 2);
         editor.selection.handleUpKey();
@@ -991,24 +991,24 @@ describe('section combine validation ', () => {
         for (let i: number = 0; i < 47; i++) {
             editor.editorModule.onEnter();
         }
-        editor.editorModule.insertText('sample', false);
+        editor.editorModule.insertText('sample');
         expect((viewer.pages[viewer.pages.length - 1].bodyWidgets[0].lastChild as Widget).index).toBe(47);
     });
     it('hyperlink and delete else part validation', () => {
         editor.openBlank()
-        editor.editorModule.insertText('www.google.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('www.google.com');
+        editor.editorModule.insertText(' ');
         editor.selection.handleLeftKey();
         editor.editorModule.onDelete();
-        expect(() => { editor.editorModule.insertText(' ', false); }).not.toThrowError();
+        expect(() => { editor.editorModule.insertText(' '); }).not.toThrowError();
     });
     it('edit hyperlink in multiple paragraph validation', () => {
         editor.openBlank()
-        editor.editorModule.insertText('sample', false);
+        editor.editorModule.insertText('sample');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('sample', false);
+        editor.editorModule.insertText('sample');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('sample', false);
+        editor.editorModule.insertText('sample');
         editor.selection.handleUpKey();
         editor.selection.handleUpKey();
         editor.selection.handleLeftKey();
@@ -1021,7 +1021,7 @@ describe('section combine validation ', () => {
         editor.hyperlinkDialogModule.show();
         (editor.hyperlinkDialogModule as any).urlTextBox.value = 'www.gmail.com';
         editor.hyperlinkDialogModule.onInsertButtonClick();
-        expect(() => { editor.editorModule.insertText(' ', false); }).not.toThrowError();
+        expect(() => { editor.editorModule.insertText(' '); }).not.toThrowError();
     });
 });
 describe('Single backspace and delete at empty line widget validation', () => {
@@ -1066,11 +1066,11 @@ describe('Single backspace and delete at empty line widget validation', () => {
     });
     it('Delete with selection containing table and paragraph ', () => {
         editor.openBlank()
-        editor.editorModule.insertText('sample', false);
+        editor.editorModule.insertText('sample');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('sample', false);
+        editor.editorModule.insertText('sample');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('sample', false);
+        editor.editorModule.insertText('sample');
         editor.editorModule.onEnter();
         editor.editorModule.insertTable(2, 2);
         editor.selection.handleUpKey();
@@ -1084,12 +1084,12 @@ describe('Single backspace and delete at empty line widget validation', () => {
     });
     it('single delete in multiple hyperlink validation ', () => {
         editor.openBlank()
-        editor.editorModule.insertText('www.google.com', false);
+        editor.editorModule.insertText('www.google.com');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('www.google.com', false);
+        editor.editorModule.insertText('www.google.com');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('www.google.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('www.google.com');
+        editor.editorModule.insertText(' ');
         editor.selection.handleUpKey();
         editor.selection.handleShiftEndKey();
         editor.editorModule.onDelete();
@@ -1123,9 +1123,9 @@ describe('paragraph format Increase indent and decrease indent validation', () =
     });
     it('Increase indent with undo and redo', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Sampsle kjqwhj qhwjkdhjwhdkjqhdjkwqhdkjqhdkqhdkjqhdkjhqkdjh qkjdhkjqwhdkqhdkqhkdj hwkjd', false);
-        editor.editorModule.insertText('www.google.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('Sampsle kjqwhj qhwjkdhjwhdkjqhdjkwqhdkjqhdkqhdkjqhdkjhqkdjh qkjdhkjqwhdkqhdkqhkdj hwkjd');
+        editor.editorModule.insertText('www.google.com');
+        editor.editorModule.insertText(' ');
         let i: number = 0;
         while (i < 15) {
             editor.selection.increaseIndent();
@@ -1194,7 +1194,7 @@ describe('Delete table width undo and redo', () => {
     });
     it('Insert table aftet paragraph then delete', () => {
         editor.openBlank();
-        editor.editorModule.insertText('Syncfusion', false);
+        editor.editorModule.insertText('Syncfusion');
         editor.editorModule.onEnter();
         editor.editorModule.insertTable(2, 2);
         editor.selection.selectPosition(editor.selection.getDocumentStart(), editor.selection.getDocumentStart());

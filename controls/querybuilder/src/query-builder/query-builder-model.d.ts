@@ -1,5 +1,5 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, getComponent, MouseEventArgs, Browser } from '@syncfusion/ej2-base';import { Property, ChildProperty, Complex, L10n, closest, extend, isNullOrUndefined } from '@syncfusion/ej2-base';import { getInstance, addClass, removeClass, rippleEffect, detach, classList } from '@syncfusion/ej2-base';import { Internationalization, DateFormatOptions } from '@syncfusion/ej2-base';import { Button, RadioButton, ChangeEventArgs as ButtonChangeEventArgs } from '@syncfusion/ej2-buttons';import { DropDownList, ChangeEventArgs as DropDownChangeEventArgs, FieldSettingsModel, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';import { MultiSelect, MultiSelectChangeEventArgs, PopupEventArgs  } from '@syncfusion/ej2-dropdowns';import { EmitType, Event, EventHandler, getValue, Animation, BaseEventArgs } from '@syncfusion/ej2-base';import { Query, Predicate, DataManager, Deferred } from '@syncfusion/ej2-data';import { TextBox, NumericTextBox, InputEventArgs, ChangeEventArgs as InputChangeEventArgs } from '@syncfusion/ej2-inputs';import { DatePicker, ChangeEventArgs as CalendarChangeEventArgs } from '@syncfusion/ej2-calendars';import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';import { Tooltip } from '@syncfusion/ej2-popups';
-import {TemplateColumn,Validation,ChangeEventArgs,DisplayMode,SortDirection} from "./query-builder";
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, getComponent, MouseEventArgs, Browser } from '@syncfusion/ej2-base';import { Property, ChildProperty, Complex, L10n, closest, extend, isNullOrUndefined, Collection } from '@syncfusion/ej2-base';import { getInstance, addClass, removeClass, rippleEffect, detach, classList } from '@syncfusion/ej2-base';import { Internationalization, DateFormatOptions } from '@syncfusion/ej2-base';import { Button, RadioButton, ChangeEventArgs as ButtonChangeEventArgs } from '@syncfusion/ej2-buttons';import { DropDownList, ChangeEventArgs as DropDownChangeEventArgs, FieldSettingsModel, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';import { MultiSelect, MultiSelectChangeEventArgs, PopupEventArgs  } from '@syncfusion/ej2-dropdowns';import { EmitType, Event, EventHandler, getValue, Animation, BaseEventArgs } from '@syncfusion/ej2-base';import { Query, Predicate, DataManager, Deferred } from '@syncfusion/ej2-data';import { TextBox, NumericTextBox, InputEventArgs, ChangeEventArgs as InputChangeEventArgs } from '@syncfusion/ej2-inputs';import { DatePicker, ChangeEventArgs as CalendarChangeEventArgs } from '@syncfusion/ej2-calendars';import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';import { Tooltip, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
+import {TemplateColumn,Validation,ChangeEventArgs,RuleChangeEventArgs,DisplayMode,SortDirection} from "./query-builder";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -29,7 +29,7 @@ export interface ColumnsModel {
      * Specifies the values in columns or bind the values from sub controls.
      * @default null
      */
-    values?: string[] | number[];
+    values?: string[] | number[] | boolean[];
 
     /**
      * Specifies the operators in columns.
@@ -64,9 +64,9 @@ export interface ColumnsModel {
 }
 
 /**
- * Interface for a class Rules
+ * Interface for a class Rule
  */
-export interface RulesModel {
+export interface RuleModel {
 
     /**
      * Specifies the condition value in group.
@@ -76,9 +76,9 @@ export interface RulesModel {
 
     /**
      * Specifies the rules in group.
-     * @default 'rule'
+     * @default []
      */
-    rules?: RulesModel[];
+    rules?: RuleModel[];
 
     /**
      * Specifies the field value in group.
@@ -108,26 +108,7 @@ export interface RulesModel {
      * Specifies the sub controls value in group.
      * @default null
      */
-    value?: string[] | number[] | string | number;
-
-}
-
-/**
- * Interface for a class Rule
- */
-export interface RuleModel {
-
-    /**
-     * Specifies the condition value in group.
-     * @default 'and'
-     */
-    condition?: string;
-
-    /**
-     * Specifies the initial rule, which is JSON data.
-     * @default 'rule'
-     */
-    rules?: RulesModel[];
+    value?: string[] | number[] | string | number | boolean;
 
 }
 
@@ -178,6 +159,12 @@ export interface QueryBuilderModel extends ComponentModel{
      * @event
      */
     change?: EmitType<ChangeEventArgs>;
+
+    /**
+     * Triggers when changing the condition(AND/OR), field, value, operator is changed
+     * @event
+     */
+    ruleChange?: EmitType<RuleChangeEventArgs>;
 
     /**
      * Specifies the showButtons settings of the query builder component.

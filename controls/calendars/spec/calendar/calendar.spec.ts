@@ -488,6 +488,15 @@ describe('Calendar', () => {
             expect((new Date(getIdValue(calendar.tableBodyElement.querySelector('tr td.e-selected')))).toDateString()).toBe(new Date().toDateString())
             expect(calendar.value.toDateString()).toBe((new Date().toDateString()));
         });
+        it('selected date with other year navigation in Decade view test case', () => {
+            calendar = new Calendar({ value: new Date() });
+            calendar.appendTo('#calendar');
+            (<HTMLElement>document.getElementsByClassName('e-title')[0]).click();
+            (<HTMLElement>document.getElementsByClassName('e-title')[0]).click();
+            expect(calendar.currentView()).toBe('Decade');
+            (<HTMLElement>document.getElementsByClassName('e-other-year')[0]).click();
+            expect(calendar.currentView()).toBe('Year');
+        });
         it(' selected date with previous, next and title navigation  test case ', () => {
             calendar = new Calendar({ value: new Date() });
             calendar.appendTo('#calendar');

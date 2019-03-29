@@ -47,7 +47,7 @@
     }
 
     .e-input-wrapper-side.e-form-left {
-      padding: 0 8px 10px 0;
+      padding: $recurrence-left-padding;
     }
 
     .e-form-left {
@@ -130,7 +130,7 @@
 
     .e-days {
       .e-week-expander-label {
-        font-size: $recurrence-label-font-size;
+        font-size: $recurrence-label-font-nrml-size;
         font-weight: $recurrence-label-font-weight;
         margin-bottom: 8px;
       }
@@ -173,7 +173,7 @@
 
         .e-end-on-label {
           float: none;
-          font-size: $recurrence-label-font-size;
+          font-size: $recurrence-label-font-nrml-size;
           font-weight: $recurrence-label-font-weight;
           margin-bottom: $recurrence-month-label-bottom;
           padding-right: 16px;
@@ -190,7 +190,7 @@
       }
 
       &.e-non-week > .e-month-expander-label {
-        font-size: $recurrence-label-font-size;
+        font-size: $recurrence-label-font-nrml-size;
         font-weight: $recurrence-label-font-weight;
         margin-bottom: $recurrence-month-label-bottom;
         padding-right: 16px;
@@ -245,6 +245,7 @@
       }
 
       .e-input-wrapper-side.e-non-week > .e-month-expander-label {
+        font-size: $recurrence-label-font-bgr-size;
         margin-bottom: 0;
       }
 
@@ -253,6 +254,7 @@
       }
 
       .e-days .e-week-expander-label {
+        font-size: $recurrence-label-font-bgr-size;
         margin-bottom: 8px;
       }
 
@@ -261,6 +263,7 @@
       }
 
       .e-input-wrapper-side.e-end-on .e-end-on-label {
+        font-size: $recurrence-label-font-bgr-size;
         margin-bottom: 1px;
       }
 

@@ -1,14 +1,14 @@
 import { ListBase, ListBaseOptions, ListView, ItemCreatedArgs } from '@syncfusion/ej2-lists';
-import { createElement, select, selectAll, EventHandler, KeyboardEvents } from '@syncfusion/ej2-base';
+import { createElement, select, selectAll, EventHandler, KeyboardEvents, closest } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, addClass, removeClass, Touch, TapEventArgs, isVisible } from '@syncfusion/ej2-base';
-import { TouchEventArgs, MouseEventArgs, KeyboardEventArgs, getValue, setValue } from '@syncfusion/ej2-base';
+import { TouchEventArgs, MouseEventArgs, KeyboardEventArgs, getValue, setValue, remove } from '@syncfusion/ej2-base';
 import { IFileManager, FileOpenEventArgs, FileSelectEventArgs, NotifyArgs, FileBeforeLoadEventArgs } from '../base/interface';
 import * as events from '../base/constant';
 import { ReadArgs, MouseArgs } from '../../index';
 import * as CLS from '../base/classes';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { read } from '../common/operations';
-import { removeBlur, cutFiles, copyFiles, addBlur } from '../common/index';
+import { removeBlur, cutFiles, copyFiles, addBlur, openSearchFolder } from '../common/index';
 import { openAction, fileType, refresh, getImageUrl, getSortedData } from '../common/utility';
 import { createEmptyElement } from '../common/utility';
 import { createDialog, createImageDialog } from '../pop-up/dialog';
@@ -39,6 +39,7 @@ export class LargeIconsView {
     private isRendered: boolean = true;
     private tapCount: number = 0;
     private tapEvent: TapEventArgs;
+    private isSetModel: boolean = false;
 
     /**
      * Constructor for the LargeIcons module
@@ -107,7 +108,7 @@ export class LargeIconsView {
             let iconsView: Element = select('#' + this.parent.element.id + CLS.LARGEICON_ID, this.parent.element);
             let ul: HTMLUListElement = select('ul', iconsView) as HTMLUListElement;
             if (ul) {
-                ul.remove();
+                remove(ul);
             }
             this.listObj = {
                 ariaAttributes: {
@@ -146,17 +147,18 @@ export class LargeIconsView {
                     this.parent.uploadItem = [];
                 }
             }
-            this.parent.activeModule = 'largeiconsview';
+            let activeEle: NodeListOf<Element> = this.element.querySelectorAll('.' + CLS.ACTIVE);
+            if (activeEle.length !== 0) {
+                this.parent.activeModule = 'largeiconsview';
+            }
             iconsView.classList.remove(CLS.DISPLAY_NONE);
-            let pane: HTMLElement = <HTMLElement>select('#' + this.parent.element.id + CLS.CONTENT_ID, this.parent.element);
-            let bar: HTMLElement = <HTMLElement>select('#' + this.parent.element.id + CLS.BREADCRUMBBAR_ID, this.parent.element);
-            this.element.style.height = (pane.offsetHeight - bar.offsetHeight) + 'px';
+            this.adjustHeight();
             this.element.style.maxHeight = '100%';
             this.getItemCount();
             this.addEventListener();
             this.wireEvents();
             this.isRendered = true;
-            if (this.parent.persistData) { this.checkItem(); }
+            if (this.parent.selectedItems.length) { this.checkItem(); }
         }
     }
 
@@ -166,6 +168,12 @@ export class LargeIconsView {
      */
     private getModuleName(): string {
         return 'largeiconsview';
+    }
+
+    private adjustHeight(): void {
+        let pane: HTMLElement = <HTMLElement>select('#' + this.parent.element.id + CLS.CONTENT_ID, this.parent.element);
+        let bar: HTMLElement = <HTMLElement>select('#' + this.parent.element.id + CLS.BREADCRUMBBAR_ID, this.parent.element);
+        this.element.style.height = (pane.offsetHeight - bar.offsetHeight) + 'px';
     }
 
     private onItemCreated(args: ItemCreatedArgs): void {
@@ -196,11 +204,11 @@ export class LargeIconsView {
         args.item.firstElementChild.insertBefore(checkElement, args.item.firstElementChild.childNodes[0]);
     }
 
-    /* istanbul ignore next */
     private onLayoutChange(args: ReadArgs): void {
         if (this.parent.view === 'LargeIcons') {
             this.destroy();
             this.render(args);
+            /* istanbul ignore next */
             if (this.parent.cutNodes && this.parent.cutNodes.length !== 0) {
                 let indexes: number[] = this.getIndexes(args.files, this.parent.selectedNodes);
                 let length: number = 0;
@@ -236,6 +244,7 @@ export class LargeIconsView {
         let items: Object[] = JSON.parse(JSON.stringify(args.files));
         while (i < items.length) {
             let icon: string = fileType(items[i]);
+            /* istanbul ignore next */
             let pasteNodes: Object[] = this.parent.pasteNodes;
             let className: string = ((this.parent.selectedItems &&
                 this.parent.selectedItems.indexOf(getValue('name', args.files[i])) !== -1) ||
@@ -247,13 +256,13 @@ export class LargeIconsView {
             } else {
                 setValue('icon', icon, items[i]);
             }
-            setValue('htmlAttributes', { class: className }, items[i]);
+            setValue('htmlAttributes', { class: className, title: getValue('name', args.files[i]) }, items[i]);
             i++;
         }
         return items;
     }
 
-    private onInitialEnd(args: ReadArgs): void {
+    private onFinalizeEnd(args: ReadArgs): void {
         this.render(args);
         this.parent.notify(events.searchTextChange, args);
     }
@@ -264,6 +273,8 @@ export class LargeIconsView {
         this.clearSelect();
         this.selectItems(args.files, [getValue('name', this.parent.createdItem)]);
         this.parent.createdItem = null;
+        this.parent.largeiconsviewModule.element.focus();
+        this.parent.persistData = false;
     }
 
     /* istanbul ignore next */
@@ -342,9 +353,7 @@ export class LargeIconsView {
     }
 
     private onAfterRequest(args: Object): void {
-        if (getValue('action', args) === 'failure') {
-            this.isRendered = true;
-        }
+        this.isRendered = true;
     }
 
     /* istanbul ignore next */
@@ -355,7 +364,7 @@ export class LargeIconsView {
 
     private removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
-        this.parent.off(events.initialEnd, this.onInitialEnd);
+        this.parent.off(events.finalizeEnd, this.onFinalizeEnd);
         this.parent.off(events.createEnd, this.onCreateEnd);
         this.parent.off(events.deleteEnd, this.onDeleteEnd);
         this.parent.off(events.refreshEnd, this.onRefreshEnd);
@@ -377,7 +386,7 @@ export class LargeIconsView {
     }
 
     private addEventListener(): void {
-        this.parent.on(events.initialEnd, this.onInitialEnd, this);
+        this.parent.on(events.finalizeEnd, this.onFinalizeEnd, this);
         this.parent.on(events.createEnd, this.onCreateEnd, this);
         this.parent.on(events.deleteEnd, this.onDeleteEnd, this);
         this.parent.on(events.refreshEnd, this.onRefreshEnd, this);
@@ -400,13 +409,15 @@ export class LargeIconsView {
 
     private onPropertyChanged(e: NotifyArgs): void {
         if (e.module !== this.getModuleName() && e.module !== 'common') {
-            /* istanbul ignore next */
             return;
         }
         for (let prop of Object.keys(e.newProp)) {
             switch (prop) {
+                case 'height':
+                    this.adjustHeight();
+                    break;
                 case 'selectedItems':
-                    let activeEle: NodeListOf<Element> = this.element.querySelectorAll('.' + CLS.ACTIVE);
+                    this.isSetModel = true;
                     if (this.parent.selectedItems.length !== 0) {
                         let currentDataSource: Object[] = getValue(this.parent.path, this.parent.feFiles);
                         this.selectItems(currentDataSource, this.parent.selectedItems);
@@ -415,6 +426,7 @@ export class LargeIconsView {
                             this.removeActive(this.element.querySelectorAll('.' + CLS.ACTIVE)[0]);
                         }
                     }
+                    this.isSetModel = false;
                     break;
                 case 'showThumbnail':
                     refresh(this.parent);
@@ -476,11 +488,12 @@ export class LargeIconsView {
         this.wireClickEvent(false);
         EventHandler.remove(this.element, 'mouseover', this.onMouseOver);
         this.keyboardModule.destroy();
+        this.keyboardDownModule.destroy();
     }
 
     /* istanbul ignore next */
     private onMouseOver(e: MouseArgs): void {
-        let targetEle: Element = e.target.closest('.e-list-item');
+        let targetEle: Element = closest(e.target, '.e-list-item');
         removeBlur(this.parent as IFileManager, 'hover');
         if (targetEle !== null) {
             targetEle.classList.add(CLS.HOVER);
@@ -531,7 +544,7 @@ export class LargeIconsView {
 
     private doTapAction(eve: TapEventArgs): void {
         let target: Element = <Element>eve.originalEvent.target;
-        let item: Element = target.closest('.' + CLS.LIST_ITEM);
+        let item: Element = closest(target, '.' + CLS.LIST_ITEM);
         if (this.multiSelect || target.classList.contains(CLS.LIST_PARENT) || isNOU(item)) {
             this.clickHandler(eve);
         } else {
@@ -550,11 +563,13 @@ export class LargeIconsView {
 
     private clickHandler(e: TapEventArgs): void {
         let target: Element = <Element>e.originalEvent.target;
+        removeBlur(this.parent, 'hover');
         this.doSelection(target, e.originalEvent);
+        this.parent.activeModule = 'largeiconsview';
     }
     /** @hidden */
     public doSelection(target: Element, e: TouchEventArgs | MouseEventArgs | KeyboardEventArgs): void {
-        let item: Element = target.closest('.' + CLS.LIST_ITEM);
+        let item: Element = closest(target, '.' + CLS.LIST_ITEM);
         let fItem: Element = this.getFocusedItem();
         let cList: DOMTokenList = target.classList;
         this.parent.isFile = false;
@@ -607,6 +622,7 @@ export class LargeIconsView {
     }
 
     private dblClickHandler(e: TapEventArgs): void {
+        this.parent.activeModule = 'largeiconsview';
         let target: Element = <Element>e.originalEvent.target;
         this.doOpenAction(target);
     }
@@ -624,7 +640,7 @@ export class LargeIconsView {
 
     private doOpenAction(target: Element): void {
         if (isNOU(target)) { return; }
-        let item: Element = target.closest('.' + CLS.LIST_ITEM);
+        let item: Element = closest(target, '.' + CLS.LIST_ITEM);
         this.parent.isFile = false;
         if (!isNOU(item)) {
             this.updateType(item);
@@ -634,11 +650,16 @@ export class LargeIconsView {
             if (eventArgs.cancel) { return; }
             let text: string = select('.' + CLS.LIST_TEXT, item).textContent;
             if (!this.parent.isFile) {
-                let newPath: string = this.parent.path + text + '/';
-                this.parent.setProperties({ path: newPath }, true);
-                this.parent.pathId.push(getValue('nodeId', details));
-                this.parent.itemData = [details];
-                openAction(this.parent);
+                let val: string = this.parent.breadcrumbbarModule.searchObj.element.value;
+                if (val === '') {
+                    let newPath: string = this.parent.path + text + '/';
+                    this.parent.setProperties({ path: newPath }, true);
+                    this.parent.pathId.push(getValue('nodeId', details));
+                    this.parent.itemData = [details];
+                    openAction(this.parent);
+                } else {
+                    openSearchFolder(this.parent, details);
+                }
                 this.parent.setProperties({ selectedItems: [] }, true);
             } else {
                 let icon: string = fileType(details);
@@ -717,12 +738,10 @@ export class LargeIconsView {
                 this.navigateItem(firstItem);
                 break;
             case 'tab':
-                if (!isNOU(firstItem)) {
-                    this.startItem = firstItem;
-                    this.clearSelect();
+                if (!isNOU(fItem)) {
+                    this.addFocus(fItem);
+                } else if (!isNOU(firstItem)) {
                     this.addFocus(firstItem);
-                    this.parent.notify(events.selectionChanged, {});
-                    this.triggerSelect('select', firstItem);
                 }
                 break;
             case 'moveDown':
@@ -981,7 +1000,9 @@ export class LargeIconsView {
     private addActive(nextItem: Element): void {
         if (!isNOU(nextItem)) {
             if (!nextItem.classList.contains(CLS.ACTIVE)) {
-                this.parent.selectedItems.push(nextItem.textContent);
+                if (!this.isSetModel) {
+                    this.parent.selectedItems.push(nextItem.textContent);
+                }
                 addClass([nextItem], [CLS.ACTIVE]);
                 this.checkState(nextItem, true);
             }
@@ -1015,12 +1036,12 @@ export class LargeIconsView {
         if (toCheck) {
             if (!checkEle.classList.contains(CLS.CHECK)) {
                 addClass([checkEle], CLS.CHECK);
-                checkEle.closest('.' + CLS.CB_WRAP).setAttribute('aria-checked', 'true');
+                closest(checkEle, '.' + CLS.CB_WRAP).setAttribute('aria-checked', 'true');
             }
         } else {
             if (checkEle.classList.contains(CLS.CHECK)) {
                 removeClass([checkEle], CLS.CHECK);
-                checkEle.closest('.' + CLS.CB_WRAP).setAttribute('aria-checked', 'false');
+                closest(checkEle, '.' + CLS.CB_WRAP).setAttribute('aria-checked', 'false');
             }
         }
     }
@@ -1051,7 +1072,9 @@ export class LargeIconsView {
     }
 
     private triggerSelect(action: string, item: Element): void {
-        let eventArgs: FileSelectEventArgs = { action: action, fileDetails: this.getItemObject(item) };
+        let data: Object = this.getItemObject(item);
+        this.parent.visitedData = data;
+        let eventArgs: FileSelectEventArgs = { action: action, fileDetails: data };
         this.parent.trigger('fileSelect', eventArgs);
     }
 

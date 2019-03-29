@@ -21,7 +21,8 @@ export class SearchSettings extends ChildProperty<SearchSettings> {
     public filterType: FilterType;
 
     /**
-     *  Enable or disable the case sensitive.
+     * If ignoreCase is set to false, searches files that match exactly, 
+     * else searches files that are case insensitive(uppercase and lowercase letters treated the same).
      * @default true
      */
     @Property(true)

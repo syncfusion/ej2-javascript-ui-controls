@@ -25,7 +25,7 @@ export class LineBase {
      * @return {void}
      * @private
      */
-    public improveChartPerformance(series: Series): Points[] {
+    public enableComplexProperty(series: Series): Points[] {
         let tempPoints: Points[] = [];
         let xVisibleRange: VisibleRangeModel = series.xAxis.visibleRange;
         let yVisibleRange: VisibleRangeModel = series.yAxis.visibleRange;

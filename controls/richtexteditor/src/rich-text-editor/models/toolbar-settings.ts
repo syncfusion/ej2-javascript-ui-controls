@@ -87,7 +87,8 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
 
     /**
      * An array of string or object that is used to configure items.
-     * @default predefinedItems
+     * @default ['Bold', 'Italic', 'Underline', '|', 'Formats', 'Alignments', 'OrderedList',
+     * 'UnorderedList', '|', 'CreateLink', 'Image', '|', 'SourceCode', 'Undo', 'Redo']
      */
     @Property(predefinedItems)
     public items: (string | IToolbarItems)[];
@@ -149,7 +150,7 @@ export class ImageSettings extends ChildProperty<ImageSettings> {
     public resize: boolean;
     /**    
      * Defines the minimum Width of the image.
-     * @default 0
+     * @default '0'
      */
     @Property(0)
     public minWidth: string | number;
@@ -161,7 +162,7 @@ export class ImageSettings extends ChildProperty<ImageSettings> {
     public maxWidth: string | number;
     /**    
      * Defines the minimum Height of the image.
-     * @default 0
+     * @default '0'
      */
     @Property(0)
     public minHeight: string | number;

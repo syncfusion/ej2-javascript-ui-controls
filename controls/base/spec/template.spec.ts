@@ -173,5 +173,16 @@ describe('Template', () => {
         result.push(createElement('div', { innerHTML: '' }));
         expect(outDOM(template.compile(templateStr), dsJSONSubArray)).toEqual(result);
     });
-
+    it('multiple string pass in the template engine',()=>{
+        let data: object = { name: 'Aston Martin',val: 'hi' };
+        let getDOMString: (data: object) => any = template.compile('<div>${name,val}</div>');
+        let output: any = getDOMString(data);
+        expect(output).toEqual("<div>Aston Martinhi</div>");
+    });
+    it('single string pass in the template engine',()=>{
+        let data: object = { name: 'Aston Martin',val: 'hi' };
+        let getDOMString: (data: object) => any = template.compile('<div>${name}</div>');
+        let output: any = getDOMString(data);
+        expect(output).toEqual("<div>Aston Martin</div>");
+    });
 });

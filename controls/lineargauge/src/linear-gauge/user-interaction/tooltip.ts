@@ -65,6 +65,8 @@ export class GaugeTooltip {
             this.axisIndex = current.axisIndex;
             this.currentPointer = current.pointer;
             let customTooltipFormat: boolean = this.tooltip.format && this.tooltip.format.match('{value}') !== null;
+            this.tooltip.textStyle.fontFamily = this.gauge.themeStyle.fontFamily || this.tooltip.textStyle.fontFamily;
+            this.tooltip.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity || this.tooltip.textStyle.opacity;
             tooltipContent = customTooltipFormat ? textFormatter(
                 this.tooltip.format, { value: this.currentPointer.currentValue }, this.gauge) :
                 formatValue(this.currentPointer.currentValue, this.gauge).toString();
@@ -117,6 +119,7 @@ export class GaugeTooltip {
                     border: args.tooltip.border,
                     theme: args.gauge.theme as TooltipTheme
                 });
+                this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                 this.svgTooltip.appendTo(tooltipEle);
             }
         } else {

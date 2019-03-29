@@ -5,7 +5,7 @@ import { select, selectAll } from '@syncfusion/ej2-base';
 import { InPlaceEditor } from '../../src/inplace-editor/base/index';
 import { Rte } from '../../src/inplace-editor/modules/index';
 import * as classes from '../../src/inplace-editor/base/classes';
-import { renderEditor, destroy } from './../render.spec';
+import { renderEditor, triggerKeyBoardEvent, destroy } from './../render.spec';
 import { profile, inMB, getMemoryProfile } from './../common.spec';
 
 InPlaceEditor.Inject(Rte);
@@ -60,6 +60,20 @@ describe('Rte module', () => {
             editorObj.rteModule.compObj.dataBind();
             editorObj.save();
             expect(valueEle.innerHTML === 'testing').toEqual(true);
+        });
+        it('Without compObj data to update value method testing', () => {
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-richtexteditor', ele).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('testing');
+            expect(editorObj.rteModule.compObj.value).toEqual('testing');
+            editorObj.rteModule.compObj.value = 'Tested';
+            expect(editorObj.rteModule.compObj.value).toEqual('Tested');
+            editorObj.rteModule.compObj = undefined;
+            editorObj.save();
+            expect(editorObj.value).toEqual('testing');
         });
     });
     describe('Duplicate ID availability testing', () => {
@@ -345,12 +359,43 @@ describe('Rte module', () => {
         });
     });
 
-    // inplce editor text is not saved in RTE
-    describe('inplce editor RTE text Save', () => {
+    // Enter key action not working inside RTE
+    describe('Enter key action testing inside RTE', () => {
         let editorObj: any;
         let ele: HTMLElement;
         let valueEle: HTMLElement;
         let valueWrapper: HTMLElement;
+        afterAll((): void => {
+            destroy(editorObj);
+        });
+        it('Enter key testing', () => {
+            editorObj = renderEditor({
+                type: 'RTE',
+                mode: 'Inline',
+                value: 'RichText'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual('RichText');
+            expect(valueEle.innerHTML).toEqual('RichText');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-richtexteditor', document.body).length === 1).toEqual(true);
+            triggerKeyBoardEvent(select('.e-rte-content .e-content', ele) as HTMLElement, 13);
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-richtexteditor', document.body).length === 1).toEqual(true);
+            (<HTMLElement>select('.e-btn-save', ele)).focus();
+            triggerKeyBoardEvent(select('.e-btn-save', ele) as HTMLElement, 13);
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(false);
+            expect(selectAll('.e-richtexteditor', document.body).length === 1).toEqual(false);
+        });
+    });
+
+    // inplce editor text is not saved in RTE
+    describe('inplce editor RTE text Save', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
         beforeAll((done: Function): void => {
             editorObj = renderEditor({
                 type: 'RTE',

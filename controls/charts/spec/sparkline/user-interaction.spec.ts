@@ -67,7 +67,7 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
                 expect(path[4]).toBe('24.5');
                 expect(path[5]).toBe('95');
                 expect(ele.getAttribute('fill')).toBe('transparent');
-                expect(ele.getAttribute('stroke')).toBe('red');
+                expect(ele.getAttribute('stroke')).toBe('#000000');
                 expect(ele.getAttribute('stroke-width')).toBe('2');
             };
             sparkline.appendTo('#' + id);
@@ -82,7 +82,7 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
             expect(path[4]).toBe('63.5');
             expect(path[5]).toBe('95');
             expect(ele.getAttribute('fill')).toBe('transparent');
-            expect(ele.getAttribute('stroke')).toBe('red');
+            expect(ele.getAttribute('stroke')).toBe('#000000');
             expect(ele.getAttribute('stroke-width')).toBe('2');
         });
         it('Sparkline tracker line move to other point checking', () => {
@@ -95,7 +95,7 @@ describe('Sparkline tooltip and tracker checking Spec', () => {
             expect(path[4]).toBe('180.5');
             expect(path[5]).toBe('95');
             expect(ele.getAttribute('fill')).toBe('transparent');
-            expect(ele.getAttribute('stroke')).toBe('red');
+            expect(ele.getAttribute('stroke')).toBe('#000000');
             expect(ele.getAttribute('stroke-width')).toBe('2');
         });
         it('Sparkline tracker line move out of container checking', () => {

@@ -25,7 +25,7 @@ export class StepLineSeries extends LineBase {
         let lineLength: number;
         let point1: ChartLocation;
         let point2: ChartLocation;
-        let visiblePoints: Points[] = this.improveChartPerformance(series);
+        let visiblePoints: Points[] = this.enableComplexProperty(series);
         if (xAxis.valueType === 'Category' && xAxis.labelPlacement === 'BetweenTicks') {
             lineLength = 0.5;
         } else {

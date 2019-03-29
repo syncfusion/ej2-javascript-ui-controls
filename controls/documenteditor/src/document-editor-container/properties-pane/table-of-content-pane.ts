@@ -1,5 +1,5 @@
 import { DocumentEditor, ContextType, TableOfContentsSettings } from '../../document-editor/index';
-import { createElement, L10n, classList } from '@syncfusion/ej2-base';
+import { createElement, L10n } from '@syncfusion/ej2-base';
 import { Button, CheckBox } from '@syncfusion/ej2-buttons';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { Toolbar } from '../tool-bar';
@@ -95,9 +95,10 @@ export class TocProperties {
             headerDivMargin = 'margin-right:5.5px;';
             closeButtonMargin = 'margin-left:7px;';
         }
+
         let headerDiv: HTMLElement = createElement('div', {
             id: this.elementId + 'toc_id',
-            styles: 'display: block;margin-top:8px;margin-bottom: 2px;' + headerDivMargin
+            styles: 'display: block;'
         });
         container.appendChild(headerDiv);
         this.element.appendChild(container);
@@ -233,7 +234,7 @@ export class TocProperties {
             checkboxElementMargin = 'margin-right:5.5px;';
         }
         // tslint:disable-next-line:max-line-length
-        let checkboxElement: HTMLElement = createElement('div', { id: 'toc_checkboxDiv', styles: 'margin-bottom:20px;' });
+        let checkboxElement: HTMLElement = createElement('div', { id: 'toc_checkboxDiv', styles: 'margin-bottom:36px;' });
         container.appendChild(checkboxElement);
         let showPageNumberDiv: HTMLElement = createElement('div', { className: 'e-de-toc-checkbox1' });
         showPageNumberDiv.setAttribute('title', this.localObj.getConstant('Show page numbers in table of contents.'));

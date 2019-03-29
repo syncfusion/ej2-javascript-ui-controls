@@ -104,7 +104,7 @@ export class TimelineEvent extends MonthEvent {
             appLeft = (this.parent.enableRtl) ? 0 : position;
             appRight = (this.parent.enableRtl) ? position : 0;
             let height: number = ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;
-            if ((this.cellHeight > height) || this.parent.enableAdaptiveRows) {
+            if ((this.cellHeight > height) || this.parent.rowAutoHeight) {
                 let appointmentElement: HTMLElement = this.createAppointmentElement(event, resIndex);
                 this.applyResourceColor(appointmentElement, event, 'backgroundColor', this.groupOrder);
                 setStyleAttribute(appointmentElement, {
@@ -112,7 +112,7 @@ export class TimelineEvent extends MonthEvent {
                 });
                 this.wireAppointmentEvents(appointmentElement, false, event);
                 this.renderEventElement(event, appointmentElement, cellTd);
-                if (this.parent.enableAdaptiveRows) {
+                if (this.parent.rowAutoHeight) {
                     let firstChild: HTMLElement = this.getFirstChild(resIndex);
                     this.updateCellHeight(firstChild, height);
                 }

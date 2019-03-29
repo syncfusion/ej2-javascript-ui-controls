@@ -106,7 +106,7 @@ export class FontDialog {
         this.target.appendChild(fontDiv);
         let sizeDiv: HTMLElement = this.getFontSizeDiv(locale, isRtl);
         this.target.appendChild(sizeDiv);
-        let colorDiv: HTMLElement = createElement('div', { id: id + '_fontColor', styles: 'margin-top:15px;' });
+        let colorDiv: HTMLElement = createElement('div', { id: id + '_fontColor', styles: 'margin-top:14px;' });
         this.fontColorDiv = createElement('div', { id: id + '_fontColorDiv', className: 'e-de-font-dlg-display' });
         let fontColorLabel: HTMLElement = createElement('label', {
             className: 'e-de-font-dlg-header-font-color e-de-font-color-margin',

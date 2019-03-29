@@ -5,7 +5,6 @@ import { Property, ChildProperty } from '@syncfusion/ej2-base';
  */
 export class AjaxSettings extends ChildProperty<AjaxSettings> {
     /**
-     * @hidden
      * Specifies URL to download the files from server.
      * @default null
      */
@@ -20,7 +19,6 @@ export class AjaxSettings extends ChildProperty<AjaxSettings> {
     public getImageUrl: string;
 
     /**
-     * @hidden
      * Specifies URL to upload the files to server.
      * @default null
      */

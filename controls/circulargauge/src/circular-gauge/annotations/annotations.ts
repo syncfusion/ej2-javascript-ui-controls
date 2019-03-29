@@ -51,7 +51,7 @@ export class Annotations {
         let childElement: HTMLElement = createElement('div', {
             id: this.elementId + '_Axis_' + axisIndex + '_Annotation_' + annotationIndex,
             styles: 'position: absolute; z-index:' + annotation.zIndex + ';transform:' +
-            (annotation.autoAngle ? 'rotate(' + (annotation.angle - 90) + 'deg)' : 'rotate(0deg)') + ';'
+                (annotation.autoAngle ? 'rotate(' + (annotation.angle - 90) + 'deg)' : 'rotate(0deg)') + ';'
         });
         let argsData: IAnnotationRenderEventArgs = {
             cancel: false, name: annotationRender, content: annotation.content,
@@ -102,7 +102,7 @@ export class Annotations {
         return 'Annotations';
     }
     /**
-     * To destroy the annotation. 
+     * To destroy the annotation.
      * @return {void}
      * @private
      */

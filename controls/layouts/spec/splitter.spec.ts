@@ -740,7 +740,7 @@ describe('Splitter Control', () => {
             let mouseEvent = document.createEvent('MouseEvents');
             mouseEvent.initEvent ('mouseover', true, true);
             (document.querySelector('.e-split-bar-horizontal') as HTMLElement).dispatchEvent(mouseEvent);
-            expect(splitterObj.element.querySelectorAll('.e-split-bar.e-split-bar-horizontal')[0].classList.contains('e-split-bar-hover')).toBe(true);
+            expect(splitterObj.element.querySelectorAll('.e-split-bar.e-split-bar-horizontal')[0].classList.contains('e-split-bar-hover')).toBe(false);
             mouseEvent.initEvent ('mouseout', true, true);
             (document.querySelector('.e-split-bar-horizontal') as HTMLElement).dispatchEvent(mouseEvent);
             expect(splitterObj.element.querySelectorAll('.e-split-bar.e-split-bar-horizontal')[0].classList.contains('e-split-bar-hover')).toBe(false);
@@ -3342,6 +3342,119 @@ describe('Splitter Control', () => {
             afterEach(() => {
                 Browser.userAgent = defaultUserAgent;
             });
+        });
+
+    //document click on without separator
+    describe('Expand Collapse function in mobile device', () => {
+        let defaultUserAgent= navigator.userAgent;
+        beforeEach((done: Function) => {
+            Browser.userAgent="Mozilla/5.0 (Linux; Android 8.0; Pixel 2 Build/OPD3.170816.012) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Mobile Safari/537.36";
+            done();
+        });
+        let splitterObj: any;
+        beforeAll((): void => {
+        let element: HTMLElement = createElement('div', { id: 'default'});
+        document.body.appendChild(element);
+        splitterObj = new Splitter({ height: '400px', width: '400px'});
+        splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+        document.body.innerHTML = '';
+        });
+        it('without separator', (done) => {
+            let event = document.createEvent('HTMLEvents');
+            event.initEvent ('click', true, true);
+            setTimeout(() => {
+                document.body.dispatchEvent(event);
+                done();
+            }, 200);
+        });
+        afterEach(() => {
+            Browser.userAgent = defaultUserAgent;
+        });
+    });
+    // mouse hover on split-bar immediately
+    describe('mouseenter on splitbar', () => {
+        let splitterObj: any;
+        beforeAll((): void => {
+        let element: HTMLElement = createElement('div', { id: 'default'});
+        let child1: HTMLElement = createElement('div');
+        let child2: HTMLElement = createElement('div');
+        element.appendChild(child1);
+        element.appendChild(child2);
+        document.body.appendChild(element);
+        splitterObj = new Splitter({ height: '400px', separatorSize: 10, width: '400px'});
+        splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+        document.body.innerHTML = '';
+        });
+    it('show expand/collapseicons with some delay', () => {
+        let mouseEvent = document.createEvent('MouseEvents');
+        mouseEvent.initEvent ('mouseenter', true, true);
+        (document.querySelector('.e-split-bar-horizontal') as HTMLElement).dispatchEvent(mouseEvent);
+        expect(splitterObj.element.querySelectorAll('.e-split-bar.e-split-bar-horizontal')[0].classList.contains('e-split-bar-hover')).toBe(false);
+        setTimeout(() => {
+            (splitterObj.element.querySelector('.e-split-bar-horizontal') as HTMLElement).dispatchEvent(mouseEvent);
+            expect(splitterObj.element.querySelectorAll('.e-split-bar.e-split-bar-horizontal')[0].classList.contains('e-split-bar-hover')).toBe(false);
+        }, 100);
+        
+        mouseEvent.initEvent ('mouseleave', true, true);
+        (splitterObj.element.querySelector('.e-split-bar-horizontal') as HTMLElement).dispatchEvent(mouseEvent);
+            expect(splitterObj.element.querySelectorAll('.e-split-bar.e-split-bar-horizontal')[0].classList.contains('e-split-bar-hover')).toBe(false);
+        });
+        });
+        
+        // click on splitbar
+        describe('click on splitbar', () => {
+        let splitterObj: any;
+        beforeAll((): void => {
+        let element: HTMLElement = createElement('div', { id: 'default'});
+        let child1: HTMLElement = createElement('div');
+        let child2: HTMLElement = createElement('div');
+        element.appendChild(child1);
+        element.appendChild(child2);
+        document.body.appendChild(element);
+        splitterObj = new Splitter({ height: '400px', separatorSize: 10, width: '400px', paneSettings: [{ size: '50%' }, {}]});
+        splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+        document.body.innerHTML = '';
+        });
+        
+        it('show expand/collapseicons with some delay', () => {
+        let mouseEvent = document.createEvent('MouseEvents');
+        mouseEvent.initEvent ('click', true, true);
+        (splitterObj.element.querySelector('.e-split-bar-horizontal') as HTMLElement).dispatchEvent(mouseEvent);
+        expect(splitterObj.element.querySelectorAll('.e-split-bar.e-split-bar-horizontal')[0].classList.contains('e-split-bar-hover')).toBe(true);
+        (splitterObj.element).dispatchEvent(mouseEvent);
+        });
+    });
+        // mouse enter for small span of  time
+        describe('mouseenter on splitbar', () => {
+            let splitterObj1: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            splitterObj1 = new Splitter({ height: '400px', separatorSize: 10, width: '400px'});
+            splitterObj1.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+        
+        it('dont show icon for small delay', () => {
+        let mouseEvent = document.createEvent('MouseEvents');
+        mouseEvent.initEvent ('mouseenter', true, true);
+        (document.querySelector('.e-split-bar-horizontal') as HTMLElement).dispatchEvent(mouseEvent);
+        expect(splitterObj1.element.querySelectorAll('.e-split-bar.e-split-bar-horizontal')[0].classList.contains('e-split-bar-hover')).toBe(false);
+        mouseEvent.initEvent ('mouseleave', true, true);
+        expect(splitterObj1.element.querySelectorAll('.e-split-bar.e-split-bar-horizontal')[0].classList.contains('e-split-bar-hover')).toBe(false);
+        });
         });
 
  });

@@ -114,5 +114,13 @@ export const listConversionFilters: { [key: string]: string } = {
     'first': 'MsoListParagraphCxSpFirst',
     'middle': 'MsoListParagraphCxSpMiddle',
     'last': 'MsoListParagraphCxSpLast'
-
 };
+
+/**
+ * Dom-Node Grouping of self closing tags
+ * @hidden
+ */
+export const selfClosingTags: string[] = [
+    'BR',
+    'IMG'
+];

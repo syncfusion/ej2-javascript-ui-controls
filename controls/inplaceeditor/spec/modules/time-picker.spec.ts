@@ -51,8 +51,20 @@ describe('TimePicker module', () => {
             expect(document.activeElement.tagName === 'INPUT').toEqual(true);
         });
         it('Clear icon availability testing', () => {
-            expect(editorObj.timeModule.compObj.showClearButton === true).toEqual(true);
-            expect(selectAll('.e-clear-icon', ele).length === 1).toEqual(true);
+            expect(editorObj.timeModule.compObj.showClearButton).toBe(true);
+            expect(selectAll('.e-clear-icon', ele).length).toBe(1);
+        });
+        it('Clear icon availability testing for false', () => {
+            editorObj.timeModule.compObj.showClearButton = false;
+            editorObj.timeModule.compObj.dataBind();
+            expect(editorObj.timeModule.compObj.showClearButton).toBe(false);
+            expect(selectAll('.e-clear-icon', ele).length).toBe(0);
+        });
+        it('Clear icon availability testing for true', () => {
+            editorObj.timeModule.compObj.showClearButton = true;
+            editorObj.timeModule.compObj.dataBind();
+            expect(editorObj.timeModule.compObj.showClearButton).toBe(true);
+            expect(selectAll('.e-clear-icon', ele).length).toBe(1);
         });
         it('Value property testing', () => {
             expect(editorObj.timeModule.compObj.value.toString() === currentDate.toString()).toEqual(true);
@@ -66,12 +78,28 @@ describe('TimePicker module', () => {
             expect(valueEle.innerHTML === newDate.toLocaleTimeString().replace(/(.*)\D\d+/, '$1')).toEqual(true);
         });
         it('value as date string', (done: Function) => {
-            editorObj.value = "2018-11-29T10:35:17.5647822+05:30";
+            editorObj.value = "01/02/2018 10:35 AM";
             editorObj.dataBind();
             setTimeout(() => {
-                // expect(valueEle.innerHTML === '10:35 AM').toEqual(true);
+                expect(valueEle.innerHTML === '10:35 AM').toEqual(true);
                 done();
             }, 500);
+        });
+        it('Without compObj data to update value method testing', () => {
+            editorObj.value = new Date('01/02/2018 10:10 AM');
+            editorObj.dataBind();
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-timepicker', ele).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(new Date('01/02/2018 10:10 AM'));
+            expect(editorObj.timeModule.compObj.value).toEqual(new Date('01/02/2018 10:10 AM'));
+            editorObj.timeModule.compObj.value = new Date('01/03/2018 10:10 AM');
+            expect(editorObj.timeModule.compObj.value).toEqual(new Date('01/03/2018 10:10 AM'));
+            editorObj.timeModule.compObj = undefined;
+            editorObj.save();
+            expect(editorObj.value).toEqual(new Date('01/02/2018 10:10 AM'));
         });
     });
     describe('Value as "" with testing', () => {
@@ -596,6 +624,46 @@ describe('TimePicker module', () => {
             expect(selectAll('.e-timepicker', document.body).length === 1).toEqual(true);
             editorObj.save();
             expect(dateString).toEqual(date.toISOString());
+        });
+    });
+
+    describe('Model - value child property update testing', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('Default value with initial render testing', () => {
+            let date: Date = new Date('4/9/2018 12:30 AM');
+            editorObj = renderEditor({
+                type: 'Time',
+                mode: 'Inline',
+                value: date
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(date);
+            expect(valueEle.innerHTML).toEqual('12:30 AM');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-timepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(date);
+            expect(editorObj.model.value).toEqual(date);
+            expect((<HTMLInputElement>select('.e-timepicker', document.body)).value).toEqual('12:30 AM');
+            (<HTMLInputElement>select('.e-timepicker', document.body)).value = '';
+            editorObj.setProperties({ value: null }, true);
+            editorObj.timeModule.compObj.value = null;
+            editorObj.save();
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-timepicker', document.body).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual(null);
+            expect((<HTMLInputElement>select('.e-timepicker', document.body)).value).toEqual('');
         });
     });
 

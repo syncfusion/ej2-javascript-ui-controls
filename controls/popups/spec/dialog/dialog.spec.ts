@@ -68,7 +68,6 @@ afterAll(() => {
     document.body.innerHTML = '';
 });
 });
-
 // utility dialog without modal
 describe('default alert utility dialog without modal', () => {
     beforeAll(() => {
@@ -155,7 +154,6 @@ afterAll(() => {
     document.body.innerHTML = '';
 });
 });
-
 // utility dialog without modal
 describe('create alert utility dialog', () => {
     beforeAll(() => {
@@ -769,7 +767,37 @@ describe('Dialog Control', () => {
             expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(2);
             expect(dialog1.btnObj.length).toBe(2);
         });
-
+        it('EJ2-22770-clear dialog buttons with empty object testing', () => {
+            let dialog1: any;
+            let dlgcontent1: HTMLElement = createElement("div");
+            dlgcontent1.className = "samplecontent";
+            dialog1 = new Dialog({ header: "Dialog", content: dlgcontent1, buttons: [{ buttonModel: { content: "left" } }, { buttonModel: { content: "right" } }], }, '#dialog');
+            expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(2);
+            dialog1.buttons=[{}];
+            dialog1.dataBind();
+            expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(0);
+        });
+        it('EJ2-22770-clear dialog buttons  with empty array testing', () => {
+            let dialog1: any;
+            let dlgcontent1: HTMLElement = createElement("div");
+            dlgcontent1.className = "samplecontent";
+            dialog1 = new Dialog({ header: "Dialog", content: dlgcontent1, buttons: [{ buttonModel: { content: "left" } }, { buttonModel: { content: "right" } }], }, '#dialog');
+            expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(2);
+            dialog1.buttons=[];
+            dialog1.dataBind();
+            expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(0);
+        });
+        it('EJ2-22770-dynamic dialog buttons testing', () => {
+            let dialog1: any;
+            let dlgcontent1: HTMLElement = createElement("div");
+            dlgcontent1.className = "samplecontent";
+            dialog1 = new Dialog({ header: "Dialog", content: dlgcontent1, }, '#dialog');
+            expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(0);
+            dialog1.buttons=[{ buttonModel: { content: "left" } }, { buttonModel: { content: "right" } }]
+            dialog1.dataBind();
+            expect(document.getElementById('dialog').querySelectorAll('.e-footer-content .e-btn').length).toBe(2);
+            expect(dialog1.btnObj.length).toBe(2);
+        });
         it('dialog getButtons testing', () => {
             let dialog1: any;
             let dlgcontent1: HTMLElement = createElement("div");
@@ -2306,5 +2334,59 @@ describe('Testing resizing option', () => {
         headerHeight = parseInt(computedHeaderHeight.slice(0, computedHeaderHeight.indexOf('p')), 10);
         expect(isNullOrUndefined(headerHeight)).toBe(false);
         expect(isNaN(headerHeight)).toBe(false);
+    });
+    describe('confirm utility dialog without modal and default button actions', () => {
+        beforeAll(() => {
+            DialogUtility.confirm({
+                isModal: false,
+                showCloseIcon: false,
+               cssClass: 'sample',
+               zIndex : 250 ,
+               open :  function() {
+                addClass([document.getElementById('dialog')], 'open');
+               }  ,
+               close : function() {
+                addClass([document.getElementById('dialog')], 'close');
+               }               
+             });
+    });
+    afterAll(() => {
+        document.body.innerHTML = '';
+    });
+    it('confirm utility - cssClass Checking',()=>{
+        expect(document.getElementsByClassName('e-confirm-dialog')[0].classList.contains('sample')).toBe(true);
+        (<HTMLElement>document.getElementsByClassName('e-confirm-dialog')[0]).style.zIndex==='250';
+        setTimeout(() => {
+            expect(document.getElementById('dialog').classList.contains("open")).toEqual(true);
+            expect(document.getElementById('dialog').classList.contains("close")).toEqual(true);
+            }, 500);
+    })
+    });
+    describe('alert utility dialog without model', () => {
+        beforeAll(() => {
+            DialogUtility.alert({
+                isModal: false,
+                showCloseIcon: false,
+               cssClass: 'sample',
+               zIndex : 250 ,
+               open :  function() {
+                addClass([document.getElementById('dialog')], 'open');
+               }  ,
+               close : function() {
+                addClass([document.getElementById('dialog')], 'close');
+               }             
+             });
+    });
+    afterAll(() => {
+        document.body.innerHTML = '';
+    });
+    it('alert utility - cssClass Checking',()=>{
+        expect(document.getElementsByClassName('e-alert-dialog')[0].classList.contains('sample')).toBe(true);
+        (<HTMLElement>document.getElementsByClassName('e-alert-dialog')[0]).style.zIndex==='250';
+        setTimeout(() => {
+            expect(document.getElementById('dialog').classList.contains("open")).toEqual(true);
+            expect(document.getElementById('dialog').classList.contains("close")).toEqual(true);
+            }, 500);
+    })
     });
 })

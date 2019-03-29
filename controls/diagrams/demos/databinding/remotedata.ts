@@ -9,7 +9,7 @@ Diagram.Inject(DataBinding, HierarchicalTree);
 /**
  * Node spec
  */
-const SERVICE_URI = 'http://mvc.syncfusion.com/Services/Northwnd.svc';
+const SERVICE_URI = 'http://js.syncfusion.com/demos/ejServices/Wcf/Northwind.svc/';
 let items: DataManager = new DataManager({ url: SERVICE_URI }, new Query().from('Employees').
     select('EmployeeID, ReportsTo, FirstName'));
 

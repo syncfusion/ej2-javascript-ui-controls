@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 17.1.38 (2019-03-29)
+
+### Schedule
+
+#### Bug Fixes
+
+- An issue while resizing all-day events in Scheduler, with disabled timescale mode is fixed.
+- An event to trigger on selection of multiple cells or events has been added.
+
 ## 17.1.32-beta (2019-03-13)
 
 ### Schedule

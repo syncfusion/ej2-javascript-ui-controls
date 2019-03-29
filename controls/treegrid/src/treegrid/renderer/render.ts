@@ -87,6 +87,9 @@ export class Render {
             }
             let iconRequired: boolean = !isNullOrUndefined(data.hasFilteredChildRecords)
                 ? data.hasFilteredChildRecords : data.hasChildRecords;
+            if (iconRequired && !isNullOrUndefined(data.childRecords)) {
+                iconRequired = !((<ITreeData>data).childRecords.length === 0 );
+            }
             if (iconRequired) {
                 addClass([args.cell], 'e-treerowcell');
                 let expandIcon: Element = createElement('span', {

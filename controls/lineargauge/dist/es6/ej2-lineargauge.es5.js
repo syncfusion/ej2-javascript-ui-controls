@@ -1662,10 +1662,11 @@ var AxisRenderer = /** @__PURE__ @class */ (function (_super) {
         var options;
         var rect = axis.lineBounds;
         var path = '';
+        var color = axis.line.color || this.gauge.themeStyle.lineColor;
         if (axis.line.width > 0) {
             path = 'M' + rect.x + ' ' + rect.y + ' L ' + (this.gauge.orientation === 'Vertical' ? rect.x : rect.x + rect.width) +
                 ' ' + (this.gauge.orientation === 'Vertical' ? rect.y + rect.height : rect.y) + 'z';
-            options = new PathOption(this.gauge.element.id + '_AxisLine_' + axisIndex, axis.line.color || this.gauge.themeStyle.lineColor, axis.line.width, axis.line.color || this.gauge.themeStyle.lineColor, 1, axis.line.dashArray, path);
+            options = new PathOption(this.gauge.element.id + '_AxisLine_' + axisIndex, color, axis.line.width, color, 1, axis.line.dashArray, path);
             axisObject.appendChild(this.gauge.renderer.drawPath(options));
         }
     };
@@ -1676,8 +1677,9 @@ var AxisRenderer = /** @__PURE__ @class */ (function (_super) {
         var options;
         var range = axis.visibleRange;
         var line = axis.lineBounds;
-        var tickColor = (tickID === 'MajorTicks') ? ticks.color || this.gauge.themeStyle.majorTickColor :
-            ticks.color || this.gauge.themeStyle.minorTickColor;
+        var majorTickColor = axis.majorTicks.color || this.gauge.themeStyle.majorTickColor;
+        var minorTickColor = axis.minorTicks.color || this.gauge.themeStyle.minorTickColor;
+        var tickColor = (tickID === 'MajorTicks') ? majorTickColor : minorTickColor;
         var interval = ((tickID === 'MajorTicks') ? axis.majorInterval : axis.minorInterval);
         for (var i = range.min; (i <= range.max && interval > 0); i += interval) {
             if ((tickID === 'MajorTicks') || (tickID === 'MinorTicks' && i !== range.min && i !== range.max
@@ -1716,7 +1718,7 @@ var AxisRenderer = /** @__PURE__ @class */ (function (_super) {
             labelSize = axis.visibleLabels[i].size;
             labelColor = axis.labelStyle.useRangeColor ? getRangeColor(axis.visibleLabels[i].value, axis.ranges) :
                 null;
-            labelColor = isNullOrUndefined(labelColor) ? axis.labelStyle.font.color || this.gauge.themeStyle.labelColor : labelColor;
+            labelColor = isNullOrUndefined(labelColor) ? this.gauge.themeStyle.labelColor : labelColor;
             if (this.gauge.orientation === 'Vertical') {
                 pointY = (valueToCoefficient(axis.visibleLabels[i].value, axis, this.gauge.orientation, range) *
                     rect.height) + rect.y;
@@ -1730,6 +1732,7 @@ var AxisRenderer = /** @__PURE__ @class */ (function (_super) {
                 anchor = 'middle';
                 baseline = '';
             }
+            axis.labelStyle.font.fontFamily = this.gauge.themeStyle.labelFontFamily || axis.labelStyle.font.fontFamily;
             options = new TextOption(this.gauge.element.id + '_AxisLabel_' + i, pointX, pointY, anchor, axis.visibleLabels[i].text, null, baseline);
             textElement(options, axis.labelStyle.font, labelColor, labelElement);
         }
@@ -1766,7 +1769,8 @@ var AxisRenderer = /** @__PURE__ @class */ (function (_super) {
         if (getElement(pointerID) && getElement(pointerID).childElementCount > 0) {
             remove(getElement(pointerID));
         }
-        options = new PathOption(pointerID, pointer.color || this.gauge.themeStyle.pointerColor, pointer.border.width, pointer.border.color, pointer.opacity, null, null, transform);
+        var pointerColor = pointer.color || this.gauge.themeStyle.pointerColor;
+        options = new PathOption(pointerID, pointerColor, pointer.border.width, pointer.border.color, pointer.opacity, null, null, transform);
         options = calculateShapes(pointer.bounds, pointer.markerType, new Size(pointer.width, pointer.height), pointer.imageUrl, options, this.gauge.orientation, axis, pointer);
         pointerElement = ((pointer.markerType === 'Circle' ? this.gauge.renderer.drawCircle(options)
             : (pointer.markerType === 'Image') ? this.gauge.renderer.drawImage(options) :
@@ -1893,9 +1897,10 @@ var Annotations = /** @__PURE__ @class */ (function () {
         if (!argsData.cancel) {
             templateFn = getTemplateFunction(argsData.content);
             if (templateFn && templateFn(this.gauge).length) {
-                templateElement = templateFn(this.gauge);
-                while (templateElement.length > 0) {
-                    childElement.appendChild(templateElement[0]);
+                templateElement = Array.prototype.slice.call(templateFn(this.gauge));
+                var length_1 = templateElement.length;
+                for (var i = 0; i < length_1; i++) {
+                    childElement.appendChild(templateElement[i]);
                 }
             }
             else {
@@ -2025,6 +2030,8 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
             this.axisIndex = current.axisIndex;
             this.currentPointer = current.pointer;
             var customTooltipFormat = this.tooltip.format && this.tooltip.format.match('{value}') !== null;
+            this.tooltip.textStyle.fontFamily = this.gauge.themeStyle.fontFamily || this.tooltip.textStyle.fontFamily;
+            this.tooltip.textStyle.opacity = this.gauge.themeStyle.tooltipTextOpacity || this.tooltip.textStyle.opacity;
             tooltipContent = customTooltipFormat ? textFormatter(this.tooltip.format, { value: this.currentPointer.currentValue }, this.gauge) :
                 formatValue(this.currentPointer.currentValue, this.gauge).toString();
             if (document.getElementById(this.tooltipId)) {
@@ -2072,6 +2079,7 @@ var GaugeTooltip = /** @__PURE__ @class */ (function () {
                     border: args.tooltip.border,
                     theme: args.gauge.theme
                 });
+                this.svgTooltip.opacity = this.gauge.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
                 this.svgTooltip.appendTo(tooltipEle);
             }
         }
@@ -2213,7 +2221,7 @@ function getThemeStyle(theme) {
             break;
         case 'Bootstrap4':
             style = {
-                backgroundColor: '#F8F9FA',
+                backgroundColor: '#FFFFFF',
                 titleFontColor: '#212529',
                 tooltipFillColor: '#000000',
                 tooltipFontColor: '#FFFFFF',
@@ -2221,20 +2229,27 @@ function getThemeStyle(theme) {
                 lineColor: '#ADB5BD',
                 majorTickColor: '#ADB5BD',
                 minorTickColor: '#CED4DA',
-                pointerColor: '#6C757D'
+                pointerColor: '#6C757D',
+                fontFamily: 'HelveticaNeue-Medium',
+                fontSize: '16px',
+                labelFontFamily: 'HelveticaNeue',
+                tooltipFillOpacity: 1,
+                tooltipTextOpacity: 0.9,
+                containerBackground: '#F8F9FA'
             };
             break;
         default:
             style = {
                 backgroundColor: '#FFFFFF',
                 titleFontColor: '#424242',
-                tooltipFillColor: '#363F4C',
+                tooltipFillColor: '#FFFFF',
                 tooltipFontColor: '#FFFFFF',
                 labelColor: '#686868',
                 lineColor: '#a6a6a6',
                 majorTickColor: '#a6a6a6',
                 minorTickColor: '#a6a6a6',
-                pointerColor: '#a6a6a6'
+                pointerColor: '#a6a6a6',
+                containerBackground: '#e0e0e0'
             };
             break;
     }
@@ -2367,7 +2382,6 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
         this.appendSecondaryElement();
         this.renderBorder();
         this.renderTitle();
-        this.renderArea();
         this.renderContainer();
     };
     LinearGauge.prototype.appendSecondaryElement = function () {
@@ -2418,24 +2432,27 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
         var height;
         var width;
         var titleBounds;
-        if (this.title) {
-            var size = measureText(this.title, this.titleStyle);
-            var options = new TextOption(this.element.id + '_LinearGaugeTitle', this.availableSize.width / 2, this.margin.top + (size.height / 2), 'middle', this.title);
-            titleBounds = {
-                x: options.x - (size.width / 2),
-                y: options.y,
-                width: size.width,
-                height: size.height
-            };
-            var element = textElement(options, this.titleStyle, this.titleStyle.color || this.themeStyle.titleFontColor, this.svgObject);
-            element.setAttribute('aria-label', this.description || this.title);
-            element.setAttribute('tabindex', this.tabIndex.toString());
-        }
+        var size = measureText(this.title, this.titleStyle);
+        var options = new TextOption(this.element.id + '_LinearGaugeTitle', this.availableSize.width / 2, this.margin.top + (size.height / 2), 'middle', this.title);
+        titleBounds = {
+            x: options.x - (size.width / 2),
+            y: options.y,
+            width: size.width,
+            height: size.height
+        };
         x = this.margin.left;
         y = (isNullOrUndefined(titleBounds)) ? this.margin.top : titleBounds.y;
         height = (this.availableSize.height - y - this.margin.bottom);
         width = (this.availableSize.width - this.margin.left - this.margin.right);
         this.actualRect = { x: x, y: y, width: width, height: height };
+        this.renderArea();
+        if (this.title) {
+            this.titleStyle.fontFamily = this.themeStyle.fontFamily || this.titleStyle.fontFamily;
+            this.titleStyle.size = this.themeStyle.fontSize || this.titleStyle.size;
+            var element = textElement(options, this.titleStyle, this.titleStyle.color || this.themeStyle.titleFontColor, this.svgObject);
+            element.setAttribute('aria-label', this.description || this.title);
+            element.setAttribute('tabindex', this.tabIndex.toString());
+        }
     };
     /*
      * Method to unbind the gauge events
@@ -2518,7 +2535,9 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
         var path = '';
         var topRadius;
         var bottomRadius;
-        var fill = this.container.backgroundColor;
+        var fill = (this.container.backgroundColor !== 'transparent'
+            || (this.theme !== 'Bootstrap4' && this.theme !== 'Material'))
+            ? this.container.backgroundColor : this.themeStyle.containerBackground;
         var rect;
         var radius = this.container.width;
         bottomRadius = radius + ((radius / 2) / Math.PI);
@@ -2860,7 +2879,7 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
      * @param annotationIndex
      * @param content
      */
-    LinearGauge.prototype.setAnnotationValue = function (annotationIndex, content) {
+    LinearGauge.prototype.setAnnotationValue = function (annotationIndex, content, axisValue) {
         var elementExist = getElement(this.element.id + '_Annotation_' + annotationIndex) === null;
         var element = getElement(this.element.id + '_AnnotationsGroup') ||
             createElement('div', {
@@ -2868,10 +2887,9 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
             });
         var annotation = this.annotations[annotationIndex];
         if (content !== null) {
-            if (getElement(this.element.id + '_Annotation_' + annotationIndex)) {
-                getElement(this.element.id + '_Annotation_' + annotationIndex).remove();
-            }
+            removeElement(this.element.id + '_Annotation_' + annotationIndex);
             annotation.content = content;
+            annotation.axisValue = axisValue ? axisValue : annotation.axisValue;
             this.annotationsModule.createAnnotationTemplate(element, annotationIndex);
             if (!elementExist) {
                 element.appendChild(getElement(this.element.id + '_Annotation_' + annotationIndex));
@@ -2952,6 +2970,9 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
                     renderer = true;
                     break;
                 case 'container':
+                    refreshBounds = true;
+                    break;
+                case 'axes':
                     refreshBounds = true;
                     break;
             }

@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, isUndefined } from '@syncfusion/ej2-base';import { Collection, Draggable, isNullOrUndefined, DragEventArgs, append } from '@syncfusion/ej2-base';import { EmitType, Event, formatUnit, ChildProperty, compile } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, addClass, detach, removeClass, EventHandler } from '@syncfusion/ej2-base';
+import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, isUndefined } from '@syncfusion/ej2-base';import { Collection, Draggable, isNullOrUndefined, DragEventArgs, append } from '@syncfusion/ej2-base';import { EmitType, Event, formatUnit, ChildProperty, compile, closest } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, addClass, detach, removeClass, EventHandler } from '@syncfusion/ej2-base';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -141,7 +141,6 @@ export interface DashboardLayoutModel extends ComponentModel{
     /**
      * Defines the cell aspect ratio of the panel. 
      * @default 1
-     * @private
      */
     cellAspectRatio?: number;
 

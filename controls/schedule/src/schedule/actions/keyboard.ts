@@ -3,7 +3,7 @@ import { isNullOrUndefined, addClass } from '@syncfusion/ej2-base';
 import { View } from '../base/type';
 import { Schedule } from '../base/schedule';
 import * as event from '../base/constant';
-import { CellClickEventArgs, KeyEventArgs, ResizeEdges } from '../base/interface';
+import { CellClickEventArgs, KeyEventArgs, ResizeEdges, SelectEventArgs } from '../base/interface';
 import * as util from '../base/util';
 import * as cls from '../base/css-constant';
 
@@ -137,7 +137,7 @@ export class KeyboardInteraction {
             let yInBounds: boolean = parent.offsetHeight <= parent.scrollHeight && parent.scrollTop >= 0 &&
                 parent.scrollTop + parent.offsetHeight <= parent.scrollHeight;
             let xInBounds: boolean = parent.offsetWidth <= parent.scrollWidth && parent.scrollLeft >= 0 &&
-             parent.scrollLeft + parent.offsetWidth <= parent.scrollWidth;
+                parent.scrollLeft + parent.offsetWidth <= parent.scrollWidth;
             if (yInBounds && (selectionEdges.top || selectionEdges.bottom)) {
                 parent.scrollTop += selectionEdges.top ?
                     -(e.target as HTMLElement).offsetHeight : (e.target as HTMLElement).offsetHeight;
@@ -165,6 +165,27 @@ export class KeyboardInteraction {
             let allDayRow: HTMLTableRowElement = <HTMLTableRowElement>this.parent.getAllDayRow();
             EventHandler.remove(allDayRow, 'mousemove', this.onMouseSelection);
             EventHandler.remove(allDayRow, 'mouseup', this.onMoveup);
+        }
+        if (this.isPreventAction(e)) {
+            return;
+        }
+        let selectedCells: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.e-selected-cell'));
+        let queryStr: string = '.' + cls.WORK_CELLS_CLASS + ',.' + cls.ALLDAY_CELLS_CLASS + ',.' + cls.HEADER_CELLS_CLASS;
+        let target: HTMLTableCellElement = closest((e.target as Element), queryStr) as HTMLTableCellElement;
+        this.parent.activeCellsData = this.parent.getCellDetails((selectedCells.length > 1) ? this.parent.getSelectedElements() : target);
+        let cellData: { [key: string]: Object } = {};
+        this.parent.eventWindow.convertToEventData(<Object>this.parent.activeCellsData as { [key: string]: Object }, cellData);
+        let args: SelectEventArgs = {
+            data: cellData,
+            element: this.parent.activeCellsData.element,
+            showQuickPopup: false, event: e,
+            requestType: 'cellSelect'
+        };
+        this.parent.trigger(event.select, args);
+        if (args.showQuickPopup) {
+            let cellArgs: CellClickEventArgs =
+                <CellClickEventArgs>extend(this.parent.activeCellsData, { cancel: false, event: e, name: 'cellClick' });
+            this.parent.notify(event.cellClick, cellArgs);
         }
     }
     private processEnter(e: Event): void {
@@ -411,6 +432,7 @@ export class KeyboardInteraction {
             target = this.getWorkCellFromAppointmentElement(selectedEventElements[selectedEventElements.length - 1]);
             this.parent.eventBase.removeSelectedAppointmentClass();
         }
+        if (!target) { return; }
         if (target.classList.contains(cls.WORK_CELLS_CLASS) && !this.parent.element.querySelector('.' + cls.POPUP_OPEN)) {
             let tableRows: HTMLTableRowElement[] = this.parent.getTableRows() as HTMLTableRowElement[];
             let curRowIndex: number = tableRows.indexOf(target.parentElement as HTMLTableRowElement);
@@ -440,6 +462,7 @@ export class KeyboardInteraction {
             this.parent.eventBase.removeSelectedAppointmentClass();
         }
         let tableRows: HTMLTableRowElement[] = this.parent.getTableRows() as HTMLTableRowElement[];
+        if (!target) { return; }
         if (target.classList.contains(cls.WORK_CELLS_CLASS) && !this.parent.element.querySelector('.' + cls.POPUP_OPEN)) {
             let curRowIndex: number = tableRows.indexOf(target.parentElement as HTMLTableRowElement);
             if (curRowIndex >= 0 && curRowIndex < tableRows.length - 1) {
@@ -584,7 +607,7 @@ export class KeyboardInteraction {
     private calculateNextPrevDate(currentCell: HTMLTableCellElement, target: HTMLTableCellElement, type: string): HTMLTableCellElement {
         let initialId: string = this.initialTarget.getAttribute('data-group-index');
         if (this.parent.activeViewOptions.group.resources.length > 0 && this.parent.currentView === 'Month') {
-            if (target.getAttribute('data-group-index') !== initialId) {
+            if (currentCell && target && target.getAttribute('data-group-index') !== initialId) {
                 let currentDate: Date = new Date(parseInt(currentCell.getAttribute('data-date'), 10));
                 let nextPrevDate: Date = (type === 'right') ? new Date(currentDate.setDate(currentDate.getDate() + 1))
                     : new Date(currentDate.setDate(currentDate.getDate() - 1));

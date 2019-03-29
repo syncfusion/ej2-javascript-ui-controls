@@ -565,6 +565,7 @@ export class DatePicker extends Calendar implements IInput {
     private dateIconHandler(e?: MouseEvent): void {
         if (Browser.isDevice) {
             this.element.setAttribute('readonly', '');
+            this.inputElement.blur();
         }
         e.preventDefault();
         if (!this.readonly) {
@@ -1078,7 +1079,6 @@ export class DatePicker extends Calendar implements IInput {
             let focusArguments: BlurEventArgs = {
                 model: this
             };
-            this.trigger('focus', focusArguments);
         }
     }
     /**

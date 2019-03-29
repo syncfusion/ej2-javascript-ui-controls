@@ -319,6 +319,8 @@ document.getElementById('themes').addEventListener('change', (e: any) => {
     } else {
         document.body.style.background = '#fff';
     }
+    let container: HTMLElement = <HTMLElement>document.querySelector('.sample-container');
+    container.style.background = ((e.target.value.indexOf('dark') > 0 || e.target.value.indexOf('contrast') > 0) ? 'black' : 'initial');
     document.getElementsByTagName('link')[0].href = '../theme-files/' + e.target.value + '.css';
 });
 

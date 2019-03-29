@@ -90,7 +90,7 @@ export class HeaderFooterProperties {
         optionsLabel.innerHTML = localObj.getConstant('Options');
         optionsLabelDiv.appendChild(optionsLabel);
         let optionsDiv: HTMLElement = this.createDivTemplate(elementId + '_optionsDiv', optionsLabelDiv);
-        let firstPageDiv: HTMLElement = this.createDivTemplate(elementId + '_firstPageDiv', optionsDiv, 'margin-bottom:3px;');
+        let firstPageDiv: HTMLElement = this.createDivTemplate(elementId + '_firstPageDiv', optionsDiv, 'margin-bottom:10px;');
         let firstPage: HTMLInputElement = createElement('input', { id: 'firstPage', className: 'e-de-prop-sub-label' }) as HTMLInputElement;
         firstPageDiv.appendChild(firstPage);
         // tslint:disable-next-line:max-line-length
@@ -143,7 +143,7 @@ export class HeaderFooterProperties {
             headerFooterDivMargin = 'margin-left:8px;';
         }
         // tslint:disable-next-line:max-line-length
-        let headerTopDiv: HTMLElement = this.createDivTemplate(elementId + '_headerTopDiv', positionDiv, 'margin-bottom:15px;');
+        let headerTopDiv: HTMLElement = this.createDivTemplate(elementId + '_headerTopDiv', positionDiv, 'margin-bottom:14px;');
         // tslint:disable-next-line:max-line-length
         let headerTopLabel: HTMLElement = createElement('label', { className: 'e-de-prop-sub-label', styles: 'display:block' });
         headerTopLabel.innerHTML = localObj.getConstant('Header from Top');

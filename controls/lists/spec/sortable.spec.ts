@@ -203,7 +203,7 @@ describe('Sortable', () => {
         });
         it('With empty sortable', () => {
             sortable = new Sortable(element, { itemClass: 'e-item', drop: dragEndEvent, scope: 'combined' });
-            let sortable2: any = new Sortable(element2, { itemClass: 'e-item2', scope: 'combined' });
+            let sortable2: any = new Sortable(element2, { itemClass: 'e-item2', scope: 'combined', placeHolder: () => { return createElement('div') }});
             expect(sortable2.element.childElementCount).toEqual(0);
             EventHandler.trigger(element, 'mousedown', mousedown);
             mousemove.srcElement = mousemove.target = mousemove.toElement = element.children[1];

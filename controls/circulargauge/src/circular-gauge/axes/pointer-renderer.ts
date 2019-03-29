@@ -75,11 +75,12 @@ export class PointerRenderer {
         let rectDirection: string;
         // To render the needle
         location = getLocationFromAngle(0, pointer.currentRadius, mid);
+        let color: string = pointer.color || this.gauge.themeStyle.needleColor;
         direction = 'M ' + mid.x + ' ' + (mid.y - width) + ' L ' + (location.x) + ' ' + mid.y +
             ' L ' + (mid.x) + ' ' + (mid.y + width) + ' Z';
         pointer.pathElement.push(appendPath(
             new PathOption(
-                gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Needle_' + index, pointer.color || this.gauge.themeStyle.needleColor,
+                gauge.element.id + '_Axis_' + axisIndex + '_Pointer_Needle_' + index, color,
                 pointer.border.width, pointer.border.color, null, '0', direction
             ),
             parentElement, gauge)
@@ -112,13 +113,14 @@ export class PointerRenderer {
             rectDirection += ' L ' + location.x + ' ' + (mid.y + width) + ' L ' + location.x + ' ' + (mid.y - width);
         }
         // To render the cap
+        let capcolor: string = pointer.cap.color || this.gauge.themeStyle.capColor;
         if (pointer.cap.radius) {
             pointer.pathElement.push(appendPath(
                 calculateShapes(
                     mid, 'Circle', new Size(pointer.cap.radius * 2, pointer.cap.radius * 2),
                     '', new PathOption(
                         gauge.element.id + '_Axis_' + axisIndex + '_Pointer_NeedleCap_' + index,
-                        pointer.cap.color || this.gauge.themeStyle.capColor, pointer.cap.border.width,
+                        capcolor, pointer.cap.border.width,
                         pointer.cap.border.color, null, '0', '', ''
                     )
                 ),

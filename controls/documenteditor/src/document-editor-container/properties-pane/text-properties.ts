@@ -58,8 +58,7 @@ export class Text {
         let fontFamilyDiv: HTMLElement = this.createDiv(element + '_fontFamilyDiv', fontDiv);
         let fontFamily: HTMLElement = createElement('input', {
             id: element + '_fontFamily',
-            /* tslint:disable-next-line:max-line-length */
-            styles: 'font-size: 12px;letter-spacing: 0.05px;', className: 'e-prop-font-style'
+            className: 'e-prop-font-style'
         });
         fontFamilyDiv.appendChild(fontFamily);
         classList(fontFamilyDiv, ['e-de-panel-left-width'], []);
@@ -71,7 +70,7 @@ export class Text {
         }
         let fontSize: HTMLInputElement = createElement('input', {
             id: element + '_fontSize',
-            styles: 'font-size: 12px;letter-spacing: 0.05px;', innerHTML: 'type:number',
+            innerHTML: 'type:number',
             className: 'e-prop-font-style',
         }) as HTMLInputElement;
         fontSizeDiv.appendChild(fontSize);

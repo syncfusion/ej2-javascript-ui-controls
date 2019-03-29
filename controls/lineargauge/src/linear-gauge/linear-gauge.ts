@@ -422,7 +422,6 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         this.appendSecondaryElement();
         this.renderBorder();
         this.renderTitle();
-        this.renderArea();
         this.renderContainer();
     }
 
@@ -480,31 +479,34 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         let x: number; let y: number;
         let height: number; let width: number;
         let titleBounds: Rect;
+        let size: Size = measureText(this.title, this.titleStyle);
+        let options: TextOption = new TextOption(
+            this.element.id + '_LinearGaugeTitle',
+            this.availableSize.width / 2,
+            this.margin.top + (size.height / 2),
+            'middle', this.title
+        );
+        titleBounds = {
+            x: options.x - (size.width / 2),
+            y: options.y,
+            width: size.width,
+            height: size.height
+        };
+        x = this.margin.left;
+        y = (isNullOrUndefined(titleBounds)) ? this.margin.top : titleBounds.y;
+        height = (this.availableSize.height - y - this.margin.bottom);
+        width = (this.availableSize.width - this.margin.left - this.margin.right);
+        this.actualRect = { x: x, y: y, width: width, height: height };
+        this.renderArea();
         if (this.title) {
-            let size: Size = measureText(this.title, this.titleStyle);
-            let options: TextOption = new TextOption(
-                this.element.id + '_LinearGaugeTitle',
-                this.availableSize.width / 2,
-                this.margin.top + (size.height / 2),
-                'middle', this.title
-            );
-            titleBounds = {
-                x: options.x - (size.width / 2),
-                y: options.y,
-                width: size.width,
-                height: size.height
-            };
+            this.titleStyle.fontFamily = this.themeStyle.fontFamily || this.titleStyle.fontFamily;
+            this.titleStyle.size = this.themeStyle.fontSize || this.titleStyle.size;
             let element: Element = textElement(
                 options, this.titleStyle, this.titleStyle.color || this.themeStyle.titleFontColor, this.svgObject
             );
             element.setAttribute('aria-label', this.description || this.title);
             element.setAttribute('tabindex', this.tabIndex.toString());
         }
-        x = this.margin.left;
-        y = (isNullOrUndefined(titleBounds)) ? this.margin.top : titleBounds.y;
-        height = (this.availableSize.height - y - this.margin.bottom);
-        width = (this.availableSize.width - this.margin.left - this.margin.right);
-        this.actualRect = { x: x, y: y, width: width, height: height };
     }
 
     /*
@@ -608,7 +610,9 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
         let options: PathOption;
         let path: string = '';
         let topRadius: number; let bottomRadius: number;
-        let fill: string = this.container.backgroundColor;
+        let fill: string = (this.container.backgroundColor !== 'transparent'
+            || (this.theme !== 'Bootstrap4' && this.theme !== 'Material'))
+            ? this.container.backgroundColor : this.themeStyle.containerBackground;
         let rect: RectOption;
         let radius: number = this.container.width;
         bottomRadius = radius + ((radius / 2) / Math.PI);
@@ -985,7 +989,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * @param content
      */
 
-    public setAnnotationValue(annotationIndex: number, content: string): void {
+    public setAnnotationValue(annotationIndex: number, content: string, axisValue?: number): void {
         let elementExist: boolean = getElement(this.element.id + '_Annotation_' + annotationIndex) === null;
         let element: HTMLElement = <HTMLElement>getElement(this.element.id + '_AnnotationsGroup') ||
             createElement('div', {
@@ -993,10 +997,9 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             });
         let annotation: Annotation = <Annotation>this.annotations[annotationIndex];
         if (content !== null) {
-            if (getElement(this.element.id + '_Annotation_' + annotationIndex)) {
-                getElement(this.element.id + '_Annotation_' + annotationIndex).remove();
-            }
+            removeElement(this.element.id + '_Annotation_' + annotationIndex);
             annotation.content = content;
+            annotation.axisValue = axisValue ? axisValue : annotation.axisValue;
             this.annotationsModule.createAnnotationTemplate(element, annotationIndex);
             if (!elementExist) {
                 element.appendChild(getElement(this.element.id + '_Annotation_' + annotationIndex));
@@ -1080,6 +1083,9 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                     renderer = true;
                     break;
                 case 'container':
+                    refreshBounds = true;
+                    break;
+                case 'axes':
                     refreshBounds = true;
                     break;
             }

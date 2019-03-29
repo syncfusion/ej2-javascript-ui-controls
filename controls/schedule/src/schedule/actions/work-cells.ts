@@ -44,6 +44,10 @@ export class WorkCellInteraction {
                 this.parent.quickPopup.quickPopupHide();
                 return;
             }
+            if (this.parent.isAdaptive && ((e.target as Element).classList.contains(cls.MORE_INDICATOR_CLASS) ||
+                closest((e.target as Element), '.' + cls.MORE_INDICATOR_CLASS))) {
+                return;
+            }
             let isWorkCell: boolean = target.classList.contains(cls.WORK_CELLS_CLASS) ||
                 target.classList.contains(cls.ALLDAY_CELLS_CLASS);
             if (isWorkCell && e.shiftKey && e.which === 1 && this.parent.keyboardInteractionModule) {

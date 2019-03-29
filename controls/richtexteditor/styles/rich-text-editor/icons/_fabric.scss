@@ -1,0 +1,277 @@
+/*! component's theme wise override definitions and variables */
+
+@include export-module('richtexteditor-fabric-icons') {
+  /*! richtexteditor icons */
+
+  .e-rte-toolbar,
+  .e-rte-dropdown-popup {
+
+    .e-alignments::before {
+      content: '\e33a';
+    }
+
+    .e-justify-left::before {
+      content: '\e33a';
+    }
+
+    .e-justify-center::before {
+      content: '\e35e';
+    }
+
+    .e-justify-right::before {
+      content: '\e34d';
+    }
+
+    .e-justify-full::before {
+      content: '\e334';
+    }
+
+    .e-font-name::before {
+      content: '\e35f';
+    }
+
+    .e-font-color::before {
+      content: '\e34c';
+    }
+
+    .e-background-color::before {
+      content: '\e35c';
+    }
+
+    .e-bold::before {
+      content: '\e339';
+    }
+
+    .e-italic::before {
+      content: '\e35a';
+    }
+
+    .e-underline::before {
+      content: '\e343';
+    }
+
+    .e-strike-through::before {
+      content: '\e332';
+    }
+
+    .e-clear-format::before {
+      content: '\e331';
+    }
+
+    .e-clear-all::before {
+      content: '\e340';
+    }
+
+    .e-cut::before {
+      content: '\e33b';
+    }
+
+    .e-copy::before {
+      content: '\e33d';
+    }
+
+    .e-paste::before {
+      content: '\e355';
+    }
+
+    .e-unorder-list::before {
+      content: '\e344';
+    }
+
+    .e-order-list::before {
+      content: '\e346';
+    }
+
+    .e-indent::before {
+      content: '\e33f';
+    }
+
+    .e-outdent::before {
+      content: '\e35d';
+    }
+
+    .e-undo::before {
+      content: '\e341';
+    }
+
+    .e-redo::before {
+      content: '\e354';
+    }
+
+    .e-super-script::before {
+      content: '\e352';
+    }
+
+    .e-sub-script::before {
+      content: '\e357';
+    }
+
+    .e-create-link::before {
+      content: '\e34e';
+    }
+
+    .e-open-link::before {
+      content: '\e34a';
+    }
+
+    .e-edit-link::before {
+      content: '\e338';
+    }
+
+    .e-remove-link::before {
+      content: '\e348';
+    }
+
+    .e-image::before {
+      content: '\e335';
+    }
+
+    .e-replace::before {
+      content: '\e359';
+    }
+
+    .e-align::before {
+      content: '\e33a';
+    }
+
+    .e-caption::before {
+      content: '\e35b';
+    }
+
+    .e-remove::before {
+      content: '\e33e';
+    }
+
+    .e-insert-link::before {
+      content: '\e34e';
+    }
+
+    .e-display::before {
+      content: '\e358';
+    }
+
+    .e-alt-text::before {
+      content: '\e33c';
+    }
+
+    .e-dimension::before {
+      content: '\e336';
+    }
+
+    .e-maximize::before {
+      content: '\e342';
+    }
+
+    .e-minimize::before {
+      content: '\e337';
+    }
+
+    .e-zoom-in::before {
+      content: '\e349';
+    }
+
+    .e-zoom-out::before {
+      content: '\e351';
+    }
+
+    .e-lower-case::before {
+      content: '\e347';
+    }
+
+    .e-upper-case::before {
+      content: '\e333';
+    }
+
+    .e-print::before {
+      content: '\e34b';
+    }
+
+    .e-formats::before {
+      content: '\e353';
+    }
+
+    .e-source-code::before {
+      content: '\e350';
+    }
+
+    .e-preview::before {
+      content: '\e345';
+    }
+
+    .e-view-side::before {
+      content: '\e34f';
+    }
+
+    .e-insert-code::before {
+      content: '\e356';
+    }
+
+    .e-table-header::before {
+      content: '\eb03';
+    }
+
+    .e-table-remove::before {
+      content: '\eb00';
+    }
+
+    .e-table-rows::before {
+      content: '\eb02';
+    }
+
+    .e-table-columns::before {
+      content: '\ea9e';
+    }
+
+    .e-table-cell-ver-align::before {
+      content: '\ea9b';
+    }
+
+    .e-table-edit-properties::before {
+      content: '\ea9a';
+    }
+
+    .e-create-table::before {
+      content: '\e705';
+    }
+
+    .e-align-bottom::before {
+      content: '\ea91';
+    }
+
+    .e-align-middle::before {
+      content: '\ea94';
+    }
+
+    .e-align-top::before {
+      content: '\ea98';
+    }
+
+    .e-insert-column-left::before {
+      content: '\ea97';
+    }
+
+    .e-insert-column-right::before {
+      content: '\ea99';
+    }
+
+    .e-delete-column::before {
+      content: '\ea95';
+    }
+
+    .e-insert-row-before::before {
+      content: '\ea92';
+    }
+
+    .e-insert-row-after::before {
+      content: '\ea93';
+    }
+
+    .e-delete-row::before {
+      content: '\ea96';
+    }
+
+    .e-style::before {
+      content: '\ea9f';
+    }
+  }
+}

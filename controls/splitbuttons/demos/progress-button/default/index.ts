@@ -76,6 +76,12 @@ document.getElementById('bootstrap-dark').onclick = (e: Event) => {
     document.body.style.color = 'white';
     refresh();
 };
+document.getElementById('bootstrap4').onclick = (e: Event) => {
+    enableRipple(false);
+    document.getElementById('theme').setAttribute('href', '../../theme-files/bootstrap4.css');
+    document.body.style.backgroundColor = 'white';
+    document.body.style.color = 'black';
+};
 
 function refresh() {
     setTimeout(() => {

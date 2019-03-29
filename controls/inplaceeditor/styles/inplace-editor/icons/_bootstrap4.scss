@@ -2,7 +2,7 @@
 
   /*! inplaceeditor icons */
   #{&}.e-inplaceeditor,
-  .e-inplaceeditor-tip {
+  #{&}.e-inplaceeditor-tip {
 
     .e-save-icon::before {
       content: '\e718';

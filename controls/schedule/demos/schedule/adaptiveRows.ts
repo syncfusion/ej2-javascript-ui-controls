@@ -17,7 +17,7 @@ let scheduleOptions: ScheduleModel = {
     height: '550px',
     selectedDate: new Date(2017, 10, 1), currentView: 'Month',
     views: ['Month', 'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'],
-    enableAdaptiveRows: true,
+    rowAutoHeight: true,
     eventSettings: {
         dataSource: blockData,
         fields: {
@@ -36,6 +36,6 @@ let scheduleObj: Schedule = new Schedule(scheduleOptions, document.getElementByI
 
 document.getElementById('autofit').onchange = () => {
     let ddl: HTMLInputElement = document.getElementById('autofit') as HTMLInputElement;
-    scheduleObj.enableAdaptiveRows = ddl.checked;
+    scheduleObj.rowAutoHeight = ddl.checked;
     scheduleObj.dataBind();
 };

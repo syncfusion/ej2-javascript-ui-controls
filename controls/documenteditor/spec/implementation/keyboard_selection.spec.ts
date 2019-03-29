@@ -1902,10 +1902,10 @@ describe('Keyboard shortcut validation in Field', () => {
         (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        editor.editorModule.insertText('www.google.com', false);
+        editor.editorModule.insertText('www.google.com');
         editor.editorModule.onEnter();
-        editor.editorModule.insertText('www.google.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('www.google.com');
+        editor.editorModule.insertText(' ');
         viewer = editor.viewer as PageLayoutViewer;
     });
     afterAll((done): void => {
@@ -1958,8 +1958,8 @@ describe('Keyboard shortcut validation in Field home and end key', () => {
         (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-        editor.editorModule.insertText('www.google.com', false);
-        editor.editorModule.insertText(' ', false);
+        editor.editorModule.insertText('www.google.com');
+        editor.editorModule.insertText(' ');
         viewer = editor.viewer as PageLayoutViewer;
     });
     afterAll((done): void => {

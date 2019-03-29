@@ -45,7 +45,7 @@ export class TableDialog {
         let rowContainer: HTMLElement = createElement('div', {
             className: 'e-de-insert-table-dlg-sub-header', innerHTML: localValue.getConstant('Number of rows')
         });
-        let rowValue: HTMLElement = createElement('div', { className: 'e-de-insert-table-dlg-input' });
+        let rowValue: HTMLElement = createElement('div');
         this.rowsCountBox = createElement('input', {
             attrs: { type: 'text' }, id: this.owner.owner.containerId + 'row'
         }) as HTMLInputElement;

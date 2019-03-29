@@ -1234,6 +1234,8 @@ export class PdfViewerBase {
             proxy.mobilePageNoContainer.style.left = (viewerWidth / 2) - (parseFloat(proxy.mobilePageNoContainer.style.width) / 2) + 'px';
             proxy.mobilePageNoContainer.style.top = (proxy.pdfViewer.element.clientHeight / 2) + 'px';
             proxy.updateMobileScrollerPosition();
+        } else {
+            proxy.navigationPane.setResizeIconTop();
         }
     }
     /**
@@ -1395,7 +1397,7 @@ export class PdfViewerBase {
             switch (event.keyCode) {
                 case 46:
                 if (this.isTextMarkupAnnotationModule() && !this.getPopupNoteVisibleStatus()) {
-                    this.pdfViewer.annotationModule.textMarkupAnnotationModule.deleteTextMarkupAnnotation();
+                    this.pdfViewer.annotationModule.deleteAnnotation();
                 }
             }
         }
@@ -1540,7 +1542,7 @@ export class PdfViewerBase {
                     }
                 }
             } else if (this.getCurrentTextMarkupAnnotation()) {
-                this.pdfViewer.annotationModule.showAnnotationPopup(event);
+                // this.pdfViewer.annotationModule.showAnnotationPopup(event);
             }
         } else {
             if (event.detail === 3) {
@@ -1720,7 +1722,9 @@ export class PdfViewerBase {
             this.tapCount = 0;
             if ((this.touchClientX >= touches[0].clientX - 10) && (this.touchClientX <= touches[0].clientX + 10) &&
                 (this.touchClientY >= touches[0].clientY - 10) && (this.touchClientY <= touches[0].clientY + 10)) {
-                this.pdfViewer.magnification.onDoubleTapMagnification();
+                if (this.pdfViewer.magnification) {
+                    this.pdfViewer.magnification.onDoubleTapMagnification();
+                }
                 this.viewerContainer.style.height = this.updatePageHeight(this.pdfViewer.element.getBoundingClientRect().height, 0);
                 this.isTapHidden = false;
                 clearTimeout(this.singleTapTimer);
@@ -2235,6 +2239,10 @@ export class PdfViewerBase {
                     break;
                 }
             }
+        }
+        // tslint:disable-next-line:max-line-length
+        if (this.pdfViewer.magnificationModule && this.pdfViewer.magnificationModule.fitType === 'fitToPage' && this.currentPageNumber > 0) {
+            this.viewerContainer.scrollTop = this.pageSize[this.currentPageNumber - 1].top * this.getZoomFactor();
         }
         this.renderElementsVirtualScroll(this.currentPageNumber);
         // tslint:disable-next-line:max-line-length

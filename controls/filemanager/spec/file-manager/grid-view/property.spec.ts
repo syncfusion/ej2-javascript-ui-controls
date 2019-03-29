@@ -6,7 +6,7 @@ import {NavigationPane} from '../../../src/file-manager/layout/navigation-pane';
 import {DetailsView} from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement, Browser } from '@syncfusion/ej2-base';
-import { toolbarItems, toolbarItems1, data1, data2, data3, data11, data15 } from '../data';
+import { toolbarItems, toolbarItems1, data1, data2, data3, data11, data15, data16 } from '../data';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -361,7 +361,7 @@ describe('FileManager control Grid view', () => {
             feObj.dataBind();
             expect(data11.files.length).toEqual(5);
         });
-        it('for path', () => {
+        it('for path', (done: Function) => {
             feObj = new FileManager({
                 view: 'Details',
                 ajaxSettings: {
@@ -375,8 +375,22 @@ describe('FileManager control Grid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
-            //expect(treeObj.selectedNodes[0]).toEqual("filecontent/employees/");
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data16)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                expect(treeObj.selectedNodes[0]).toEqual("fe_tree_1");
+                expect(treeLi.length).toEqual(6);
+                expect(gridLi.length).toEqual(1);
+                done();
+            }, 500);
         });
     });
 });

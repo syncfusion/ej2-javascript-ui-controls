@@ -162,7 +162,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * To add the breadCrumb connector.
      */
-    @Property('.')
+    @Property(' - ')
     public breadcrumbConnector: string;
     /**
      * To control the drillDown view.
@@ -567,6 +567,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         let style: FontModel = title.textStyle;
         let height: number; let titlePadding: number = 10;
         let width: number = (this.availableSize.width - this.margin.right - this.margin.left);
+        title.textStyle.fontFamily = this.themeStyle.fontFamily || title.textStyle.fontFamily;
+        title.textStyle.size = this.themeStyle.fontSize || title.textStyle.size;
         if (title.text) {
             if (isNullOrUndefined(groupEle)) {
                 groupEle = this.renderer.createGroup({ id: this.element.id + '_Title_Group' });

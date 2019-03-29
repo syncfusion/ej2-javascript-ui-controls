@@ -1,7 +1,7 @@
 import { isNullOrUndefined, closest, extend, EventHandler, uniqueID } from '@syncfusion/ej2-base';
 import { createElement, prepend, append, addClass, removeClass } from '@syncfusion/ej2-base';
 import { DataManager, Query, Predicate } from '@syncfusion/ej2-data';
-import { EventFieldsMapping, EventClickArgs, CellClickEventArgs, TdData } from '../base/interface';
+import { EventFieldsMapping, EventClickArgs, CellClickEventArgs, TdData, SelectEventArgs } from '../base/interface';
 import { Timezone } from '../timezone/timezone';
 import { Schedule } from '../base/schedule';
 import { ResourcesModel } from '../models/resources-model';
@@ -53,6 +53,9 @@ export class EventBase {
                 this.processTimezoneChange(event, oldTimezone);
             } else {
                 this.processTimezone(event);
+            }
+            if (!isNullOrUndefined(event[fields.recurrenceRule]) && event[fields.recurrenceRule] === '') {
+                event[fields.recurrenceRule] = null;
             }
             if (!isNullOrUndefined(event[fields.recurrenceRule]) && isNullOrUndefined(event[fields.recurrenceID])) {
                 processed = processed.concat(this.generateOccurrence(event));
@@ -572,6 +575,12 @@ export class EventBase {
         }
         let raiseClickEvent: Function = (isMultiple: boolean): boolean => {
             this.activeEventData(eventData, isMultiple);
+            let selectArgs: SelectEventArgs = {
+                data: this.parent.activeEventData.event,
+                element: this.parent.activeEventData.element,
+                event: eventData, requestType: 'eventSelect'
+            };
+            this.parent.trigger(event.select, selectArgs);
             let args: EventClickArgs = <EventClickArgs>extend(this.parent.activeEventData, { cancel: false, originalEvent: eventData });
             this.parent.trigger(event.eventClick, args);
             return args.cancel;
@@ -667,17 +676,15 @@ export class EventBase {
     }
 
     public generateOccurrence(event: { [key: string]: Object }, viewDate?: Date): Object[] {
-        let fields: EventFieldsMapping = this.parent.eventFields;
-        let startDate: Date = <Date>event[fields.startTime];
-        let endDate: Date = <Date>event[fields.endTime];
-        let occurrenceCollection: Object[] = [];
-        let currentViewDate: Date = isNullOrUndefined(viewDate) ? this.parent.activeView.startDate() : viewDate;
-        let eventRule: string = <string>event[fields.recurrenceRule];
+        let startDate: Date = event[this.parent.eventFields.startTime] as Date;
+        let endDate: Date = event[this.parent.eventFields.endTime] as Date;
+        let eventRule: string = event[this.parent.eventFields.recurrenceRule] as string;
         let duration: number = endDate.getTime() - startDate.getTime();
-        currentViewDate = new Date(+currentViewDate - duration);
-        let dates: number[] = generate(
-            startDate, eventRule, <string>event[fields.recurrenceException],
-            this.parent.firstDayOfWeek, undefined, currentViewDate, this.parent.calendarMode);
+        viewDate = new Date((viewDate || this.parent.activeView.startDate()).getTime() - duration);
+        let exception: string = event[this.parent.eventFields.recurrenceException] as string;
+        let maxCount: number = ((+this.parent.activeView.endDate()) - (+util.resetTime(new Date(+viewDate)))) / util.MS_PER_DAY;
+        let dates: number[] =
+            generate(startDate, eventRule, exception, this.parent.firstDayOfWeek, undefined, viewDate, this.parent.calendarMode);
         if (this.parent.currentView === 'Agenda' && eventRule.indexOf('COUNT') === -1 && eventRule.indexOf('UNTIL') === -1) {
             if (isNullOrUndefined(event.generatedDates)) {
                 event.generatedDates = { start: new Date(dates[0]), end: new Date(dates[dates.length - 1]) };
@@ -690,15 +697,14 @@ export class EventBase {
                 }
             }
         }
-        let date: number = dates.shift();
-        while (date) {
+        let occurrenceCollection: Object[] = [];
+        for (let date of dates) {
             let clonedObject: { [key: string]: Object } = <{ [key: string]: Object }>extend({}, event, null, true);
-            clonedObject[fields.startTime] = new Date(date);
-            clonedObject[fields.endTime] = new Date(new Date(date).setMilliseconds(duration));
-            clonedObject[fields.recurrenceID] = clonedObject[fields.id];
+            clonedObject[this.parent.eventFields.startTime] = new Date(date);
+            clonedObject[this.parent.eventFields.endTime] = new Date(new Date(date).setMilliseconds(duration));
+            clonedObject[this.parent.eventFields.recurrenceID] = clonedObject[this.parent.eventFields.id];
             clonedObject.Guid = this.generateGuid();
             occurrenceCollection.push(clonedObject);
-            date = dates.shift();
         }
         return occurrenceCollection;
     }

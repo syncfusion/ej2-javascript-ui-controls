@@ -2817,6 +2817,7 @@ class Toolbar$1 {
     onRefresh() {
         this.refreshToolbarOverflow();
         this.parent.setContentHeight();
+        this.parent.formatter.undoRedoRefresh(this.parent);
     }
     /**
      * Called internally if any of the property value changed.
@@ -3988,7 +3989,7 @@ class Count {
     restrict(e) {
         if (this.parent.showCharCount) {
             let element = e.args.currentTarget.textContent.trim();
-            let array = [8, 16, 17, 37, 38, 39, 40, 65];
+            let array = [8, 16, 17, 37, 38, 39, 40, 46, 65];
             let arrayKey;
             for (let i = 0; i <= array.length - 1; i++) {
                 if (e.args.which === array[i]) {
@@ -4402,7 +4403,9 @@ class Formatter {
                 this.editorManager.execCommand(args.item.command, args.item.subCommand, event, this.onSuccess.bind(this, self), args.item.value, value);
             }
         }
-        this.enableUndo(self);
+        if (isNullOrUndefined(event) || event && event.action !== 'copy') {
+            this.enableUndo(self);
+        }
     }
     getAncestorNode(node) {
         node = node.nodeType === 3 ? node.parentNode : node;
@@ -4416,8 +4419,10 @@ class Formatter {
         });
     }
     onSuccess(self, events) {
-        this.enableUndo(self);
-        self.notify(execCommandCallBack, events);
+        if (isNullOrUndefined(events.event) || (events && events.event.action !== 'copy')) {
+            this.enableUndo(self);
+            self.notify(execCommandCallBack, events);
+        }
         self.trigger(actionComplete, events);
         if (events.requestType === 'Images' || events.requestType === 'Links' && self.editorMode === 'HTML') {
             let args = events;
@@ -4454,6 +4459,13 @@ class Formatter {
             if (self.toolbarModule) {
                 updateUndoRedoStatus(self.toolbarModule.baseToolbar, status);
             }
+        }
+    }
+    undoRedoRefresh(iRichTextEditor) {
+        if (this.editorManager.undoRedoManager.undoRedoStack.length) {
+            this.editorManager.undoRedoManager.undoRedoStack = [];
+            this.editorManager.undoRedoManager.steps = 0;
+            iRichTextEditor.disableToolbarItem(['Undo', 'Redo']);
         }
     }
 }
@@ -4766,7 +4778,9 @@ class MDFormats {
             return;
         }
         else {
-            this.cleanFormat(textArea, e.subCommand);
+            if ((e.subCommand === 'pre' && parents.length !== 1) || e.subCommand !== 'pre') {
+                this.cleanFormat(textArea, e.subCommand);
+            }
         }
         let start = textArea.selectionStart;
         let end = textArea.selectionEnd;
@@ -5016,11 +5030,17 @@ class MDSelectionFormats {
         let splitText = splitAt(start)(textArea.value);
         let cmdB = this.syntax.Bold.substr(0, 1);
         let cmdI = this.syntax.Italic;
-        let beforeText = textArea.value.substr(splitText[0].length - 1, 1);
-        let afterText = splitText[1].substr(0, 1);
-        if ((beforeText !== '' && afterText !== '' && beforeText.match(/[a-z]/i)) &&
-            beforeText === beforeText.toUpperCase() && afterText === afterText.toUpperCase() && cmd === 'UpperCase') {
+        let selectedText = this.parent.markdownSelection.getSelectedText(textArea);
+        if (selectedText !== '' && selectedText === selectedText.toLocaleUpperCase() && cmd === 'UpperCase') {
             return true;
+        }
+        else if (selectedText === '') {
+            let beforeText = textArea.value.substr(splitText[0].length - 1, 1);
+            let afterText = splitText[1].substr(0, 1);
+            if ((beforeText !== '' && afterText !== '' && beforeText.match(/[a-z]/i)) &&
+                beforeText === beforeText.toLocaleUpperCase() && afterText === afterText.toLocaleUpperCase() && cmd === 'UpperCase') {
+                return true;
+            }
         }
         if (!(this.isBold(splitText[0], cmdB)) && !(this.isItalic(splitText[0], cmdI)) && !(this.isBold(splitText[1], cmdB)) &&
             !(this.isItalic(splitText[1], cmdI))) {
@@ -5096,7 +5116,7 @@ class MDSelectionFormats {
                 e.subCommand === 'SuperScript' ? '</sup>' : this.syntax[e.subCommand];
             let startLength = (e.subCommand === 'UpperCase' || e.subCommand === 'LowerCase') ? 0 : startCmd.length;
             let startNo = textArea.value.substr(0, selection.start).lastIndexOf(startCmd);
-            let endNo = textArea.value.substr(selection.end, selection.end).indexOf(endCmd);
+            let endNo = textArea.value.substr(selection.end, textArea.value.length).indexOf(endCmd);
             endNo = endNo + selection.end;
             let repStartText = this.replaceAt(textArea.value.substr(0, selection.start), startCmd, '', startNo, selection.start);
             let repEndText = this.replaceAt(textArea.value.substr(selection.end, textArea.value.length), endCmd, '', 0, endNo);
@@ -5364,6 +5384,14 @@ const listConversionFilters = {
     'middle': 'MsoListParagraphCxSpMiddle',
     'last': 'MsoListParagraphCxSpLast'
 };
+/**
+ * Dom-Node Grouping of self closing tags
+ * @hidden
+ */
+const selfClosingTags = [
+    'BR',
+    'IMG'
+];
 
 /**
  * `Undo` module is used to handle undo actions.
@@ -6801,7 +6829,9 @@ class DOMNode {
                 this.replaceWith(start, this.marker(markerClassName.startSelection, this.encode(start.textContent)));
             }
             else {
-                start = start.tagName === 'BR' ? start.parentNode : start;
+                for (let i = 0; i < selfClosingTags.length; i++) {
+                    start = start.tagName === selfClosingTags[i] ? start.parentNode : start;
+                }
                 let marker = this.marker(markerClassName.startSelection, '');
                 append([this.parseHTMLFragment(marker)], start);
             }
@@ -9132,6 +9162,11 @@ class ClearFormat$1 {
                     if (this.NONVALID_TAGS.indexOf(childNodes[index2].nodeName.toLowerCase()) > -1) {
                         this.unWrap(docElement, [childNodes[index2]], nodeCutter, nodeSelection);
                     }
+                    else if (this.BLOCK_TAGS.indexOf(childNodes[index2].nodeName.toLocaleLowerCase()) > -1 &&
+                        childNodes[index2].nodeName.toLocaleLowerCase() !== 'p') {
+                        let blockNodes = this.removeParent([childNodes[index2]]);
+                        this.unWrap(docElement, blockNodes, nodeCutter, nodeSelection);
+                    }
                 }
             }
             else {
@@ -9167,7 +9202,7 @@ ClearFormat$1.BLOCK_TAGS = ['address', 'article', 'aside', 'blockquote',
     'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hgroup', 'li', 'main', 'nav',
     'noscript', 'ol', 'p', 'pre', 'section', 'table', 'tbody', 'td', 'tfoot', 'th',
     'thead', 'tr', 'ul'];
-ClearFormat$1.NONVALID_PARENT_TAGS = ['thead', 'tbody', 'ul', 'ol', 'table', 'tfoot'];
+ClearFormat$1.NONVALID_PARENT_TAGS = ['thead', 'tbody', 'ul', 'ol', 'table', 'tfoot', 'tr'];
 ClearFormat$1.NONVALID_TAGS = ['thead', 'tbody', 'figcaption', 'td', 'tr',
     'th', 'tfoot', 'figcaption', 'li'];
 
@@ -10394,8 +10429,43 @@ class HtmlEditor {
             e.args.preventDefault();
             let range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
             let saveSelection = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
-            let args = { url: e.text, text: '', selection: saveSelection, action: 'Paste' };
-            this.parent.formatter.editorManager.execCommand('Links', 'CreateLink', null, null, args, args);
+            let firstElement = this.parent.createElement('span');
+            let httpRegex = new RegExp(/([^\S]|^)(((https?\:\/\/)))/gi);
+            let wwwRegex = new RegExp(/([^\S]|^)(((www\.))(\S+))/gi);
+            let httpText = '';
+            if (e.text.match(httpRegex)) {
+                firstElement.innerHTML = e.text.split('http')[0];
+                httpText = 'http' + e.text.split('http')[1];
+            }
+            else if (e.text.match(wwwRegex)) {
+                firstElement.innerHTML = e.text.split('www')[0];
+                httpText = 'www' + e.text.split('www')[1];
+            }
+            let httpSplitText = httpText.split(' ');
+            let splittedText = '';
+            for (let i = 1; i < httpSplitText.length; i++) {
+                splittedText = splittedText + ' ' + httpSplitText[i];
+            }
+            let lastElement = this.parent.createElement('span');
+            lastElement.innerHTML = splittedText;
+            let anchor = this.parent.createElement('a', {
+                className: 'e-rte-anchor', attrs: {
+                    href: httpSplitText[0],
+                    title: httpSplitText[0]
+                }
+            });
+            anchor.innerHTML = httpSplitText[0];
+            let resultElement = this.parent.createElement('span');
+            if (firstElement.innerHTML !== '') {
+                resultElement.appendChild(firstElement);
+            }
+            if (anchor.innerHTML !== '') {
+                resultElement.appendChild(anchor);
+            }
+            if (lastElement.innerHTML !== '') {
+                resultElement.appendChild(lastElement);
+            }
+            this.parent.executeCommand('insertHTML', resultElement);
         }
     }
     spaceLink(e) {
@@ -14460,7 +14530,7 @@ class FullScreen {
     hideFullScreen(event) {
         if (this.parent.element.classList.contains(CLS_FULL_SCREEN)) {
             this.parent.element.classList.remove(CLS_FULL_SCREEN);
-            let elem = document.querySelectorAll('.e-overflow');
+            let elem = document.querySelectorAll('.e-rte-overflow');
             for (let i = 0; i < elem.length; i++) {
                 removeClass([elem[i]], ['e-rte-overflow']);
             }
@@ -14626,6 +14696,7 @@ let RichTextEditor = class RichTextEditor extends Component {
      */
     preRender() {
         this.clickPoints = { clientX: 0, clientY: 0 };
+        this.initialValue = this.value;
         this.serviceLocator = new ServiceLocator;
         this.initializeServices();
         this.setContainer();
@@ -14636,8 +14707,8 @@ let RichTextEditor = class RichTextEditor extends Component {
         this.originalElement = this.element.cloneNode(true);
         if (this.value === null || this.valueTemplate !== null) {
             this.setValue();
-            this.element.innerHTML = '';
         }
+        this.element.innerHTML = '';
         let invalidAttr = ['class', 'style', 'id', 'ejs-for'];
         let htmlAttr = {};
         for (let a = 0; a < this.element.attributes.length; a++) {
@@ -14919,6 +14990,7 @@ let RichTextEditor = class RichTextEditor extends Component {
             detach(this.element);
             if (this.originalElement.innerHTML.trim() !== '') {
                 this.valueContainer.value = this.originalElement.innerHTML.trim();
+                this.setProperties({ value: (!isNullOrUndefined(this.initialValue) ? this.initialValue : null) }, true);
             }
             else {
                 this.valueContainer.value = '';
@@ -14928,6 +15000,7 @@ let RichTextEditor = class RichTextEditor extends Component {
         else {
             if (this.originalElement.innerHTML.trim() !== '') {
                 this.element.innerHTML = this.originalElement.innerHTML.trim();
+                this.setProperties({ value: (!isNullOrUndefined(this.initialValue) ? this.initialValue : null) }, true);
             }
             else {
                 this.element.innerHTML = '';
@@ -15928,5 +16001,5 @@ RichTextEditor = __decorate$1([
  * RichTextEditor component exported items
  */
 
-export { Toolbar$1 as Toolbar, KeyboardEvents$1 as KeyboardEvents, BaseToolbar, BaseQuickToolbar, QuickToolbar, Count, ColorPickerInput, MarkdownToolbarStatus, ExecCommandCallBack, ToolbarAction, MarkdownEditor, HtmlEditor, PasteCleanup, HTMLFormatter, Formatter, MarkdownFormatter, ContentRender, Render, ToolbarRenderer, Link, Image, ViewSource, Table, RichTextEditor, RenderType, ToolbarType, executeGroup, created, destroyed, load, initialLoad, initialEnd, iframeMouseDown, destroy, toolbarClick, toolbarRefresh, refreshBegin, toolbarUpdated, bindOnEnd, renderColorPicker, htmlToolbarClick, markdownToolbarClick, destroyColorPicker, modelChanged, keyUp, keyDown, mouseUp, toolbarCreated, toolbarRenderComplete, enableFullScreen, disableFullScreen, dropDownSelect, beforeDropDownItemRender, execCommandCallBack, imageToolbarAction, linkToolbarAction, resizeStart, onResize, resizeStop, undo, redo, insertLink, unLink, editLink, openLink, actionBegin, actionComplete, actionSuccess, popupOpen, updateToolbarItem, insertImage, insertCompleted, imageLeft, imageRight, imageCenter, imageBreak, imageInline, imageLink, imageAlt, imageDelete, imageCaption, imageSize, sourceCode, updateSource, toolbarOpen, beforeDropDownOpen, selectionSave, selectionRestore, expandPopupClick, count, contentFocus, contentBlur, mouseDown, sourceCodeMouseDown, editAreaClick, scroll, colorPickerChanged, tableColorPickerChanged, focusChange, selectAll$1 as selectAll, selectRange, getSelectedHtml, renderInlineToolbar, paste, imgModule, rtlMode, createTable, docClick, tableToolbarAction, checkUndo, readOnlyMode, pasteClean, ServiceLocator, RendererFactory, EditorManager, IMAGE, TABLE, LINK, INSERT_ROW, INSERT_COLUMN, DELETEROW, DELETECOLUMN, REMOVETABLE, TABLEHEADER, TABLE_VERTICAL_ALIGN, ALIGNMENT_TYPE, INDENT_TYPE, DEFAULT_TAG, BLOCK_TAGS, IGNORE_BLOCK_TAGS, TABLE_BLOCK_TAGS, SELECTION_TYPE, INSERTHTML_TYPE, INSERT_TEXT_TYPE, CLEAR_TYPE, Lists, markerClassName, DOMNode, Alignments, Indents, Formats, LinkCommand, InsertMethods, InsertHtml, IsFormatted, NodeCutter, ImageCommand, SelectionCommands, SelectionBasedExec, ClearFormat$1 as ClearFormat, ClearFormatExec, UndoRedoManager, TableCommand, NodeSelection, MarkdownParser, LISTS_COMMAND, selectionCommand, LINK_COMMAND, CLEAR_COMMAND, MD_TABLE, MDLists, MDFormats, MarkdownSelection, UndoRedoCommands, MDSelectionFormats, MDLink, markdownFormatTags, markdownSelectionTags, markdownListsTags, htmlKeyConfig, markdownKeyConfig, pasteCleanupGroupingTags, listConversionFilters, KEY_DOWN, ACTION, FORMAT_TYPE, KEY_DOWN_HANDLER, LIST_TYPE, KEY_UP_HANDLER, KEY_UP, MODEL_CHANGED_PLUGIN, MODEL_CHANGED, MS_WORD_CLEANUP_PLUGIN, MS_WORD_CLEANUP };
+export { Toolbar$1 as Toolbar, KeyboardEvents$1 as KeyboardEvents, BaseToolbar, BaseQuickToolbar, QuickToolbar, Count, ColorPickerInput, MarkdownToolbarStatus, ExecCommandCallBack, ToolbarAction, MarkdownEditor, HtmlEditor, PasteCleanup, HTMLFormatter, Formatter, MarkdownFormatter, ContentRender, Render, ToolbarRenderer, Link, Image, ViewSource, Table, RichTextEditor, RenderType, ToolbarType, executeGroup, created, destroyed, load, initialLoad, initialEnd, iframeMouseDown, destroy, toolbarClick, toolbarRefresh, refreshBegin, toolbarUpdated, bindOnEnd, renderColorPicker, htmlToolbarClick, markdownToolbarClick, destroyColorPicker, modelChanged, keyUp, keyDown, mouseUp, toolbarCreated, toolbarRenderComplete, enableFullScreen, disableFullScreen, dropDownSelect, beforeDropDownItemRender, execCommandCallBack, imageToolbarAction, linkToolbarAction, resizeStart, onResize, resizeStop, undo, redo, insertLink, unLink, editLink, openLink, actionBegin, actionComplete, actionSuccess, popupOpen, updateToolbarItem, insertImage, insertCompleted, imageLeft, imageRight, imageCenter, imageBreak, imageInline, imageLink, imageAlt, imageDelete, imageCaption, imageSize, sourceCode, updateSource, toolbarOpen, beforeDropDownOpen, selectionSave, selectionRestore, expandPopupClick, count, contentFocus, contentBlur, mouseDown, sourceCodeMouseDown, editAreaClick, scroll, colorPickerChanged, tableColorPickerChanged, focusChange, selectAll$1 as selectAll, selectRange, getSelectedHtml, renderInlineToolbar, paste, imgModule, rtlMode, createTable, docClick, tableToolbarAction, checkUndo, readOnlyMode, pasteClean, ServiceLocator, RendererFactory, EditorManager, IMAGE, TABLE, LINK, INSERT_ROW, INSERT_COLUMN, DELETEROW, DELETECOLUMN, REMOVETABLE, TABLEHEADER, TABLE_VERTICAL_ALIGN, ALIGNMENT_TYPE, INDENT_TYPE, DEFAULT_TAG, BLOCK_TAGS, IGNORE_BLOCK_TAGS, TABLE_BLOCK_TAGS, SELECTION_TYPE, INSERTHTML_TYPE, INSERT_TEXT_TYPE, CLEAR_TYPE, Lists, markerClassName, DOMNode, Alignments, Indents, Formats, LinkCommand, InsertMethods, InsertHtml, IsFormatted, NodeCutter, ImageCommand, SelectionCommands, SelectionBasedExec, ClearFormat$1 as ClearFormat, ClearFormatExec, UndoRedoManager, TableCommand, NodeSelection, MarkdownParser, LISTS_COMMAND, selectionCommand, LINK_COMMAND, CLEAR_COMMAND, MD_TABLE, MDLists, MDFormats, MarkdownSelection, UndoRedoCommands, MDSelectionFormats, MDLink, markdownFormatTags, markdownSelectionTags, markdownListsTags, htmlKeyConfig, markdownKeyConfig, pasteCleanupGroupingTags, listConversionFilters, selfClosingTags, KEY_DOWN, ACTION, FORMAT_TYPE, KEY_DOWN_HANDLER, LIST_TYPE, KEY_UP_HANDLER, KEY_UP, MODEL_CHANGED_PLUGIN, MODEL_CHANGED, MS_WORD_CLEANUP_PLUGIN, MS_WORD_CLEANUP };
 //# sourceMappingURL=ej2-richtexteditor.es2015.js.map

@@ -116,7 +116,7 @@ export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
      * Option for customizing the data label text.
      */
 
-    @Complex<FontModel>({ size: '11px', color: null }, Font)
+    @Complex<FontModel>({ size: '11px', color: '', fontStyle: 'Normal', fontWeight: 'Normal', fontFamily: 'Segoe UI' }, Font)
     public font: FontModel;
 
     /**
@@ -791,10 +791,10 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
 
     /**
      * This property used to improve chart performance via data mapping for series dataSource.
-     * @default true
+     * @default false
      */
-    @Property(true)
-    public improveChartPerformance: boolean;
+    @Property(false)
+    public enableComplexProperty: boolean;
 
     /**
      * Process data for the series.
@@ -887,7 +887,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         this.points[i] = new Points();
         point = <Points>this.points[i];
         let currentViewData: Object = this.currentViewData;
-        let getObjectValueByMappingString: Function = this.improveChartPerformance ? this.getObjectValue : getValue;
+        let getObjectValueByMappingString: Function = this.enableComplexProperty ? getValue : this.getObjectValue;
         point.x = getObjectValueByMappingString(xName, currentViewData[i]);
         point.high = getObjectValueByMappingString(this.high, currentViewData[i]);
         point.low = getObjectValueByMappingString(this.low, currentViewData[i]);

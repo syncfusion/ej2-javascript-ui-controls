@@ -466,6 +466,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
         let annotationMessage: string = input.getAttribute('data-val-' + ruleName);
         let customMessage: string;
         if (this.rules[input.name] && ruleName !== 'validateHidden' && ruleName !== 'hidden') {
+            this.getInputElement(input.name);
             customMessage = this.getErrorMessage(this.rules[input.name][ruleName], ruleName);
         }
         if (message) {
@@ -666,8 +667,8 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
 
     // Return default error message or custom error message 
     private getErrorMessage(ruleValue: Object, rule: string): string {
-        let message: string = this.element[0].getAttribute('data-' + rule + '-message') ?
-            this.element[0].getAttribute('data-' + rule + '-message') :
+        let message: string = this.inputElement.getAttribute('data-' + rule + '-message') ?
+            this.inputElement.getAttribute('data-' + rule + '-message') :
             (ruleValue instanceof Array && typeof ruleValue[1] === 'string') ? ruleValue[1] :
                 (Object.keys(this.localyMessage).length !== 0) ? this.localyMessage[rule] : this.defaultMessages[rule];
         let formats: string[] = message.match(/{(\d)}/g);

@@ -1,6 +1,9 @@
 import { createElement, remove, EmitType, Browser } from '@syncfusion/ej2-base';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
-import { Schedule, CellClickEventArgs, ScheduleModel, TimelineViews, EJ2Instance, TimelineMonth } from '../../../src/schedule/index';
+import {
+    Schedule, CellClickEventArgs, ScheduleModel, TimelineViews, EJ2Instance, TimelineMonth,
+    SelectEventArgs, PopupOpenEventArgs
+} from '../../../src/schedule/index';
 import * as cls from '../../../src/schedule/base/css-constant';
 import {
     timelineData, resourceData, timelineResourceData, cloneDataSource, resourceGroupData, levelBasedData
@@ -807,6 +810,61 @@ describe('Schedule timeline work week view', () => {
             }
             remove(document.querySelector('#Schedule'));
         });
+
+        it('cell select', () => {
+            let eventName1: string;
+            let eventName2: string;
+            let eventName3: string;
+            schObj = new Schedule({
+                select: (args: SelectEventArgs) => {
+                    eventName1 = args.name;
+                },
+                cellClick: (args: CellClickEventArgs) => {
+                    eventName2 = args.name;
+                },
+                popupOpen: (args: PopupOpenEventArgs) => {
+                    eventName3 = args.name;
+                },
+                currentView: 'TimelineWorkWeek',
+                views: ['TimelineWorkWeek'], selectedDate: new Date(2018, 5, 5)
+            });
+            schObj.appendTo('#Schedule');
+            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
+            triggerMouseEvent(workCells[3], 'mousedown');
+            triggerMouseEvent(workCells[3], 'mouseup');
+            (schObj.element.querySelectorAll('.e-work-cells')[3] as HTMLElement).click();
+            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(1);
+            expect(eventName1).toEqual('select');
+            expect(eventName2).toEqual('cellClick');
+            expect(eventName3).toEqual('popupOpen');
+        });
+
+        it('multi cell select', () => {
+            let eventName: string;
+            schObj = new Schedule({
+                select: (args: SelectEventArgs) => {
+                    eventName = args.name;
+                },
+                currentView: 'TimelineWorkWeek',
+                views: ['TimelineWorkWeek'], selectedDate: new Date(2018, 5, 5)
+            });
+            schObj.appendTo('#Schedule');
+            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
+            triggerMouseEvent(workCells[3], 'mousedown');
+            triggerMouseEvent(workCells[5], 'mousemove');
+            triggerMouseEvent(workCells[5], 'mouseup');
+            let focuesdEle: HTMLTableCellElement = document.activeElement as HTMLTableCellElement;
+            expect(focuesdEle.classList).toContain('e-selected-cell');
+            expect(focuesdEle.getAttribute('aria-selected')).toEqual('true');
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(3);
+            expect(eventName).toEqual('select');
+        });
+
         it('cell click', () => {
             let cellStartTime: number;
             let cellEndTime: number;

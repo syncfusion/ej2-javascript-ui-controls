@@ -89,7 +89,9 @@ export class TooltipRender {
                                          shapes : ['Circle'],
                                          theme: smithchart.theme
       });
-      this.tooltipElement.textStyle.fontFamily = 'Roboto, Segoe UI, Noto, Sans-serif';
+      this.tooltipElement.opacity = smithchart.themeStyle.tooltipFillOpacity || this.tooltipElement.opacity;
+      this.tooltipElement.textStyle.fontFamily = smithchart.themeStyle.fontFamily ||  'Roboto, Segoe UI, Noto, Sans-serif';
+      this.tooltipElement.textStyle.opacity = smithchart.themeStyle.tooltipTextOpacity || this.tooltipElement.textStyle.opacity;
       this.tooltipElement.appendTo(div as HTMLElement);
     }
     private closestPointXY(smithchart: Smithchart, x: number, y: number, series: SmithchartSeriesModel, seriesindex: number): ClosestPoint {

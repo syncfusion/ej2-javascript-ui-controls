@@ -295,7 +295,7 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.actionOnScroll !== 'none') { this.wireScrollEvents(); }
     }
 
-    private wireScrollEvents(): void {
+    public wireScrollEvents(): void {
         if (this.getRelateToElement()) {
             for ( let parent of this.getScrollableParent(this.getRelateToElement()) ) {
                 EventHandler.add(parent, 'scroll', this.scrollRefresh, this);
@@ -309,7 +309,7 @@ export class Popup extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.actionOnScroll !== 'none') { this.unwireScrollEvents(); }
     }
 
-    private unwireScrollEvents(): void {
+    public unwireScrollEvents(): void {
         if (this.getRelateToElement()) {
             for ( let parent of this.getScrollableParent(this.getRelateToElement()) ) {
                 EventHandler.remove(parent, 'scroll', this.scrollRefresh);

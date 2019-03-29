@@ -53,7 +53,7 @@
       }
 
       .e-dropdown-btn .e-caret {
-        font-size: 12px;
+        font-size: $rte-big-dropdown-caret-icon-size;
       }
     }
   }
@@ -241,7 +241,7 @@
       }
 
       .e-dropdown-btn .e-caret {
-        font-size: 12px;
+        font-size: $rte-dropdown-caret-icon-size;
       }
     }
 
@@ -263,6 +263,9 @@
 
     .e-rte-content,
     .e-source-content  {
+      // sass-lint:disable no-vendor-prefixes
+      -webkit-overflow-scrolling: touch; //iOS devices scrolling smooth
+      // sass-lint:enabled no-vendor-prefixes
       overflow: auto;
       transition: 100ms ease-out;
       width: 100%;
@@ -272,14 +275,13 @@
         box-sizing: border-box;
         min-height: 100px;
         outline: 0 solid transparent;
-        overflow-x: auto;
         padding: 16px;
         position: relative;
         text-align: inherit;
         z-index: 2;
 
         @media screen and (min-width: 992px) {
-          font-size: 14px;
+          font-size: $rte-content-font-size;
         }
       }
 
@@ -428,7 +430,7 @@
   }
 
   .e-rte-linkcontent .e-rte-label {
-    padding-top: 20px;
+    padding-top: $rte-insert-dialog-label-padding-top;
   }
 
   .e-rte-label label {
@@ -686,12 +688,12 @@
     font-family: $rte-font-family;
     font-size: 15px;
     opacity: .87;
-    padding-bottom: 20px;
-    padding-top: 20px;
+    padding-bottom: $rte-insert-dialog-label-padding-bottom;
+    padding-top: $rte-insert-dialog-label-padding-top;
   }
 
   .e-rte-img-dialog .e-rte-label {
-    padding-top: 20px;
+    padding-top: $rte-insert-dialog-label-padding-top;
   }
 
   .e-rte-img-dialog .e-rte-label:first-child {
@@ -784,11 +786,11 @@
         }
 
         .e-toolbar-item .e-tbar-btn.e-btn.e-control {
-          height: 34px;
+          height: $rte-big-quick-tbar-item-min-height;
           line-height: normal;
           margin: 0;
-          min-height: 34px;
-          min-width: 39px;
+          min-height: $rte-big-quick-tbar-item-min-height;
+          min-width: $rte-big-quick-tbar-item-min-width;
         }
 
         .e-toolbar-item .e-tbar-btn .e-icons.e-btn-icon:not(.e-caret) {
@@ -1098,7 +1100,7 @@
   }
 
   .e-rte-edit-table .e-rte-field {
-    padding-top: 20px;
+    padding-top: $rte-insert-dialog-label-padding-top;
   }
 
   .e-rte-edit-table .e-rte-field:first-child {
@@ -1217,6 +1219,6 @@
   }
 
   .e-rte-dialog-minheight {
-    min-height: 265px;
+    min-height: 296px;
   }
 }

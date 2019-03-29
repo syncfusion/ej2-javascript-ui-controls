@@ -170,13 +170,13 @@ describe('Selection Table format Bidi validation in table empty selection', () =
     });
     it('For table with bidi true', () => {
         editor.editor.insertTable(2,2);
-        editor.editor.insertText('سشةحمث',false);
+        editor.editor.insertText('سشةحمث');
         editor.selection.handleTabKey(true,false);
-        editor.editor.insertText('سشةحمث',false);
+        editor.editor.insertText('سشةحمث');
         editor.selection.handleTabKey(true,false);
-        editor.editor.insertText('سشةحمث',false);
+        editor.editor.insertText('سشةحمث');
         editor.selection.handleTabKey(true,false);
-        editor.editor.insertText('سشةحمث',false);
+        editor.editor.insertText('سشةحمث');
         editor.selection.tableFormat.bidi=true;
         expect(editor.selection.tableFormat.bidi).toBe(true);
     });
@@ -226,13 +226,13 @@ describe('Selection Table format Bidi validation in table with non empty selecti
     });
     it('For table with bidi true', () => {
         editor.editor.insertTable(2,2);
-        editor.editor.insertText('سشةحمث',false);
+        editor.editor.insertText('سشةحمث');
         editor.selection.handleTabKey(true,false);
-        editor.editor.insertText('سشةحمث',false);
+        editor.editor.insertText('سشةحمث');
         editor.selection.handleTabKey(true,false);
-        editor.editor.insertText('سشةحمث',false);
+        editor.editor.insertText('سشةحمث');
         editor.selection.handleTabKey(true,false);
-        editor.editor.insertText('سشةحمث',false);
+        editor.editor.insertText('سشةحمث');
         editor.selection.selectCell();
         editor.selection.tableFormat.bidi=true;
         expect(editor.selection.tableFormat.bidi).toBe(true);

@@ -337,7 +337,7 @@ export class Dependency {
             || isNullOrUndefined(isScheduledTask(childGanttRecord.ganttProperties))) {
             return;
         }
-        if (this.parent.enablePredecessorValidation && (childGanttRecord.ganttProperties.isAutoSchedule)) {
+        if (this.parent.isInPredecessorValidation && (childGanttRecord.ganttProperties.isAutoSchedule)) {
             let childRecordProperty: ITaskData = childGanttRecord.ganttProperties;
             let currentTaskId: string = childRecordProperty.taskId.toString();
             let predecessorsCollection: IPredecessor[] = childRecordProperty.predecessor;
@@ -364,7 +364,7 @@ export class Dependency {
                 childRecordProperty,
                 true);
             if (childGanttRecord.parentItem && this.parent.getParentTask(childGanttRecord.parentItem).ganttProperties.isAutoSchedule
-                && this.parent.enablePredecessorValidation) {
+                && this.parent.isInPredecessorValidation) {
                 this.parent.dataOperation.updateParentItems(childGanttRecord.parentItem);
             }
         }
@@ -529,7 +529,7 @@ export class Dependency {
      * @private
      */
     public validatePredecessor(childGanttRecord: IGanttData, previousValue: IPredecessor[], validationOn: string): void {
-        if (!this.parent.enablePredecessorValidation) {
+        if (!this.parent.isInPredecessorValidation) {
             return;
         }
         if (childGanttRecord.ganttProperties.predecessor) {
@@ -547,7 +547,7 @@ export class Dependency {
                 predecessor = predecessors[count];
                 parentGanttRecord = this.parent.getRecordByID(predecessor.from);
                 record = this.parent.getRecordByID(predecessor.to);
-                if (this.parent.enablePredecessorValidation && record.ganttProperties.isAutoSchedule) {
+                if (this.parent.isInPredecessorValidation && record.ganttProperties.isAutoSchedule) {
                     this.parent.isValidationEnabled = true;
                 } else {
                     this.parent.isValidationEnabled = false;
@@ -563,7 +563,7 @@ export class Dependency {
                 predecessor = successors[count];
                 parentGanttRecord = this.parent.getRecordByID(predecessor.from);
                 record = this.parent.getRecordByID(predecessor.to);
-                if (this.parent.enablePredecessorValidation && record.ganttProperties.isAutoSchedule) {
+                if (this.parent.isInPredecessorValidation && record.ganttProperties.isAutoSchedule) {
                     this.parent.isValidationEnabled = true;
                 } else {
                     this.parent.isValidationEnabled = false;
@@ -714,7 +714,7 @@ export class Dependency {
             let predecessor: IPredecessor = validPredecessor[i];
             let parentTask: IGanttData = this.parent.getRecordByID(predecessor.from);
             let offset: number;
-            if (isScheduledTask(parentTask)) {
+            if (isScheduledTask(parentTask.ganttProperties)) {
                 let tempStartDate: Date;
                 let tempEndDate: Date;
                 let tempDuration: number;

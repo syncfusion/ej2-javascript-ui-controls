@@ -90,7 +90,9 @@ export class Formatter {
                     value);
             }
         }
-        this.enableUndo(self);
+        if (isNullOrUndefined(event) || event && (event as KeyboardEventArgs).action !== 'copy') {
+            this.enableUndo(self);
+        }
     }
     private getAncestorNode(node: Node): Node {
         node = node.nodeType === 3 ? node.parentNode : node;
@@ -104,8 +106,10 @@ export class Formatter {
         });
     }
     public onSuccess(self: IRichTextEditor, events: IMarkdownFormatterCallBack | IHtmlFormatterCallBack): void {
-        this.enableUndo(self);
-        self.notify(CONSTANT.execCommandCallBack, events);
+        if (isNullOrUndefined(events.event) || (events && (events.event as KeyboardEventArgs).action !== 'copy')) {
+            this.enableUndo(self);
+            self.notify(CONSTANT.execCommandCallBack, events);
+        }
         self.trigger(CONSTANT.actionComplete, events);
         if (events.requestType === 'Images' || events.requestType === 'Links' && self.editorMode === 'HTML') {
             let args: IHtmlFormatterCallBack = events as IHtmlFormatterCallBack;
@@ -144,6 +148,14 @@ export class Formatter {
             if (self.toolbarModule) {
                 updateUndoRedoStatus(self.toolbarModule.baseToolbar, status);
             }
+        }
+    }
+
+    public undoRedoRefresh(iRichTextEditor: IRichTextEditor): void {
+        if (this.editorManager.undoRedoManager.undoRedoStack.length) {
+            this.editorManager.undoRedoManager.undoRedoStack = [];
+            this.editorManager.undoRedoManager.steps = 0;
+            iRichTextEditor.disableToolbarItem(['Undo', 'Redo']);
         }
     }
 }

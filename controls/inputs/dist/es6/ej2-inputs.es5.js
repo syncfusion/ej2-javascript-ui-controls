@@ -72,8 +72,8 @@ var Input;
     }
     function _blurFn() {
         var parent = getParentNode(this);
-        if ((parent.getElementsByTagName('input')[0]) ? parent.getElementsByTagName('input')[0].value === '' :
-            parent.getElementsByTagName('textarea')[0].value === '') {
+        if ((parent.getElementsByTagName('textarea')[0]) ? parent.getElementsByTagName('textarea')[0].value === '' :
+            parent.getElementsByTagName('input')[0].value === '') {
             var label = parent.getElementsByClassName('e-float-text')[0];
             if (label.classList.contains(CLASSNAMES.LABELTOP)) {
                 removeClass([label], CLASSNAMES.LABELTOP);
@@ -498,8 +498,8 @@ var Input;
     function removeFloating(input) {
         var container = input.container;
         if (!isNullOrUndefined(container) && container.classList.contains(CLASSNAMES.FLOATINPUT)) {
-            var inputEle = container.querySelector('input') ? container.querySelector('input') :
-                container.querySelector('textarea');
+            var inputEle = container.querySelector('textarea') ? container.querySelector('textarea') :
+                container.querySelector('input');
             var placeholder = container.querySelector('.' + CLASSNAMES.FLOATTEXT).textContent;
             var clearButton = container.querySelector('.e-clear-icon') !== null;
             detach(container.querySelector('.' + CLASSNAMES.FLOATLINE));
@@ -743,12 +743,12 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
             if (!isNullOrUndefined(this.element.getAttribute(prop))) {
                 switch (prop) {
                     case 'disabled':
-                        var enabled = this.element.getAttribute(prop) === 'disabled' ||
+                        var enabled = this.element.getAttribute(prop) === 'disabled' || this.element.getAttribute(prop) === '' ||
                             this.element.getAttribute(prop) === 'true' ? false : true;
                         this.setProperties({ enabled: enabled }, true);
                         break;
                     case 'readonly':
-                        var readonly = this.element.getAttribute(prop) === 'readonly'
+                        var readonly = this.element.getAttribute(prop) === 'readonly' || this.element.getAttribute(prop) === ''
                             || this.element.getAttribute(prop) === 'true' ? true : false;
                         this.setProperties({ readonly: readonly }, true);
                         break;
@@ -3421,8 +3421,10 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Slider.prototype.getThemeInitialization = function () {
-        this.isMaterial = this.getTheme(this.sliderContainer) === 'material';
-        this.isBootstrap = this.getTheme(this.sliderContainer) === 'bootstrap';
+        this.isMaterial = this.getTheme(this.sliderContainer) === 'material'
+            || this.getTheme(this.sliderContainer) === 'material-dark';
+        this.isBootstrap = this.getTheme(this.sliderContainer) === 'bootstrap'
+            || this.getTheme(this.sliderContainer) === 'bootstrap-dark';
         this.isBootstrap4 = this.getTheme(this.sliderContainer) === 'bootstrap4';
         this.isMaterialTooltip = this.isMaterial && this.type !== 'Range' && this.tooltip.isVisible;
     };
@@ -6087,6 +6089,7 @@ var FormValidator = /** @__PURE__ @class */ (function (_super) {
         var annotationMessage = input.getAttribute('data-val-' + ruleName);
         var customMessage;
         if (this.rules[input.name] && ruleName !== 'validateHidden' && ruleName !== 'hidden') {
+            this.getInputElement(input.name);
             customMessage = this.getErrorMessage(this.rules[input.name][ruleName], ruleName);
         }
         if (message) {
@@ -6292,8 +6295,8 @@ var FormValidator = /** @__PURE__ @class */ (function (_super) {
     };
     // Return default error message or custom error message 
     FormValidator.prototype.getErrorMessage = function (ruleValue, rule) {
-        var message = this.element[0].getAttribute('data-' + rule + '-message') ?
-            this.element[0].getAttribute('data-' + rule + '-message') :
+        var message = this.inputElement.getAttribute('data-' + rule + '-message') ?
+            this.inputElement.getAttribute('data-' + rule + '-message') :
             (ruleValue instanceof Array && typeof ruleValue[1] === 'string') ? ruleValue[1] :
                 (Object.keys(this.localyMessage).length !== 0) ? this.localyMessage[rule] : this.defaultMessages[rule];
         var formats = message.match(/{(\d)}/g);
@@ -6801,7 +6804,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         this.l10n = new L10n('uploader', this.localeText, this.locale);
         this.preLocaleObj = getValue('currentLocale', this.l10n);
         this.checkHTMLAttributes();
-        var parentEle = this.element.parentElement;
+        var parentEle = closest(this.element, 'form');
         if (!isNullOrUndefined(parentEle)) {
             for (; parentEle && parentEle !== document.documentElement; parentEle = parentEle.parentElement) {
                 if (parentEle.tagName === 'FORM') {
@@ -6854,6 +6857,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         if (this.element.hasAttribute('tabindex')) {
             this.tabIndex = this.element.getAttribute('tabindex');
         }
+        this.browserName = Browser.info.name;
     };
     Uploader.prototype.getPersistData = function () {
         return this.addOnPersist([]);
@@ -6983,7 +6987,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         var fileDropArea = this.createElement('span', { className: DROP_AREA });
         fileDropArea.innerHTML = this.localizedTexts('dropFilesHint');
         this.dropAreaWrapper.appendChild(fileDropArea);
-        this.uploadWrapper = this.createElement('div', { className: CONTROL_WRAPPER, attrs: { 'aria-activedescendant': 'li-focused' } });
+        this.uploadWrapper = this.createElement('div', { className: CONTROL_WRAPPER });
         this.dropAreaWrapper.parentElement.insertBefore(this.uploadWrapper, this.dropAreaWrapper);
         this.uploadWrapper.appendChild(this.dropAreaWrapper);
         this.setDropArea();
@@ -7059,6 +7063,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     Uploader.prototype.setMultipleSelection = function () {
         if (this.multiple && !this.element.hasAttribute('multiple')) {
             var newAttr = document.createAttribute('multiple');
+            newAttr.value = 'multiple';
             this.element.setAttributeNode(newAttr);
         }
         else if (!this.multiple) {
@@ -7247,12 +7252,10 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     /* istanbul ignore next */
     Uploader.prototype.dropElement = function (e) {
         this.dropZoneElement.classList.remove(DRAG_HOVER);
-        if (Browser.info.name === 'chrome') {
+        if (this.browserName === 'chrome') {
             this.element.files = e.dataTransfer.files;
         }
-        else {
-            this.onSelectFiles(e);
-        }
+        this.onSelectFiles(e);
         e.preventDefault();
         e.stopPropagation();
     };
@@ -7623,7 +7626,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             detach(this.listParent);
             this.listParent = null;
         }
-        if (Browser.info.name !== 'msie' && !singleUpload) {
+        if (this.browserName !== 'msie' && !singleUpload) {
             this.element.value = '';
         }
         this.fileList = [];
@@ -7780,7 +7783,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 liElement.appendChild(textContainer);
                 var iconElement = this.createElement('span', { className: ' e-icons', attrs: { 'tabindex': this.btnTabIndex } });
                 /* istanbul ignore next */
-                if (Browser.info.name === 'msie') {
+                if (this.browserName === 'msie') {
                     iconElement.classList.add('e-msie');
                 }
                 iconElement.setAttribute('title', this.localizedTexts('remove'));
@@ -7822,12 +7825,19 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    Uploader.prototype.getSlicedName = function (nameElement) {
+        var text;
+        text = nameElement.textContent;
+        nameElement.dataset.tail = text.slice(text.length - 10);
+    };
     Uploader.prototype.truncateName = function (name) {
         var nameElement = name;
-        var text;
-        if (nameElement.offsetWidth < nameElement.scrollWidth) {
-            text = nameElement.textContent;
-            nameElement.dataset.tail = text.slice(text.length - 10);
+        if (this.browserName !== 'edge' && nameElement.offsetWidth < nameElement.scrollWidth) {
+            this.getSlicedName(nameElement);
+            /* istanbul ignore next */
+        }
+        else if (nameElement.offsetWidth + 1 < nameElement.scrollWidth) {
+            this.getSlicedName(nameElement);
         }
     };
     Uploader.prototype.getFileType = function (name) {
@@ -8190,7 +8200,12 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Uploader.prototype.setExtensions = function (extensions) {
-        this.element.setAttribute('accept', extensions);
+        if (extensions !== '' && !isNullOrUndefined(extensions)) {
+            this.element.setAttribute('accept', extensions);
+        }
+        else {
+            this.element.removeAttribute('accept');
+        }
     };
     Uploader.prototype.templateComplier = function (uploadTemplate) {
         if (uploadTemplate) {
@@ -8679,7 +8694,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         }
         if (isNullOrUndefined(liElement.querySelector('.' + PAUSE_UPLOAD)) && isNullOrUndefined(this.template)) {
             this.pauseButton = this.createElement('span', { className: 'e-icons e-file-pause-btn', attrs: { 'tabindex': this.btnTabIndex } });
-            if (Browser.info.name === 'msie') {
+            if (this.browserName === 'msie') {
                 this.pauseButton.classList.add('e-msie');
             }
             liElement.insertBefore(this.pauseButton, liElement.querySelector('.' + ABORT_ICON));
@@ -8910,7 +8925,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
      */
     Uploader.prototype.clearAll = function () {
         if (isNullOrUndefined(this.listParent)) {
-            if (Browser.info.name !== 'msie') {
+            if (this.browserName !== 'msie') {
                 this.element.value = '';
             }
             this.filesData = [];
@@ -9335,7 +9350,7 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
             click: function (args) {
                 _this.trigger('change', {
                     currentValue: { hex: _this.value.slice(0, 7), rgba: _this.convertToRgbString(_this.hexToRgb(_this.value)) },
-                    previousValue: { hex: null, rgba: null }
+                    previousValue: { hex: null, rgba: null }, value: _this.value
                 });
             }
         });
@@ -9987,7 +10002,8 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
         var hex = value.slice(0, 7);
         this.trigger('change', {
             currentValue: { hex: hex, rgba: this.convertToRgbString(this.rgb) },
-            previousValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) }
+            previousValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) },
+            value: value
         });
         this.setProperties({ 'value': value }, true);
         this.element.value = hex ? hex : '#000000';
@@ -10407,18 +10423,17 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
     ColorPicker.prototype.triggerEvent = function (cValue, pValue, rgba, isKey) {
         if (isKey === void 0) { isKey = false; }
         var hex = cValue.slice(0, 7);
-        var eventArgs = {
-            currentValue: { hex: hex, rgba: rgba },
-            previousValue: { hex: pValue.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(pValue)) }
-        };
         if (!this.showButtons && !isKey) {
-            eventArgs.previousValue = { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) };
-            this.trigger('change', eventArgs);
+            this.trigger('change', { currentValue: { hex: hex, rgba: rgba },
+                previousValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) }, value: cValue });
             this.setProperties({ 'value': cValue }, true);
             this.element.value = hex ? hex : '#000000';
         }
         else {
-            this.trigger('select', eventArgs);
+            this.trigger('select', {
+                currentValue: { hex: hex, rgba: rgba },
+                previousValue: { hex: pValue.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(pValue)) }
+            });
         }
     };
     /**
@@ -10690,7 +10705,10 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             this.removeTileSelection();
-            this.addTileSelection(select('span[aria-label="' + this.roundValue(newProp) + '"]', this.container));
+            var ele = select('span[aria-label="' + this.roundValue(newProp) + '"]', this.container);
+            if (ele) {
+                this.addTileSelection(ele);
+            }
         }
         this.element.value = newProp.slice(0, 7);
     };
@@ -11012,7 +11030,15 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
                     if (this.isHiddenInput) {
                         this.element.value = this.respectiveElement.value;
                     }
-                    this.raiseChangeEvent();
+                    /* istanbul ignore next */
+                    if (this.isAngular && this.preventChange === true) {
+                        this.previousValue = this.value;
+                        this.preventChange = false;
+                    }
+                    else if (isNullOrUndefined(this.isAngular) || !this.isAngular
+                        || (this.isAngular && !this.preventChange) || (this.isAngular && isNullOrUndefined(this.preventChange))) {
+                        this.raiseChangeEvent();
+                    }
                     break;
                 case 'readonly':
                     Input.setReadonly(this.readonly, this.respectiveElement);
@@ -11059,7 +11085,7 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
     };
     TextBox.prototype.preRender = function () {
         this.cloneElement = this.element.cloneNode(true);
-        this.formElement = this.element.closest('form');
+        this.formElement = closest(this.element, 'form');
         if (!isNullOrUndefined(this.formElement)) {
             this.isForm = true;
         }
@@ -11102,6 +11128,14 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
             this.element.setAttribute('type', 'hidden');
             this.textarea.setAttribute('name', this.element.getAttribute('name'));
             this.element.removeAttribute('name');
+            var attribute = ['required', 'minlength', 'maxlength'];
+            for (var i = 0; i < attribute.length; i++) {
+                if (this.element.hasAttribute(attribute[i])) {
+                    var attr = this.element.getAttribute(attribute[i]);
+                    this.textarea.setAttribute(attribute[i], attr);
+                    this.element.removeAttribute(attribute[i]);
+                }
+            }
         }
     };
     TextBox.prototype.checkAttributes = function (attrs) {
@@ -11136,6 +11170,9 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
                 showClearButton: this.showClearButton
             }
         });
+        if (this.isHiddenInput) {
+            this.respectiveElement.parentNode.insertBefore(this.element, this.respectiveElement);
+        }
         this.wireEvents();
         if (this.respectiveElement.value !== '') {
             this.value = this.respectiveElement.value;
@@ -11150,6 +11187,7 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
             this.initialValue = this.value;
             this.setInitialValue();
         }
+        this.previousValue = this.value;
     };
     TextBox.prototype.setInitialValue = function () {
         if (!this.isAngular) {
@@ -11212,12 +11250,19 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         this.trigger('blur', eventArgs);
     };
     TextBox.prototype.inputHandler = function (args) {
+        // tslint:disable-next-line
+        var textboxObj = this;
         var eventArgs = {
             event: args,
             value: this.respectiveElement.value,
             previousValue: this.value,
             container: this.textboxWrapper.container
         };
+        /* istanbul ignore next */
+        if (this.isAngular) {
+            textboxObj.localChange({ value: this.respectiveElement.value });
+            this.preventChange = true;
+        }
         this.trigger('input', eventArgs);
         args.stopPropagation();
     };
@@ -11235,6 +11280,7 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
             isInteraction: interaction ? interaction : false,
             isInteracted: interaction ? interaction : false
         };
+        this.preventChange = false;
         this.trigger('change', eventArgs);
         this.previousValue = this.value;
     };

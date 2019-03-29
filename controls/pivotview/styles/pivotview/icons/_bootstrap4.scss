@@ -1,11 +1,11 @@
 @include export-module('pivotview-bootstrap-icons') {
   .e-pivotview {
     .e-expand::before {
-      content: '\e76a';
+      content: '\e70b';
     }
 
     .e-collapse::before {
-      content: '\e705';
+      content: '\e744';
     }
 
     &.e-rtl {
@@ -23,8 +23,10 @@
     }
 
     .e-pv-filtered::before {
-      color: $pivotgrid-active-color;
       content: '\e775';
+      @if ($pivotgrid-skin != 'bootstrap4') {
+        color: $pivotgrid-active-color;
+      }
     }
 
     .e-remove::before {
@@ -40,7 +42,7 @@
     }
 
     .e-dropdown-icon::before {
-      content: '\e705';
+      content: '\e744';
     }
 
     .e-export::before {
@@ -102,5 +104,25 @@
 
   .e-pivotview-csv-export::before {
     content: '\e725';
+  }
+
+  .e-pivotview-select-icon::before {
+    content: '\e718';
+  }
+
+  .e-pivotview-export::before {
+    content: '\e780';
+  }
+
+  .e-pivotview-grid::before {
+    content: '\e763';
+  }
+
+  .e-pivotview-expand::before {
+    content: '\e7db';
+  }
+
+  .e-pivotview-collapse::before {
+    content: '\e7dc';
   }
 }

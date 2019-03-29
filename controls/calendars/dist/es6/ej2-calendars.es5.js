@@ -25,6 +25,7 @@ var __decorate = (undefined && undefined.__decorate) || function (decorators, ta
 };
 //class constant defination.
 var OTHERMONTH = 'e-other-month';
+var OTHERDECADE = 'e-other-year';
 var ROOT = 'e-calendar';
 var DEVICE = 'e-device';
 var HEADER = 'e-header';
@@ -794,7 +795,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             var dayLink = this.createElement('span');
             dayLink.textContent = this.globalize.formatDate(localDate, { type: 'dateTime', skeleton: 'y' });
             if ((year < startFullYr) || (year > endFullYr)) {
-                addClass([tdEle], OTHERMONTH);
+                addClass([tdEle], OTHERDECADE);
             }
             else if (year < new Date(this.checkValue(this.min)).getFullYear() ||
                 year > new Date(this.checkValue(this.max)).getFullYear()) {
@@ -827,7 +828,8 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         return this.createElement('td', attrs);
     };
     CalendarBase.prototype.firstDay = function (date) {
-        var collection = this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERMONTH + '');
+        var collection = this.currentView() !== 'Decade' ? this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERMONTH + '') :
+            this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERDECADE + '');
         if (collection.length) {
             for (var i = 0; i < collection.length; i++) {
                 if (!collection[i].classList.contains(DISABLED)) {
@@ -856,7 +858,8 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         return (!isNullOrUndefined(value) && value instanceof Date && !isNaN(+value)) ? value : null;
     };
     CalendarBase.prototype.findLastDay = function (date) {
-        var collection = this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERMONTH + '');
+        var collection = this.currentView() === 'Decade' ? this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERDECADE + '') :
+            this.tableBodyElement.querySelectorAll('td' + ':not(.' + OTHERMONTH + '');
         if (collection.length) {
             for (var i = collection.length - 1; i >= 0; i--) {
                 if (!collection[i].classList.contains(DISABLED)) {
@@ -1714,13 +1717,13 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
     };
     CalendarBase.prototype.checkView = function () {
         if (this.start !== 'Decade' && this.start !== 'Year') {
-            this.start = 'Month';
+            this.setProperties({ start: 'Month' }, true);
         }
         if (this.depth !== 'Decade' && this.depth !== 'Year') {
-            this.depth = 'Month';
+            this.setProperties({ depth: 'Month' }, true);
         }
         if (this.getViewNumber(this.depth) > this.getViewNumber(this.start)) {
-            this.depth = 'Month';
+            this.setProperties({ depth: 'Month' }, true);
         }
     };
     __decorate([
@@ -3126,6 +3129,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
     DatePicker.prototype.dateIconHandler = function (e) {
         if (Browser.isDevice) {
             this.element.setAttribute('readonly', '');
+            this.inputElement.blur();
         }
         e.preventDefault();
         if (!this.readonly) {
@@ -3652,10 +3656,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         if (document.activeElement !== this.inputElement && this.enabled) {
             this.inputElement.focus();
             addClass([this.inputWrapper.container], [INPUTFOCUS]);
-            var focusArguments = {
-                model: this
-            };
-            this.trigger('focus', focusArguments);
+            
         }
     };
     /**
@@ -7694,10 +7695,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         if (document.activeElement !== this.inputElement && this.enabled) {
             addClass([this.inputWrapper.container], [INPUTFOCUS$1]);
             this.inputElement.focus();
-            var focusArguments = {
-                model: this
-            };
-            this.trigger('focus', focusArguments);
+            
         }
     };
     /**
@@ -10012,10 +10010,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     TimePicker.prototype.focusIn = function () {
         if (document.activeElement !== this.inputElement && this.enabled) {
             this.inputElement.focus();
-            var focusArguments = {
-                model: this
-            };
-            this.trigger('focus', focusArguments);
+            
         }
     };
     /**

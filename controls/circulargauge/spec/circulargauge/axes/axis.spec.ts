@@ -38,7 +38,7 @@ describe('Circular-Gauge Control', () => {
         it('Checking with default axis', (done: Function) => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_AxisLine_0');
-                expect(svg.getAttribute('stroke')).toBe('#757575');
+                expect(svg.getAttribute('stroke')).toBe('#E0E0E0');
                 expect(svg.getAttribute('fill')).toBe('transparent');
                 expect(svg.getAttribute('stroke-width')).toBe('2');
                 done();
@@ -82,7 +82,7 @@ describe('Circular-Gauge Control', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_Axis_Major_TickLine_0_0');
                 expect(svg.getAttribute('stroke-width')).toBe('2');
-                expect(svg.getAttribute('stroke')).toBe('#757575');
+                expect(svg.getAttribute('stroke')).toBe('#9E9E9E');
                 expect(svg.getAttribute('fill')).toBe('transparent');
                 done();
             };
@@ -102,7 +102,7 @@ describe('Circular-Gauge Control', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_Axis_Minor_TickLine_0_5');
                 expect(svg.getAttribute('stroke-width')).toBe('2');
-                expect(svg.getAttribute('stroke')).toBe('#757575');
+                expect(svg.getAttribute('stroke')).toBe('#9E9E9E');
                 expect(svg.getAttribute('fill')).toBe('transparent');
                 done();
             };
@@ -357,7 +357,7 @@ describe('Circular-Gauge Control', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_Axis_Major_TickLine_0_20');
                 expect(svg.getAttribute('fill')).toBe('transparent');
-                expect(svg.getAttribute('stroke')).toBe('#757575');
+                expect(svg.getAttribute('stroke')).toBe('#9E9E9E');
                 expect(svg.getAttribute('stroke-width')).toBe('2');
                 expect(svg.getAttribute('stroke-dasharray')).toBe('0');
                 done();
@@ -458,7 +458,7 @@ describe('Circular-Gauge Control', () => {
             gauge.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_Axis_Minor_TickLine_0_20');
                 expect(svg.getAttribute('fill')).toBe('transparent');
-                expect(svg.getAttribute('stroke')).toBe('#757575');
+                expect(svg.getAttribute('stroke')).toBe('#9E9E9E');
                 expect(svg.getAttribute('stroke-width')).toBe('2');
                 expect(svg.getAttribute('stroke-dasharray')).toBe('0');
                 done();

@@ -50,11 +50,11 @@
           background: $tbar-default-bg;
           box-shadow: $tbar-btn-box-shadow;
           color: $tbar-default-font;
-          @if $skin-name == 'bootstrap' {
+          @if $tbar-skin == 'bootstrap' {
             margin: 1px 0;
           }
 
-          @if $skin-name == 'highcontrast' {
+          @if $tbar-skin == 'highcontrast' {
             border: 2px $tbar-border-type $ext-tbar-btn-border-color;
           }
 
@@ -64,12 +64,12 @@
             border-radius: $tbar-btn-border-radius;
             color: $tbar-hover-font;
 
-            @if $skin-name == 'bootstrap' {
+            @if $tbar-skin == 'bootstrap' {
               border: 1px solid $tbar-focus-border-color;
               margin: 0;
             }
 
-            @if $skin-name == 'highcontrast' {
+            @if $tbar-skin == 'highcontrast' {
               border: $tbar-dash-border;
 
               &:active {
@@ -84,11 +84,11 @@
             border-radius: $tbar-btn-border-radius;
             color: $tbar-hover-font;
 
-            @if $skin-name == 'bootstrap' {
+            @if $tbar-skin == 'bootstrap' {
               border: 1px solid $tbar-hover-border-color;
             }
 
-            @if $skin-name == 'highcontrast' {
+            @if $tbar-skin == 'highcontrast' {
               border: 2px $tbar-border-type $ext-tbar-btn-hover-border-color;
 
               .e-icons {
@@ -120,10 +120,10 @@
             box-shadow: $tbar-btn-pressed-box-shadow;
             color: $tbar-press-font;
 
-            @if $skin-name == 'bootstrap' {
+            @if $tbar-skin == 'bootstrap' {
               border-left: 1px solid $tbar-press-border-color;
             }
-            @if $skin-name == 'highcontrast' {
+            @if $tbar-skin == 'highcontrast' {
               color: $tbar-pressed-font;
 
               .e-icons,
@@ -152,11 +152,12 @@
 
       .e-toolbar-item {
 
-        @if $skin-name == 'bootstrap4' {
+        @if $tbar-skin == 'bootstrap4' {
           .e-tbar-btn:hover,
           .e-tbar-btn:active,
           .e-tbar-btn:focus {
             background: $primary;
+            box-shadow: none;
             color: $primary-font;
 
             .e-icons,
@@ -164,13 +165,17 @@
               color: inherit;
             }
           }
+
+          .e-tbar-btn {
+            background: $tbar-popup-btn-bg-color;
+          }
         }
 
         .e-tbar-btn-text {
           color: $tbar-default-font;
         }
 
-        @if $skin-name == 'highcontrast' or $skin-name == 'fabric' {
+        @if $tbar-skin == 'highcontrast' or $tbar-skin == 'fabric' {
           .e-btn:focus {
             outline: none;
           }
@@ -187,7 +192,7 @@
         border-left: $border-size $tbar-border-nav-active-type $tbar-pressed-bg;
         box-shadow: $tbar-nav-pressed-box-shadow;
 
-        @if $skin-name == 'highcontrast' {
+        @if $tbar-skin == 'highcontrast' {
           &:focus {
             border: $tbar-dash-border;
           }
@@ -195,7 +200,7 @@
 
         .e-icons {
           color: $tbar-active-font-color;
-          @if $skin-name == 'bootstrap4' {
+          @if $tbar-skin == 'bootstrap4' {
             &:active {
               color: inherit;
             }
@@ -208,27 +213,27 @@
       background: $tbar-default-bg;
       box-shadow: $tbar-btn-box-shadow;
       color: $tbar-default-font;
-      @if $skin-name == 'bootstrap' {
+      @if $tbar-skin == 'bootstrap' {
         margin: 1px 0;
       }
 
-      @if $skin-name == 'highcontrast' {
+      @if $tbar-skin == 'highcontrast' {
         border: 2px $tbar-border-type $tbar-btn-border-color;
       }
 
       &:focus {
         background: $tbar-focus-bg;
-        @if $skin-name == 'bootstrap4' {
+        @if $tbar-skin == 'bootstrap4' {
           box-shadow: $tbar-focus-btn-box-shadow;
         }
-        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+        @if $tbar-skin == 'bootstrap' or $tbar-skin == 'bootstrap4' {
           border: 1px solid $tbar-focus-border-color;
           margin: 0;
         }
         border-color: $tbar-focus-border-color;
         border-radius: $tbar-btn-border-radius;
         color: $tbar-hover-font;
-        @if $skin-name == 'highcontrast' {
+        @if $tbar-skin == 'highcontrast' {
           border: $tbar-dash-border;
 
           &:active {
@@ -239,21 +244,21 @@
 
       &:hover {
         background: $tbar-hover-bg;
-        @if $skin-name == 'bootstrap' or $skin-name == 'bootstrap4' {
+        @if $tbar-skin == 'bootstrap' or $tbar-skin == 'bootstrap4' {
           border: 1px solid $tbar-hover-border-color;
         }
         border-color: $tbar-hover-border-color;
         border-radius: $tbar-btn-border-radius;
         color: $tbar-hover-font;
 
-        @if $skin-name == 'bootstrap4' {
+        @if $tbar-skin == 'bootstrap4' {
           .e-icons,
           .e-tbar-btn-text {
             color: inherit;
           }
         }
 
-        @if $skin-name == 'highcontrast' {
+        @if $tbar-skin == 'highcontrast' {
           border: 2px $tbar-border-type $tbar-btn-hover-border-color;
 
           .e-icons {
@@ -285,8 +290,12 @@
         &.e-overlay {
           background: $tbar-default-bg;
 
-          @if $skin-name == 'highcontrast' {
+          @if $tbar-skin == 'highcontrast' {
             opacity: 1;
+          }
+
+          @if $tbar-skin == 'bootstrap4' {
+            opacity: .65;
           }
 
           .e-tbar-btn-text {
@@ -302,7 +311,7 @@
           color: $tbar-default-font;
         }
 
-        @if $skin-name == 'bootstrap4' {
+        @if $tbar-skin == 'bootstrap4' {
           .e-tbar-btn {
             &:hover,
             &:focus {
@@ -350,7 +359,9 @@
         box-shadow: $tbar-nav-pressed-box-shadow;
         color: $tbar-select-font;
 
-        @if $skin-name == 'bootstrap4' {
+        @if $tbar-skin == 'bootstrap4' {
+          background: $tbar-hover-bg;
+
           .e-icons {
             color: inherit;
           }
@@ -366,7 +377,7 @@
         border-left: $tbar-nav-hover-border;
         color: $tbar-hover-font;
 
-        @if $skin-name == 'bootstrap4' {
+        @if $tbar-skin == 'bootstrap4' {
           background: $tbar-popup-hover-bg;
 
           .e-icons {
@@ -374,7 +385,7 @@
           }
         }
 
-        @if $skin-name == 'highcontrast' {
+        @if $tbar-skin == 'highcontrast' {
           &:not(.e-nav-active) {
             border: 2px $tbar-border-type $tbar-nav-hover-color;
           }
@@ -392,13 +403,13 @@
         border-left: $tbar-nav-focus-border;
         color: $tbar-pressed-font;
 
-        @if $skin-name == 'bootstrap4' {
+        @if $tbar-skin == 'bootstrap4' {
           .e-icons {
             color: inherit;
           }
         }
 
-        @if $skin-name == 'highcontrast' {
+        @if $tbar-skin == 'highcontrast' {
           background: inherit;
           border: $tbar-dash-border;
         }
@@ -409,7 +420,7 @@
 
       &:active {
         background:  $tbar-press-bg;
-        @if $skin-name == 'bootstrap' {
+        @if $tbar-skin == 'bootstrap' {
           border-left: 1px solid $tbar-press-border-color;
         }
         border-color: $tbar-press-border-color;
@@ -417,16 +428,16 @@
         box-shadow: $tbar-btn-pressed-box-shadow;
         color: $tbar-press-font;
 
-        @if $skin-name == 'bootstrap4' {
+        @if $tbar-skin == 'bootstrap4' {
           background: $tbar-active-btn-bg;
-          border-color: 1px solid $tbar-active-border-color;
+          border: 1px solid $tbar-active-border-color;
 
           .e-icons,
           .e-tbar-btn-text {
             color: inherit;
           }
         }
-        @if $skin-name == 'highcontrast' {
+        @if $tbar-skin == 'highcontrast' {
           color: $tbar-pressed-font;
 
           .e-icons,

@@ -21,11 +21,32 @@ export namespace Theme {
  * To get the theme style based on treemap theme.
  */
 export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
-    let style: IThemeStyle;
+    let style: IThemeStyle; let color: string;
+    switch (theme) {
+        case 'MaterialDark':
+            color = '#303030';
+            break;
+        case 'FabricDark':
+            color = '#201F1F';
+            break;
+        case 'BootstrapDark':
+            color = '#1A1A1A';
+            break;
+    }
     switch (theme) {
         case 'BootstrapDark':
         case 'FabricDark':
         case 'MaterialDark':
+            style = {
+                backgroundColor: color,
+                titleFontColor: '#FFFFFF',
+                subTitleFontColor: '#FFFFFF',
+                tooltipFillColor: '#363F4C',
+                tooltipFontColor: '#ffffff',
+                legendTitleColor: '#DADADA',
+                legendTextColor: '#DADADA'
+            };
+            break;
         case 'Highcontrast':
         case 'HighContrast':
             style = {
@@ -40,13 +61,19 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
             break;
         case 'Bootstrap4':
             style = {
-                backgroundColor: '#F8F9FA',
+                backgroundColor: '#FFFFFF',
                 titleFontColor: '#212529',
                 subTitleFontColor: '#212529',
                 tooltipFillColor: '#000000',
                 tooltipFontColor: '#FFFFFF',
+                tooltipFillOpacity: 1,
+                tooltipTextOpacity: 0.9,
                 legendTitleColor: '#212529',
-                legendTextColor: '#212529'
+                legendTextColor: '#212529',
+                fontFamily: 'HelveticaNeue-Medium',
+                fontSize: '16px',
+                legendFontSize: '14px',
+                labelFontFamily: 'HelveticaNeue'
             };
             break;
         default:
@@ -62,5 +89,4 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
             break;
     }
     return style;
-
 }

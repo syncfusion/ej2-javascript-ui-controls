@@ -509,4 +509,37 @@ Tabs and shift-tabs work too`;
             detach(textArea);
         });
     });
+    describe(' EJ2-23205: Revert the headings and blockquotes format while applying the inline code in Markdown editor', () => {
+        let editorObj: MarkdownParser;
+        let textArea: HTMLTextAreaElement = <HTMLTextAreaElement>createElement('textarea', {
+            id: 'markdown-editor',
+            styles: 'width:300px;height:200px'
+        });
+        beforeAll(() => {
+            document.body.appendChild(textArea);
+            editorObj = new MarkdownParser({ element: textArea });
+            textArea.value = innerValue;
+            textArea.focus();
+        });
+
+        it(' not revert the heading while apply Pre inlineCode formats ', () => {
+            editorObj.markdownSelection.save(textArea.value.length - 4, textArea.value.length);
+            editorObj.markdownSelection.restore(textArea);
+            let isCallBack: boolean = false;
+            editorObj.execCommand("Formats", 'h1', null, () => {
+                isCallBack = true;
+            });
+
+            expect(isCallBack).toBe(true);
+            editorObj.execCommand("Formats", 'Pre', null, () => {
+                isCallBack = true;
+            });
+             let line:string = editorObj.markdownSelection.getSelectedLine(textArea);
+             expect(new RegExp('^(# )', 'gim').test(line)).toBe(true);
+
+        });
+        afterAll(() => {
+            detach(textArea);
+        });
+    });
 });

@@ -68,6 +68,20 @@ describe('ColorPicker module', () => {
             editorObj.save();
             expect(valueEle.innerHTML === '#bae8e8').toEqual(true);
         });
+        it('Without compObj data to update value method testing', () => {
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-colorpicker', ele).length === 1).toEqual(true);
+            expect(editorObj.value).toEqual('#bae8e8');
+            expect(editorObj.colorModule.compObj.value).toEqual('#bae8e8ff');
+            editorObj.colorModule.compObj.value = '#bae8b8';
+            expect(editorObj.colorModule.compObj.value).toEqual('#bae8b8');
+            editorObj.colorModule.compObj = undefined;
+            editorObj.save();
+            expect(editorObj.value).toEqual('#bae8e8');
+        });
     });
     describe('Duplicate ID availability testing', () => {
         let editorObj: any;

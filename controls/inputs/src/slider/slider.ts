@@ -773,8 +773,10 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     private getThemeInitialization(): void {
-        this.isMaterial = this.getTheme(this.sliderContainer) === 'material';
-        this.isBootstrap = this.getTheme(this.sliderContainer) === 'bootstrap';
+        this.isMaterial = this.getTheme(this.sliderContainer) === 'material'
+            || this.getTheme(this.sliderContainer) === 'material-dark';
+        this.isBootstrap = this.getTheme(this.sliderContainer) === 'bootstrap'
+            || this.getTheme(this.sliderContainer) === 'bootstrap-dark';
         this.isBootstrap4 = this.getTheme(this.sliderContainer) === 'bootstrap4';
         this.isMaterialTooltip = this.isMaterial && this.type !== 'Range' && this.tooltip.isVisible;
     }

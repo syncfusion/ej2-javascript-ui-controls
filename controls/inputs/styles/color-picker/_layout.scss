@@ -12,11 +12,20 @@
       width: 1px;
     }
 
+    & .e-btn.e-icon-btn {
+      @if $skin-name == 'bootstrap4' {
+        padding: $cpicker-split-btn-padding;
+      }
+    }
+
     & .e-split-btn-wrapper {
       & .e-split-colorpicker.e-split-btn {
         font-family: initial;
         line-height: $cpicker-split-line-height;
         padding: $cpicker-split-btn-padding;
+        @if $skin-name == 'bootstrap4' {
+          box-shadow: none;
+        }
 
         & .e-selected-color {
           background: $cpicker-transparent-bg-pattern;
@@ -31,11 +40,11 @@
             border-radius: $btn-border-radius;
           }
         }
-      }
 
-      & .e-btn.e-icon-btn {
-        @if $skin-name == 'bootstrap4' {
-          padding: $cpicker-split-btn-padding;
+        & .e-btn.e-icon-btn {
+          @if $skin-name == 'bootstrap4' {
+            padding: $cpicker-split-btn-padding;
+          }
         }
       }
 
@@ -130,14 +139,25 @@
   .e-container {
     border: $cpicker-border;
     border-radius: $cpicker-radius;
-    box-shadow: $cpicker-shadow;
     display: inline-block;
     line-height: 0;
     outline: none;
     user-select: none;
+    @if $skin-name == 'bootstrap4' {
+      background-color: $content-bg;
+      border-color: $cpicker-shadow;
+      box-shadow: none;
+    }
+    @else {
+      box-shadow: $cpicker-shadow;
+    }
 
     &.e-color-picker {
       width: $cpicker-container-width;
+      @if $skin-name == 'bootstrap4' {
+        background-color: $content-bg;
+        border: 1px solid $cpicker-shadow;
+      }
 
       & .e-mode-switch-btn {
         background: $cpicker-mode-palette-icon;
@@ -145,6 +165,10 @@
     }
 
     &.e-color-palette {
+      @if $skin-name == 'bootstrap4' {
+        background-color: $content-bg;
+        border: 1px solid $cpicker-shadow;
+      }
       width: auto;
 
       & .e-mode-switch-btn {
@@ -232,8 +256,13 @@
 
     & .e-slider-preview {
       display: inline-block;
-      padding: $cpicker-slider-wrapper-padding;
       width: 100%;
+      @if $skin-name == 'bootstrap4' {
+        padding: $cpicker-slider-handle-size;
+      }
+      @else {
+        padding: $cpicker-slider-wrapper-padding;
+      }
 
       & .e-colorpicker-slider {
         display: inline-block;
@@ -387,6 +416,9 @@
 
         & .e-float-text {
           text-align: center;
+          @if $skin-name == 'bootstrap4' {
+            text-align: left;
+          }
         }
       }
     }
@@ -401,7 +433,12 @@
         float: right;
         text-align: right;
         white-space: nowrap;
-        width: 89.913%;
+        @if $skin-name == 'bootstrap4' {
+          width: 86.913%;
+        }
+        @else {
+          width: 89.913%;
+        }
 
         & .e-btn {
           max-width: $cpicker-ctrl-btn-width;
@@ -411,6 +448,14 @@
 
           &.e-cancel {
             margin-left: $cpicker-cancel-btn-margin;
+          }
+
+          &.e-flat {
+            &:hover {
+              @if $skin-name == 'bootstrap4' {
+                border-color: $gray-500;
+              }
+            }
           }
         }
       }
@@ -424,6 +469,12 @@
         overflow: hidden;
         white-space: nowrap;
 
+        &:hover {
+          @if $skin-name == 'bootstrap4' {
+            border-color: $gray-500;
+          }
+        }
+
         &:focus {
           box-shadow: $cpicker-focus-shadow;
         }
@@ -434,9 +485,14 @@
     & .e-mode-switch-btn {
       background-color: transparent;
       border-color: transparent;
-      height: 24px;
       position: relative;
       width: $cpicker-switch-btn-width;
+      @if $skin-name == 'bootstrap4' {
+        height: 26px;
+      }
+      @else {
+        height: 24px;
+      }
     }
 
     &.e-color-picker {
@@ -639,6 +695,13 @@
       }
 
       & .e-hsv-container {
+        & .e-handler {
+          @if $skin-name == 'bootstrap4' {
+            height: 12px;
+            width: 12px;
+          }
+        }
+
         & .e-hsv-color {
           height: $cpicker-bigger-container-height;
         }
@@ -665,6 +728,9 @@
 
           & .e-slider-container {
             height: $cpicker-bigger-slider-container-height;
+            @if $skin-name == 'bootstrap4' {
+              padding: 12px;
+            }
 
             & .e-handle {
               border-radius: $cpicker-bigger-slider-handle-radius;
@@ -676,8 +742,22 @@
         }
 
         & .e-switch-ctrl-btn {
+          @if $skin-name == 'bootstrap4' {
+            display: inline-block;
+            padding: 16px;
+            white-space: nowrap;
+            width: 100%;
+          }
+
           & .e-ctrl-btn {
             width: 90.6%;
+          }
+
+
+          & .e-cancel {
+            @if $skin-name == 'bootstrap4' {
+              margin-left: 10px;
+            }
           }
         }
       }
@@ -715,12 +795,15 @@
         }
       }
 
-      & .e-value-switch-btn,
+      & .e-css.e-value-switch-btn,
       & .e-mode-switch-btn {
         font-size: 18px;
         line-height: 18px;
         padding: $cpicker-bigger-switch-btn-padding;
         width: $cpicker-bigger-switch-btn-width;
+        @if $skin-name == 'bootstrap4' {
+          height: $cpicker-bigger-switch-btn-width;
+        }
       }
 
       & .e-mode-switch-btn {

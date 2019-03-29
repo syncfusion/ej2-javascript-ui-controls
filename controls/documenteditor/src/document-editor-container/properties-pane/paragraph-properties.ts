@@ -62,7 +62,7 @@ export class Paragraph {
         label.innerHTML = this.localObj.getConstant('Paragraph');
         paragraphDiv.appendChild(label);
         let styleDiv: HTMLElement = this.createDivElement(element + '_styleDiv', paragraphDiv);
-        styleDiv.classList.add('e-de-ctnr-segment');
+        styleDiv.classList.add('e-de-ctnr-segment', 'e-de-ctnr-style-div');
         // tslint:disable-next-line:max-line-length
         let styleSelect: HTMLSelectElement = createElement('input', { id: element + '_style', styles: 'width:248px;font-size: 12px;letter-spacing: 0.05px;' }) as HTMLSelectElement;
         styleDiv.appendChild(styleSelect);
@@ -99,9 +99,9 @@ export class Paragraph {
         // tslint:disable-next-line:max-line-length
         this.increaseIndent = this.createButtonTemplate(element + '_increaseIndent', 'e-de-ctnr-increaseindent e-icons', incDecIndentDiv, 'e-de-prop-indent-last-button', '37', this.localObj.getConstant('Increase indent'));
         let listDiv: HTMLElement = this.createDivElement(element + '_listDiv', paragraphDiv, 'display:flex;');
-        classList(listDiv, ['e-de-ctnr-segment'], []);
+        classList(listDiv, ['e-de-ctnr-segment', 'e-de-ctnr-group-btn'], []);
         if (isRtl) {
-            classList(listDiv, ['e-de-ctnr-segment-rtl'], []);
+            classList(listDiv, ['e-de-ctnr-segment-rtl', 'e-de-ctnr-group-btn'], []);
         }
         let lineHeight: HTMLElement = createElement('button', { id: element + '_lineHeight' });
         listDiv.appendChild(lineHeight);
