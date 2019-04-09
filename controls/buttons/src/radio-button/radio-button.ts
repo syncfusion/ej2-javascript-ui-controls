@@ -121,8 +121,7 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
 
     private updateChange(state: boolean): void {
         let input: HTMLInputElement; let instance: RadioButton;
-        let name: string = this.element.getAttribute('name');
-        let radioGrp: NodeListOf<Element> = document.querySelectorAll('input.e-radio[name="' + name + '"]');
+        let radioGrp: NodeListOf<Element> = this.getRadioGroup();
         for (let i: number = 0; i < radioGrp.length; i++) {
             input = radioGrp[i] as HTMLInputElement;
             if (input !== this.element) {
@@ -169,6 +168,24 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
 
     protected getModuleName(): string {
         return 'radio';
+    }
+
+    /**
+     * To get the value of selected radio button in a group.
+     * @method getSelectedValue
+     * @return {string}
+     */
+    public getSelectedValue(): string {
+        let input: HTMLInputElement; let radioGrp: NodeListOf<Element> = this.getRadioGroup();
+        for (let i: number = 0, len: number = radioGrp.length; i < len; i++) {
+            input = radioGrp[i] as HTMLInputElement;
+            if (input.checked ) { return input.value; }
+        }
+        return '';
+    }
+
+    private getRadioGroup(): NodeListOf<Element> {
+        return document.querySelectorAll('input.e-radio[name="' + this.element.getAttribute('name') + '"]');
     }
 
     /**

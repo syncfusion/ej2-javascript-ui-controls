@@ -119,7 +119,7 @@ describe('Range navigator', () => {
         it('checking with resize', () => {
             window.dispatchEvent(new Event('resize'));
             let container: Element = document.getElementById('container_svg');
-            expect(container.getAttribute('width') === '769' || container.getAttribute('width') === '758').toEqual(true);
+            expect(container.getAttribute('width') === '758' || container.getAttribute('width') === '769').toEqual(true);
         });
         it('check with theme change', () => {
             range.theme = 'Fabric';

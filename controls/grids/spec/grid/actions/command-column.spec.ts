@@ -444,4 +444,39 @@ describe('Command Column ', () => {
         });
     });
 
+    describe('Batch editing delete with command column => ', function () {
+        let gridObj: Grid;
+        beforeAll(function (done) {
+            gridObj = createGrid({
+                dataSource: data.slice(0,8),
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch',
+                showConfirmDialog: false },
+                toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+                allowPaging: true,
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                    { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right'},
+                    { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                    { field: 'ShipCountry', headerText: 'Ship Country', width: 150 },
+                    { headerText: 'Manage Records', width: 160,
+                    commands: [{ type: 'Edit', buttonOption: { iconCss: ' e-icons e-edit', cssClass: 'e-flat' } },
+                        { type: 'Delete', buttonOption: { iconCss: 'e-icons e-delete', cssClass: 'e-flat' } },
+                        { type: 'Save', buttonOption: { iconCss: 'e-icons e-update', cssClass: 'e-flat' } },
+                        { type: 'Cancel', buttonOption: { iconCss: 'e-icons e-cancel-icon', cssClass: 'e-flat' } }]
+                }
+                ]
+            
+            }, done);
+        });
+        it('Delete operation with Batch mode', function () {
+            expect((<any>gridObj).dataSource.length).toBe(8);            
+            (<any>gridObj).getContent().querySelector('.e-unboundcelldiv').children[1].click();
+            (gridObj.element.querySelector('.e-update') as any).click();
+            expect((<any>gridObj).dataSource.length).toBe(7);            
+           });
+  
+        afterAll(function () {
+            destroy(gridObj);
+        });
+    });
 });

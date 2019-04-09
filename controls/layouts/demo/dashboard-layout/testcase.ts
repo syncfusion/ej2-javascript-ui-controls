@@ -1,4 +1,4 @@
-import { DashboardLayout } from '../../src/dashboardlayout/dashboardlayout';
+import { DashboardLayout } from '../../src/dashboard-layout/dashboard-layout';
 import { createElement } from '@syncfusion/ej2-base';
 let ele: any;
 var portlet = new DashboardLayout({

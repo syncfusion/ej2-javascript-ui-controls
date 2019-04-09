@@ -854,8 +854,7 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
     updateChange(state) {
         let input;
         let instance;
-        let name = this.element.getAttribute('name');
-        let radioGrp = document.querySelectorAll('input.e-radio[name="' + name + '"]');
+        let radioGrp = this.getRadioGroup();
         for (let i = 0; i < radioGrp.length; i++) {
             input = radioGrp[i];
             if (input !== this.element) {
@@ -902,6 +901,25 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
     }
     getModuleName() {
         return 'radio';
+    }
+    /**
+     * To get the value of selected radio button in a group.
+     * @method getSelectedValue
+     * @return {string}
+     */
+    getSelectedValue() {
+        let input;
+        let radioGrp = this.getRadioGroup();
+        for (let i = 0, len = radioGrp.length; i < len; i++) {
+            input = radioGrp[i];
+            if (input.checked) {
+                return input.value;
+            }
+        }
+        return '';
+    }
+    getRadioGroup() {
+        return document.querySelectorAll('input.e-radio[name="' + this.element.getAttribute('name') + '"]');
     }
     /**
      * Gets the properties to be maintained in the persistence state.

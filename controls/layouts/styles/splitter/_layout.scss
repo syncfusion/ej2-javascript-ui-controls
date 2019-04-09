@@ -54,7 +54,6 @@
 
             .e-navigate-arrow:not(.e-arrow-right)::before,
             .e-navigate-arrow:not(.e-arrow-right)::after {
-              left: auto;
               right: auto;
             }
           }
@@ -92,8 +91,7 @@
               &:not(.e-arrow-down) {
                 border-radius: 50%;
                 bottom: 18px;
-                left: 10px;
-                right: 21px;
+                right: 22px;
               }
 
               &.e-arrow-down {
@@ -101,6 +99,10 @@
                 left: 22px;
                 right: auto;
                 top: 18px;
+
+                &::after {
+                  right: auto;
+                }
               }
             }
           }
@@ -286,13 +288,14 @@
 
           &:not(.e-arrow-down) {
             &::before {
-              top: 2px;
-              transform-origin: 1px 7px 0;
+              top: 3px;
+              transform-origin: 2px 7px 0;
             }
           }
 
           &:not(.e-arrow-down) {
             &::after {
+              left: 11px;
               top: 8px;
               transform-origin: 1px 1px 0;
             }
@@ -300,22 +303,24 @@
 
           &.e-arrow-down {
             &::before {
-              top: 7px;
-              transform-origin: 1px 7px 0;
+              left: 12px;
+              top: 8px;
+              transform-origin: 1px 6px 0;
             }
           }
 
           &.e-arrow-down {
             &::after {
-              top: 13px;
-              transform-origin: 1px 1px 0;
+              left: 10px;
+              top: 12px;
+              transform-origin: 1px 2px 0;
             }
           }
 
           &:not(.e-arrow-down) {
             border-radius: 50%;
             bottom: 18px;
-            left: 23px;
+            left: 22px;
          }
 
           &.e-arrow-down {

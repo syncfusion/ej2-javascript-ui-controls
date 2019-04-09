@@ -658,7 +658,13 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             rbValue = parseInt(element.id.split('valuekey')[1], 0);
             dropDownObj =
                 getComponent(closest(element, '.e-rule-container').querySelector('.e-filter-input'), 'dropdownlist');
-            value = this.columns[dropDownObj.index].values[rbValue];
+            if (this.columns[dropDownObj.index].values) {
+                value = this.columns[dropDownObj.index].values[rbValue];
+            }
+            else {
+                var valColl = ['True', 'False'];
+                value = valColl[rbValue];
+            }
         }
         else if (element.className.indexOf('e-multiselect') > -1) {
             value = getComponent(element, 'multiselect').value;
@@ -1264,6 +1270,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             if (!element) {
                 element = ruleElement.nextElementSibling.nextElementSibling.querySelector('div.e-control');
             }
+            if (!element) {
+                element = ruleElement.nextElementSibling.nextElementSibling.querySelector('.e-template');
+            }
             eventsArgs = { groupID: groupID, ruleID: ruleID, value: rule.rules[index].field, type: 'field' };
             this.updateValues(element, rule.rules[index]);
             this.triggerEvents(eventsArgs);
@@ -1653,6 +1662,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'rule':
                     this.rule = newProp.rule;
+                    newProp.rule = this.getRuleCollection(this.rule, false);
                     break;
                 case 'width':
                     this.width = newProp.width;

@@ -1,5 +1,5 @@
-import { DashboardLayout } from "../src/dashboardlayout/dashboardlayout";
-import { PanelModel } from "../src/dashboardlayout/dashboardlayout-model";
+import { DashboardLayout } from "../src/dashboard-layout/dashboard-layout";
+import { PanelModel } from "../src/dashboard-layout/dashboard-layout-model";
 import { setStyleAttribute as setStyle, isNullOrUndefined, createElement, detach, EventHandler } from '@syncfusion/ej2-base';
 import { profile, inMB, getMemoryProfile } from './common.spec';
 

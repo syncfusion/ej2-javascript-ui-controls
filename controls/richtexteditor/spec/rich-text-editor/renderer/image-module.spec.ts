@@ -508,7 +508,7 @@ client side. Customer easy to edit the contents and get the HTML content for
             Browser.userAgent = defaultUA;
             destroy(rteObj);
         });
-        it(' contenteditable set as false while click on image to close the virtual keyboard', (done) => {
+        it(' contenteditable set as false while click on image to close the virtual keyboard', (done: Function) => {
             (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
             let args: any = {
                 preventDefault: function () { },
@@ -531,10 +531,39 @@ client side. Customer easy to edit the contents and get the HTML content for
                 dispatchEvent((rteObj.element.querySelector('.testNode') as HTMLElement), 'mouseup');
                 setTimeout(() => {
                     expect(rteObj.contentModule.getEditPanel().getAttribute('contenteditable') === 'true').toBe(true);
+                    done();
+                }, 1000);
+            }, 400);
+        });
+        it('readonly true with contenteditable set as false while click on image to close the virtual keyboard', (done: Function) => {
+            (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+            let args: any = {
+                preventDefault: function () { },
+                originalEvent: { currentTarget: document.getElementById('rte_toolbarItems') }
+            };
+            let range: any = new NodeSelection().getRange(document);
+            let save: any = new NodeSelection().save(range, document);
+            let evnArg: any = { args, self: (<any>rteObj).imageModule, selection: save, selectNode: [''], link: null, target: '' };
+            (<HTMLElement>rteEle.querySelectorAll(".e-toolbar-item")[0] as HTMLElement).click();
+            let dialogEle: any = document.body.querySelector('.e-rte-img-dialog');
+            (dialogEle.querySelector('.e-img-url') as HTMLInputElement).value = 'https://js.syncfusion.com/demos/web/content/images/accordion/baked-chicken-and-cheese.png';
+            (document.querySelector('.e-insertImage.e-primary') as HTMLElement).click();
+            (rteObj.element.querySelector('.e-rte-image') as HTMLElement).click();
+            (<any>rteObj).clickPoints = { clientY: 0, clientX: 0 };
+            dispatchEvent((rteObj.element.querySelector('.e-rte-image') as HTMLElement), 'mouseup');
+            setTimeout(() => {
+                expect(rteObj.contentModule.getEditPanel().getAttribute('contenteditable') === 'false').toBe(true);
+                rteObj.readonly = true;
+                rteObj.dataBind();
+                (rteObj.element.querySelector('.testNode') as HTMLElement).click();
+                (<any>rteObj).clickPoints = { clientY: 0, clientX: 0 };
+                dispatchEvent((rteObj.element.querySelector('.testNode') as HTMLElement), 'mouseup');
+                setTimeout(() => {
+                    expect(rteObj.contentModule.getEditPanel().getAttribute('contenteditable') === 'false').toBe(true);
                     Browser.userAgent = defaultUA;
-                    done()
-                }, 40);
-            }, 40);
+                    done();
+                }, 1000);
+            }, 400);
         });
     });
 

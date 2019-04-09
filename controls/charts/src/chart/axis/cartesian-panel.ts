@@ -1082,7 +1082,7 @@ export class CartesianAxisLayoutPanel {
             intervalLength = rect.width / length;
             width = ((axis.labelIntersectAction === 'Trim' || axis.labelIntersectAction === 'Wrap') && angle === 0
                 && elementSize.width > intervalLength) ? intervalLength : elementSize.width;
-            if (breakLabels.indexOf('<br>') !== -1 && label.breakLabelSize.width < axis.maxLabelSize.width) {
+            if (breakLabels.indexOf('<br>') !== -1 && label.breakLabelSize.width <= axis.maxLabelSize.width) {
                 pointX -= label.breakLabelSize.width / 2;
             } else {
                 pointX -= width / 2;

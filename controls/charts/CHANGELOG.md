@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 17.1.40 (2019-04-09)
+
+### Accumulation chart
+
+#### Bug Fixes
+
+- Now Accumulation chart is refreshing properly on data change.
+
+### Chart
+
+#### Bug Fixes
+
+- Stacking column is not rendered properly when yvalue in string is fixed.
+- Zoomposition is not proper, when the axis is inversed is fixed.
+- Multiline label alignment is not proper, when breaking the labels into smaller text issue fixed
+
 ## 17.1.32-beta (2019-03-13)
 
 ### Chart

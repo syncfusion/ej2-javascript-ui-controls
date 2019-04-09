@@ -1391,5 +1391,46 @@ describe('Filtering module => ', () => {
         it('Filter a column', () => {
                 expect((gridObj as any).getHeaderContent().querySelectorAll('.e-filtertext')[5].value).toBe('7/12/1996');
         });
+        afterAll(() => {
+            destroy(gridObj);
+        });
     });
+
+    describe('Get selectedrowindexes in virtualization after filtering ', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    columns: [
+                        { type: 'checkbox'},
+                        { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID'},
+                        { field: 'EmployeeID', isPrimaryKey: true, headerText: 'Employee ID', textAlign: 'Right', width: 135, },
+                        { field: 'FirstName', headerText: 'Name', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 180 },
+                    ],
+                    allowSelection: true,
+                    allowFiltering: true,
+                    enableVirtualization: true,
+                    height: 300,
+                    actionComplete: actionComplete
+                }, done);
+        });
+
+        it('Get selected rowindexes after filtering', (done: Function) => {
+            let actionComplete = (): void => {
+                gridObj.selectRow(0);
+                expect(gridObj.getSelectedRowIndexes().length).toBe(1);
+                done();
+            }
+            gridObj.actionComplete = actionComplete;
+            filterColumn(gridObj, 'OrderID', '10249');
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
 });

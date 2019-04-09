@@ -3,10 +3,13 @@ import { DataManager, DataUtil } from '@syncfusion/ej2-data';
 import { Dialog, PositionDataModel, DialogModel } from '@syncfusion/ej2-popups';
 import { Tab, TabModel, TabItemModel, EJ2Instance } from '@syncfusion/ej2-navigations';
 import { Grid, Edit, Toolbar as GridToolbar, Page, GridModel } from '@syncfusion/ej2-grids';
-import { ColumnModel as GridColumnModel, ForeignKey, Selection, Filter, getActualProperties } from '@syncfusion/ej2-grids';
+import {
+    ColumnModel as GridColumnModel, ForeignKey, Selection, Filter,
+    getActualProperties, RowSelectEventArgs
+} from '@syncfusion/ej2-grids';
 import { Gantt } from '../base/gantt';
 import {
-    RichTextEditor, Toolbar as RTEToolbar, Link, Image, HtmlEditor, QuickToolbar,
+    RichTextEditor, Toolbar as RTEToolbar, Link, HtmlEditor, QuickToolbar,
     RichTextEditorModel,
     Count
 } from '@syncfusion/ej2-richtexteditor';
@@ -28,8 +31,14 @@ export class DialogEdit {
     //Internal variables
     //Module declarations
     private isEdit: boolean;
-    private dialog: HTMLElement;
-    private dialogObj: Dialog;
+    /**
+     * @private
+     */
+    public dialog: HTMLElement;
+    /**
+     * @private
+     */
+    public dialogObj: Dialog;
     private preTableCollection: IDependencyEditData[];
     private preTaskIds: string[];
     private l10n: L10n;
@@ -40,10 +49,15 @@ export class DialogEdit {
     private rowData: IGanttData;
     private beforeOpenArgs: CObject;
     private inputs: Object;
-    private updatedEditFields: EditDialogFieldSettingsModel[] = null;
+    /**
+     * @private
+     */
+    public updatedEditFields: EditDialogFieldSettingsModel[] = null;
     private updatedAddFields: AddDialogFieldSettingsModel[] = null;
     private addedRecord: object = null;
     private dialogEditValidationFlag: boolean = false;
+    private tabObj: Tab;
+    private ganttResources: Object[] = [];
     /**
      * Constructor for render module
      */
@@ -317,6 +331,9 @@ export class DialogEdit {
             if (generalTabElement && generalTabElement.scrollHeight > generalTabElement.offsetHeight) {
                 generalTabElement.classList.add('e-scroll');
             }
+            if (this.tabObj.selectedItem === 0) {
+                this.tabObj.select(0);
+            }
         };
         dialogModel.locale = this.parent.locale;
         dialogModel.buttons = [{
@@ -352,6 +369,7 @@ export class DialogEdit {
         target.style.pointerEvents = 'none';
         if ((this.l10n.getConstant('cancel')).toLowerCase() === (e.target as HTMLInputElement).innerText.trim().toLowerCase()) {
             if (this.dialog && !this.dialogObj.isDestroyed) {
+                this.dialogObj.hide();
                 this.dialogClose();
             }
         } else {
@@ -364,7 +382,6 @@ export class DialogEdit {
      */
     public dialogClose(): void {
         if (this.dialog) {
-            this.dialogObj.hide();
             this.resetValues();
         }
     }
@@ -375,6 +392,7 @@ export class DialogEdit {
         this.rowData = {};
         this.rowIndex = -1;
         this.addedRecord = null;
+        this.ganttResources = [];
         if (this.dialog && !this.dialogObj.isDestroyed) {
             this.destroyDialogInnerElements();
             this.dialogObj.destroy();
@@ -519,9 +537,9 @@ export class DialogEdit {
         if (this.beforeOpenArgs.cancel) {
             return tabElement;
         }
-        let tabObj: Tab = new Tab(tabModel);
+        this.tabObj = new Tab(tabModel);
         tabElement = this.parent.createElement('div', { id: ganttObj.element.id + '_Tab' });
-        tabObj.appendTo(tabElement);
+        this.tabObj.appendTo(tabElement);
         return tabElement;
     }
 
@@ -879,13 +897,16 @@ export class DialogEdit {
             fields = ['Bold', 'Italic', 'Underline', 'StrikeThrough',
                 'FontName', 'FontSize', 'FontColor', 'BackgroundColor',
                 'LowerCase', 'UpperCase', '|',
-                'Formats', 'Alignments', 'OrderedList', 'UnorderedList',
+                'Alignments', 'OrderedList', 'UnorderedList',
                 'Outdent', 'Indent', '|', 'CreateTable',
-                'CreateLink', 'Image', '|', 'ClearFormat', 'Print',
+                'CreateLink', '|', 'ClearFormat', 'Print',
                 '|', 'Undo', 'Redo'];
         }
         let inputModel: RichTextEditorModel = {
             placeholder: this.l10n.getConstant('writeNotes'),
+            toolbarSettings: {
+                items: fields
+            },
             locale: this.parent.locale
         };
         return inputModel;
@@ -1005,8 +1026,20 @@ export class DialogEdit {
         return divElement;
     }
 
+    private updateResourceCollection(args: RowSelectEventArgs, resourceGridId: string): void {
+        if (!isNullOrUndefined(args.data)) {
+            let ganttObj: Gantt = this.parent;
+            let resourceGrid: Grid = <Grid>(<EJ2Instance>ganttObj.element.querySelector('#' + resourceGridId)).ej2_instances[0];
+            if (!isNullOrUndefined(resourceGrid) && resourceGrid.selectionModule.getSelectedRecords().length > 0) {
+                this.ganttResources = <Object[]>extend([], resourceGrid.selectionModule.getSelectedRecords());
+            } else {
+                this.ganttResources = [];
+            }
+        }
+    }
+
     private renderResourceTab(itemName: string): HTMLElement {
-        let ganttObj: Gantt = this.parent; let ganttResources: Object[] = [];
+        let ganttObj: Gantt = this.parent;
         let ganttData: IGanttData = this.beforeOpenArgs.rowData;
         let inputModel: GridModel = this.beforeOpenArgs[itemName];
         let resourceGridId: string = ganttObj.element.id + '' + itemName + 'TabContainer';
@@ -1014,19 +1047,26 @@ export class DialogEdit {
         let resourceInfo: Object[] = ganttData.ganttProperties.resourceInfo;
         if (this.isEdit && !isNullOrUndefined(resourceInfo)) {
             for (let i: number = 0; i < resourceInfo.length; i++) {
-                ganttResources.push({ name: resourceInfo[i][ganttObj.resourceIDMapping] });
+                this.ganttResources.push(resourceInfo[i]);
             }
         }
+        inputModel.rowSelected = (args: RowSelectEventArgs): void => {
+            this.updateResourceCollection(args, resourceGridId);
+        };
+        inputModel.rowDeselected = (args: RowSelectEventArgs): void => {
+            this.updateResourceCollection(args, resourceGridId);
+        };
         let tabModel: TabModel = this.beforeOpenArgs.tabModel;
         tabModel.selected = (args: Object): void => {
             let title: string = getValue('selectedItem.textContent', args);
             if (title === 'Resources') {
                 let resourceGrid: Grid = <Grid>(<EJ2Instance>ganttObj.element.querySelector('#' + resourceGridId)).ej2_instances[0];
-                let resources: Object[] = ganttData.ganttProperties.resourceInfo;
+                let resources: Object[] = this.ganttResources;
                 if (resources && resources.length > 0) {
                     resourceGrid.currentViewData.forEach((data: CObject, index: number): void => {
                         for (let i: number = 0; i < resources.length; i++) {
-                            if (data[ganttObj.resourceIDMapping] === resources[i][ganttObj.resourceIDMapping]) {
+                            if (data[ganttObj.resourceIDMapping] === resources[i][ganttObj.resourceIDMapping] &&
+                                resourceGrid.selectionModule.selectedRowIndexes.indexOf(index) === -1) {
                                 resourceGrid.selectRow(index);
                             }
                         }
@@ -1055,7 +1095,7 @@ export class DialogEdit {
         let inputModel: RichTextEditorModel = this.beforeOpenArgs[itemName];
         let ganttProp: ITaskData = this.editedRecord.ganttProperties;
         let divElement: HTMLElement = this.createDivElement('', ganttObj.element.id + '' + itemName + 'TabContainer');
-        RichTextEditor.Inject(RTEToolbar, Link, Image, HtmlEditor, QuickToolbar, Count);
+        RichTextEditor.Inject(RTEToolbar, Link, HtmlEditor, QuickToolbar, Count);
         inputModel.value = ganttProp.notes;
         let rteObj: RichTextEditor = new RichTextEditor(inputModel);
         rteObj.appendTo(divElement);
@@ -1302,7 +1342,7 @@ export class DialogEdit {
     }
     private updateResourceTab(resourceElement: HTMLElement): void {
         let gridObj: Grid = <Grid>(<EJ2Instance>resourceElement).ej2_instances[0];
-        let selectedItems: CObject[] = <CObject[]>gridObj.selectionModule.getSelectedRecords();
+        let selectedItems: CObject[] = <CObject[]>this.ganttResources;
         let idArray: object[] = [];
         if (this.isEdit) {
             this.parent.setRecordValue('resourceInfo', selectedItems, this.rowData.ganttProperties, true);

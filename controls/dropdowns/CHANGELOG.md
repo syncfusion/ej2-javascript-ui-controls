@@ -2,6 +2,28 @@
 
 ## [Unreleased]
 
+## 17.1.40 (2019-04-09)
+
+### ListBox
+
+#### Bug Fixes
+
+- Value property passed on form submit issue fixed.
+
+### DropDownList
+
+#### Bug Fixes
+
+- Issue with value selection on disabled dropdown using incremental search has been fixed.
+
+- Clear icon shown when change the value dynamically issue has been fixed.
+
+### MultiSelect
+
+#### Bug Fixes
+
+- Placeholder is not updated properly when unselect all the value issue has been resolved.
+
 ## 17.1.38 (2019-03-29)
 
 ### ListBox
@@ -434,14 +456,6 @@ The ListBox is a graphical user interface component used to display a list of it
 - Multiselect clear button issue has been resolved.
 - Multiselect restore value not maintained in `IE` issue has been resolved.
 - Multiselect popup not open when update a data via update data.
-
-## 16.2.44 (2018-07-10)
-
-### AutoComplete
-
-#### Bug Fixes
-
-- Html elements are shown during filtering when highlight property is set to true.
 
 ## 16.2.43 (2018-07-03)
 

@@ -981,4 +981,32 @@ describe('MultiSelect', () => {
             keyboardEventArgs.altKey = false;
         });
     });
+    describe('EJ2-24251 - placeholder', () => {
+        let listObj: MultiSelect;
+        let data: string[] = ['JAVA', 'C#']
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        beforeAll(() => { 
+            document.body.appendChild(element);
+            listObj = new MultiSelect({
+                dataSource: data,
+                placeholder: 'select the value',
+                fields: { text: "text", value: "text" }
+            });
+            listObj.appendTo(element);
+        });
+        afterAll(() => { 
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+
+        it(' select and unselect all placeholder update', () => { 
+            expect((listObj as any).inputElement.placeholder === listObj.placeholder).toBe(true);
+            listObj.selectAll(true);
+            expect((listObj as any).inputElement.placeholder === '').toBe(true);
+            listObj.selectAll(false);
+            expect((listObj as any).inputElement.placeholder === listObj.placeholder).toBe(true);
+        });
+    });
 });

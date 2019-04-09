@@ -1384,7 +1384,7 @@ function refreshForeignData(row, columns, data) {
  */
 function getForeignData(column, data, lValue, foreignKeyData) {
     let fField = column.foreignKeyField;
-    let key = (lValue || valueAccessor(column.field, data, column));
+    let key = (!isNullOrUndefined(lValue) ? lValue : valueAccessor(column.field, data, column));
     key = isNullOrUndefined(key) ? '' : key;
     let query = new Query();
     let fdata = foreignKeyData || ((column.dataSource instanceof DataManager) && column.dataSource.dataSource.json.length ?
@@ -1420,6 +1420,10 @@ function getDatePredicate(filterObject, type) {
     let nextDate;
     let prevObj = extend({}, getActualProperties(filterObject));
     let nextObj = extend({}, getActualProperties(filterObject));
+    if (filterObject.value === null) {
+        datePredicate = new Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
+        return datePredicate;
+    }
     let value = new Date(filterObject.value);
     if (filterObject.operator === 'equal' || filterObject.operator === 'notequal') {
         if (type === 'datetime') {
@@ -3745,7 +3749,8 @@ class GroupModelGenerator extends RowModelGenerator {
         let data = row.data;
         let col = this.parent.getColumnByField(data.field);
         if (col && col.isForeignColumn && col.isForeignColumn()) {
-            setValue('foreignKey', col.valueAccessor(col.foreignKeyValue, getForeignData(col, {}, data.key)[0], col), row.data);
+            let fkValue = (isNullOrUndefined(data.key) ? '' : col.valueAccessor(col.foreignKeyValue, getForeignData(col, {}, data.key)[0], col));
+            setValue('foreignKey', fkValue, row.data);
         }
     }
     generateDataRows(data, indent, childID, tIndex) {
@@ -4207,22 +4212,24 @@ class ContentRender {
         for (let c = 0, clen = columns.length; c < clen; c++) {
             let column = columns[c];
             let idx = this.parent.getNormalizedColumnIndex(column.uid);
-            //used canSkip method to skip unwanted visible toggle operation. 
-            if (this.canSkip(column, testRow, idx)) {
-                continue;
-            }
-            let displayVal = column.visible === true ? '' : 'none';
-            if (frzCols) {
-                if (idx < frzCols) {
-                    setStyleAttribute(this.getColGroup().childNodes[idx], { 'display': displayVal });
+            if (idx !== -1 && idx < testRow.cells.length) {
+                //used canSkip method to skip unwanted visible toggle operation. 
+                if (this.canSkip(column, testRow, idx)) {
+                    continue;
+                }
+                let displayVal = column.visible === true ? '' : 'none';
+                if (frzCols) {
+                    if (idx < frzCols) {
+                        setStyleAttribute(this.getColGroup().childNodes[idx], { 'display': displayVal });
+                    }
+                    else {
+                        let mTable = gObj.getContent().querySelector('.e-movablecontent').querySelector('colgroup');
+                        setStyleAttribute(mTable.childNodes[idx - frzCols], { 'display': displayVal });
+                    }
                 }
                 else {
-                    let mTable = gObj.getContent().querySelector('.e-movablecontent').querySelector('colgroup');
-                    setStyleAttribute(mTable.childNodes[idx - frzCols], { 'display': displayVal });
+                    setStyleAttribute(this.getColGroup().childNodes[idx], { 'display': displayVal });
                 }
-            }
-            else {
-                setStyleAttribute(this.getColGroup().childNodes[idx], { 'display': displayVal });
             }
         }
         this.refreshContentRows({ requestType: 'refresh' });
@@ -5849,6 +5856,12 @@ class Render {
             if (args) {
                 let action = (args.requestType || '').toLowerCase() + '-complete';
                 this.parent.notify(action, args);
+                if (args.requestType === 'batchsave') {
+                    args.cancel = false;
+                    args.rows = [];
+                    args.isFrozen = this.parent.getFrozenColumns() !== 0 && !args.isFrozen;
+                    this.parent.trigger(actionComplete, args);
+                }
             }
             this.parent.hideSpinner();
         }
@@ -8707,7 +8720,7 @@ class Selection {
         }
     }
     getData() {
-        return this.parent.getDataModule().dataManager.dataSource.json;
+        return this.parent.getDataModule().dataManager.executeLocal(this.parent.getDataModule().generateQuery(true));
     }
     refreshPersistSelection() {
         let rows = this.parent.getRows();
@@ -9560,7 +9573,7 @@ class ShowHide {
     }
     getColumns(keys, getKeyBy) {
         let columns = iterateArrayOrObject(keys, (key, index) => {
-            return iterateArrayOrObject(this.parent.getColumns(), (item, index) => {
+            return iterateArrayOrObject(this.parent.columnModel, (item, index) => {
                 if (item[getKeyBy] === key) {
                     return item;
                 }
@@ -9583,11 +9596,20 @@ class ShowHide {
             });
             return;
         }
-        columns = isNullOrUndefined(columns) ? this.parent.getColumns() : columns;
+        let currentViewCols = this.parent.getColumns();
+        columns = isNullOrUndefined(columns) ? currentViewCols : columns;
         if (this.parent.allowSelection && this.parent.getSelectedRecords().length) {
             this.parent.clearSelection();
         }
-        this.parent.notify(columnVisibilityChanged, columns);
+        if (this.parent.enableColumnVirtualization) {
+            let colsInCurrentView = columns.filter((col1) => (currentViewCols.some((col2) => col1.field === col2.field)));
+            if (colsInCurrentView.length) {
+                this.parent.notify(columnVisibilityChanged, columns);
+            }
+        }
+        else {
+            this.parent.notify(columnVisibilityChanged, columns);
+        }
         if (this.parent.columnQueryMode !== 'All') {
             this.parent.refresh();
         }
@@ -10626,35 +10648,15 @@ let Grid = Grid_1 = class Grid extends Component {
             searchSettings: ['fields', 'operator', 'ignoreCase'],
             sortSettings: [], columns: [], selectedRowIndex: []
         };
-        let ignoreOnColumn = ['filter', 'edit', 'filterBarTemplate', 'headerTemplate', 'template',
-            'commandTemplate', 'commands', 'dataSource', 'headerText'];
         keyEntity.forEach((value) => {
             let currentObject = this[value];
             for (let val of ignoreOnPersist[value]) {
                 delete currentObject[val];
             }
         });
-        this.ignoreInArrays(ignoreOnColumn, this.columns);
         this.pageSettings.template = undefined;
         this.pageTemplateChange = true;
         return this.addOnPersist(keyEntity);
-    }
-    ignoreInArrays(ignoreOnColumn, columns) {
-        columns.forEach((column) => {
-            if (column.columns) {
-                this.ignoreInColumn(ignoreOnColumn, column);
-                this.ignoreInArrays(ignoreOnColumn, column.columns);
-            }
-            else {
-                this.ignoreInColumn(ignoreOnColumn, column);
-            }
-        });
-    }
-    ignoreInColumn(ignoreOnColumn, column) {
-        ignoreOnColumn.forEach((val) => {
-            delete column[val];
-            column.filter = {};
-        });
     }
     /**
      * To provide the array of modules needed for component rendering
@@ -13176,6 +13178,22 @@ let Grid = Grid_1 = class Grid extends Component {
             contentTable.style.overflowY = 'scroll';
         }
     }
+    /**
+     * Get row index by primary key or row data.
+     * @param  {string} value - Defines the primary key value.
+     * @param  {Object} value - Defines the row data.
+     */
+    getRowIndexByPrimaryKey(value) {
+        let pkName = this.getPrimaryKeyFieldNames()[0];
+        value = typeof value === 'object' ? value[pkName] : value;
+        for (let i = 0; i < this.getRowsObject().length; i++) {
+            if (this.getRowsObject()[i].data[pkName] === value) {
+                return this.getRowsObject()[i].index;
+            }
+        }
+        return -1;
+    }
+    ;
 };
 __decorate([
     Property([])
@@ -21043,7 +21061,9 @@ class VirtualContentRenderer extends ContentRender {
     getInfoFromView(direction, info, e) {
         let tempBlocks = [];
         let infoType = { direction: direction, sentinelInfo: info, offsets: e };
-        infoType.page = this.getPageFromTop(e.top, infoType);
+        let vHeight = this.parent.height.toString().indexOf('%') < 0 ? this.content.getBoundingClientRect().height :
+            this.parent.element.getBoundingClientRect().height;
+        infoType.page = this.getPageFromTop(e.top + vHeight, infoType);
         infoType.blockIndexes = tempBlocks = this.vgenerator.getBlockIndexes(infoType.page);
         infoType.loadSelf = !this.vgenerator.isBlockAvailable(tempBlocks[infoType.block]);
         let blocks = this.ensureBlocks(infoType);
@@ -21097,6 +21117,9 @@ class VirtualContentRenderer extends ContentRender {
         let blocks = info.blockIndexes;
         if (this.parent.groupSettings.columns.length) {
             this.refreshOffsets();
+        }
+        if (this.parent.height === '100%') {
+            this.parent.element.style.height = '100%';
         }
         let vHeight = this.parent.height.toString().indexOf('%') < 0 ? this.content.getBoundingClientRect().height :
             this.parent.element.getBoundingClientRect().height;
@@ -21159,7 +21182,7 @@ class VirtualContentRenderer extends ContentRender {
         let extra = this.offsets[total] - this.prevHeight;
         this.offsetKeys.some((offset) => {
             let iOffset = Number(offset);
-            let border = sTop < this.offsets[offset] || (iOffset === total && sTop > this.offsets[offset]);
+            let border = sTop <= this.offsets[offset] || (iOffset === total && sTop > this.offsets[offset]);
             if (border) {
                 info.block = iOffset % 2 === 0 ? 1 : 0;
                 page = Math.max(1, Math.min(this.vgenerator.getPage(iOffset), this.maxPage));
@@ -21170,7 +21193,7 @@ class VirtualContentRenderer extends ContentRender {
     }
     getTranslateY(sTop, cHeight, info, isOnenter) {
         if (info === undefined) {
-            info = { page: this.getPageFromTop(sTop, {}) };
+            info = { page: this.getPageFromTop(sTop + cHeight, {}) };
             info.blockIndexes = this.vgenerator.getBlockIndexes(info.page);
         }
         let block = (info.blockIndexes[0] || 1) - 1;
@@ -23204,7 +23227,7 @@ class BatchEdit {
             gLen = this.parent.groupSettings.columns.length;
         }
         this.cellDetails.cellIndex = target.cellIndex - gLen;
-        this.cellDetails.rowIndex = parseInt(target.parentElement.getAttribute('aria-rowindex'), 10);
+        this.cellDetails.rowIndex = parseInt(target.getAttribute('index'), 10);
     }
     editCell(index, field, isAdd) {
         let gObj = this.parent;
@@ -24297,6 +24320,9 @@ class Edit {
                 (inputClient.left - left + table.scrollLeft + inputClient.width / 2) + 'px;' +
                 'max-width:' + inputClient.width + 'px;text-align:center;'
         });
+        if (isInline && client.left < left) {
+            div.style.left = parseInt(div.style.left, 10) - client.left + left + 'px';
+        }
         let content = this.parent.createElement('div', { className: 'e-tip-content' });
         content.appendChild(error);
         let validationForBottomRowPos;
@@ -24317,7 +24343,10 @@ class Edit {
         }
         div.appendChild(content);
         div.appendChild(arrow);
-        table.appendChild(div);
+        this.formObj.element.appendChild(div);
+        if (isInline && gcontent.getBoundingClientRect().bottom < inputClient.bottom + inputClient.height) {
+            gcontent.scrollTop = gcontent.scrollTop + div.offsetHeight + arrow.scrollHeight;
+        }
         let lineHeight = parseInt(document.defaultView.getComputedStyle(div, null).getPropertyValue('font-size'), 10);
         if (div.getBoundingClientRect().width < inputClient.width &&
             div.querySelector('label').getBoundingClientRect().height / (lineHeight * 1.2) >= 2) {
@@ -27386,7 +27415,9 @@ class CommandColumn {
                 gObj.editModule.endEdit();
                 break;
             case 'Delete':
-                gObj.editModule.endEdit();
+                if (gObj.editSettings.mode !== 'Batch') {
+                    gObj.editModule.endEdit();
+                }
                 gObj.clearSelection();
                 //for toogle issue when dbl click
                 gObj.selectRow(parseInt(closest(target, 'tr').getAttribute('aria-rowindex'), 10), false);
@@ -28499,10 +28530,10 @@ class ColumnMenu {
     beforeMenuItemRender(args) {
         if (this.isChooserItem(args.item)) {
             let field = this.getKeyFromId(args.item.id, this.CHOOSER);
-            let column = this.parent.getColumnByField(field);
+            let column = this.parent.columnModel.filter((col) => col.field === field);
             let check = createCheckBox(this.parent.createElement, false, {
                 label: args.item.text,
-                checked: column.visible
+                checked: column[0].visible
             });
             if (this.parent.enableRtl) {
                 check.classList.add('e-rtl');

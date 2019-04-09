@@ -1055,7 +1055,9 @@ var defaultLocale = {
     'pasteFormatContent': 'Choose the formatting action',
     'plainText': 'Plain Text',
     'cleanFormat': 'Clean',
-    'keepFormat': 'Keep'
+    'keepFormat': 'Keep',
+    'pasteDialogOk': 'OK',
+    'pasteDialogCancel': 'Cancel'
 };
 var toolsLocale = {
     'alignments': 'alignments',
@@ -10867,7 +10869,7 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
                     buttonModel: {
                         isPrimary: true,
                         cssClass: 'e-flat ' + CLS_RTE_PASTE_OK,
-                        content: 'ok'
+                        content: this.i10n.getConstant('pasteDialogOk')
                     }
                 },
                 {
@@ -10879,7 +10881,7 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
                     },
                     buttonModel: {
                         cssClass: 'e-flat ' + CLS_RTE_PASTE_CANCEL,
-                        content: 'cancel'
+                        content: this.i10n.getConstant('pasteDialogCancel')
                     }
                 }
             ],
@@ -11720,7 +11722,9 @@ var Image = /** @__PURE__ @class */ (function () {
                 e.target.focus();
             }
             else {
-                this.contentModule.getEditPanel().setAttribute('contenteditable', 'true');
+                if (!this.parent.readonly) {
+                    this.contentModule.getEditPanel().setAttribute('contenteditable', 'true');
+                }
             }
         }
         if (e.target.tagName === 'IMG' &&
@@ -12824,7 +12828,7 @@ var Image = /** @__PURE__ @class */ (function () {
         return uploadParentEle;
     };
     Image.prototype.fileSelect = function () {
-        document.body.getElementsByClassName('e-file-select-wrap')[0].querySelector('button').click();
+        this.dialogObj.element.getElementsByClassName('e-file-select-wrap')[0].querySelector('button').click();
         return false;
     };
     Image.prototype.imagePaste = function (args) {
@@ -14902,6 +14906,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         else {
             if (this.getToolbar()) {
                 removeClass(this.getToolbar().querySelectorAll('.' + CLS_ACTIVE), CLS_ACTIVE);
+                removeClass([this.getToolbar()], [CLS_TB_FLOAT, CLS_TB_ABS_FLOAT]);
             }
             addClass([this.element], CLS_DISABLED);
             this.element.tabIndex = -1;
@@ -14996,6 +15001,8 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Selects a content range or an element
+     * @param {Range} range - Specify the range which you want to select within the content.
+     * The method used to select a particular sentence or word or entire document.
      * @public
      */
     RichTextEditor.prototype.selectRange = function (range) {
@@ -15016,8 +15023,8 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Executes the commands
-     * CommandName - Specifies the name of the command to be executed.
-     * value - Specifies the sub command.
+     * @param {CommandName} CommandName - Specifies the name of the command to be executed.
+     * @param {string | HTMLElement} value - Specifies the value that you want to execute.
      * @public
      */
     RichTextEditor.prototype.executeCommand = function (commandName, value) {
@@ -15571,6 +15578,8 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Enables the give toolbar items in the RichTextEditor component.
+     * @param {string | string[]} items - Specifies the single or collection of items
+     * that you want to be enable in Rich Text Editor’s Toolbar.
      * @public
      */
     RichTextEditor.prototype.enableToolbarItem = function (items) {
@@ -15578,6 +15587,8 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Disables the given toolbar items in the RichTextEditor component.
+     * @param {string | string[]} items - Specifies the single or collection of items
+     * that you want to be disable in Rich Text Editor’s Toolbar.
      * @public
      */
     RichTextEditor.prototype.disableToolbarItem = function (items) {
@@ -15585,6 +15596,8 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Removes the give toolbar items from the RichTextEditor component.
+     * @param {string | string[]} items - Specifies the single or collection of items
+     * that you want to be remove from Rich Text Editor’s Toolbar.
      * @public
      */
     RichTextEditor.prototype.removeToolbarItem = function (items) {

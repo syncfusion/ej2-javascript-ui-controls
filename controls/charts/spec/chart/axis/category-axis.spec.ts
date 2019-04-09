@@ -447,9 +447,9 @@ describe('Chart Control', () => {
                 let label: HTMLElement = document.getElementById('containerAxisLabels0');
                 expect(label.childElementCount == 5).toBe(true);
                 label = document.getElementById('container0_AxisLabel_2');
-                expect(label.childElementCount == 1).toBe(true);               
-                expect(label.childNodes[0].textContent === 'Southhhhhhhhhhhhhhhhhhh...').toBe(true);
-                expect(label.childNodes[1].textContent === 'Koreaaaaaaaaaaaaaaaaaaaaa...').toBe(true);
+                expect(label.childElementCount == 1).toBe(true);
+                expect(label.childNodes[0].textContent === 'Southhhhhhhhhhhhhhhh...' || label.childNodes[0].textContent === 'Southhhhhhhhhhhhhhhhhhh...').toBe(true);
+                expect(label.childNodes[1].textContent === 'Koreaaaaaaaaaaaaaaaaaa...' || label.childNodes[1].textContent === 'Koreaaaaaaaaaaaaaaaaaaaaa...').toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -464,9 +464,9 @@ describe('Chart Control', () => {
                 expect(label.childElementCount == 5).toBe(true);
                 label = document.getElementById('container0_AxisLabel_2');
                 expect(label.childElementCount == 2).toBe(true);
-                expect(label.childNodes[0].textContent == 'Southhhhhhhhhhhhhhhhhhh...').toBe(true);
-                expect(label.childNodes[1].textContent == 'testhhhhhhhhhhhhhhhhhhh...').toBe(true);
-                expect(label.childNodes[2].textContent == 'Koreaaaaaaaaaaaaaaaaaaaaa...').toBe(true);
+                expect(label.childNodes[0].textContent == 'Southhhhhhhhhhhhhhhh...' || label.childNodes[0].textContent == 'Southhhhhhhhhhhhhhhhhhh...').toBe(true);
+                expect(label.childNodes[1].textContent == 'testhhhhhhhhhhhhhhhh...'|| label.childNodes[1].textContent == 'testhhhhhhhhhhhhhhhhhhh...').toBe(true);
+                expect(label.childNodes[2].textContent == 'Koreaaaaaaaaaaaaaaaaaa...'|| label.childNodes[2].textContent == 'Koreaaaaaaaaaaaaaaaaaaaaa...').toBe(true);
                 done();
             };
             chart.loaded = loaded;
@@ -504,6 +504,20 @@ describe('Chart Control', () => {
             chart.series[0].dataSource[2] = {x: 'South<br>Korea', y: 39.4};
             chart.primaryXAxis.labelIntersectAction = 'Rotate90';
             chart.primaryXAxis.labelRotation = 90;
+            chart.refresh();
+        });
+        it('Checking line break labels with Position', (done: Function) => {
+            loaded = (args: Object): void => {
+                let label: HTMLElement = document.getElementById('container0_AxisLabel_1');
+                expect(label.getAttribute('x') === '229.95' || label.getAttribute('x') === '226.35').toBe(true);
+                label = document.getElementById('container0_AxisLabel_2');
+                expect(label.getAttribute('x') === '381.25' || label.getAttribute('x') === '375.25').toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.series[0].dataSource[2] = {x: 'South<br>Korea', y: 39.4};
+            chart.primaryXAxis.labelIntersectAction = 'None';
+            chart.primaryXAxis.labelRotation = 0;
             chart.refresh();
         });
     });

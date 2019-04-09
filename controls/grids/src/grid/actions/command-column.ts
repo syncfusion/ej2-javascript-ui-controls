@@ -53,7 +53,9 @@ export class CommandColumn {
                 gObj.editModule.endEdit();
                 break;
             case 'Delete':
-                gObj.editModule.endEdit();
+                if (gObj.editSettings.mode !== 'Batch') {
+                    gObj.editModule.endEdit();
+                }
                 gObj.clearSelection();
                 //for toogle issue when dbl click
                 gObj.selectRow(parseInt(closest(target, 'tr').getAttribute('aria-rowindex'), 10), false);

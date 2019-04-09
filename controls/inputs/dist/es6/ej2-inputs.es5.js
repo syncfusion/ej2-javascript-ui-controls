@@ -6265,7 +6265,7 @@ var FormValidator = /** @__PURE__ @class */ (function (_super) {
     };
     // Update the optional validation status
     FormValidator.prototype.optionalValidationStatus = function (name, refer) {
-        if (!this.rules[name][this.required] && !this.inputElement.value.length) {
+        if (!this.rules[name][this.required] && !this.inputElement.value.length && !isNullOrUndefined(this.infoElement)) {
             this.infoElement.innerHTML = this.inputElement.value;
             this.infoElement.setAttribute('aria-invalid', 'false');
             refer.status = '';
@@ -6348,8 +6348,7 @@ var FormValidator = /** @__PURE__ @class */ (function (_super) {
     FormValidator.prototype.getErrorElement = function (name) {
         this.infoElement = select(this.errorElement + '.' + this.errorClass, this.inputElement.parentElement);
         if (!this.infoElement) {
-            this.infoElement = (select(this.errorElement + '.' + this.errorClass + '[for="' + name + '"]', this.element) ||
-                select(this.errorElement + '.' + this.errorClass + '[for="' + name + '"]'));
+            this.infoElement = select(this.errorElement + '.' + this.errorClass + '[for="' + name + '"]', this.element);
         }
         return this.infoElement;
     };
@@ -6380,7 +6379,7 @@ var FormValidator = /** @__PURE__ @class */ (function (_super) {
     };
     // Check whether the input element have required rule and its value is not empty
     FormValidator.prototype.checkRequired = function (name) {
-        if (!this.rules[name][this.required] && !this.inputElement.value.length) {
+        if (!this.rules[name][this.required] && !this.inputElement.value.length && !isNullOrUndefined(this.infoElement)) {
             this.infoElement.innerHTML = this.inputElement.value;
             this.infoElement.setAttribute('aria-invalid', 'false');
             this.hideMessage(name);
@@ -7252,9 +7251,6 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     /* istanbul ignore next */
     Uploader.prototype.dropElement = function (e) {
         this.dropZoneElement.classList.remove(DRAG_HOVER);
-        if (this.browserName === 'chrome') {
-            this.element.files = e.dataTransfer.files;
-        }
         this.onSelectFiles(e);
         e.preventDefault();
         e.stopPropagation();
@@ -11191,7 +11187,7 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
     };
     TextBox.prototype.setInitialValue = function () {
         if (!this.isAngular) {
-            this.element.setAttribute('value', this.initialValue);
+            this.respectiveElement.setAttribute('value', this.initialValue);
         }
     };
     TextBox.prototype.wireEvents = function () {

@@ -1,4 +1,4 @@
-import { DashboardLayout } from '../../src/dashboardlayout/dashboardlayout';
+import { DashboardLayout } from '../../src/dashboard-layout/dashboard-layout';
 let portlet: DashboardLayout = new DashboardLayout({    
     cellSpacing: [7, 7],
     allowDragging: true,

@@ -366,7 +366,7 @@ export class ChartRows {
         this.taskBaselineTemplateFunction = this.templateCompiler(this.getTaskBaselineTemplateString());
         this.milestoneBaselineTemplateFunction = this.templateCompiler(this.getMilestoneBaselineTemplateString());
         let connectorLineLeft: string = '<div class="' + cls.leftConnectorPointOuterDiv + '" style="${if(ganttProperties.isMilestone)}' +
-            'margin-top:' + (this.milesStoneRadius - 4) + 'px;${else}margin-top:' +
+            'margin-top:' + (this.milesStoneRadius - 5) + 'px;${else}margin-top:' +
             this.connectorPointMargin + 'px;${/if}">' +
             '<div class="' + cls.connectorPointLeft + '${this.getUnscheduledTaskClass(ganttProperties)}' +
             '" style="width: ' + this.connectorPointWidth + 'px;' +
@@ -374,7 +374,7 @@ export class ChartRows {
             this.connectorPointRadius + 'px;">' + this.touchLeftConnectorpoint + '</div></div>';
         let connectorLineRight: string = '<div class="' + cls.rightConnectorPointOuterDiv + '" style="${if(ganttProperties.isMilestone)}' +
             'left:' + this.milestoneHeight + 'px;margin-top:' +
-            (this.milesStoneRadius - 4) + 'px;${else}left:${(data.ganttProperties.width)}px;margin-top:' +
+            (this.milesStoneRadius - 5) + 'px;${else}left:${(data.ganttProperties.width)}px;margin-top:' +
             this.connectorPointMargin + 'px;${/if}">' +
             '<div class="' + cls.connectorPointRight + '${this.getUnscheduledTaskClass(ganttProperties)}"' + ' style="' +
             'width:' + this.connectorPointWidth + 'px;height:' + this.connectorPointWidth + 'px;border-radius:' +
@@ -524,7 +524,7 @@ export class ChartRows {
         this.baselineTop = -(Math.floor((this.parent.rowHeight - (this.taskBarHeight + this.taskBarMarginTop))) - 1);
         this.connectorPointWidth = 8;
         this.connectorPointRadius = 8 / 2;
-        this.connectorPointMargin = Math.floor((this.taskBarHeight / 2) - 4);
+        this.connectorPointMargin = Math.floor((this.taskBarHeight / 2) - 5);
     }
 
     /**
@@ -534,8 +534,9 @@ export class ChartRows {
      */
     public refreshGanttRows(): void {
         this.ganttChartTableBody.innerHTML = '';
-        this.parent.currentViewData = this.parent.treeGrid.getCurrentViewRecords();
+        this.parent.currentViewData = this.parent.treeGrid.getCurrentViewRecords().slice();
         this.createTaskbarTemplate();
+        this.triggerQueryTaskbarInfo();
     }
 
     /**

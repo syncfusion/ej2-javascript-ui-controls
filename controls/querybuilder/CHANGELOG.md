@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.40 (2019-04-09)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Updating conditions throws script error after using 'setRules' method.
+
 ## 17.1.38 (2019-03-29)
 
 ### QueryBuilder

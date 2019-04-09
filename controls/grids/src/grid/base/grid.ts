@@ -1828,28 +1828,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 delete currentObject[val];
             }
         });
-        this.ignoreInArrays(ignoreOnColumn, <Column[]>this.columns);
         this.pageSettings.template = undefined;
         this.pageTemplateChange = true;
         return this.addOnPersist(keyEntity);
-    }
-
-    private ignoreInArrays(ignoreOnColumn: string[], columns: Column[]): void {
-        columns.forEach((column: Column) => {
-            if (column.columns) {
-                this.ignoreInColumn(ignoreOnColumn, column);
-                this.ignoreInArrays(ignoreOnColumn, <Column[]>column.columns);
-            } else {
-                this.ignoreInColumn(ignoreOnColumn, column);
-            }
-        });
-    }
-
-    private ignoreInColumn(ignoreOnColumn: string[], column: Column): void {
-        ignoreOnColumn.forEach((val: string) => {
-            delete column[val];
-            column.filter = {};
-        });
     }
 
     /**
@@ -4497,4 +4478,20 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             contentTable.style.overflowY = 'scroll';
         }
     }
+
+    /** 
+     * Get row index by primary key or row data.
+     * @param  {string} value - Defines the primary key value.
+     * @param  {Object} value - Defines the row data.
+     */
+    public getRowIndexByPrimaryKey(value: string | Object): number {
+        let pkName: string = this.getPrimaryKeyFieldNames()[0];
+        value = typeof value === 'object' ? value[pkName] : value;
+        for (let i: number = 0; i < this.getRowsObject().length; i++) {
+            if (this.getRowsObject()[i].data[pkName] === value) {
+                return this.getRowsObject()[i].index;
+            }
+        }
+        return -1;
+    };
 }

@@ -194,10 +194,10 @@ export class ColumnMenu implements IAction {
     private beforeMenuItemRender(args: MenuEventArgs): void {
         if (this.isChooserItem(args.item)) {
             let field: string = this.getKeyFromId(args.item.id, this.CHOOSER);
-            let column: Column = this.parent.getColumnByField(field);
+            let column: Column[] = (<{columnModel?: Column[]}>this.parent).columnModel.filter((col: Column) => col.field === field);
             let check: Element = createCheckBox(this.parent.createElement, false, {
                 label: args.item.text,
-                checked: column.visible
+                checked: column[0].visible
             });
             if (this.parent.enableRtl) {
                 check.classList.add('e-rtl');

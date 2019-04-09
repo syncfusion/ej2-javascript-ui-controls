@@ -1976,6 +1976,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         element.style.webkitUserSelect = 'none';
         element.style.position = 'relative';
         element.style.display = 'block';
+        // To fix angular and react tooltip div scrollbar issue
+        element.style.overflow = 'hidden';
     }
     /**
      * Finds the orientation.

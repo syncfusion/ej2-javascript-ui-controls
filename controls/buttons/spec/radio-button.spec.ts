@@ -273,6 +273,18 @@ describe('RadioButton', () => {
             expect(radio.element.id).toContain('e-radio');
             expect(radio.element.type).toEqual('radio');
         });
+        it('getSelectedValue method', () => {
+            document.body.appendChild(createElement('input', { id: 'group1', attrs: { 'type': 'radio' } }));
+            document.body.appendChild(createElement('input', { id: 'group2', attrs: { 'type': 'radio' } }));
+            radio = new RadioButton({ name: 'group', value: '1' }, '#group1');
+            let radio2: RadioButton = new RadioButton({ name: 'group', value: '2' }, '#group2');
+            expect(radio.getSelectedValue()).toEqual('');
+            radio.element.click();
+            expect(radio2.getSelectedValue()).toEqual('1');
+            radio2.element.click();
+            expect(radio.getSelectedValue()).toEqual('2');
+            radio2.destroy();
+        });
     });
 
     describe('RadioButton in HTML5 forms', () => {

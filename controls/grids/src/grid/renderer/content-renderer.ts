@@ -449,7 +449,7 @@ export class ContentRender implements IRenderer {
         for (let c: number = 0, clen: number = columns.length; c < clen; c++) {
             let column: Column = columns[c];
             let idx: number = this.parent.getNormalizedColumnIndex(column.uid);
-
+            if (idx !== -1 && idx < testRow.cells.length) {
             //used canSkip method to skip unwanted visible toggle operation. 
             if (this.canSkip(column, testRow, idx)) {
                 continue;
@@ -467,7 +467,7 @@ export class ContentRender implements IRenderer {
                 setStyleAttribute(<HTMLElement>this.getColGroup().childNodes[idx], { 'display': displayVal });
             }
         }
-
+    }
         this.refreshContentRows({ requestType: 'refresh' });
     }
 

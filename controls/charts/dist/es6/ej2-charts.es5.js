@@ -1603,14 +1603,8 @@ var Axis = /** @__PURE__ @class */ (function (_super) {
             var baseRange = this.actualRange;
             var start = void 0;
             var end = void 0;
-            if (!this.isInversed) {
-                start = this.actualRange.min + this.zoomPosition * this.actualRange.delta;
-                end = start + this.zoomFactor * this.actualRange.delta;
-            }
-            else {
-                start = this.actualRange.max - (this.zoomPosition * this.actualRange.delta);
-                end = start - (this.zoomFactor * this.actualRange.delta);
-            }
+            start = this.actualRange.min + this.zoomPosition * this.actualRange.delta;
+            end = start + this.zoomFactor * this.actualRange.delta;
             if (start < baseRange.min) {
                 end = end + (baseRange.min - start);
                 start = baseRange.min;
@@ -4472,7 +4466,7 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
             intervalLength = rect.width / length;
             width = ((axis.labelIntersectAction === 'Trim' || axis.labelIntersectAction === 'Wrap') && angle === 0
                 && elementSize.width > intervalLength) ? intervalLength : elementSize.width;
-            if (breakLabels.indexOf('<br>') !== -1 && label.breakLabelSize.width < axis.maxLabelSize.width) {
+            if (breakLabels.indexOf('<br>') !== -1 && label.breakLabelSize.width <= axis.maxLabelSize.width) {
                 pointX -= label.breakLabelSize.width / 2;
             }
             else {
@@ -5666,7 +5660,7 @@ var Series = /** @__PURE__ @class */ (function (_super) {
                 stackingSeies.push(series);
                 for (var j = 0, pointsLength = series.points.length; j < pointsLength; j++) {
                     lastValue = 0;
-                    value = yValues[j];
+                    value = +yValues[j]; // Fix for chart not rendering while y value is given as string issue
                     if (lastPositive[stackingGroup][series.points[j].xValue] === undefined) {
                         lastPositive[stackingGroup][series.points[j].xValue] = 0;
                     }
@@ -8022,6 +8016,8 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         element.style.webkitUserSelect = 'none';
         element.style.position = 'relative';
         element.style.display = 'block';
+        // To fix angular and react tooltip div scrollbar issue
+        element.style.overflow = 'hidden';
     };
     /**
      * Finds the orientation.
@@ -24557,6 +24553,18 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
         return false;
     };
     /**
+     * Get visible series for accumulation chart by index
+     */
+    AccumulationChart.prototype.changeVisibleSeries = function (visibleSeries, index) {
+        for (var _i = 0, visibleSeries_1 = visibleSeries; _i < visibleSeries_1.length; _i++) {
+            var series = visibleSeries_1[_i];
+            if (index === series.index) {
+                return series;
+            }
+        }
+        return null;
+    };
+    /**
      * Get the properties to be maintained in the persisted state.
      * @private
      */
@@ -24612,8 +24620,11 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
                     if (!this.animateselected) {
                         var len = this.series.length;
                         var seriesRefresh = false;
+                        var series = void 0;
                         for (var i = 0; i < len; i++) {
+                            series = newProp.series[i];
                             if (newProp.series[i] && (newProp.series[i].dataSource || newProp.series[i].yName || newProp.series[i].xName)) {
+                                extend(this.changeVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }
                             if (newProp.series[i] && newProp.series[i].explodeIndex !== oldProp.series[i].explodeIndex) {
@@ -31157,7 +31168,7 @@ var StockEvents = /** @__PURE__ @class */ (function (_super) {
                 textSize = measureText(stockEvent.text + 'W', stockEvent.textStyle);
                 if (!argsData.cancel) {
                     stockEventElement = sChart.renderer.createGroup({ id: this.chartId + '_Series_' + series.index + '_StockEvents_' + i });
-                    if (withIn(stockEvent.date.getTime(), series.xAxis.visibleRange)) {
+                    if (withIn(this.dateParse(stockEvent.date).getTime(), series.xAxis.visibleRange)) {
                         symbolLocation = this.findClosePoint(series, stockEvent);
                         if (!stockEvent.showOnSeries) {
                             symbolLocation.y = series.yAxis.rect.y + series.yAxis.rect.height;
@@ -31172,7 +31183,7 @@ var StockEvents = /** @__PURE__ @class */ (function (_super) {
         return stockEventsElementGroup;
     };
     StockEvents.prototype.findClosePoint = function (series, sEvent) {
-        var closeIndex = this.getClosest(series, sEvent.date.getTime());
+        var closeIndex = this.getClosest(series, this.dateParse(sEvent.date).getTime());
         var pointData;
         var point;
         var xPixel;
@@ -31205,9 +31216,9 @@ var StockEvents = /** @__PURE__ @class */ (function (_super) {
             case 'Flag':
             case 'Circle':
             case 'Square':
-                stockEventElement.appendChild(drawSymbol(new ChartLocation(lx, ly), 'Circle', new Size(2, 2), '', new PathOption(stockId + '_Circle', 'transparent', border.width, border.color), stockEve.date.toDateString()));
-                stockEventElement.appendChild(drawSymbol(new ChartLocation(lx, ly - 5), 'VerticalLine', new Size(9, 9), '', new PathOption(stockId + '_Path', border.color, border.width, border.color), stockEve.date.toDateString()));
-                stockEventElement.appendChild(drawSymbol(new ChartLocation(stockEve.type !== 'Flag' ? lx : lx + result.width / 2, ly - result.height), stockEve.type, result, '', new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color), stockEve.date.toDateString()));
+                stockEventElement.appendChild(drawSymbol(new ChartLocation(lx, ly), 'Circle', new Size(2, 2), '', new PathOption(stockId + '_Circle', 'transparent', border.width, border.color), this.dateParse(stockEve.date).toISOString()));
+                stockEventElement.appendChild(drawSymbol(new ChartLocation(lx, ly - 5), 'VerticalLine', new Size(9, 9), '', new PathOption(stockId + '_Path', border.color, border.width, border.color), this.dateParse(stockEve.date).toISOString()));
+                stockEventElement.appendChild(drawSymbol(new ChartLocation(stockEve.type !== 'Flag' ? lx : lx + result.width / 2, ly - result.height), stockEve.type, result, '', new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color), this.dateParse(stockEve.date).toISOString()));
                 textElement(new TextOption(stockId + '_Text', stockEve.type !== 'Flag' ? symbolLocation.x : symbolLocation.x + result.width / 2, (symbolLocation.y - result.height), 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
                 break;
             case 'ArrowUp':
@@ -31222,7 +31233,7 @@ var StockEvents = /** @__PURE__ @class */ (function (_super) {
             case 'InvertedTriangle':
                 result.height = 3 * textSize.height;
                 result.width = textSize.width + (1.5 * textSize.width);
-                stockEventElement.appendChild(drawSymbol(new ChartLocation(symbolLocation.x, symbolLocation.y), stockEve.type, new Size(20, 20), '', new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color), stockEve.date.toDateString()));
+                stockEventElement.appendChild(drawSymbol(new ChartLocation(symbolLocation.x, symbolLocation.y), stockEve.type, new Size(20, 20), '', new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color), this.dateParse(stockEve.date).toISOString()));
                 textElement(new TextOption(stockId + '_Text', symbolLocation.x, symbolLocation.y, 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
                 break;
             case 'Text':
@@ -31338,6 +31349,16 @@ var StockEvents = /** @__PURE__ @class */ (function (_super) {
         if (getElement(elementId)) {
             getElement(elementId).setAttribute('opacity', opacity.toString());
         }
+    };
+    /**
+     * @param value
+     * To convert the c# or javascript date formats into js format
+     * refer chart control's dateTime processing.
+     */
+    StockEvents.prototype.dateParse = function (value) {
+        var dateParser = this.chart.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
+        var dateFormatter = this.chart.intl.getDateFormat({ skeleton: 'full', type: 'dateTime' });
+        return new Date((Date.parse(dateParser(dateFormatter(new Date(DataUtil.parse.parseJson({ val: value }).val))))));
     };
     return StockEvents;
 }(BaseTooltip));

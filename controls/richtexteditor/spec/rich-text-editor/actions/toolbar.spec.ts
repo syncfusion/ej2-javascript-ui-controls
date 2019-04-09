@@ -860,6 +860,36 @@ describe("Toolbar - Actions Module", () => {
                 done();
             }, 500);
         });
+
+        it("Floating with disabled - class testing", (done: Function) => {
+            document.body.style.height = '';
+            destroy(rteObj);
+            document.body.appendChild(ele1);
+            ele1.appendChild(ele2);
+            ele1.style.height = '300px';
+            ele1.style.overflow = 'auto';
+            rteObj = new RichTextEditor({
+                toolbarSettings: {
+                    enableFloating: true,
+                    type: ToolbarType.Expand
+                },
+                height: '800px',
+                value: '<br /> <br /> <br /> <br /> <p id="trg"></p>',
+            }, '#div2');
+            rteEle = rteObj.element;
+            expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
+            ele1.scrollTo(0, 200);
+            rteObj.fullScreenModule.showFullScreen();
+            expect((rteObj.getToolbarElement() as HTMLElement).style.top === '0px').toBe(true);
+            setTimeout(() => {
+                expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(true);
+                rteObj.enabled = false;
+                rteObj.dataBind();
+                expect(document.querySelector(".e-richtexteditor .e-toolbar").classList.contains("e-rte-tb-float")).toBe(false);
+                window.scrollTo(0, 0);
+                done();
+            }, 500);
+        });
     });
 
     describe("Floating toolbar with transform element testing", () => {

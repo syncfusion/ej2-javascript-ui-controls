@@ -3768,3 +3768,41 @@ describe('enableToggle property Testing => ', () => {
         destroy(gridObj);
     });
 });
+
+describe('grid selection functionalities with Frozen rows', function () {
+    let gridObj: Grid;
+    beforeAll(function (done) {
+        gridObj = createGrid({
+            dataSource: data,
+            columns: [
+                { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true },
+                { headerText: 'CustomerID', field: 'CustomerID' },
+                { headerText: 'EmployeeID', field: 'EmployeeID' },
+                { headerText: 'ShipCountry', field: 'ShipCountry' },
+                { headerText: 'ShipCity', field: 'ShipCity' },
+            ],
+            allowSelection: true,
+        }, done);
+    });
+    it('Get rowindex from primarykey', function () {
+        gridObj.selectRow(gridObj.getRowIndexByPrimaryKey(10251));
+        gridObj.dataBind();
+        expect(gridObj.selectedRowIndex).toBe(3);
+    });
+    it('get rowIndex from rowdata', function () {
+        gridObj.selectRow(gridObj.getRowIndexByPrimaryKey({OrderID: 10253, CustomerID: "HANAR", EmployeeID: 3, ShipCity: "Rio de Janeiro",
+        ShipCountry: "Brazil"}));
+        gridObj.dataBind();
+        expect(gridObj.selectedRowIndex).toBe(5);
+    });
+
+    it('Primary key not in current page', function () {
+        let index = gridObj.getRowIndexByPrimaryKey(10358);
+        gridObj.selectRow(index);
+        gridObj.dataBind();
+        expect(index).toBe(-1);
+    });
+    afterAll(function () {
+        destroy(gridObj);
+    });
+});

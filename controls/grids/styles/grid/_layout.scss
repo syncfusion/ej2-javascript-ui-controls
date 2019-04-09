@@ -667,8 +667,9 @@
         top: -10px;
         z-index: 5;
     }
-
-     .e-cloneproperties.e-draganddrop .e-rowdragdrop {
+     
+    &.e-verticallines .e-cloneproperties.e-draganddrop .e-rowdragdrop, 
+    &.e-bothlines .e-cloneproperties.e-draganddrop .e-rowdragdrop{
         border-top: 1px solid $grid-cell-border-color;
         border-right: 1px solid $grid-cell-border-color;
         border-bottom: 0;
@@ -713,7 +714,7 @@
           padding-right: 6px;   
       }
       
-      .e-gridcontent .e-rowdragdrop {
+     .e-gridcontent .e-rowdragdrop {
           border-style: $grid-dragcell-border-style;
           border-width: $grid-dragicon-cell-border;
           border-color: $grid-dragcell-border-color;
@@ -810,7 +811,8 @@
     &.e-default.e-verticallines,
     &.e-default.e-hidelines {
       & .e-detailrowcollapse,
-      & .e-detailrowexpand {
+      & .e-detailrowexpand,
+      & .e-rowdragdrop {
         border-top-width: 0;
       }
     }
@@ -1351,6 +1353,10 @@
       float: right;
       margin: $grid-column-menu-margin;
       padding: 6px;
+    }
+
+    &.e-wrap .e-columnmenu {
+      margin: $grid-textwrap-column-menu-margin;
     }
 
     &.e-rtl .e-columnmenu {
@@ -2551,7 +2557,8 @@
 
       &.e-default.e-bothlines .e-dragheadercell,
       &.e-default.e-bothlines .e-rowdragheader,
-      &.e-default.e-bothlines .e-cloneproperties.e-draganddrop td.e-rowdragdrop {
+      &.e-default.e-bothlines .e-cloneproperties.e-draganddrop td.e-rowdragdrop,
+      &.e-default.e-verticallines .e-cloneproperties.e-draganddrop td.e-rowdragdrop {
         border-left: 1px solid $grid-header-border-color;
         padding-left: 3px;
       }

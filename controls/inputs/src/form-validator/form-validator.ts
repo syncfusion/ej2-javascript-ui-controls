@@ -639,7 +639,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
 
     // Update the optional validation status
     private optionalValidationStatus(name: string, refer: FormEventArgs): void {
-        if (!this.rules[name][this.required] && !this.inputElement.value.length) {
+        if (!this.rules[name][this.required] && !this.inputElement.value.length && !isNullOrUndefined(this.infoElement)) {
             this.infoElement.innerHTML = this.inputElement.value;
             this.infoElement.setAttribute('aria-invalid', 'false');
             refer.status = '';
@@ -720,8 +720,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
     private getErrorElement(name: string): HTMLElement {
         this.infoElement = <HTMLElement>select(this.errorElement + '.' + this.errorClass, this.inputElement.parentElement);
         if (!this.infoElement) {
-            this.infoElement = (<HTMLElement>select(this.errorElement + '.' + this.errorClass + '[for="' + name + '"]', this.element) ||
-                <HTMLElement>select(this.errorElement + '.' + this.errorClass + '[for="' + name + '"]'));
+            this.infoElement = (<HTMLElement>select(this.errorElement + '.' + this.errorClass + '[for="' + name + '"]', this.element));
         }
         return this.infoElement;
     }
@@ -756,7 +755,7 @@ export class FormValidator extends Base<HTMLFormElement> implements INotifyPrope
 
     // Check whether the input element have required rule and its value is not empty
     private checkRequired(name: string): void {
-        if (!this.rules[name][this.required] && !this.inputElement.value.length) {
+        if (!this.rules[name][this.required] && !this.inputElement.value.length && !isNullOrUndefined(this.infoElement)) {
             this.infoElement.innerHTML = this.inputElement.value;
             this.infoElement.setAttribute('aria-invalid', 'false');
             this.hideMessage(name);

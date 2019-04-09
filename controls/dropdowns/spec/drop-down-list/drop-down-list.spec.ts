@@ -4542,6 +4542,37 @@ describe('DDList', () => {
             expect(!isNullOrUndefined(ddlObj.inputElement.getAttribute('type'))).toBe(true);
         });
     });
+
+    describe('DDL-add item', () => {
+        let count = 0;
+        let ddlObj: any;
+        let isChangeCalled: boolean = false;
+        let ddlEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddl' });
+        let empList: any = [ 'American Football', 'Badminton'];
+        beforeAll(() => {
+            document.body.appendChild(ddlEle);
+            ddlObj = new DropDownList({
+                dataSource: empList,
+                showClearButton: true
+            });
+            ddlObj.appendTo(ddlEle);
+        });
+        afterAll(() => {
+            ddlObj.destroy();
+            ddlEle.remove();
+        });
+
+        it('Add item with string and array', () => {
+            ddlObj.addItem(['Cricket', 'Basketball'], 0);
+            expect(ddlObj.list.querySelectorAll('li')[0].textContent).toBe('Cricket');
+            expect(ddlObj.list.querySelectorAll('li')[1].textContent).toBe('Basketball');
+            expect(ddlObj.list.querySelectorAll('li').length === 4).toBe(true);
+            ddlObj.addItem('Kabadi', 0);
+            expect(ddlObj.list.querySelectorAll('li')[0].textContent).toBe('Kabadi');
+            expect(ddlObj.list.querySelectorAll('li').length === 5).toBe(true);
+        });
+    });
+
     it('memory leak', () => {     
         profile.sample();
         let average: any = inMB(profile.averageChange)
@@ -4551,4 +4582,29 @@ describe('DDList', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
+    describe('DropdownList incremental search in disabled dropdown', () => {
+        let listObj: any;
+        let popupObj: any;
+        let keyEventArgs: any = { preventDefault: (): void => { /** NO Code */ }, charCode: 76, metaKey: false };
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+        let remoteData: DataManager = new DataManager({ url: '/api/Employees', adaptor: new ODataV4Adaptor });
+        beforeEach(() => {
+            document.body.appendChild(element);
+        });
+        afterEach(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Pressing key in disabled dropdown testing ', (done) => {
+            listObj = new DropDownList({ dataSource: remoteData, fields: { value: 'EmployeeID', text: 'FirstName' } });
+            listObj.appendTo(element);
+            listObj.onSearch(keyEventArgs)
+            setTimeout(() => {
+                expect(listObj.text).toBe(null);
+                done();
+            }, 800);
+        });
+    });
 });

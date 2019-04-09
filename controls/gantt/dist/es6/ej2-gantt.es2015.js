@@ -8,7 +8,7 @@ import { CheckBoxSelection, ComboBox, DropDownList, MultiSelect } from '@syncfus
 import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
 import { Splitter } from '@syncfusion/ej2-layouts';
 import { Tab, Toolbar as Toolbar$1 } from '@syncfusion/ej2-navigations';
-import { Count, HtmlEditor, Image, Link, QuickToolbar, RichTextEditor, Toolbar as Toolbar$2 } from '@syncfusion/ej2-richtexteditor';
+import { Count, HtmlEditor, Link, QuickToolbar, RichTextEditor, Toolbar as Toolbar$2 } from '@syncfusion/ej2-richtexteditor';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 
 /**
@@ -3471,7 +3471,7 @@ class Timeline {
         let minStartDate = filteredStartDateRecord.length > 0 ?
             new Date(DataUtil.aggregates.min(filteredStartDateRecord, 'ganttProperties.startDate')) : null;
         let maxEndDate = filteredEndDateRecord.length > 0 ?
-            new Date(DataUtil.aggregates.max(filteredEndDateRecord, 'ganttProperties.startDate')) : null;
+            new Date(DataUtil.aggregates.max(filteredEndDateRecord, 'ganttProperties.endDate')) : null;
         let validStartDate = new Date(this.parent.dataOperation.checkStartDate(this.timelineStartDate).getTime());
         let validEndDate = new Date(this.parent.dataOperation.checkEndDate(this.timelineEndDate).getTime());
         let maxStartLeft = isNullOrUndefined(minStartDate) ?
@@ -3752,6 +3752,9 @@ class GanttTreeGrid {
         }
         if (getValue('requestType', args) === 'searching') {
             this.parent.notify('actionComplete', args);
+        }
+        if (!isNullOrUndefined(getValue('batchChanges', args)) && !isNullOrUndefined(this.parent.toolbarModule)) {
+            this.parent.toolbarModule.refreshToolbarItems();
         }
         this.parent.trigger('actionComplete', updatedArgs);
     }
@@ -4944,7 +4947,7 @@ class ChartRows {
         this.taskBaselineTemplateFunction = this.templateCompiler(this.getTaskBaselineTemplateString());
         this.milestoneBaselineTemplateFunction = this.templateCompiler(this.getMilestoneBaselineTemplateString());
         let connectorLineLeft = '<div class="' + leftConnectorPointOuterDiv + '" style="${if(ganttProperties.isMilestone)}' +
-            'margin-top:' + (this.milesStoneRadius - 4) + 'px;${else}margin-top:' +
+            'margin-top:' + (this.milesStoneRadius - 5) + 'px;${else}margin-top:' +
             this.connectorPointMargin + 'px;${/if}">' +
             '<div class="' + connectorPointLeft + '${this.getUnscheduledTaskClass(ganttProperties)}' +
             '" style="width: ' + this.connectorPointWidth + 'px;' +
@@ -4952,7 +4955,7 @@ class ChartRows {
             this.connectorPointRadius + 'px;">' + this.touchLeftConnectorpoint + '</div></div>';
         let connectorLineRight = '<div class="' + rightConnectorPointOuterDiv + '" style="${if(ganttProperties.isMilestone)}' +
             'left:' + this.milestoneHeight + 'px;margin-top:' +
-            (this.milesStoneRadius - 4) + 'px;${else}left:${(data.ganttProperties.width)}px;margin-top:' +
+            (this.milesStoneRadius - 5) + 'px;${else}left:${(data.ganttProperties.width)}px;margin-top:' +
             this.connectorPointMargin + 'px;${/if}">' +
             '<div class="' + connectorPointRight + '${this.getUnscheduledTaskClass(ganttProperties)}"' + ' style="' +
             'width:' + this.connectorPointWidth + 'px;height:' + this.connectorPointWidth + 'px;border-radius:' +
@@ -5102,7 +5105,7 @@ class ChartRows {
         this.baselineTop = -(Math.floor((this.parent.rowHeight - (this.taskBarHeight + this.taskBarMarginTop))) - 1);
         this.connectorPointWidth = 8;
         this.connectorPointRadius = 8 / 2;
-        this.connectorPointMargin = Math.floor((this.taskBarHeight / 2) - 4);
+        this.connectorPointMargin = Math.floor((this.taskBarHeight / 2) - 5);
     }
     /**
      * Function used to refresh Gantt rows.
@@ -5111,8 +5114,9 @@ class ChartRows {
      */
     refreshGanttRows() {
         this.ganttChartTableBody.innerHTML = '';
-        this.parent.currentViewData = this.parent.treeGrid.getCurrentViewRecords();
+        this.parent.currentViewData = this.parent.treeGrid.getCurrentViewRecords().slice();
         this.createTaskbarTemplate();
+        this.triggerQueryTaskbarInfo();
     }
     /**
      * To render taskbars.
@@ -7994,6 +7998,7 @@ let Gantt = class Gantt extends Component {
         this.isConnectorLineUpdate = false;
         /** @hidden */
         this.staticSelectedRowIndex = -1;
+        this.needsID = true;
         /**
          * @private
          */
@@ -9044,6 +9049,22 @@ let Gantt = class Gantt extends Component {
             }
         }
     }
+    closeGanttActions() {
+        if (this.editModule) {
+            if (this.editModule.cellEditModule && this.editModule.cellEditModule.isCellEdit) {
+                this.treeGrid.closeEdit();
+                this.editModule.cellEditModule.isCellEdit = false;
+                if (!isNullOrUndefined(this.toolbarModule)) {
+                    this.toolbarModule.refreshToolbarItems();
+                }
+            }
+            else if (this.editModule.dialogModule && this.editModule.dialogModule.dialogObj &&
+                this.editModule.dialogModule.dialogObj.visible) {
+                this.editModule.dialogModule.dialogObj.hide();
+                this.editModule.dialogModule.dialogClose();
+            }
+        }
+    }
     /**
      * Method to get task by uniqueId value
      * @param id
@@ -9071,12 +9092,12 @@ let Gantt = class Gantt extends Component {
     }
     /**
      * Method to set splitter position
-     * @param value
-     * @param valueType
+     * @param {string|number} value - value of the property.
+     * @param {string} type - property of SplitterSettings.
      */
-    setSplitterPosition(value, valueType) {
+    setSplitterPosition(value, type) {
         let tempSplitterSettings = {};
-        tempSplitterSettings[valueType] = value;
+        tempSplitterSettings[type] = value;
         let splitterPosition = this.splitterModule.calculateSplitterPosition(tempSplitterSettings, true);
         let pane1 = this.splitterModule.splitterObject.element.querySelectorAll('.e-pane')[0];
         let pane2 = this.splitterModule.splitterObject.element.querySelectorAll('.e-pane')[1];
@@ -9136,7 +9157,8 @@ let Gantt = class Gantt extends Component {
         }
     }
     /**
-     * Add record public method.
+     * Method to update record by ID.
+     * @param  {object} data - Defines the data to modify.
      * @return {void}
      * @public
      */
@@ -9146,32 +9168,59 @@ let Gantt = class Gantt extends Component {
         }
     }
     /**
-     * To add dependency for Task
+     * Method to update record by Index.
+     * @param  {number} index - Defines the index of data to modify.
+     * @param  {object} data - Defines the data to modify.
      * @return {void}
      * @public
      */
-    addPredecessor(ganttRecord, predecessorString) {
-        if (this.editModule) {
+    updateRecordByIndex(index, data) {
+        if (this.editModule && this.editSettings.allowEditing) {
+            let record;
+            let tasks = this.taskFields;
+            record = this.currentViewData.length > 0 ?
+                !isNullOrUndefined(this.currentViewData[index]) ? this.currentViewData[index] : null : null;
+            if (!isNullOrUndefined(record)) {
+                data[tasks.id] = record[tasks.id];
+                this.editModule.updateRecordByID(data);
+            }
+        }
+    }
+    /**
+     * To add dependency for Task
+     * @param  {String|number} id - Defines the ID of data to modify.
+     * @param  {string} predecessorString - Defines the predecessor string to add.
+     * @return {void}
+     * @public
+     */
+    addPredecessor(id, predecessorString) {
+        let ganttRecord = this.getRecordByID(id.toString());
+        if (this.editModule && !isNullOrUndefined(ganttRecord)) {
             this.connectorLineEditModule.addPredecessor(ganttRecord, predecessorString);
         }
     }
     /**
      * To remove dependency from task
+     * @param  {String|number} id - Defines the ID of data to modify.
      * @return {void}
      * @public
      */
-    removePredecessor(ganttRecord) {
-        if (this.editModule) {
+    removePredecessor(id) {
+        let ganttRecord = this.getRecordByID(id.toString());
+        if (this.editModule && !isNullOrUndefined(ganttRecord)) {
             this.connectorLineEditModule.removePredecessor(ganttRecord);
         }
     }
     /**
      * To modify current dependency values of Task
+     * @param  {String|number} id - Defines the ID of data to modify.
+     * @param  {string} predecessorString - Defines the predecessor string to update.
      * @return {void}
      * @public
      */
-    updatePredecessor(ganttRecord, predecessorString) {
-        if (this.editModule) {
+    updatePredecessor(id, predecessorString) {
+        let ganttRecord = this.getRecordByID(id.toString());
+        if (this.editModule && !isNullOrUndefined(ganttRecord)) {
             this.connectorLineEditModule.updatePredecessor(ganttRecord, predecessorString);
         }
     }
@@ -9323,6 +9372,86 @@ let Gantt = class Gantt extends Component {
         let top = box.top + scrollTop - clientTop;
         let left = box.left + scrollLeft - clientLeft;
         return { top: Math.round(top), left: Math.round(left) };
+    }
+    /**
+     * Public method to expand all the rows of Gantt
+     * @return {void}
+     * @public
+     */
+    expandAll() {
+        this.ganttChartModule.expandCollapseAll('expand');
+    }
+    /**
+     * Public method to collapse all the rows of Gantt
+     * @return {void}
+     * @public
+     */
+    collapseAll() {
+        this.ganttChartModule.expandCollapseAll('collapse');
+    }
+    /**
+     * Gets the columns from the TreeGrid.
+     * @return {Column[]}
+     * @public
+     */
+    getGridColumns() {
+        return this.treeGrid.getColumns();
+    }
+    /**
+     * Gets the Gantt columns.
+     * @return {ColumnModel[]}
+     * @public
+     */
+    getGanttColumns() {
+        return this.ganttColumns;
+    }
+    /**
+     * Shows a column by its column name.
+     * @param  {string|string[]} keys - Defines a single or collection of column names.
+     * @param  {string} showBy - Defines the column key either as field name or header text.
+     * @return {void}
+     * @public
+     */
+    ShowColumn(keys, showBy) {
+        this.treeGrid.showColumns(keys, showBy);
+    }
+    /**
+     * Hides a column by column name.
+     * @param  {string|string[]} keys - Defines a single or collection of column names.
+     * @param  {string} hideBy - Defines the column key either as field name or header text.
+     * @return {void}
+     * @public
+     */
+    hideColumn(keys, hideBy) {
+        this.treeGrid.hideColumns(keys, hideBy);
+    }
+    /**
+     * To set scroll top for chart scroll container
+     * @param scrollTop - To set scroll top for scroll container
+     * @return {void}
+     * @public
+     */
+    setScrollTop(scrollTop) {
+        this.ganttChartModule.scrollObject.setScrollTop(scrollTop);
+    }
+    /**
+     * Cancels edited state.
+     * @return {void}
+     * @public
+     */
+    cancelEdit(scrollTop) {
+        this.closeGanttActions();
+    }
+    /**
+     * Selects a cell by the given index.
+     * @param  {IIndex} cellIndex - Defines the row and column indexes.
+     * @param  {boolean} isToggle - If set to true, then it toggles the selection.
+     * @return {void}
+     */
+    selectCells(cellIndex, isToggle) {
+        if (this.selectionModule) {
+            this.selectionModule.selectCell(cellIndex, isToggle);
+        }
     }
 };
 __decorate([
@@ -9519,6 +9648,12 @@ __decorate([
 ], Gantt.prototype, "taskbarEdited", void 0);
 __decorate([
     Event()
+], Gantt.prototype, "endEdit", void 0);
+__decorate([
+    Event()
+], Gantt.prototype, "cellEdit", void 0);
+__decorate([
+    Event()
 ], Gantt.prototype, "load", void 0);
 __decorate([
     Event()
@@ -9657,7 +9792,8 @@ class CellEdit {
         }
         if (!args.cancel) {
             this.isCellEdit = true;
-            if (!isNullOrUndefined(this.parent.toolbarModule)) {
+            this.parent.trigger('cellEdit', args);
+            if (!isNullOrUndefined(this.parent.toolbarModule) && !args.cancel) {
                 this.parent.toolbarModule.refreshToolbarItems();
             }
         }
@@ -9673,7 +9809,7 @@ class CellEdit {
         let field = args.columnName;
         if ((field === taskSettings.notes && !this.parent.showInlineNotes)) {
             args.cancel = true;
-            let columnTypes = this.parent.editDialogFields.map((x) => { return x.type; });
+            let columnTypes = this.parent.editModule.dialogModule.updatedEditFields.map((x) => { return x.type; });
             let index = columnTypes.indexOf('Notes');
             if (index !== -1) {
                 this.parent.editModule.dialogModule.openEditDialog(data.ganttProperties.taskId);
@@ -9681,6 +9817,26 @@ class CellEdit {
                 tabObj.selectedItem = index;
             }
         }
+    }
+    isValueChange(args, field) {
+        let data = getValue('data', args);
+        let editedValue = data[field];
+        let previousValue = getValue('previousData', args);
+        if ((isNullOrUndefined(editedValue) && !isNullOrUndefined(previousValue)) || (!isNullOrUndefined(editedValue) && isNullOrUndefined(previousValue))) {
+            return true;
+        }
+        else if (!isNullOrUndefined(editedValue) && !isNullOrUndefined(previousValue)) {
+            if (editedValue instanceof Date) {
+                return editedValue.getTime() !== data.taskData[field].getTime() ? true : false;
+            }
+            else if (field === this.parent.taskFields.resourceInfo) {
+                return editedValue !== previousValue ? true : false;
+            }
+            else if (editedValue !== data.taskData[field]) {
+                return true;
+            }
+        }
+        return false;
     }
     /**
      * Initiate cell save action on Gantt with arguments from TreeGrid
@@ -9696,43 +9852,50 @@ class CellEdit {
         editedArgs.data = this.parent.getTaskByUniqueID(data.uniqueID);
         let editedValue = data[column.field];
         let previousValue = getValue('previousData', args);
-        data[column.field] = previousValue;
-        editedArgs.data[column.field] = previousValue;
-        this.parent.initiateEditAction(true);
-        this.parent.setRecordValue(column.field, editedValue, editedArgs.data);
-        if (column.field === this.parent.taskFields.name) {
-            this.taskNameEdited(editedArgs);
-        }
-        else if (column.field === this.parent.taskFields.startDate) {
-            this.startDateEdited(editedArgs);
-        }
-        else if (column.field === this.parent.taskFields.endDate) {
-            this.endDateEdited(editedArgs);
-        }
-        else if (column.field === this.parent.taskFields.duration) {
-            this.durationEdited(editedArgs);
-        }
-        else if (column.field === this.parent.taskFields.resourceInfo) {
-            this.resourceEdited(editedArgs, editedObj);
-        }
-        else if (column.field === this.parent.taskFields.progress) {
-            this.progressEdited(editedArgs);
-        }
-        else if (column.field === this.parent.taskFields.baselineStartDate
-            || column.field === this.parent.taskFields.baselineEndDate) {
-            this.baselineEdited(editedArgs);
-        }
-        else if (column.field === this.parent.taskFields.dependency) {
-            this.dependencyEdited(editedArgs, previousValue);
-        }
-        else if (column.field === this.parent.taskFields.notes) {
-            this.notedEdited(editedArgs);
+        if (this.isValueChange(args, column.field)) {
+            data[column.field] = previousValue;
+            editedArgs.data[column.field] = previousValue;
+            this.parent.initiateEditAction(true);
+            this.parent.setRecordValue(column.field, editedValue, editedArgs.data);
+            if (column.field === this.parent.taskFields.name) {
+                this.taskNameEdited(editedArgs);
+            }
+            else if (column.field === this.parent.taskFields.startDate) {
+                this.startDateEdited(editedArgs);
+            }
+            else if (column.field === this.parent.taskFields.endDate) {
+                this.endDateEdited(editedArgs);
+            }
+            else if (column.field === this.parent.taskFields.duration) {
+                this.durationEdited(editedArgs);
+            }
+            else if (column.field === this.parent.taskFields.resourceInfo) {
+                this.resourceEdited(editedArgs, editedObj);
+            }
+            else if (column.field === this.parent.taskFields.progress) {
+                this.progressEdited(editedArgs);
+            }
+            else if (column.field === this.parent.taskFields.baselineStartDate
+                || column.field === this.parent.taskFields.baselineEndDate) {
+                this.baselineEdited(editedArgs);
+            }
+            else if (column.field === this.parent.taskFields.dependency) {
+                this.dependencyEdited(editedArgs, previousValue);
+            }
+            else if (column.field === this.parent.taskFields.notes) {
+                this.notedEdited(editedArgs);
+            }
+            else {
+                this.parent.setRecordValue('taskData.' + column.field, data[this.parent.taskFields.name], data);
+            }
         }
         else {
-            this.parent.setRecordValue('taskData.' + column.field, data[this.parent.taskFields.name], data);
+            this.parent.editModule.endEditAction(args);
         }
         this.isCellEdit = false;
-        this.parent.toolbarModule.refreshToolbarItems();
+        if (!isNullOrUndefined(this.parent.toolbarModule)) {
+            this.parent.toolbarModule.refreshToolbarItems();
+        }
     }
     /**
      * To update task name cell with new value
@@ -11085,10 +11248,14 @@ class DialogEdit {
      * Constructor for render module
      */
     constructor(parent) {
+        /**
+         * @private
+         */
         this.updatedEditFields = null;
         this.updatedAddFields = null;
         this.addedRecord = null;
         this.dialogEditValidationFlag = false;
+        this.ganttResources = [];
         this.parent = parent;
         this.l10n = this.parent.localeObj;
         this.beforeOpenArgs = { cancel: false };
@@ -11363,6 +11530,9 @@ class DialogEdit {
             if (generalTabElement && generalTabElement.scrollHeight > generalTabElement.offsetHeight) {
                 generalTabElement.classList.add('e-scroll');
             }
+            if (this.tabObj.selectedItem === 0) {
+                this.tabObj.select(0);
+            }
         };
         dialogModel.locale = this.parent.locale;
         dialogModel.buttons = [{
@@ -11396,6 +11566,7 @@ class DialogEdit {
         target.style.pointerEvents = 'none';
         if ((this.l10n.getConstant('cancel')).toLowerCase() === e.target.innerText.trim().toLowerCase()) {
             if (this.dialog && !this.dialogObj.isDestroyed) {
+                this.dialogObj.hide();
                 this.dialogClose();
             }
         }
@@ -11409,7 +11580,6 @@ class DialogEdit {
      */
     dialogClose() {
         if (this.dialog) {
-            this.dialogObj.hide();
             this.resetValues();
         }
     }
@@ -11419,6 +11589,7 @@ class DialogEdit {
         this.rowData = {};
         this.rowIndex = -1;
         this.addedRecord = null;
+        this.ganttResources = [];
         if (this.dialog && !this.dialogObj.isDestroyed) {
             this.destroyDialogInnerElements();
             this.dialogObj.destroy();
@@ -11570,9 +11741,9 @@ class DialogEdit {
         if (this.beforeOpenArgs.cancel) {
             return tabElement;
         }
-        let tabObj = new Tab(tabModel);
+        this.tabObj = new Tab(tabModel);
         tabElement = this.parent.createElement('div', { id: ganttObj.element.id + '_Tab' });
-        tabObj.appendTo(tabElement);
+        this.tabObj.appendTo(tabElement);
         return tabElement;
     }
     getFieldsModel(fields) {
@@ -11944,13 +12115,16 @@ class DialogEdit {
             fields = ['Bold', 'Italic', 'Underline', 'StrikeThrough',
                 'FontName', 'FontSize', 'FontColor', 'BackgroundColor',
                 'LowerCase', 'UpperCase', '|',
-                'Formats', 'Alignments', 'OrderedList', 'UnorderedList',
+                'Alignments', 'OrderedList', 'UnorderedList',
                 'Outdent', 'Indent', '|', 'CreateTable',
-                'CreateLink', 'Image', '|', 'ClearFormat', 'Print',
+                'CreateLink', '|', 'ClearFormat', 'Print',
                 '|', 'Undo', 'Redo'];
         }
         let inputModel = {
             placeholder: this.l10n.getConstant('writeNotes'),
+            toolbarSettings: {
+                items: fields
+            },
             locale: this.parent.locale
         };
         return inputModel;
@@ -12072,9 +12246,20 @@ class DialogEdit {
         gridObj.appendTo(divElement);
         return divElement;
     }
+    updateResourceCollection(args, resourceGridId) {
+        if (!isNullOrUndefined(args.data)) {
+            let ganttObj = this.parent;
+            let resourceGrid = ganttObj.element.querySelector('#' + resourceGridId).ej2_instances[0];
+            if (!isNullOrUndefined(resourceGrid) && resourceGrid.selectionModule.getSelectedRecords().length > 0) {
+                this.ganttResources = extend([], resourceGrid.selectionModule.getSelectedRecords());
+            }
+            else {
+                this.ganttResources = [];
+            }
+        }
+    }
     renderResourceTab(itemName) {
         let ganttObj = this.parent;
-        let ganttResources = [];
         let ganttData = this.beforeOpenArgs.rowData;
         let inputModel = this.beforeOpenArgs[itemName];
         let resourceGridId = ganttObj.element.id + '' + itemName + 'TabContainer';
@@ -12082,19 +12267,26 @@ class DialogEdit {
         let resourceInfo = ganttData.ganttProperties.resourceInfo;
         if (this.isEdit && !isNullOrUndefined(resourceInfo)) {
             for (let i = 0; i < resourceInfo.length; i++) {
-                ganttResources.push({ name: resourceInfo[i][ganttObj.resourceIDMapping] });
+                this.ganttResources.push(resourceInfo[i]);
             }
         }
+        inputModel.rowSelected = (args) => {
+            this.updateResourceCollection(args, resourceGridId);
+        };
+        inputModel.rowDeselected = (args) => {
+            this.updateResourceCollection(args, resourceGridId);
+        };
         let tabModel = this.beforeOpenArgs.tabModel;
         tabModel.selected = (args) => {
             let title = getValue('selectedItem.textContent', args);
             if (title === 'Resources') {
                 let resourceGrid = ganttObj.element.querySelector('#' + resourceGridId).ej2_instances[0];
-                let resources = ganttData.ganttProperties.resourceInfo;
+                let resources = this.ganttResources;
                 if (resources && resources.length > 0) {
                     resourceGrid.currentViewData.forEach((data, index) => {
                         for (let i = 0; i < resources.length; i++) {
-                            if (data[ganttObj.resourceIDMapping] === resources[i][ganttObj.resourceIDMapping]) {
+                            if (data[ganttObj.resourceIDMapping] === resources[i][ganttObj.resourceIDMapping] &&
+                                resourceGrid.selectionModule.selectedRowIndexes.indexOf(index) === -1) {
                                 resourceGrid.selectRow(index);
                             }
                         }
@@ -12121,7 +12313,7 @@ class DialogEdit {
         let inputModel = this.beforeOpenArgs[itemName];
         let ganttProp = this.editedRecord.ganttProperties;
         let divElement = this.createDivElement('', ganttObj.element.id + '' + itemName + 'TabContainer');
-        RichTextEditor.Inject(Toolbar$2, Link, Image, HtmlEditor, QuickToolbar, Count);
+        RichTextEditor.Inject(Toolbar$2, Link, HtmlEditor, QuickToolbar, Count);
         inputModel.value = ganttProp.notes;
         let rteObj = new RichTextEditor(inputModel);
         rteObj.appendTo(divElement);
@@ -12369,7 +12561,7 @@ class DialogEdit {
     }
     updateResourceTab(resourceElement) {
         let gridObj = resourceElement.ej2_instances[0];
-        let selectedItems = gridObj.selectionModule.getSelectedRecords();
+        let selectedItems = this.ganttResources;
         let idArray = [];
         if (this.isEdit) {
             this.parent.setRecordValue('resourceInfo', selectedItems, this.rowData.ganttProperties, true);
@@ -13068,6 +13260,9 @@ class Edit$2 {
         this.parent.hideSpinner();
         this.parent.initiateEditAction(false);
     }
+    /**
+     * @private
+     */
     endEditAction(args) {
         this.resetEditProperties();
         if (args.action === 'TaskbarEditing') {
@@ -13077,6 +13272,9 @@ class Edit$2 {
             this.parent.trigger('endEdit', args);
         }
         else if (args.action === 'DialogEditing') {
+            if (this.dialogModule.dialog && !this.dialogModule.dialogObj.isDestroyed) {
+                this.dialogModule.dialogObj.hide();
+            }
             this.dialogModule.dialogClose();
         }
     }
@@ -13236,7 +13434,7 @@ class Edit$2 {
             this.initiateDeleteAction(delereArgs);
             this.parent.isOnDelete = false;
         }
-        if (this.parent.toolbarModule) {
+        if (!isNullOrUndefined(this.parent.toolbarModule)) {
             this.parent.toolbarModule.refreshToolbarItems();
         }
     }
@@ -13376,6 +13574,7 @@ class Edit$2 {
             let deleteRecord = deletedRecords[i];
             let currentIndex = currentData.indexOf(deleteRecord);
             let flatIndex = flatData.indexOf(deleteRecord);
+            let treeGridParentIndex = this.parent.treeGrid.parentData.indexOf(deleteRecord);
             let childIndex;
             if (currentIndex !== -1) {
                 currentData.splice(currentIndex, 1);
@@ -13386,6 +13585,9 @@ class Edit$2 {
             deleteRecordIDs.push(deleteRecord.ganttProperties.taskId.toString());
             if (flatIndex !== -1) {
                 this.parent.ids.splice(flatIndex, 1);
+            }
+            if (deleteRecord.level === 0 && treeGridParentIndex !== -1) {
+                this.parent.treeGrid.parentData.splice(treeGridParentIndex, 1);
             }
             if (deleteRecord.parentItem) {
                 let parentItem = this.parent.getParentTask(deleteRecord.parentItem);
@@ -13900,6 +14102,9 @@ class Edit$2 {
         else {
             this.removeAddedRecord();
             this.reUpdatePreviousRecords();
+            if (this.dialogModule.dialog && !this.dialogModule.dialogObj.isDestroyed) {
+                this.dialogModule.dialogObj.hide();
+            }
             this.dialogModule.dialogClose();
         }
         this.parent.isOnEdit = false;
@@ -13929,6 +14134,9 @@ class Edit$2 {
         this.addSuccess(args);
         args = this.constructTaskAddedEventArgs(cAddedRecord, args.modifiedRecords, 'add');
         this.parent.trigger('actionComplete', args);
+        if (this.dialogModule.dialog && !this.dialogModule.dialogObj.isDestroyed) {
+            this.dialogModule.dialogObj.hide();
+        }
         this.dialogModule.dialogClose();
     }
     /**
@@ -14068,10 +14276,10 @@ class Filter$2 {
      * @param args
      */
     columnMenuOpen(args) {
-        if (this.filterMenuElement) {
+        if (this.filterMenuElement && this.parent.element.contains(this.filterMenuElement)) {
             remove(this.filterMenuElement);
-            this.filterMenuElement = null;
         }
+        this.filterMenuElement = null;
     }
     actionBegin(args) {
         // ...
@@ -14081,6 +14289,7 @@ class Filter$2 {
             this.filterMenuElement = getValue('filterModel.dlgObj.element', args);
             this.updateFilterMenuPosition(this.filterMenuElement, args);
             // To set default values as 'contains' in filter dialog
+            let taskID = this.parent.taskFields.id;
             let predecessor = this.parent.taskFields.dependency;
             let resource = this.parent.taskFields.resourceInfo;
             let filterObj = this.parent.treeGrid.grid.filterModule;
@@ -14091,6 +14300,13 @@ class Filter$2 {
                 let instanceObj = getValue('ej2_instances[0]', element);
                 instanceObj.index = 2;
                 instanceObj.dataBind();
+            }
+            else if (args.columnName === taskID && isNullOrUndefined(getValue(taskID, filterValues))) {
+                let element = this.filterMenuElement.querySelector('.e-numerictextbox');
+                let instanceObj = getValue('ej2_instances[0]', element);
+                if (!isNullOrUndefined(instanceObj) && isNullOrUndefined(this.parent.columnByField[args.columnName].format)) {
+                    instanceObj.format = 'n';
+                }
             }
         }
     }
@@ -14701,6 +14917,10 @@ class Toolbar$3 {
             EventHandler.add(this.searchElement, 'focus', this.focusHandler, this);
             EventHandler.add(this.searchElement, 'blur', this.blurHandler, this);
         }
+        if (this.toolbar) {
+            let mouseDown = Browser.touchStartEvent;
+            EventHandler.add(this.toolbar.element, mouseDown, this.mouseDownHandler, this);
+        }
     }
     unWireEvent() {
         if (this.searchElement) {
@@ -14708,11 +14928,24 @@ class Toolbar$3 {
             EventHandler.remove(this.searchElement, 'focus', this.focusHandler);
             EventHandler.remove(this.searchElement, 'blur', this.blurHandler);
         }
+        if (this.toolbar) {
+            let mouseDown = Browser.touchStartEvent;
+            EventHandler.remove(this.toolbar.element, mouseDown, this.mouseDownHandler);
+        }
     }
     keyUpHandler(e) {
         if (e.keyCode === 13 && this.parent.searchSettings.key !== this.searchElement.value) {
             this.parent.searchSettings.key = this.searchElement.value;
             this.parent.dataBind();
+        }
+    }
+    mouseDownHandler(e) {
+        if (e.target) {
+            let element = closest(e.target, '.e-toolbar-item');
+            if (!isNullOrUndefined(element) && !isNullOrUndefined(element.querySelector('.e-cancel'))) {
+                this.parent.editModule.cellEditModule.isCellEdit = false;
+                this.parent.treeGrid.closeEdit();
+            }
         }
     }
     focusHandler(e) {
@@ -14776,9 +15009,10 @@ class Toolbar$3 {
                 gObj.treeGrid.endEdit();
                 break;
             case gID + '_cancel':
-                gObj.editModule.cellEditModule.isCellEdit = false;
-                gObj.treeGrid.closeEdit();
+                // gObj.editModule.cellEditModule.isCellEdit = false;
+                // gObj.treeGrid.closeEdit();
                 // console.log('Cancel editing');
+                event.stopPropagation();
                 break;
             case gID + '_add':
                 if (gObj.editModule && gObj.editSettings.allowAdding) {

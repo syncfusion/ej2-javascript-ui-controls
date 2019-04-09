@@ -1397,7 +1397,7 @@ function refreshForeignData(row, columns, data) {
  */
 function getForeignData(column, data, lValue, foreignKeyData) {
     var fField = column.foreignKeyField;
-    var key = (lValue || valueAccessor(column.field, data, column));
+    var key = (!isNullOrUndefined(lValue) ? lValue : valueAccessor(column.field, data, column));
     key = isNullOrUndefined(key) ? '' : key;
     var query = new Query();
     var fdata = foreignKeyData || ((column.dataSource instanceof DataManager) && column.dataSource.dataSource.json.length ?
@@ -1433,6 +1433,10 @@ function getDatePredicate(filterObject, type) {
     var nextDate;
     var prevObj = extend({}, getActualProperties(filterObject));
     var nextObj = extend({}, getActualProperties(filterObject));
+    if (filterObject.value === null) {
+        datePredicate = new Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
+        return datePredicate;
+    }
     var value = new Date(filterObject.value);
     if (filterObject.operator === 'equal' || filterObject.operator === 'notequal') {
         if (type === 'datetime') {
@@ -3852,7 +3856,8 @@ var GroupModelGenerator = /** @__PURE__ @class */ (function (_super) {
         var data = row.data;
         var col = this.parent.getColumnByField(data.field);
         if (col && col.isForeignColumn && col.isForeignColumn()) {
-            setValue('foreignKey', col.valueAccessor(col.foreignKeyValue, getForeignData(col, {}, data.key)[0], col), row.data);
+            var fkValue = (isNullOrUndefined(data.key) ? '' : col.valueAccessor(col.foreignKeyValue, getForeignData(col, {}, data.key)[0], col));
+            setValue('foreignKey', fkValue, row.data);
         }
     };
     GroupModelGenerator.prototype.generateDataRows = function (data, indent, childID, tIndex) {
@@ -4319,22 +4324,24 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         for (var c = 0, clen = columns.length; c < clen; c++) {
             var column = columns[c];
             var idx = this.parent.getNormalizedColumnIndex(column.uid);
-            //used canSkip method to skip unwanted visible toggle operation. 
-            if (this.canSkip(column, testRow, idx)) {
-                continue;
-            }
-            var displayVal = column.visible === true ? '' : 'none';
-            if (frzCols) {
-                if (idx < frzCols) {
-                    setStyleAttribute(this.getColGroup().childNodes[idx], { 'display': displayVal });
+            if (idx !== -1 && idx < testRow.cells.length) {
+                //used canSkip method to skip unwanted visible toggle operation. 
+                if (this.canSkip(column, testRow, idx)) {
+                    continue;
+                }
+                var displayVal = column.visible === true ? '' : 'none';
+                if (frzCols) {
+                    if (idx < frzCols) {
+                        setStyleAttribute(this.getColGroup().childNodes[idx], { 'display': displayVal });
+                    }
+                    else {
+                        var mTable = gObj.getContent().querySelector('.e-movablecontent').querySelector('colgroup');
+                        setStyleAttribute(mTable.childNodes[idx - frzCols], { 'display': displayVal });
+                    }
                 }
                 else {
-                    var mTable = gObj.getContent().querySelector('.e-movablecontent').querySelector('colgroup');
-                    setStyleAttribute(mTable.childNodes[idx - frzCols], { 'display': displayVal });
+                    setStyleAttribute(this.getColGroup().childNodes[idx], { 'display': displayVal });
                 }
-            }
-            else {
-                setStyleAttribute(this.getColGroup().childNodes[idx], { 'display': displayVal });
             }
         }
         this.refreshContentRows({ requestType: 'refresh' });
@@ -6143,6 +6150,12 @@ var Render = /** @__PURE__ @class */ (function () {
             if (args) {
                 var action = (args.requestType || '').toLowerCase() + '-complete';
                 this.parent.notify(action, args);
+                if (args.requestType === 'batchsave') {
+                    args.cancel = false;
+                    args.rows = [];
+                    args.isFrozen = this.parent.getFrozenColumns() !== 0 && !args.isFrozen;
+                    this.parent.trigger(actionComplete, args);
+                }
             }
             this.parent.hideSpinner();
         }
@@ -9099,7 +9112,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
     };
     Selection.prototype.getData = function () {
-        return this.parent.getDataModule().dataManager.dataSource.json;
+        return this.parent.getDataModule().dataManager.executeLocal(this.parent.getDataModule().generateQuery(true));
     };
     Selection.prototype.refreshPersistSelection = function () {
         var rows = this.parent.getRows();
@@ -9964,7 +9977,7 @@ var ShowHide = /** @__PURE__ @class */ (function () {
     ShowHide.prototype.getColumns = function (keys, getKeyBy) {
         var _this = this;
         var columns = iterateArrayOrObject(keys, function (key, index) {
-            return iterateArrayOrObject(_this.parent.getColumns(), function (item, index) {
+            return iterateArrayOrObject(_this.parent.columnModel, function (item, index) {
                 if (item[getKeyBy] === key) {
                     return item;
                 }
@@ -9987,11 +10000,20 @@ var ShowHide = /** @__PURE__ @class */ (function () {
             });
             return;
         }
-        columns = isNullOrUndefined(columns) ? this.parent.getColumns() : columns;
+        var currentViewCols = this.parent.getColumns();
+        columns = isNullOrUndefined(columns) ? currentViewCols : columns;
         if (this.parent.allowSelection && this.parent.getSelectedRecords().length) {
             this.parent.clearSelection();
         }
-        this.parent.notify(columnVisibilityChanged, columns);
+        if (this.parent.enableColumnVirtualization) {
+            var colsInCurrentView = columns.filter(function (col1) { return (currentViewCols.some(function (col2) { return col1.field === col2.field; })); });
+            if (colsInCurrentView.length) {
+                this.parent.notify(columnVisibilityChanged, columns);
+            }
+        }
+        else {
+            this.parent.notify(columnVisibilityChanged, columns);
+        }
         if (this.parent.columnQueryMode !== 'All') {
             this.parent.refresh();
         }
@@ -11128,8 +11150,6 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             searchSettings: ['fields', 'operator', 'ignoreCase'],
             sortSettings: [], columns: [], selectedRowIndex: []
         };
-        var ignoreOnColumn = ['filter', 'edit', 'filterBarTemplate', 'headerTemplate', 'template',
-            'commandTemplate', 'commands', 'dataSource', 'headerText'];
         keyEntity.forEach(function (value) {
             var currentObject = _this[value];
             for (var _i = 0, _a = ignoreOnPersist[value]; _i < _a.length; _i++) {
@@ -11137,28 +11157,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                 delete currentObject[val];
             }
         });
-        this.ignoreInArrays(ignoreOnColumn, this.columns);
         this.pageSettings.template = undefined;
         this.pageTemplateChange = true;
         return this.addOnPersist(keyEntity);
-    };
-    Grid.prototype.ignoreInArrays = function (ignoreOnColumn, columns) {
-        var _this = this;
-        columns.forEach(function (column) {
-            if (column.columns) {
-                _this.ignoreInColumn(ignoreOnColumn, column);
-                _this.ignoreInArrays(ignoreOnColumn, column.columns);
-            }
-            else {
-                _this.ignoreInColumn(ignoreOnColumn, column);
-            }
-        });
-    };
-    Grid.prototype.ignoreInColumn = function (ignoreOnColumn, column) {
-        ignoreOnColumn.forEach(function (val) {
-            delete column[val];
-            column.filter = {};
-        });
     };
     /**
      * To provide the array of modules needed for component rendering
@@ -13703,6 +13704,22 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             contentTable.style.overflowY = 'scroll';
         }
     };
+    /**
+     * Get row index by primary key or row data.
+     * @param  {string} value - Defines the primary key value.
+     * @param  {Object} value - Defines the row data.
+     */
+    Grid.prototype.getRowIndexByPrimaryKey = function (value) {
+        var pkName = this.getPrimaryKeyFieldNames()[0];
+        value = typeof value === 'object' ? value[pkName] : value;
+        for (var i = 0; i < this.getRowsObject().length; i++) {
+            if (this.getRowsObject()[i].data[pkName] === value) {
+                return this.getRowsObject()[i].index;
+            }
+        }
+        return -1;
+    };
+    
     var Grid_1;
     __decorate([
         Property([])
@@ -21760,7 +21777,9 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
     VirtualContentRenderer.prototype.getInfoFromView = function (direction, info, e) {
         var tempBlocks = [];
         var infoType = { direction: direction, sentinelInfo: info, offsets: e };
-        infoType.page = this.getPageFromTop(e.top, infoType);
+        var vHeight = this.parent.height.toString().indexOf('%') < 0 ? this.content.getBoundingClientRect().height :
+            this.parent.element.getBoundingClientRect().height;
+        infoType.page = this.getPageFromTop(e.top + vHeight, infoType);
         infoType.blockIndexes = tempBlocks = this.vgenerator.getBlockIndexes(infoType.page);
         infoType.loadSelf = !this.vgenerator.isBlockAvailable(tempBlocks[infoType.block]);
         var blocks = this.ensureBlocks(infoType);
@@ -21815,6 +21834,9 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         var blocks = info.blockIndexes;
         if (this.parent.groupSettings.columns.length) {
             this.refreshOffsets();
+        }
+        if (this.parent.height === '100%') {
+            this.parent.element.style.height = '100%';
         }
         var vHeight = this.parent.height.toString().indexOf('%') < 0 ? this.content.getBoundingClientRect().height :
             this.parent.element.getBoundingClientRect().height;
@@ -21878,7 +21900,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         var extra = this.offsets[total] - this.prevHeight;
         this.offsetKeys.some(function (offset) {
             var iOffset = Number(offset);
-            var border = sTop < _this.offsets[offset] || (iOffset === total && sTop > _this.offsets[offset]);
+            var border = sTop <= _this.offsets[offset] || (iOffset === total && sTop > _this.offsets[offset]);
             if (border) {
                 info.block = iOffset % 2 === 0 ? 1 : 0;
                 page = Math.max(1, Math.min(_this.vgenerator.getPage(iOffset), _this.maxPage));
@@ -21889,7 +21911,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
     };
     VirtualContentRenderer.prototype.getTranslateY = function (sTop, cHeight, info, isOnenter) {
         if (info === undefined) {
-            info = { page: this.getPageFromTop(sTop, {}) };
+            info = { page: this.getPageFromTop(sTop + cHeight, {}) };
             info.blockIndexes = this.vgenerator.getBlockIndexes(info.page);
         }
         var block = (info.blockIndexes[0] || 1) - 1;
@@ -23970,7 +23992,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             gLen = this.parent.groupSettings.columns.length;
         }
         this.cellDetails.cellIndex = target.cellIndex - gLen;
-        this.cellDetails.rowIndex = parseInt(target.parentElement.getAttribute('aria-rowindex'), 10);
+        this.cellDetails.rowIndex = parseInt(target.getAttribute('index'), 10);
     };
     BatchEdit.prototype.editCell = function (index, field, isAdd) {
         var gObj = this.parent;
@@ -25090,6 +25112,9 @@ var Edit = /** @__PURE__ @class */ (function () {
                 (inputClient.left - left + table.scrollLeft + inputClient.width / 2) + 'px;' +
                 'max-width:' + inputClient.width + 'px;text-align:center;'
         });
+        if (isInline && client.left < left) {
+            div.style.left = parseInt(div.style.left, 10) - client.left + left + 'px';
+        }
         var content = this.parent.createElement('div', { className: 'e-tip-content' });
         content.appendChild(error);
         var validationForBottomRowPos;
@@ -25110,7 +25135,10 @@ var Edit = /** @__PURE__ @class */ (function () {
         }
         div.appendChild(content);
         div.appendChild(arrow);
-        table.appendChild(div);
+        this.formObj.element.appendChild(div);
+        if (isInline && gcontent.getBoundingClientRect().bottom < inputClient.bottom + inputClient.height) {
+            gcontent.scrollTop = gcontent.scrollTop + div.offsetHeight + arrow.scrollHeight;
+        }
         var lineHeight = parseInt(document.defaultView.getComputedStyle(div, null).getPropertyValue('font-size'), 10);
         if (div.getBoundingClientRect().width < inputClient.width &&
             div.querySelector('label').getBoundingClientRect().height / (lineHeight * 1.2) >= 2) {
@@ -28230,7 +28258,9 @@ var CommandColumn = /** @__PURE__ @class */ (function () {
                 gObj.editModule.endEdit();
                 break;
             case 'Delete':
-                gObj.editModule.endEdit();
+                if (gObj.editSettings.mode !== 'Batch') {
+                    gObj.editModule.endEdit();
+                }
                 gObj.clearSelection();
                 //for toogle issue when dbl click
                 gObj.selectRow(parseInt(closest(target, 'tr').getAttribute('aria-rowindex'), 10), false);
@@ -29369,11 +29399,11 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
     };
     ColumnMenu.prototype.beforeMenuItemRender = function (args) {
         if (this.isChooserItem(args.item)) {
-            var field = this.getKeyFromId(args.item.id, this.CHOOSER);
-            var column = this.parent.getColumnByField(field);
+            var field_1 = this.getKeyFromId(args.item.id, this.CHOOSER);
+            var column = this.parent.columnModel.filter(function (col) { return col.field === field_1; });
             var check = createCheckBox(this.parent.createElement, false, {
                 label: args.item.text,
-                checked: column.visible
+                checked: column[0].visible
             });
             if (this.parent.enableRtl) {
                 check.classList.add('e-rtl');

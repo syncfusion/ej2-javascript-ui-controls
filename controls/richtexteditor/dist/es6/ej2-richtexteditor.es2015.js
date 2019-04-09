@@ -1055,7 +1055,9 @@ let defaultLocale = {
     'pasteFormatContent': 'Choose the formatting action',
     'plainText': 'Plain Text',
     'cleanFormat': 'Clean',
-    'keepFormat': 'Keep'
+    'keepFormat': 'Keep',
+    'pasteDialogOk': 'OK',
+    'pasteDialogCancel': 'Cancel'
 };
 let toolsLocale = {
     'alignments': 'alignments',
@@ -10779,7 +10781,7 @@ class PasteCleanup {
                     buttonModel: {
                         isPrimary: true,
                         cssClass: 'e-flat ' + CLS_RTE_PASTE_OK,
-                        content: 'ok'
+                        content: this.i10n.getConstant('pasteDialogOk')
                     }
                 },
                 {
@@ -10791,7 +10793,7 @@ class PasteCleanup {
                     },
                     buttonModel: {
                         cssClass: 'e-flat ' + CLS_RTE_PASTE_CANCEL,
-                        content: 'cancel'
+                        content: this.i10n.getConstant('pasteDialogCancel')
                     }
                 }
             ],
@@ -11630,7 +11632,9 @@ class Image {
                 e.target.focus();
             }
             else {
-                this.contentModule.getEditPanel().setAttribute('contenteditable', 'true');
+                if (!this.parent.readonly) {
+                    this.contentModule.getEditPanel().setAttribute('contenteditable', 'true');
+                }
             }
         }
         if (e.target.tagName === 'IMG' &&
@@ -12728,7 +12732,7 @@ class Image {
         return uploadParentEle;
     }
     fileSelect() {
-        document.body.getElementsByClassName('e-file-select-wrap')[0].querySelector('button').click();
+        this.dialogObj.element.getElementsByClassName('e-file-select-wrap')[0].querySelector('button').click();
         return false;
     }
     imagePaste(args) {
@@ -14679,6 +14683,7 @@ let RichTextEditor = class RichTextEditor extends Component {
         else {
             if (this.getToolbar()) {
                 removeClass(this.getToolbar().querySelectorAll('.' + CLS_ACTIVE), CLS_ACTIVE);
+                removeClass([this.getToolbar()], [CLS_TB_FLOAT, CLS_TB_ABS_FLOAT]);
             }
             addClass([this.element], CLS_DISABLED);
             this.element.tabIndex = -1;
@@ -14773,6 +14778,8 @@ let RichTextEditor = class RichTextEditor extends Component {
     }
     /**
      * Selects a content range or an element
+     * @param {Range} range - Specify the range which you want to select within the content.
+     * The method used to select a particular sentence or word or entire document.
      * @public
      */
     selectRange(range) {
@@ -14793,8 +14800,8 @@ let RichTextEditor = class RichTextEditor extends Component {
     }
     /**
      * Executes the commands
-     * CommandName - Specifies the name of the command to be executed.
-     * value - Specifies the sub command.
+     * @param {CommandName} CommandName - Specifies the name of the command to be executed.
+     * @param {string | HTMLElement} value - Specifies the value that you want to execute.
      * @public
      */
     executeCommand(commandName, value) {
@@ -15346,6 +15353,8 @@ let RichTextEditor = class RichTextEditor extends Component {
     }
     /**
      * Enables the give toolbar items in the RichTextEditor component.
+     * @param {string | string[]} items - Specifies the single or collection of items
+     * that you want to be enable in Rich Text Editor’s Toolbar.
      * @public
      */
     enableToolbarItem(items) {
@@ -15353,6 +15362,8 @@ let RichTextEditor = class RichTextEditor extends Component {
     }
     /**
      * Disables the given toolbar items in the RichTextEditor component.
+     * @param {string | string[]} items - Specifies the single or collection of items
+     * that you want to be disable in Rich Text Editor’s Toolbar.
      * @public
      */
     disableToolbarItem(items) {
@@ -15360,6 +15371,8 @@ let RichTextEditor = class RichTextEditor extends Component {
     }
     /**
      * Removes the give toolbar items from the RichTextEditor component.
+     * @param {string | string[]} items - Specifies the single or collection of items
+     * that you want to be remove from Rich Text Editor’s Toolbar.
      * @public
      */
     removeToolbarItem(items) {

@@ -175,7 +175,9 @@ export class Image {
                 this.contentModule.getEditPanel().setAttribute('contenteditable', 'false');
                 (e.target as HTMLElement).focus();
             } else {
-                this.contentModule.getEditPanel().setAttribute('contenteditable', 'true');
+                if (!this.parent.readonly) {
+                    this.contentModule.getEditPanel().setAttribute('contenteditable', 'true');
+                }
             }
         }
         if ((e.target as HTMLElement).tagName === 'IMG' &&
@@ -1285,7 +1287,7 @@ export class Image {
         return uploadParentEle;
     }
     private fileSelect(): boolean {
-        document.body.getElementsByClassName('e-file-select-wrap')[0].querySelector('button').click();
+        this.dialogObj.element.getElementsByClassName('e-file-select-wrap')[0].querySelector('button').click();
         return false;
     }
     private imagePaste(args: NotifyArgs): void {

@@ -470,6 +470,24 @@ describe('Chart Control', () => {
             chartObj.series[0].type = 'StackingColumn';
             chartObj.refresh();
         });
+        it('Checking with y value as string for stackingcolumn', (done: Function) => {
+            loaded = (args: Object): void => {
+                dataLabel = document.getElementById('container_Series_0_Point_0_Text_0');
+                expect(dataLabel != null).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.series[0].type = 'StackingColumn';
+            chartObj.series[0].dataSource = [{ x: 1000, y: '70' }, { x: 2000, y: '40' },
+            { x: 3000, y: '70' }, { x: 4000, y: '60' },
+            { x: 5000, y: '50' }, { x: 6000, y: '40' },
+            { x: 7000, y: '40' }, { x: 8000, y: '70' }];
+            chartObj.series[1].dataSource = [{ x: 1000, y: '70' }, { x: 2000, y: '40' },
+            { x: 3000, y: '70' }, { x: 4000, y: '60' },
+            { x: 5000, y: '50' }, { x: 6000, y: '40' },
+            { x: 7000, y: '40' }, { x: 8000, y: '70' }];
+            chartObj.refresh();
+        });
         it('checking with datalabel Bottom and LabelAlignment far for stackingcolumn', (done: Function) => {
             loaded = (args: Arg): void => {
                 let series1: Series = <Series>args.chart.series[0];

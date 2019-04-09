@@ -2452,7 +2452,8 @@ describe('Batch Editing module', () => {
             gridObj = createGrid(
                 {
                     dataSource: data.slice(0,3),
-                    editSettings: { allowEditing: true, mode: 'Batch' },
+                    editSettings: { allowEditing: true, allowDeleting: true, mode: 'Batch' },
+                    toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
                     allowPaging: true,
                     columns: [
                         { field: 'OrderID', type: 'number', validationRules: { required: true } },
@@ -2461,7 +2462,8 @@ describe('Batch Editing module', () => {
                         { field: 'Verified', type: 'boolean', editType: 'booleanedit' },
                         { field: 'CustomerID', type: 'string' }
                     ],
-                    actionBegin: actionBegin
+                    actionBegin: actionBegin,
+                    actionComplete: actionComplete
                 }, done);
         });
 
@@ -2482,6 +2484,22 @@ describe('Batch Editing module', () => {
             gridObj.editModule.saveCell();
             let tr = gridObj.getContent().querySelectorAll('tr')[0];
             expect(tr.cells[4].innerText).toBe('');
+        });
+
+        it('Delete all records to check action complete', function () {
+            gridObj.selectRow(0);
+            for (var i = 0; i < gridObj.getRows().length; i++) {
+                gridObj.deleteRecord();
+            }
+            (gridObj.element.querySelector('#'+gridObj.element.id+'_update') as any).click();
+        });
+
+        it('action complete triggered when deleting all records', function () {
+            actionComplete = function (args) {
+                expect(args.requestType).toBe('batchsave');
+            };
+            gridObj.actionComplete = actionComplete;
+            (document.activeElement as any).click();
         });
 
         afterAll(() => {

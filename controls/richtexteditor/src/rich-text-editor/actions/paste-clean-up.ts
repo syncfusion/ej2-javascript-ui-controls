@@ -133,7 +133,7 @@ export class PasteCleanup {
           buttonModel: {
             isPrimary: true,
             cssClass: 'e-flat ' + CLS_RTE_PASTE_OK,
-            content: 'ok'
+            content: this.i10n.getConstant('pasteDialogOk')
           }
         },
         {
@@ -145,7 +145,7 @@ export class PasteCleanup {
           },
           buttonModel: {
             cssClass: 'e-flat ' + CLS_RTE_PASTE_CANCEL,
-            content: 'cancel'
+            content: this.i10n.getConstant('pasteDialogCancel')
           }
         }
       ],

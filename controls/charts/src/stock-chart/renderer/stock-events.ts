@@ -8,6 +8,7 @@ import { withIn, PointData, textElement,  } from '../../common/utils/helper';
 import { BaseTooltip } from '../../common/user-interaction/tooltip';
 import { Tooltip, PathOption, TextOption, measureText, Size } from '@syncfusion/ej2-svg-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
+import { DataUtil } from '@syncfusion/ej2-data';
 import { IStockEventRenderArgs } from '../model/base';
 import { stockEventRender } from '../../common/model/constants';
 /**
@@ -55,7 +56,7 @@ export class StockEvents extends BaseTooltip {
                     stockEventElement = sChart.renderer.createGroup(
                         { id: this.chartId + '_Series_' + series.index + '_StockEvents_' + i }
                     );
-                    if (withIn(stockEvent.date.getTime(), series.xAxis.visibleRange)) {
+                    if (withIn(this.dateParse(stockEvent.date).getTime() , series.xAxis.visibleRange)) {
                         symbolLocation = this.findClosePoint(series, stockEvent);
                         if (!stockEvent.showOnSeries) {
                             symbolLocation.y = series.yAxis.rect.y + series.yAxis.rect.height;
@@ -71,7 +72,7 @@ export class StockEvents extends BaseTooltip {
     }
 
     private findClosePoint(series: Series, sEvent: StockEventsSettingsModel): ChartLocation {
-        let closeIndex: number = this.getClosest(series, sEvent.date.getTime());
+        let closeIndex: number = this.getClosest(series, this.dateParse(sEvent.date).getTime() );
         let pointData: PointData;
         let point: Points;
         let xPixel: number; let yPixel: number;
@@ -106,20 +107,22 @@ export class StockEvents extends BaseTooltip {
                 stockEventElement.appendChild(
                     drawSymbol(
                         new ChartLocation(lx, ly), 'Circle', new Size(2, 2), '',
-                        new PathOption( stockId + '_Circle', 'transparent', border.width, border.color), stockEve.date.toDateString()
+                        new PathOption( stockId + '_Circle', 'transparent', border.width, border.color),
+                        this.dateParse(stockEve.date).toISOString()
                     )
                 );
                 stockEventElement.appendChild(
                     drawSymbol(
                         new ChartLocation(lx, ly - 5), 'VerticalLine', new Size(9, 9), '',
-                        new PathOption(stockId + '_Path', border.color, border.width, border.color), stockEve.date.toDateString()
+                        new PathOption(stockId + '_Path', border.color, border.width, border.color),
+                        this.dateParse(stockEve.date).toISOString()
                     )
                 );
                 stockEventElement.appendChild(
                     drawSymbol(
                         new ChartLocation(stockEve.type !== 'Flag' ? lx : lx + result.width / 2, ly - result.height),
                         stockEve.type, result, '', new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color),
-                        stockEve.date.toDateString()
+                        this.dateParse(stockEve.date).toISOString()
                     )
                 );
                 textElement(
@@ -144,7 +147,8 @@ export class StockEvents extends BaseTooltip {
                 stockEventElement.appendChild(
                     drawSymbol(
                         new ChartLocation(symbolLocation.x, symbolLocation.y), stockEve.type, new Size(20, 20), '',
-                        new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color),  stockEve.date.toDateString()
+                        new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color),
+                        this.dateParse(stockEve.date).toISOString()
                     )
                 );
                 textElement(
@@ -279,6 +283,16 @@ export class StockEvents extends BaseTooltip {
         if (getElement(elementId)) {
             getElement(elementId).setAttribute('opacity', opacity.toString());
         }
+    }
+    /**
+     * @param value 
+     * To convert the c# or javascript date formats into js format
+     * refer chart control's dateTime processing.
+     */
+    private dateParse(value: Date | string): Date {
+        let dateParser: Function = this.chart.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
+        let dateFormatter: Function = this.chart.intl.getDateFormat({ skeleton: 'full', type: 'dateTime' });
+        return new Date((Date.parse(dateParser(dateFormatter(new Date(DataUtil.parse.parseJson({ val: value }).val))))));
     }
 }
 

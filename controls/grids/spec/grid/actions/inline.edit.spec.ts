@@ -1068,6 +1068,7 @@ describe('Inline Editing module', () => {
         it('Edit with invalid data', () => {
             (gridObj.element.querySelector('#' + gridObj.element.id + 'CustomerID') as any).value = '';
             expect(gridObj.editModule.editFormValidate()).toBeFalsy();
+            expect(gridObj.editModule.formObj.element.querySelectorAll('.e-griderror').length).toBe(1);
             let errors: any = document.querySelectorAll('.e-griderror');
             // EJ2-7735 Grid Validation message is not shown in Essential JavaScript 2 compatibility theme
             expect(errors[0].classList.contains('e-control')).toBeTruthy();

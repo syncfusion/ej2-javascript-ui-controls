@@ -6148,7 +6148,7 @@ let FormValidator = FormValidator_1 = class FormValidator extends Base {
     }
     // Update the optional validation status
     optionalValidationStatus(name, refer) {
-        if (!this.rules[name][this.required] && !this.inputElement.value.length) {
+        if (!this.rules[name][this.required] && !this.inputElement.value.length && !isNullOrUndefined(this.infoElement)) {
             this.infoElement.innerHTML = this.inputElement.value;
             this.infoElement.setAttribute('aria-invalid', 'false');
             refer.status = '';
@@ -6231,8 +6231,7 @@ let FormValidator = FormValidator_1 = class FormValidator extends Base {
     getErrorElement(name) {
         this.infoElement = select(this.errorElement + '.' + this.errorClass, this.inputElement.parentElement);
         if (!this.infoElement) {
-            this.infoElement = (select(this.errorElement + '.' + this.errorClass + '[for="' + name + '"]', this.element) ||
-                select(this.errorElement + '.' + this.errorClass + '[for="' + name + '"]'));
+            this.infoElement = select(this.errorElement + '.' + this.errorClass + '[for="' + name + '"]', this.element);
         }
         return this.infoElement;
     }
@@ -6263,7 +6262,7 @@ let FormValidator = FormValidator_1 = class FormValidator extends Base {
     }
     // Check whether the input element have required rule and its value is not empty
     checkRequired(name) {
-        if (!this.rules[name][this.required] && !this.inputElement.value.length) {
+        if (!this.rules[name][this.required] && !this.inputElement.value.length && !isNullOrUndefined(this.infoElement)) {
             this.infoElement.innerHTML = this.inputElement.value;
             this.infoElement.setAttribute('aria-invalid', 'false');
             this.hideMessage(name);
@@ -7100,9 +7099,6 @@ let Uploader = class Uploader extends Component {
     /* istanbul ignore next */
     dropElement(e) {
         this.dropZoneElement.classList.remove(DRAG_HOVER);
-        if (this.browserName === 'chrome') {
-            this.element.files = e.dataTransfer.files;
-        }
         this.onSelectFiles(e);
         e.preventDefault();
         e.stopPropagation();
@@ -10958,7 +10954,7 @@ let TextBox = class TextBox extends Component {
     }
     setInitialValue() {
         if (!this.isAngular) {
-            this.element.setAttribute('value', this.initialValue);
+            this.respectiveElement.setAttribute('value', this.initialValue);
         }
     }
     wireEvents() {

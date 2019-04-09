@@ -105,7 +105,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private getInfoFromView(direction: string, info: SentinelType, e: Offsets): VirtualInfo {
         let tempBlocks: number[] = [];
         let infoType: VirtualInfo = { direction: direction, sentinelInfo: info, offsets: e };
-        infoType.page = this.getPageFromTop(e.top, infoType);
+        let vHeight: string | number = this.parent.height.toString().indexOf('%') < 0 ? this.content.getBoundingClientRect().height :
+            this.parent.element.getBoundingClientRect().height;
+        infoType.page = this.getPageFromTop(e.top + vHeight, infoType);
         infoType.blockIndexes = tempBlocks = this.vgenerator.getBlockIndexes(infoType.page);
         infoType.loadSelf = !this.vgenerator.isBlockAvailable(tempBlocks[infoType.block]);
         let blocks: number[] = this.ensureBlocks(infoType);
@@ -159,6 +161,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         let width: string; let blocks: number[] = info.blockIndexes;
         if (this.parent.groupSettings.columns.length) {
             this.refreshOffsets();
+        }
+        if (this.parent.height === '100%') {
+            this.parent.element.style.height = '100%';
         }
         let vHeight: string | number = this.parent.height.toString().indexOf('%') < 0 ? this.content.getBoundingClientRect().height :
             this.parent.element.getBoundingClientRect().height;
@@ -227,7 +232,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         let page: number = 0; let extra: number = this.offsets[total] - this.prevHeight;
         this.offsetKeys.some((offset: string) => {
             let iOffset: number = Number(offset);
-            let border: boolean = sTop < this.offsets[offset] || (iOffset === total && sTop > this.offsets[offset]);
+            let border: boolean = sTop <= this.offsets[offset] || (iOffset === total && sTop > this.offsets[offset]);
             if (border) {
                 info.block = iOffset % 2 === 0 ? 1 : 0;
                 page = Math.max(1, Math.min(this.vgenerator.getPage(iOffset), this.maxPage));
@@ -239,7 +244,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
 
     private getTranslateY(sTop: number, cHeight: number, info?: VirtualInfo, isOnenter?: boolean): number {
         if (info === undefined) {
-            info = { page: this.getPageFromTop(sTop, {}) };
+            info = { page: this.getPageFromTop(sTop + cHeight, {}) };
             info.blockIndexes = this.vgenerator.getBlockIndexes(info.page);
         }
         let block: number = (info.blockIndexes[0] || 1) - 1;

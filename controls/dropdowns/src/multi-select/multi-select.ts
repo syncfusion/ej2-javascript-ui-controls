@@ -1544,8 +1544,8 @@ export class MultiSelect extends DropDownBase implements IInput {
                 this.addListFocus(<HTMLElement>li);
                 if (this.mode === 'CheckBox') {
                     this.updateDelimView();
-                    this.refreshInputHight();
                     this.updateDelimeter(this.delimiterChar);
+                    this.refreshInputHight();
                 } else {
                     this.updateDelimeter(this.delimiterChar);
                 }
@@ -2333,8 +2333,8 @@ export class MultiSelect extends DropDownBase implements IInput {
             if (this.mode === 'CheckBox') {
                 this.updateDelimView();
                 this.updateValueState(null, this.value, this.tempValues);
-                this.refreshInputHight();
                 this.updateDelimeter(this.delimiterChar);
+                this.refreshInputHight();
             } else {
                 this.updateDelimeter(this.delimiterChar);
             }
@@ -2492,8 +2492,8 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
             if (this.mode === 'CheckBox') {
                 this.updateDelimView();
-                this.refreshInputHight();
                 this.updateDelimeter(this.delimiterChar);
+                this.refreshInputHight();
             } else {
                 this.updateDelimeter(this.delimiterChar);
             }
@@ -2820,8 +2820,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         if (this.mode === 'CheckBox') {
             this.updateDelimView();
-            this.refreshInputHight();
             this.updateDelimeter(this.delimiterChar);
+            this.refreshInputHight();
         } else {
             this.updateDelimeter(this.delimiterChar);
         }

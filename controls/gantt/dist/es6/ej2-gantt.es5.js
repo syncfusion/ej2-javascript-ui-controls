@@ -8,7 +8,7 @@ import { CheckBoxSelection, ComboBox, DropDownList, MultiSelect } from '@syncfus
 import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
 import { Splitter } from '@syncfusion/ej2-layouts';
 import { Tab, Toolbar as Toolbar$1 } from '@syncfusion/ej2-navigations';
-import { Count, HtmlEditor, Image, Link, QuickToolbar, RichTextEditor, Toolbar as Toolbar$2 } from '@syncfusion/ej2-richtexteditor';
+import { Count, HtmlEditor, Link, QuickToolbar, RichTextEditor, Toolbar as Toolbar$2 } from '@syncfusion/ej2-richtexteditor';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 
 /**
@@ -3497,7 +3497,7 @@ var Timeline = /** @__PURE__ @class */ (function () {
         var minStartDate = filteredStartDateRecord.length > 0 ?
             new Date(DataUtil.aggregates.min(filteredStartDateRecord, 'ganttProperties.startDate')) : null;
         var maxEndDate = filteredEndDateRecord.length > 0 ?
-            new Date(DataUtil.aggregates.max(filteredEndDateRecord, 'ganttProperties.startDate')) : null;
+            new Date(DataUtil.aggregates.max(filteredEndDateRecord, 'ganttProperties.endDate')) : null;
         var validStartDate = new Date(this.parent.dataOperation.checkStartDate(this.timelineStartDate).getTime());
         var validEndDate = new Date(this.parent.dataOperation.checkEndDate(this.timelineEndDate).getTime());
         var maxStartLeft = isNullOrUndefined(minStartDate) ?
@@ -3781,6 +3781,9 @@ var GanttTreeGrid = /** @__PURE__ @class */ (function () {
         }
         if (getValue('requestType', args) === 'searching') {
             this.parent.notify('actionComplete', args);
+        }
+        if (!isNullOrUndefined(getValue('batchChanges', args)) && !isNullOrUndefined(this.parent.toolbarModule)) {
+            this.parent.toolbarModule.refreshToolbarItems();
         }
         this.parent.trigger('actionComplete', updatedArgs);
     };
@@ -5263,7 +5266,7 @@ var ChartRows = /** @__PURE__ @class */ (function () {
         this.taskBaselineTemplateFunction = this.templateCompiler(this.getTaskBaselineTemplateString());
         this.milestoneBaselineTemplateFunction = this.templateCompiler(this.getMilestoneBaselineTemplateString());
         var connectorLineLeft = '<div class="' + leftConnectorPointOuterDiv + '" style="${if(ganttProperties.isMilestone)}' +
-            'margin-top:' + (this.milesStoneRadius - 4) + 'px;${else}margin-top:' +
+            'margin-top:' + (this.milesStoneRadius - 5) + 'px;${else}margin-top:' +
             this.connectorPointMargin + 'px;${/if}">' +
             '<div class="' + connectorPointLeft + '${this.getUnscheduledTaskClass(ganttProperties)}' +
             '" style="width: ' + this.connectorPointWidth + 'px;' +
@@ -5271,7 +5274,7 @@ var ChartRows = /** @__PURE__ @class */ (function () {
             this.connectorPointRadius + 'px;">' + this.touchLeftConnectorpoint + '</div></div>';
         var connectorLineRight = '<div class="' + rightConnectorPointOuterDiv + '" style="${if(ganttProperties.isMilestone)}' +
             'left:' + this.milestoneHeight + 'px;margin-top:' +
-            (this.milesStoneRadius - 4) + 'px;${else}left:${(data.ganttProperties.width)}px;margin-top:' +
+            (this.milesStoneRadius - 5) + 'px;${else}left:${(data.ganttProperties.width)}px;margin-top:' +
             this.connectorPointMargin + 'px;${/if}">' +
             '<div class="' + connectorPointRight + '${this.getUnscheduledTaskClass(ganttProperties)}"' + ' style="' +
             'width:' + this.connectorPointWidth + 'px;height:' + this.connectorPointWidth + 'px;border-radius:' +
@@ -5421,7 +5424,7 @@ var ChartRows = /** @__PURE__ @class */ (function () {
         this.baselineTop = -(Math.floor((this.parent.rowHeight - (this.taskBarHeight + this.taskBarMarginTop))) - 1);
         this.connectorPointWidth = 8;
         this.connectorPointRadius = 8 / 2;
-        this.connectorPointMargin = Math.floor((this.taskBarHeight / 2) - 4);
+        this.connectorPointMargin = Math.floor((this.taskBarHeight / 2) - 5);
     };
     /**
      * Function used to refresh Gantt rows.
@@ -5430,8 +5433,9 @@ var ChartRows = /** @__PURE__ @class */ (function () {
      */
     ChartRows.prototype.refreshGanttRows = function () {
         this.ganttChartTableBody.innerHTML = '';
-        this.parent.currentViewData = this.parent.treeGrid.getCurrentViewRecords();
+        this.parent.currentViewData = this.parent.treeGrid.getCurrentViewRecords().slice();
         this.createTaskbarTemplate();
+        this.triggerQueryTaskbarInfo();
     };
     /**
      * To render taskbars.
@@ -8361,6 +8365,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
         _this.isConnectorLineUpdate = false;
         /** @hidden */
         _this.staticSelectedRowIndex = -1;
+        _this.needsID = true;
         /**
          * @private
          */
@@ -9414,6 +9419,22 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    Gantt.prototype.closeGanttActions = function () {
+        if (this.editModule) {
+            if (this.editModule.cellEditModule && this.editModule.cellEditModule.isCellEdit) {
+                this.treeGrid.closeEdit();
+                this.editModule.cellEditModule.isCellEdit = false;
+                if (!isNullOrUndefined(this.toolbarModule)) {
+                    this.toolbarModule.refreshToolbarItems();
+                }
+            }
+            else if (this.editModule.dialogModule && this.editModule.dialogModule.dialogObj &&
+                this.editModule.dialogModule.dialogObj.visible) {
+                this.editModule.dialogModule.dialogObj.hide();
+                this.editModule.dialogModule.dialogClose();
+            }
+        }
+    };
     /**
      * Method to get task by uniqueId value
      * @param id
@@ -9441,12 +9462,12 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Method to set splitter position
-     * @param value
-     * @param valueType
+     * @param {string|number} value - value of the property.
+     * @param {string} type - property of SplitterSettings.
      */
-    Gantt.prototype.setSplitterPosition = function (value, valueType) {
+    Gantt.prototype.setSplitterPosition = function (value, type) {
         var tempSplitterSettings = {};
-        tempSplitterSettings[valueType] = value;
+        tempSplitterSettings[type] = value;
         var splitterPosition = this.splitterModule.calculateSplitterPosition(tempSplitterSettings, true);
         var pane1 = this.splitterModule.splitterObject.element.querySelectorAll('.e-pane')[0];
         var pane2 = this.splitterModule.splitterObject.element.querySelectorAll('.e-pane')[1];
@@ -9506,7 +9527,8 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * Add record public method.
+     * Method to update record by ID.
+     * @param  {object} data - Defines the data to modify.
      * @return {void}
      * @public
      */
@@ -9516,32 +9538,59 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * To add dependency for Task
+     * Method to update record by Index.
+     * @param  {number} index - Defines the index of data to modify.
+     * @param  {object} data - Defines the data to modify.
      * @return {void}
      * @public
      */
-    Gantt.prototype.addPredecessor = function (ganttRecord, predecessorString) {
-        if (this.editModule) {
+    Gantt.prototype.updateRecordByIndex = function (index, data) {
+        if (this.editModule && this.editSettings.allowEditing) {
+            var record = void 0;
+            var tasks = this.taskFields;
+            record = this.currentViewData.length > 0 ?
+                !isNullOrUndefined(this.currentViewData[index]) ? this.currentViewData[index] : null : null;
+            if (!isNullOrUndefined(record)) {
+                data[tasks.id] = record[tasks.id];
+                this.editModule.updateRecordByID(data);
+            }
+        }
+    };
+    /**
+     * To add dependency for Task
+     * @param  {String|number} id - Defines the ID of data to modify.
+     * @param  {string} predecessorString - Defines the predecessor string to add.
+     * @return {void}
+     * @public
+     */
+    Gantt.prototype.addPredecessor = function (id, predecessorString) {
+        var ganttRecord = this.getRecordByID(id.toString());
+        if (this.editModule && !isNullOrUndefined(ganttRecord)) {
             this.connectorLineEditModule.addPredecessor(ganttRecord, predecessorString);
         }
     };
     /**
      * To remove dependency from task
+     * @param  {String|number} id - Defines the ID of data to modify.
      * @return {void}
      * @public
      */
-    Gantt.prototype.removePredecessor = function (ganttRecord) {
-        if (this.editModule) {
+    Gantt.prototype.removePredecessor = function (id) {
+        var ganttRecord = this.getRecordByID(id.toString());
+        if (this.editModule && !isNullOrUndefined(ganttRecord)) {
             this.connectorLineEditModule.removePredecessor(ganttRecord);
         }
     };
     /**
      * To modify current dependency values of Task
+     * @param  {String|number} id - Defines the ID of data to modify.
+     * @param  {string} predecessorString - Defines the predecessor string to update.
      * @return {void}
      * @public
      */
-    Gantt.prototype.updatePredecessor = function (ganttRecord, predecessorString) {
-        if (this.editModule) {
+    Gantt.prototype.updatePredecessor = function (id, predecessorString) {
+        var ganttRecord = this.getRecordByID(id.toString());
+        if (this.editModule && !isNullOrUndefined(ganttRecord)) {
             this.connectorLineEditModule.updatePredecessor(ganttRecord, predecessorString);
         }
     };
@@ -9693,6 +9742,86 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
         var top = box.top + scrollTop - clientTop;
         var left = box.left + scrollLeft - clientLeft;
         return { top: Math.round(top), left: Math.round(left) };
+    };
+    /**
+     * Public method to expand all the rows of Gantt
+     * @return {void}
+     * @public
+     */
+    Gantt.prototype.expandAll = function () {
+        this.ganttChartModule.expandCollapseAll('expand');
+    };
+    /**
+     * Public method to collapse all the rows of Gantt
+     * @return {void}
+     * @public
+     */
+    Gantt.prototype.collapseAll = function () {
+        this.ganttChartModule.expandCollapseAll('collapse');
+    };
+    /**
+     * Gets the columns from the TreeGrid.
+     * @return {Column[]}
+     * @public
+     */
+    Gantt.prototype.getGridColumns = function () {
+        return this.treeGrid.getColumns();
+    };
+    /**
+     * Gets the Gantt columns.
+     * @return {ColumnModel[]}
+     * @public
+     */
+    Gantt.prototype.getGanttColumns = function () {
+        return this.ganttColumns;
+    };
+    /**
+     * Shows a column by its column name.
+     * @param  {string|string[]} keys - Defines a single or collection of column names.
+     * @param  {string} showBy - Defines the column key either as field name or header text.
+     * @return {void}
+     * @public
+     */
+    Gantt.prototype.ShowColumn = function (keys, showBy) {
+        this.treeGrid.showColumns(keys, showBy);
+    };
+    /**
+     * Hides a column by column name.
+     * @param  {string|string[]} keys - Defines a single or collection of column names.
+     * @param  {string} hideBy - Defines the column key either as field name or header text.
+     * @return {void}
+     * @public
+     */
+    Gantt.prototype.hideColumn = function (keys, hideBy) {
+        this.treeGrid.hideColumns(keys, hideBy);
+    };
+    /**
+     * To set scroll top for chart scroll container
+     * @param scrollTop - To set scroll top for scroll container
+     * @return {void}
+     * @public
+     */
+    Gantt.prototype.setScrollTop = function (scrollTop) {
+        this.ganttChartModule.scrollObject.setScrollTop(scrollTop);
+    };
+    /**
+     * Cancels edited state.
+     * @return {void}
+     * @public
+     */
+    Gantt.prototype.cancelEdit = function (scrollTop) {
+        this.closeGanttActions();
+    };
+    /**
+     * Selects a cell by the given index.
+     * @param  {IIndex} cellIndex - Defines the row and column indexes.
+     * @param  {boolean} isToggle - If set to true, then it toggles the selection.
+     * @return {void}
+     */
+    Gantt.prototype.selectCells = function (cellIndex, isToggle) {
+        if (this.selectionModule) {
+            this.selectionModule.selectCell(cellIndex, isToggle);
+        }
     };
     __decorate([
         Property(true)
@@ -9888,6 +10017,12 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
     ], Gantt.prototype, "taskbarEdited", void 0);
     __decorate([
         Event()
+    ], Gantt.prototype, "endEdit", void 0);
+    __decorate([
+        Event()
+    ], Gantt.prototype, "cellEdit", void 0);
+    __decorate([
+        Event()
     ], Gantt.prototype, "load", void 0);
     __decorate([
         Event()
@@ -10028,7 +10163,8 @@ var CellEdit = /** @__PURE__ @class */ (function () {
         }
         if (!args.cancel) {
             this.isCellEdit = true;
-            if (!isNullOrUndefined(this.parent.toolbarModule)) {
+            this.parent.trigger('cellEdit', args);
+            if (!isNullOrUndefined(this.parent.toolbarModule) && !args.cancel) {
                 this.parent.toolbarModule.refreshToolbarItems();
             }
         }
@@ -10044,7 +10180,7 @@ var CellEdit = /** @__PURE__ @class */ (function () {
         var field = args.columnName;
         if ((field === taskSettings.notes && !this.parent.showInlineNotes)) {
             args.cancel = true;
-            var columnTypes = this.parent.editDialogFields.map(function (x) { return x.type; });
+            var columnTypes = this.parent.editModule.dialogModule.updatedEditFields.map(function (x) { return x.type; });
             var index = columnTypes.indexOf('Notes');
             if (index !== -1) {
                 this.parent.editModule.dialogModule.openEditDialog(data.ganttProperties.taskId);
@@ -10052,6 +10188,26 @@ var CellEdit = /** @__PURE__ @class */ (function () {
                 tabObj.selectedItem = index;
             }
         }
+    };
+    CellEdit.prototype.isValueChange = function (args, field) {
+        var data = getValue('data', args);
+        var editedValue = data[field];
+        var previousValue = getValue('previousData', args);
+        if ((isNullOrUndefined(editedValue) && !isNullOrUndefined(previousValue)) || (!isNullOrUndefined(editedValue) && isNullOrUndefined(previousValue))) {
+            return true;
+        }
+        else if (!isNullOrUndefined(editedValue) && !isNullOrUndefined(previousValue)) {
+            if (editedValue instanceof Date) {
+                return editedValue.getTime() !== data.taskData[field].getTime() ? true : false;
+            }
+            else if (field === this.parent.taskFields.resourceInfo) {
+                return editedValue !== previousValue ? true : false;
+            }
+            else if (editedValue !== data.taskData[field]) {
+                return true;
+            }
+        }
+        return false;
     };
     /**
      * Initiate cell save action on Gantt with arguments from TreeGrid
@@ -10067,43 +10223,50 @@ var CellEdit = /** @__PURE__ @class */ (function () {
         editedArgs.data = this.parent.getTaskByUniqueID(data.uniqueID);
         var editedValue = data[column.field];
         var previousValue = getValue('previousData', args);
-        data[column.field] = previousValue;
-        editedArgs.data[column.field] = previousValue;
-        this.parent.initiateEditAction(true);
-        this.parent.setRecordValue(column.field, editedValue, editedArgs.data);
-        if (column.field === this.parent.taskFields.name) {
-            this.taskNameEdited(editedArgs);
-        }
-        else if (column.field === this.parent.taskFields.startDate) {
-            this.startDateEdited(editedArgs);
-        }
-        else if (column.field === this.parent.taskFields.endDate) {
-            this.endDateEdited(editedArgs);
-        }
-        else if (column.field === this.parent.taskFields.duration) {
-            this.durationEdited(editedArgs);
-        }
-        else if (column.field === this.parent.taskFields.resourceInfo) {
-            this.resourceEdited(editedArgs, editedObj);
-        }
-        else if (column.field === this.parent.taskFields.progress) {
-            this.progressEdited(editedArgs);
-        }
-        else if (column.field === this.parent.taskFields.baselineStartDate
-            || column.field === this.parent.taskFields.baselineEndDate) {
-            this.baselineEdited(editedArgs);
-        }
-        else if (column.field === this.parent.taskFields.dependency) {
-            this.dependencyEdited(editedArgs, previousValue);
-        }
-        else if (column.field === this.parent.taskFields.notes) {
-            this.notedEdited(editedArgs);
+        if (this.isValueChange(args, column.field)) {
+            data[column.field] = previousValue;
+            editedArgs.data[column.field] = previousValue;
+            this.parent.initiateEditAction(true);
+            this.parent.setRecordValue(column.field, editedValue, editedArgs.data);
+            if (column.field === this.parent.taskFields.name) {
+                this.taskNameEdited(editedArgs);
+            }
+            else if (column.field === this.parent.taskFields.startDate) {
+                this.startDateEdited(editedArgs);
+            }
+            else if (column.field === this.parent.taskFields.endDate) {
+                this.endDateEdited(editedArgs);
+            }
+            else if (column.field === this.parent.taskFields.duration) {
+                this.durationEdited(editedArgs);
+            }
+            else if (column.field === this.parent.taskFields.resourceInfo) {
+                this.resourceEdited(editedArgs, editedObj);
+            }
+            else if (column.field === this.parent.taskFields.progress) {
+                this.progressEdited(editedArgs);
+            }
+            else if (column.field === this.parent.taskFields.baselineStartDate
+                || column.field === this.parent.taskFields.baselineEndDate) {
+                this.baselineEdited(editedArgs);
+            }
+            else if (column.field === this.parent.taskFields.dependency) {
+                this.dependencyEdited(editedArgs, previousValue);
+            }
+            else if (column.field === this.parent.taskFields.notes) {
+                this.notedEdited(editedArgs);
+            }
+            else {
+                this.parent.setRecordValue('taskData.' + column.field, data[this.parent.taskFields.name], data);
+            }
         }
         else {
-            this.parent.setRecordValue('taskData.' + column.field, data[this.parent.taskFields.name], data);
+            this.parent.editModule.endEditAction(args);
         }
         this.isCellEdit = false;
-        this.parent.toolbarModule.refreshToolbarItems();
+        if (!isNullOrUndefined(this.parent.toolbarModule)) {
+            this.parent.toolbarModule.refreshToolbarItems();
+        }
     };
     /**
      * To update task name cell with new value
@@ -11461,10 +11624,14 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
      * Constructor for render module
      */
     function DialogEdit(parent) {
+        /**
+         * @private
+         */
         this.updatedEditFields = null;
         this.updatedAddFields = null;
         this.addedRecord = null;
         this.dialogEditValidationFlag = false;
+        this.ganttResources = [];
         this.parent = parent;
         this.l10n = this.parent.localeObj;
         this.beforeOpenArgs = { cancel: false };
@@ -11741,6 +11908,9 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
             if (generalTabElement && generalTabElement.scrollHeight > generalTabElement.offsetHeight) {
                 generalTabElement.classList.add('e-scroll');
             }
+            if (_this.tabObj.selectedItem === 0) {
+                _this.tabObj.select(0);
+            }
         };
         dialogModel.locale = this.parent.locale;
         dialogModel.buttons = [{
@@ -11774,6 +11944,7 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
         target.style.pointerEvents = 'none';
         if ((this.l10n.getConstant('cancel')).toLowerCase() === e.target.innerText.trim().toLowerCase()) {
             if (this.dialog && !this.dialogObj.isDestroyed) {
+                this.dialogObj.hide();
                 this.dialogClose();
             }
         }
@@ -11787,7 +11958,6 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
      */
     DialogEdit.prototype.dialogClose = function () {
         if (this.dialog) {
-            this.dialogObj.hide();
             this.resetValues();
         }
     };
@@ -11797,6 +11967,7 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
         this.rowData = {};
         this.rowIndex = -1;
         this.addedRecord = null;
+        this.ganttResources = [];
         if (this.dialog && !this.dialogObj.isDestroyed) {
             this.destroyDialogInnerElements();
             this.dialogObj.destroy();
@@ -11948,9 +12119,9 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
         if (this.beforeOpenArgs.cancel) {
             return tabElement;
         }
-        var tabObj = new Tab(tabModel);
+        this.tabObj = new Tab(tabModel);
         tabElement = this.parent.createElement('div', { id: ganttObj.element.id + '_Tab' });
-        tabObj.appendTo(tabElement);
+        this.tabObj.appendTo(tabElement);
         return tabElement;
     };
     DialogEdit.prototype.getFieldsModel = function (fields) {
@@ -12323,13 +12494,16 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
             fields = ['Bold', 'Italic', 'Underline', 'StrikeThrough',
                 'FontName', 'FontSize', 'FontColor', 'BackgroundColor',
                 'LowerCase', 'UpperCase', '|',
-                'Formats', 'Alignments', 'OrderedList', 'UnorderedList',
+                'Alignments', 'OrderedList', 'UnorderedList',
                 'Outdent', 'Indent', '|', 'CreateTable',
-                'CreateLink', 'Image', '|', 'ClearFormat', 'Print',
+                'CreateLink', '|', 'ClearFormat', 'Print',
                 '|', 'Undo', 'Redo'];
         }
         var inputModel = {
             placeholder: this.l10n.getConstant('writeNotes'),
+            toolbarSettings: {
+                items: fields
+            },
             locale: this.parent.locale
         };
         return inputModel;
@@ -12453,9 +12627,21 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
         gridObj.appendTo(divElement);
         return divElement;
     };
+    DialogEdit.prototype.updateResourceCollection = function (args, resourceGridId) {
+        if (!isNullOrUndefined(args.data)) {
+            var ganttObj = this.parent;
+            var resourceGrid = ganttObj.element.querySelector('#' + resourceGridId).ej2_instances[0];
+            if (!isNullOrUndefined(resourceGrid) && resourceGrid.selectionModule.getSelectedRecords().length > 0) {
+                this.ganttResources = extend([], resourceGrid.selectionModule.getSelectedRecords());
+            }
+            else {
+                this.ganttResources = [];
+            }
+        }
+    };
     DialogEdit.prototype.renderResourceTab = function (itemName) {
+        var _this = this;
         var ganttObj = this.parent;
-        var ganttResources = [];
         var ganttData = this.beforeOpenArgs.rowData;
         var inputModel = this.beforeOpenArgs[itemName];
         var resourceGridId = ganttObj.element.id + '' + itemName + 'TabContainer';
@@ -12463,19 +12649,26 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
         var resourceInfo = ganttData.ganttProperties.resourceInfo;
         if (this.isEdit && !isNullOrUndefined(resourceInfo)) {
             for (var i = 0; i < resourceInfo.length; i++) {
-                ganttResources.push({ name: resourceInfo[i][ganttObj.resourceIDMapping] });
+                this.ganttResources.push(resourceInfo[i]);
             }
         }
+        inputModel.rowSelected = function (args) {
+            _this.updateResourceCollection(args, resourceGridId);
+        };
+        inputModel.rowDeselected = function (args) {
+            _this.updateResourceCollection(args, resourceGridId);
+        };
         var tabModel = this.beforeOpenArgs.tabModel;
         tabModel.selected = function (args) {
             var title = getValue('selectedItem.textContent', args);
             if (title === 'Resources') {
                 var resourceGrid_1 = ganttObj.element.querySelector('#' + resourceGridId).ej2_instances[0];
-                var resources_1 = ganttData.ganttProperties.resourceInfo;
+                var resources_1 = _this.ganttResources;
                 if (resources_1 && resources_1.length > 0) {
                     resourceGrid_1.currentViewData.forEach(function (data, index) {
                         for (var i = 0; i < resources_1.length; i++) {
-                            if (data[ganttObj.resourceIDMapping] === resources_1[i][ganttObj.resourceIDMapping]) {
+                            if (data[ganttObj.resourceIDMapping] === resources_1[i][ganttObj.resourceIDMapping] &&
+                                resourceGrid_1.selectionModule.selectedRowIndexes.indexOf(index) === -1) {
                                 resourceGrid_1.selectRow(index);
                             }
                         }
@@ -12502,7 +12695,7 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
         var inputModel = this.beforeOpenArgs[itemName];
         var ganttProp = this.editedRecord.ganttProperties;
         var divElement = this.createDivElement('', ganttObj.element.id + '' + itemName + 'TabContainer');
-        RichTextEditor.Inject(Toolbar$2, Link, Image, HtmlEditor, QuickToolbar, Count);
+        RichTextEditor.Inject(Toolbar$2, Link, HtmlEditor, QuickToolbar, Count);
         inputModel.value = ganttProp.notes;
         var rteObj = new RichTextEditor(inputModel);
         rteObj.appendTo(divElement);
@@ -12751,7 +12944,7 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
     };
     DialogEdit.prototype.updateResourceTab = function (resourceElement) {
         var gridObj = resourceElement.ej2_instances[0];
-        var selectedItems = gridObj.selectionModule.getSelectedRecords();
+        var selectedItems = this.ganttResources;
         var idArray = [];
         if (this.isEdit) {
             this.parent.setRecordValue('resourceInfo', selectedItems, this.rowData.ganttProperties, true);
@@ -13453,6 +13646,9 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
         this.parent.hideSpinner();
         this.parent.initiateEditAction(false);
     };
+    /**
+     * @private
+     */
     Edit$$1.prototype.endEditAction = function (args) {
         this.resetEditProperties();
         if (args.action === 'TaskbarEditing') {
@@ -13462,6 +13658,9 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             this.parent.trigger('endEdit', args);
         }
         else if (args.action === 'DialogEditing') {
+            if (this.dialogModule.dialog && !this.dialogModule.dialogObj.isDestroyed) {
+                this.dialogModule.dialogObj.hide();
+            }
             this.dialogModule.dialogClose();
         }
     };
@@ -13621,7 +13820,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             this.initiateDeleteAction(delereArgs);
             this.parent.isOnDelete = false;
         }
-        if (this.parent.toolbarModule) {
+        if (!isNullOrUndefined(this.parent.toolbarModule)) {
             this.parent.toolbarModule.refreshToolbarItems();
         }
     };
@@ -13762,6 +13961,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             var deleteRecord = deletedRecords[i];
             var currentIndex = currentData.indexOf(deleteRecord);
             var flatIndex = flatData.indexOf(deleteRecord);
+            var treeGridParentIndex = this.parent.treeGrid.parentData.indexOf(deleteRecord);
             var childIndex = void 0;
             if (currentIndex !== -1) {
                 currentData.splice(currentIndex, 1);
@@ -13772,6 +13972,9 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             deleteRecordIDs.push(deleteRecord.ganttProperties.taskId.toString());
             if (flatIndex !== -1) {
                 this.parent.ids.splice(flatIndex, 1);
+            }
+            if (deleteRecord.level === 0 && treeGridParentIndex !== -1) {
+                this.parent.treeGrid.parentData.splice(treeGridParentIndex, 1);
             }
             if (deleteRecord.parentItem) {
                 var parentItem = this.parent.getParentTask(deleteRecord.parentItem);
@@ -14287,6 +14490,9 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
         else {
             this.removeAddedRecord();
             this.reUpdatePreviousRecords();
+            if (this.dialogModule.dialog && !this.dialogModule.dialogObj.isDestroyed) {
+                this.dialogModule.dialogObj.hide();
+            }
             this.dialogModule.dialogClose();
         }
         this.parent.isOnEdit = false;
@@ -14316,6 +14522,9 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
         this.addSuccess(args);
         args = this.constructTaskAddedEventArgs(cAddedRecord, args.modifiedRecords, 'add');
         this.parent.trigger('actionComplete', args);
+        if (this.dialogModule.dialog && !this.dialogModule.dialogObj.isDestroyed) {
+            this.dialogModule.dialogObj.hide();
+        }
         this.dialogModule.dialogClose();
     };
     /**
@@ -14460,10 +14669,10 @@ var Filter$2 = /** @__PURE__ @class */ (function () {
      * @param args
      */
     Filter$$1.prototype.columnMenuOpen = function (args) {
-        if (this.filterMenuElement) {
+        if (this.filterMenuElement && this.parent.element.contains(this.filterMenuElement)) {
             remove(this.filterMenuElement);
-            this.filterMenuElement = null;
         }
+        this.filterMenuElement = null;
     };
     Filter$$1.prototype.actionBegin = function (args) {
         // ...
@@ -14473,6 +14682,7 @@ var Filter$2 = /** @__PURE__ @class */ (function () {
             this.filterMenuElement = getValue('filterModel.dlgObj.element', args);
             this.updateFilterMenuPosition(this.filterMenuElement, args);
             // To set default values as 'contains' in filter dialog
+            var taskID = this.parent.taskFields.id;
             var predecessor = this.parent.taskFields.dependency;
             var resource = this.parent.taskFields.resourceInfo;
             var filterObj = this.parent.treeGrid.grid.filterModule;
@@ -14483,6 +14693,13 @@ var Filter$2 = /** @__PURE__ @class */ (function () {
                 var instanceObj = getValue('ej2_instances[0]', element);
                 instanceObj.index = 2;
                 instanceObj.dataBind();
+            }
+            else if (args.columnName === taskID && isNullOrUndefined(getValue(taskID, filterValues))) {
+                var element = this.filterMenuElement.querySelector('.e-numerictextbox');
+                var instanceObj = getValue('ej2_instances[0]', element);
+                if (!isNullOrUndefined(instanceObj) && isNullOrUndefined(this.parent.columnByField[args.columnName].format)) {
+                    instanceObj.format = 'n';
+                }
             }
         }
     };
@@ -15097,6 +15314,10 @@ var Toolbar$3 = /** @__PURE__ @class */ (function () {
             EventHandler.add(this.searchElement, 'focus', this.focusHandler, this);
             EventHandler.add(this.searchElement, 'blur', this.blurHandler, this);
         }
+        if (this.toolbar) {
+            var mouseDown = Browser.touchStartEvent;
+            EventHandler.add(this.toolbar.element, mouseDown, this.mouseDownHandler, this);
+        }
     };
     Toolbar$$1.prototype.unWireEvent = function () {
         if (this.searchElement) {
@@ -15104,11 +15325,24 @@ var Toolbar$3 = /** @__PURE__ @class */ (function () {
             EventHandler.remove(this.searchElement, 'focus', this.focusHandler);
             EventHandler.remove(this.searchElement, 'blur', this.blurHandler);
         }
+        if (this.toolbar) {
+            var mouseDown = Browser.touchStartEvent;
+            EventHandler.remove(this.toolbar.element, mouseDown, this.mouseDownHandler);
+        }
     };
     Toolbar$$1.prototype.keyUpHandler = function (e) {
         if (e.keyCode === 13 && this.parent.searchSettings.key !== this.searchElement.value) {
             this.parent.searchSettings.key = this.searchElement.value;
             this.parent.dataBind();
+        }
+    };
+    Toolbar$$1.prototype.mouseDownHandler = function (e) {
+        if (e.target) {
+            var element = closest(e.target, '.e-toolbar-item');
+            if (!isNullOrUndefined(element) && !isNullOrUndefined(element.querySelector('.e-cancel'))) {
+                this.parent.editModule.cellEditModule.isCellEdit = false;
+                this.parent.treeGrid.closeEdit();
+            }
         }
     };
     Toolbar$$1.prototype.focusHandler = function (e) {
@@ -15173,9 +15407,10 @@ var Toolbar$3 = /** @__PURE__ @class */ (function () {
                 gObj.treeGrid.endEdit();
                 break;
             case gID + '_cancel':
-                gObj.editModule.cellEditModule.isCellEdit = false;
-                gObj.treeGrid.closeEdit();
+                // gObj.editModule.cellEditModule.isCellEdit = false;
+                // gObj.treeGrid.closeEdit();
                 // console.log('Cancel editing');
+                event.stopPropagation();
                 break;
             case gID + '_add':
                 if (gObj.editModule && gObj.editSettings.allowAdding) {

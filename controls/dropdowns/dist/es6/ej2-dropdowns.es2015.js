@@ -296,13 +296,14 @@ let DropDownBase = class DropDownBase extends Component {
         return value;
     }
     l10nUpdate(actionFailure) {
+        let ele = this.getModuleName() === 'listbox' ? this.ulElement : this.list;
         if (this.noRecordsTemplate !== 'No Records Found' || this.actionFailureTemplate !== 'The Request Failed') {
             let template = actionFailure ? this.actionFailureTemplate : this.noRecordsTemplate;
             let compiledString;
-            this.list.innerHTML = '';
+            ele.innerHTML = '';
             compiledString = compile(template);
             for (let item of compiledString({})) {
-                this.list.appendChild(item);
+                ele.appendChild(item);
             }
         }
         else {
@@ -312,9 +313,9 @@ let DropDownBase = class DropDownBase extends Component {
                 this.l10n = componentLocale;
             }
             else {
-                this.l10n = new L10n('dropdowns', l10nLocale, this.locale);
+                this.l10n = new L10n(this.getModuleName() === 'listbox' ? 'listbox' : 'dropdowns', l10nLocale, this.locale);
             }
-            this.list.innerHTML = actionFailure ?
+            ele.innerHTML = actionFailure ?
                 this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');
         }
     }
@@ -911,17 +912,18 @@ let DropDownBase = class DropDownBase extends Component {
             let item = items[i];
             let isHeader = item.isHeader;
             let li = this.createElement('li', { className: isHeader ? dropDownBaseClasses.group : dropDownBaseClasses.li, id: 'option-add-' + i });
+            let itemText = item instanceof Object ? getValue(fields.text, item) : item;
             if (isHeader) {
-                li.innerText = getValue(fields.text, item);
+                li.innerText = itemText;
             }
             if (this.itemTemplate && !isHeader) {
                 let compiledString = compile(this.itemTemplate);
                 append(compiledString(item), li);
             }
             else if (!isHeader) {
-                li.appendChild(document.createTextNode(getValue(fields.text, item)));
+                li.appendChild(document.createTextNode(itemText));
             }
-            li.setAttribute('data-value', getValue(fields.value, item));
+            li.setAttribute('data-value', item instanceof Object ? getValue(fields.value, item) : item);
             li.setAttribute('role', 'option');
             this.notify('addItem', { module: 'CheckBoxSelection', item: li });
             liCollections.push(li);
@@ -1558,7 +1560,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                 this.renderList();
             }
             this.searchKeyEvent = e;
-            if (!this.isRequested && !isNullOrUndefined(this.list.querySelector('li'))) {
+            if (!this.isRequested && !isNullOrUndefined(this.list.querySelector('li')) && this.enabled) {
                 this.incrementalSearch(e);
             }
         }
@@ -2375,7 +2377,7 @@ let DropDownList = class DropDownList extends DropDownBase {
     updateActionCompleteData(li, item) {
         if (this.getModuleName() !== 'autocomplete' && this.actionCompleteData.ulElement) {
             this.actionCompleteData.ulElement.appendChild(li.cloneNode(true));
-            if (this.isFiltering()) {
+            if (this.isFiltering() && this.actionCompleteData.list.indexOf(item) > 0) {
                 this.actionCompleteData.list.push(item);
             }
         }
@@ -2898,6 +2900,11 @@ let DropDownList = class DropDownList extends DropDownBase {
         let dataItem = this.getItemData();
         this.setProperties({ 'value': dataItem.value, 'text': dataItem.text });
     }
+    updateInputFields() {
+        if (this.getModuleName() === 'dropdownlist') {
+            Input.setValue(this.text, this.inputElement, this.floatLabelType, this.showClearButton);
+        }
+    }
     /**
      * Dynamically change the value of properties.
      * @private
@@ -2961,6 +2968,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                                 this.setOldText(oldProp.text);
                             }
                         }
+                        this.updateInputFields();
                     }
                     break;
                 case 'value':
@@ -2986,6 +2994,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                                 this.setOldValue(oldProp.value);
                             }
                         }
+                        this.updateInputFields();
                     }
                     break;
                 case 'index':
@@ -3010,6 +3019,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                                 this.index = oldProp.index;
                             }
                         }
+                        this.updateInputFields();
                     }
                     break;
                 case 'footerTemplate':
@@ -5623,8 +5633,8 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                 this.addListFocus(li);
                 if (this.mode === 'CheckBox') {
                     this.updateDelimView();
-                    this.refreshInputHight();
                     this.updateDelimeter(this.delimiterChar);
+                    this.refreshInputHight();
                 }
                 else {
                     this.updateDelimeter(this.delimiterChar);
@@ -6429,8 +6439,8 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             if (this.mode === 'CheckBox') {
                 this.updateDelimView();
                 this.updateValueState(null, this.value, this.tempValues);
-                this.refreshInputHight();
                 this.updateDelimeter(this.delimiterChar);
+                this.refreshInputHight();
             }
             else {
                 this.updateDelimeter(this.delimiterChar);
@@ -6601,8 +6611,8 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             }
             if (this.mode === 'CheckBox') {
                 this.updateDelimView();
-                this.refreshInputHight();
                 this.updateDelimeter(this.delimiterChar);
+                this.refreshInputHight();
             }
             else {
                 this.updateDelimeter(this.delimiterChar);
@@ -6928,8 +6938,8 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         }
         if (this.mode === 'CheckBox') {
             this.updateDelimView();
-            this.refreshInputHight();
             this.updateDelimeter(this.delimiterChar);
+            this.refreshInputHight();
         }
         else {
             this.updateDelimeter(this.delimiterChar);
@@ -8065,6 +8075,10 @@ let ListBox = class ListBox extends DropDownBase {
     initWrapper() {
         let hiddenSelect = this.createElement('select', { className: 'e-hidden-select', attrs: { 'multiple': '' } });
         this.list.classList.add('e-listbox-wrapper');
+        if (this.itemTemplate) {
+            this.list.classList.add('e-list-template');
+        }
+        this.list.classList.add('e-listbox-wrapper');
         if (this.element.tagName === 'EJS-LISTBOX') {
             this.element.setAttribute('tabindex', '0');
             if (this.initLoad) {
@@ -8078,7 +8092,7 @@ let ListBox = class ListBox extends DropDownBase {
             this.list.insertBefore(this.element, this.list.firstChild);
             this.element.style.display = 'none';
         }
-        this.list.appendChild(hiddenSelect);
+        this.list.insertBefore(hiddenSelect, this.list.firstChild);
         if (this.list.getElementsByClassName(cssClass.li)[0]) {
             this.list.getElementsByClassName(cssClass.li)[0].classList.remove(dropDownBaseClasses.focus);
         }
@@ -8098,6 +8112,7 @@ let ListBox = class ListBox extends DropDownBase {
         if (this.allowDragAndDrop) {
             new Sortable(this.ulElement, {
                 scope: this.scope,
+                itemClass: cssClass.li,
                 dragStart: this.triggerDragStart.bind(this),
                 drag: this.triggerDrag.bind(this),
                 drop: this.dragEnd.bind(this),
@@ -8105,7 +8120,7 @@ let ListBox = class ListBox extends DropDownBase {
                 helper: (e) => {
                     let ele = e.sender.cloneNode(true);
                     ele.style.width = this.getItems()[0].offsetWidth + 'px';
-                    if (this.value.length > 1 && ele.classList.contains('e-selected')) {
+                    if (this.value.length > 1 && this.isSelected(ele)) {
                         ele.appendChild(this.createElement('span', {
                             className: 'e-list-badge', innerHTML: this.value.length + ''
                         }));
@@ -8130,7 +8145,12 @@ let ListBox = class ListBox extends DropDownBase {
             if (!this.element.id) {
                 this.element.id = getUniqueID('e-' + this.getModuleName());
             }
-            document.querySelector(this.scope).setAttribute('data-value', this.element.id);
+            if (this.scope) {
+                document.querySelector(this.scope).setAttribute('data-value', this.element.id);
+            }
+            else {
+                this.updateToolBarState();
+            }
         }
         scope = this.element.getAttribute('data-value');
         if (scope) {
@@ -8142,8 +8162,12 @@ let ListBox = class ListBox extends DropDownBase {
         let btn;
         let ele;
         let title;
+        let l10n = new L10n(this.getModuleName(), {
+            moveUp: 'Move Up', moveDown: 'Move Down', moveTo: 'Move To',
+            moveFrom: 'Move From', moveAllTo: 'Move All To', moveAllFrom: 'Move All From'
+        }, this.locale);
         this.toolbarSettings.items.forEach((value) => {
-            title = (value.charAt(0).toUpperCase() + value.slice(1)).match(/[A-Z][a-z]+/g).join(' ');
+            title = l10n.getConstant(value);
             ele = this.createElement('button', {
                 attrs: {
                     'data-value': value,
@@ -8155,6 +8179,11 @@ let ListBox = class ListBox extends DropDownBase {
             btn = new Button({ iconCss: 'e-icons e-' + value.toLowerCase() }, ele);
             btn.createElement = this.createElement;
         });
+    }
+    validationAttribute(input, hiddenSelect) {
+        super.validationAttribute(input, hiddenSelect);
+        hiddenSelect.required = input.required;
+        input.required = false;
     }
     setHeight() {
         let ele = this.toolbarSettings.items.length ? this.list.parentElement : this.list;
@@ -8200,13 +8229,16 @@ let ListBox = class ListBox extends DropDownBase {
         this.setSelection();
         this.initDraggable();
         if (this.initLoad) {
-            this.initToolbar();
-            this.setCssClass();
-            this.setEnable();
-            this.setHeight();
+            this.initToolbarAndStyles();
             this.wireEvents();
         }
         this.initLoad = false;
+    }
+    initToolbarAndStyles() {
+        this.initToolbar();
+        this.setCssClass();
+        this.setEnable();
+        this.setHeight();
     }
     triggerDragStart(args) {
         if (Browser.isIos) {
@@ -8216,6 +8248,10 @@ let ListBox = class ListBox extends DropDownBase {
     }
     triggerDrag(args) {
         this.trigger('drag', this.getDragArgs(args));
+        let listObj = this.getComponent(args.target);
+        if (listObj && listObj.listData.length === 0) {
+            listObj.ulElement.innerHTML = '';
+        }
     }
     dragEnd(args) {
         let listData;
@@ -8223,7 +8259,6 @@ let ListBox = class ListBox extends DropDownBase {
         let droppedData = this.getDataByValue(dropValue);
         let listObj = this.getComponent(args.droppedElement);
         let dragArgs = extend({}, this.getDragArgs({ target: args.droppedElement }, true), { target: args.target });
-        dropValue = this.getTextByValue(dropValue);
         if (Browser.isIos) {
             this.list.style.overflow = '';
         }
@@ -8273,12 +8308,20 @@ let ListBox = class ListBox extends DropDownBase {
             if (this.selectionSettings.showCheckbox) {
                 listObj.updateSelectedOptions();
             }
+            if (this.listData.length === 0) {
+                this.l10nUpdate();
+            }
         }
         this.trigger('drop', dragArgs);
     }
     getComponent(li) {
-        return getComponent((this.element.tagName === 'EJS-LISTBOX' ? closest(li, '.e-listbox')
-            : closest(li, '.e-listbox-wrapper').querySelector('.e-listbox')), this.getModuleName());
+        let listObj;
+        let ele = (this.element.tagName === 'EJS-LISTBOX' ? closest(li, '.e-listbox')
+            : closest(li, '.e-listbox-wrapper') && closest(li, '.e-listbox-wrapper').querySelector('.e-listbox'));
+        if (ele) {
+            listObj = getComponent(ele, this.getModuleName());
+        }
+        return listObj;
     }
     listOption(dataSource, fields) {
         this.listCurrentOptions = super.listOption(dataSource, fields);
@@ -8327,7 +8370,7 @@ let ListBox = class ListBox extends DropDownBase {
      * @returns void
      */
     selectItems(items, state = true) {
-        this.setSelection(items, state);
+        this.setSelection(items, state, true);
         this.updateSelectedOptions();
     }
     /**
@@ -8375,9 +8418,7 @@ let ListBox = class ListBox extends DropDownBase {
         EventHandler.add(this.list, 'click', this.clickHandler, this);
         EventHandler.add(wrapper, 'keydown', this.keyDownHandler, this);
         EventHandler.add(wrapper, 'focusout', this.focusOutHandler, this);
-        if (this.toolbarSettings.items.length) {
-            EventHandler.add(this.getToolElem(), 'click', this.toolbarClickHandler, this);
-        }
+        this.wireToolbarEvent();
         if (this.selectionSettings.showCheckbox) {
             EventHandler.remove(document, 'mousedown', this.checkBoxSelectionModule.onDocumentClick);
         }
@@ -8386,6 +8427,11 @@ let ListBox = class ListBox extends DropDownBase {
         }
         if (form) {
             EventHandler.add(form, 'reset', this.formResetHandler, this);
+        }
+    }
+    wireToolbarEvent() {
+        if (this.toolbarSettings.items.length) {
+            EventHandler.add(this.getToolElem(), 'click', this.toolbarClickHandler, this);
         }
     }
     unwireEvents() {
@@ -8412,7 +8458,7 @@ let ListBox = class ListBox extends DropDownBase {
         if (li) {
             currSelIdx = [].slice.call(li.parentElement.children).indexOf(li);
             if (!this.selectionSettings.showCheckbox) {
-                if ((e.ctrlKey || Browser.isDevice) && li.classList.contains(cssClass.selected)) {
+                if ((e.ctrlKey || Browser.isDevice) && this.isSelected(li)) {
                     li.classList.remove(cssClass.selected);
                     li.removeAttribute('aria-selected');
                     isSelect = false;
@@ -8446,10 +8492,17 @@ let ListBox = class ListBox extends DropDownBase {
             }
             this.updateSelectedOptions();
             if (isSelect) {
-                this.trigger('select', { element: li, item: this.getDataByValue(li.getAttribute('data-value')) });
+                this.trigger('select', { elements: selectedLi, items: this.getDataByElems(selectedLi) });
             }
             this.trigger('change', { value: this.value });
         }
+    }
+    getDataByElems(elems) {
+        let data = [];
+        elems.forEach((ele) => {
+            data.push(this.getDataByValue(ele.getAttribute('data-value')));
+        });
+        return data;
     }
     toolbarClickHandler(e) {
         let btn = closest(e.target, 'button');
@@ -8477,9 +8530,9 @@ let ListBox = class ListBox extends DropDownBase {
         }
     }
     moveUpDown(isUp, isKey) {
-        let elems = [].slice.call(this.list.getElementsByClassName(cssClass.selected));
-        if ((isUp && this.ulElement.firstElementChild.classList.contains(cssClass.selected))
-            || (!isUp && this.ulElement.lastElementChild.classList.contains(cssClass.selected))) {
+        let elems = this.getSelectedItems();
+        if ((isUp && this.isSelected(this.ulElement.firstElementChild))
+            || (!isUp && this.isSelected(this.ulElement.lastElementChild))) {
             return;
         }
         (isUp ? elems : elems.reverse()).forEach((ele) => {
@@ -8487,8 +8540,9 @@ let ListBox = class ListBox extends DropDownBase {
             moveTo(this.ulElement, this.ulElement, [idx], isUp ? idx - 1 : idx + 2);
             this.changeData(idx, isUp ? idx - 1 : idx + 1);
         });
-        if (isKey) {
-            this.list.focus();
+        elems[0].focus();
+        if (!isKey && this.toolbarSettings.items.length) {
+            this.getToolElem().querySelector('[data-value=' + (isUp ? 'moveUp' : 'moveDown') + ']').focus();
         }
         this.updateToolBarState();
     }
@@ -8511,10 +8565,18 @@ let ListBox = class ListBox extends DropDownBase {
             elems.forEach((ele) => {
                 idx.push(Array.prototype.indexOf.call(fListBox.ulElement.children, ele));
             });
+            if (tListBox.listData.length === 0) {
+                tListBox.ulElement.innerHTML = '';
+            }
             moveTo(fListBox.ulElement, tListBox.ulElement, idx);
             let childCnt = fListBox.ulElement.childElementCount;
+            let ele;
+            let liIdx;
             if (elems.length === 1 && childCnt) {
-                fListBox.ulElement.children[childCnt === idx[0] ? idx[0] - 1 : idx[0]].classList.add(cssClass.selected);
+                liIdx = childCnt === idx[0] ? idx[0] - 1 : idx[0];
+                ele = fListBox.ulElement.children[liIdx];
+                fListBox.ulElement.children[fListBox.getValidIndex(ele, liIdx, childCnt === idx[0]
+                    ? 38 : 40)].classList.add(cssClass.selected);
             }
             if (isKey) {
                 this.list.focus();
@@ -8533,6 +8595,9 @@ let ListBox = class ListBox extends DropDownBase {
             if (this.selectionSettings.showCheckbox) {
                 tListBox.updateSelectedOptions();
             }
+            if (fListBox.listData.length === 0) {
+                fListBox.l10nUpdate();
+            }
         }
     }
     moveAllTo() {
@@ -8545,6 +8610,9 @@ let ListBox = class ListBox extends DropDownBase {
         let listData = [].slice.call(tListBox.listData);
         if (!this.selectionSettings.showCheckbox) {
             removeClass(this.getSelectedItems(), cssClass.selected);
+        }
+        if (tListBox.listData.length === 0) {
+            tListBox.ulElement.innerHTML = '';
         }
         moveTo(fListBox.ulElement, tListBox.ulElement, Array.apply(null, { length: fListBox.ulElement.childElementCount }).map(Number.call, Number));
         if (isKey) {
@@ -8560,6 +8628,9 @@ let ListBox = class ListBox extends DropDownBase {
         fListBox.updateSelectedOptions();
         if (this.selectionSettings.showCheckbox) {
             tListBox.updateSelectedOptions();
+        }
+        if (fListBox.listData.length === 0) {
+            fListBox.l10nUpdate();
         }
     }
     changeData(fromIdx, toIdx) {
@@ -8582,15 +8653,16 @@ let ListBox = class ListBox extends DropDownBase {
     }
     getScopedListBox() {
         let listObj;
-        [].slice.call(document.querySelectorAll(this.scope)).forEach((ele) => {
-            if (getComponent(ele, this.getModuleName())) {
-                listObj = getComponent(ele, this.getModuleName());
-            }
-        });
+        if (this.scope) {
+            [].slice.call(document.querySelectorAll(this.scope)).forEach((ele) => {
+                if (getComponent(ele, this.getModuleName())) {
+                    listObj = getComponent(ele, this.getModuleName());
+                }
+            });
+        }
         return listObj;
     }
     getDragArgs(args, isDragEnd) {
-        let data = [];
         let elems = this.getSelectedItems();
         if (elems.length) {
             elems.pop();
@@ -8601,10 +8673,7 @@ let ListBox = class ListBox extends DropDownBase {
         else {
             elems = [args.target];
         }
-        elems.forEach((ele) => {
-            data.push(this.getDataByValue(ele.getAttribute('data-value')));
-        });
-        return { elements: elems, items: data };
+        return { elements: elems, items: this.getDataByElems(elems) };
     }
     keyDownHandler(e) {
         if ([32, 35, 36, 37, 38, 39, 40, 65].indexOf(e.keyCode) > -1) {
@@ -8639,7 +8708,7 @@ let ListBox = class ListBox extends DropDownBase {
         let ul = this.ulElement;
         let defaultIdx = (e.keyCode === 40 || e.keyCode === 36) ? 0 : ul.childElementCount - 1;
         let fliIdx = defaultIdx;
-        let fli = ul.getElementsByClassName('e-focused')[0] || ul.getElementsByClassName('e-selected')[0];
+        let fli = ul.getElementsByClassName('e-focused')[0] || ul.getElementsByClassName(cssClass.selected)[0];
         if (fli) {
             if (e.keyCode !== 35 && e.keyCode !== 36) {
                 fliIdx = Array.prototype.indexOf.call(ul.children, fli);
@@ -8684,18 +8753,11 @@ let ListBox = class ListBox extends DropDownBase {
     }
     updateSelectedOptions() {
         let selectedOptions = [];
-        if (this.selectionSettings.showCheckbox) {
-            [].slice.call(this.ulElement.getElementsByClassName('e-check')).forEach((ele) => {
-                selectedOptions.push(this.getTextByValue(closest(ele, 'li').getAttribute('data-value')));
-            });
-        }
-        else {
-            [].slice.call(this.list.getElementsByClassName(cssClass.selected)).forEach((ele) => {
-                if (!ele.classList.contains('e-grabbed')) {
-                    selectedOptions.push(this.getTextByValue(ele.getAttribute('data-value')));
-                }
-            });
-        }
+        this.getSelectedItems().forEach((ele) => {
+            if (!ele.classList.contains('e-grabbed')) {
+                selectedOptions.push(ele.getAttribute('data-value'));
+            }
+        });
         this.setProperties({ value: selectedOptions }, true);
         this.updateSelectTag();
         this.updateToolBarState();
@@ -8703,10 +8765,10 @@ let ListBox = class ListBox extends DropDownBase {
             this.tBListBox.updateToolBarState();
         }
     }
-    setSelection(values = this.value, isSelect = true) {
+    setSelection(values = this.value, isSelect = true, isText = false) {
         let li;
         values.forEach((value) => {
-            li = this.list.querySelector('[data-value="' + this.getTextByValue(value) + '"]');
+            li = this.list.querySelector('[data-value="' + (isText ? this.getValueByText(value) : value) + '"]');
             if (li) {
                 if (this.selectionSettings.showCheckbox) {
                     this.notify('updatelist', { li: li });
@@ -8743,12 +8805,11 @@ let ListBox = class ListBox extends DropDownBase {
                         break;
                     case 'moveUp':
                         btn.disabled = this.value.length
-                            && !this.ulElement.children[0].classList.contains(cssClass.selected) ? false : true;
+                            && !this.isSelected(this.ulElement.children[0]) ? false : true;
                         break;
                     case 'moveDown':
                         btn.disabled = this.value.length
-                            && !this.ulElement.children[this.ulElement.childElementCount - 1]
-                                .classList.contains(cssClass.selected) ? false : true;
+                            && !this.isSelected(this.ulElement.children[this.ulElement.childElementCount - 1]) ? false : true;
                         break;
                     default:
                         btn.disabled = this.value.length ? false : true;
@@ -8756,6 +8817,9 @@ let ListBox = class ListBox extends DropDownBase {
                 }
             });
         }
+    }
+    isSelected(ele) {
+        return ele.classList.contains(cssClass.selected) || ele.querySelector('.e-check') !== null;
     }
     getSelectTag() {
         return this.list.getElementsByClassName('e-hidden-select')[0];
@@ -8779,15 +8843,23 @@ let ListBox = class ListBox extends DropDownBase {
     getPersistData() {
         return this.addOnPersist(['value']);
     }
+    getLocaleName() {
+        return 'listbox';
+    }
+    ;
     destroy() {
+        this.unwireEvents();
         if (this.element.tagName === 'EJS-LISTBOX') {
             this.element.innerHTML = '';
         }
         else {
             this.element.style.display = 'inline-block';
+            if (this.toolbarSettings.items.length) {
+                this.list.parentElement.parentElement.insertBefore(this.list, this.list.parentElement);
+                detach(this.list.nextElementSibling);
+            }
             this.list.parentElement.insertBefore(this.element, this.list);
         }
-        this.unwireEvents();
         super.destroy();
     }
     /**
@@ -8819,6 +8891,9 @@ let ListBox = class ListBox extends DropDownBase {
                     break;
                 case 'value':
                     removeClass(this.list.querySelectorAll('.' + cssClass.selected), cssClass.selected);
+                    if (this.selectionSettings.showCheckbox) {
+                        removeClass(this.list.querySelectorAll('.e-frame'), 'e-check');
+                    }
                     this.setSelection();
                     break;
                 case 'height':
@@ -8827,7 +8902,31 @@ let ListBox = class ListBox extends DropDownBase {
                 case 'enabled':
                     this.setEnable();
                     break;
+                case 'allowDragAndDrop':
+                    if (newProp.allowDragAndDrop) {
+                        this.initDraggable();
+                    }
+                    else {
+                        getComponent(this.ulElement, 'sortable').destroy();
+                    }
+                    break;
+                case 'scope':
+                    if (this.allowDragAndDrop) {
+                        getComponent(this.ulElement, 'sortable').scope = newProp.scope;
+                    }
+                    if (this.toolbarSettings.items.length) {
+                        if (oldProp.scope) {
+                            getComponent(document.querySelector(oldProp.scope), this.getModuleName())
+                                .tBListBox = null;
+                        }
+                        if (newProp.scope) {
+                            getComponent(document.querySelector(newProp.scope), this.getModuleName())
+                                .tBListBox = this;
+                        }
+                    }
+                    break;
                 case 'toolbarSettings':
+                    let ele;
                     let pos = newProp.toolbarSettings.position;
                     let toolElem = this.getToolElem();
                     if (pos) {
@@ -8841,8 +8940,13 @@ let ListBox = class ListBox extends DropDownBase {
                         }
                     }
                     if (newProp.toolbarSettings.items) {
-                        toolElem.innerHTML = '';
-                        this.createButtons(toolElem);
+                        if (oldProp.toolbarSettings.items.length) {
+                            ele = this.list.parentElement;
+                            ele.parentElement.insertBefore(this.list, ele);
+                            detach(ele);
+                        }
+                        this.initToolbarAndStyles();
+                        this.wireToolbarEvent();
                     }
                     break;
             }

@@ -322,7 +322,7 @@ describe('Chart Control', () =>{
         it('Checking the zoomFactor and zoomPosition with inversed', () => {
             loaded = (args: object) => {
                 text = document.getElementById('chartContainer0_AxisLabel_0');
-                expect(text.textContent == '3000').toBe(true);
+                expect(text.textContent == '4000').toBe(true);
             };
             chartObj.loaded = loaded;
             chartObj.primaryXAxis = { isInversed: true, minimum: 1000, maximum: 10000, interval: 1000, zoomFactor: 0.5, zoomPosition: 0.3 };

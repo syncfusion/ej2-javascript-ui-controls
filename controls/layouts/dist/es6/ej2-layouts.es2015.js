@@ -3913,7 +3913,7 @@ DashboardLayout = __decorate$1([
 ], DashboardLayout);
 
 /**
- * portlet modules
+ * dashboardlayout modules
  */
 
 /**

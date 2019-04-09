@@ -596,7 +596,7 @@ export function refreshForeignData(row: IRow<Column>, columns: Column[], data: O
  */
 export function getForeignData(column: Column, data?: Object, lValue?: string | number, foreignKeyData?: Object[]): Object[] {
     let fField: string = column.foreignKeyField;
-    let key: string | Date = <string | Date>(lValue || valueAccessor(column.field, data, column));
+    let key: string | Date = <string | Date>(!isNullOrUndefined(lValue) ? lValue : valueAccessor(column.field, data, column));
     key = isNullOrUndefined(key) ? '' : key;
     let query: Query = new Query();
     let fdata: Object[] = foreignKeyData || ((column.dataSource instanceof DataManager) && column.dataSource.dataSource.json.length ?
@@ -633,6 +633,10 @@ export function getDatePredicate(filterObject: PredicateModel, type?: string): P
     let nextDate: Date;
     let prevObj: PredicateModel = baseExtend({}, getActualProperties(filterObject)) as PredicateModel;
     let nextObj: PredicateModel = baseExtend({}, getActualProperties(filterObject)) as PredicateModel;
+    if (filterObject.value ===  null) {
+        datePredicate = new Predicate(prevObj.field, prevObj.operator, prevObj.value, false);
+        return datePredicate;
+    }
     let value: Date = new Date(filterObject.value as string);
     if (filterObject.operator === 'equal' || filterObject.operator === 'notequal') {
         if (type === 'datetime') {

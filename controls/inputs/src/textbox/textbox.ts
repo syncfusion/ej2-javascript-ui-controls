@@ -386,7 +386,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
 
     private setInitialValue() : void {
         if (!this.isAngular) {
-            this.element.setAttribute('value', this.initialValue);
+            this.respectiveElement.setAttribute('value', this.initialValue);
         }
     }
 

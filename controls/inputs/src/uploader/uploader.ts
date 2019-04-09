@@ -1432,9 +1432,6 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     /* istanbul ignore next */
     private dropElement(e: DragEvent): void {
         this.dropZoneElement.classList.remove(DRAG_HOVER);
-        if (this.browserName === 'chrome') {
-            this.element.files = e.dataTransfer.files;
-        }
         this.onSelectFiles(e);
         e.preventDefault();
         e.stopPropagation();

@@ -393,13 +393,14 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         return value as string;
     }
     protected l10nUpdate(actionFailure?: boolean): void {
+        let ele: Element = this.getModuleName() === 'listbox' ? this.ulElement : this.list;
         if (this.noRecordsTemplate !== 'No Records Found' || this.actionFailureTemplate !== 'The Request Failed') {
             let template: string = actionFailure ? this.actionFailureTemplate : this.noRecordsTemplate;
             let compiledString: Function;
-            this.list.innerHTML = '';
+            ele.innerHTML = '';
             compiledString = compile(template);
             for (let item of compiledString({})) {
-                this.list.appendChild(item);
+                ele.appendChild(item);
             }
         } else {
             let l10nLocale: Object = { noRecordsTemplate: 'No Records Found', actionFailureTemplate: 'The Request Failed' };
@@ -407,9 +408,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             if (componentLocale.getConstant('actionFailureTemplate') !== '') {
                 this.l10n = componentLocale;
             } else {
-                this.l10n = new L10n('dropdowns', l10nLocale, this.locale);
+                this.l10n = new L10n(this.getModuleName() === 'listbox' ? 'listbox' : 'dropdowns', l10nLocale, this.locale);
             }
-            this.list.innerHTML = actionFailure ?
+            ele.innerHTML = actionFailure ?
                 this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');
         }
     }
@@ -1033,14 +1034,15 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             let li: HTMLElement = this.createElement(
                 'li', { className: isHeader ? dropDownBaseClasses.group : dropDownBaseClasses.li, id: 'option-add-' + i });
 
-            if (isHeader) { li.innerText = getValue(fields.text, item); }
+            let itemText: string = item instanceof Object ? getValue(fields.text, item) : item;
+            if (isHeader) { li.innerText = itemText; }
             if (this.itemTemplate && !isHeader) {
                 let compiledString: Function = compile(this.itemTemplate);
                 append(compiledString(item), li);
             } else if (!isHeader) {
-                li.appendChild(document.createTextNode(<string>getValue(fields.text, item)));
+                li.appendChild(document.createTextNode(itemText));
             }
-            li.setAttribute('data-value', getValue(fields.value, item));
+            li.setAttribute('data-value', item instanceof Object ? getValue(fields.value, item) : item);
             li.setAttribute('role', 'option');
             this.notify('addItem', { module: 'CheckBoxSelection', item: li });
             liCollections.push(li);

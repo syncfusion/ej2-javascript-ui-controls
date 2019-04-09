@@ -73,7 +73,7 @@ describe('Range navigator', () => {
         it('checking with slider selected area', (done: Function) => {
             range.loaded = (args: Object): void => {
                 element = document.getElementById('container_SelectedArea');
-                expect(+element.getAttribute('width') >= 516 && +element.getAttribute('width') <= 561).toBe(true);
+                expect(+element.getAttribute('width') >= 507.75 && +element.getAttribute('width') <= 561).toBe(true);
                 done();
             };
             range.series = [{ dataSource: data, xName: 'x', yName: 'y', type: 'Line' }];
@@ -314,7 +314,7 @@ describe('Range navigator', () => {
                 range.mouseMove(<PointerEvent>trigger.onTouchStart(element, 590, 89, null, null, 404, 189));
                 let path: string = document.getElementById('container_LeftSlider').getAttribute('transform');
                 expect(path === 'translate(953, 0)' || path === 'translate(398, 0)' || path === 'translate(381, 0)' ||
-                     path === 'translate(381.00000000000006, 0)').toBe(true);
+                     path === 'translate(380.99999999999994, 0)').toBe(true);
                 let axislabel: Element = document.getElementById('container_AxisLabel_1');
                 let axisLabel1: Element = document.getElementById('container_AxisLabel_2');
                 expect(axislabel.getAttribute('x') > axisLabel1.getAttribute('x')).toBe(true);

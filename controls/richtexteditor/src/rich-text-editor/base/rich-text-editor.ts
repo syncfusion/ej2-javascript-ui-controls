@@ -670,6 +670,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         } else {
             if (this.getToolbar()) {
                 removeClass(this.getToolbar().querySelectorAll('.' + classes.CLS_ACTIVE), classes.CLS_ACTIVE);
+                removeClass([this.getToolbar()], [classes.CLS_TB_FLOAT, classes.CLS_TB_ABS_FLOAT]);
             }
             addClass([this.element], classes.CLS_DISABLED);
             this.element.tabIndex = -1;
@@ -766,6 +767,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Selects a content range or an element
+     * @param {Range} range - Specify the range which you want to select within the content.
+     * The method used to select a particular sentence or word or entire document.
      * @public
      */
     public selectRange(range: Range): void {
@@ -786,8 +789,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Executes the commands 
-     * CommandName - Specifies the name of the command to be executed.
-     * value - Specifies the sub command.
+     * @param {CommandName} CommandName - Specifies the name of the command to be executed.
+     * @param {string | HTMLElement} value - Specifies the value that you want to execute.
      * @public
      */
     public executeCommand(commandName: CommandName, value?: string | HTMLElement): void {
@@ -1341,6 +1344,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Enables the give toolbar items in the RichTextEditor component.
+     * @param {string | string[]} items - Specifies the single or collection of items
+     * that you want to be enable in Rich Text Editor’s Toolbar.
      * @public
      */
     public enableToolbarItem(items: string | string[]): void {
@@ -1348,6 +1353,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Disables the given toolbar items in the RichTextEditor component.
+     * @param {string | string[]} items - Specifies the single or collection of items
+     * that you want to be disable in Rich Text Editor’s Toolbar.
      * @public
      */
     public disableToolbarItem(items: string | string[]): void {
@@ -1355,6 +1362,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Removes the give toolbar items from the RichTextEditor component.
+     * @param {string | string[]} items - Specifies the single or collection of items
+     * that you want to be remove from Rich Text Editor’s Toolbar.
      * @public
      */
     public removeToolbarItem(items: string | string[]): void {

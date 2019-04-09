@@ -780,7 +780,7 @@ export class Timeline {
         let minStartDate: Date = filteredStartDateRecord.length > 0 ?
             new Date(DataUtil.aggregates.min(filteredStartDateRecord, 'ganttProperties.startDate')) : null;
         let maxEndDate: Date = filteredEndDateRecord.length > 0 ?
-            new Date(DataUtil.aggregates.max(filteredEndDateRecord, 'ganttProperties.startDate')) : null;
+            new Date(DataUtil.aggregates.max(filteredEndDateRecord, 'ganttProperties.endDate')) : null;
         let validStartDate: Date = new Date(this.parent.dataOperation.checkStartDate(this.timelineStartDate).getTime());
         let validEndDate: Date = new Date(this.parent.dataOperation.checkEndDate(this.timelineEndDate).getTime());
         let maxStartLeft: number = isNullOrUndefined(minStartDate) ?

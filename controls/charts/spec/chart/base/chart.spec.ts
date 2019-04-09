@@ -223,7 +223,7 @@ describe('Chart Control', () => {
             chart.dataBind();
             text = document.getElementById('container_ChartSubTitle');
             expect(text.textContent == 'Chart SubTitle').toBe(true);
-            expect(text.getAttribute('y') == '54.5' || text.getAttribute('y') == '49.25').toBe(true);
+            expect(text.getAttribute('y') == '55.25' || text.getAttribute('y') == '49.25').toBe(true);
        });
 
         it('Checking textoverflow subtitle none', function () {
@@ -232,7 +232,7 @@ describe('Chart Control', () => {
             chart.dataBind();
             text = document.getElementById('container_ChartSubTitle');
             expect(text.textContent == 'SubTitle').toBe(true);
-            expect(text.getAttribute('y') == '54.5' || text.getAttribute('y') == '49.25').toBe(true);
+            expect(text.getAttribute('y') == '55.25' || text.getAttribute('y') == '49.25').toBe(true);
         });
 
         it('Checking textoverflow subtitle trim', function () {
@@ -242,7 +242,7 @@ describe('Chart Control', () => {
             chart.dataBind();
             text = document.getElementById('container_ChartSubTitle');
             expect(text.textContent.indexOf('...') != -1).toBe(true);
-            expect(text.getAttribute('y') == '54.5' || text.getAttribute('y') == '49.25').toBe(true);
+            expect(text.getAttribute('y') == '55.25' || text.getAttribute('y') == '49.25').toBe(true);
         });
 
         it('Checking textoverflow subtitle wrap', function () {
@@ -250,7 +250,7 @@ describe('Chart Control', () => {
             chart.dataBind();
             text = document.getElementById('container_ChartSubTitle');
             expect(text.childNodes.length == 2).toBe(true);
-            expect(text.getAttribute('y') == '54.5' || text.getAttribute('y') == '49.25').toBe(true);
+            expect(text.getAttribute('y') == '55.25' || text.getAttribute('y') == '49.25').toBe(true);
         });
 
         it('Checking textAlignment subtitle center and subtitle is in Title width', function () {
@@ -554,14 +554,14 @@ describe('Chart Control', () => {
         });
         it('checking before the legend name chage', () => {
             element = document.getElementById('seriesData_chart_legend_element');
-            expect(element.getAttribute('x') === '831' || element.getAttribute('x') === '833').toBe(true);
+            expect(element.getAttribute('x') === '832' || element.getAttribute('x') === '833').toBe(true);
             element = document.getElementById('seriesData_chart_legend_text_0');
             expect(element.textContent).toEqual('Gold');
         });
         it('checking with changing name', (done: Function) => {
             loaded = (args: ILoadedEventArgs) => {
                 element = document.getElementById('seriesData_chart_legend_element');
-                expect(element.getAttribute('x') === '744' || element.getAttribute('x') === '752').toBe(true);
+                expect(element.getAttribute('x') === '743' || element.getAttribute('x') === '752').toBe(true);
                 element = document.getElementById('seriesData_chart_legend_text_0');
                 expect(element.textContent).toEqual('Olymbic gold medal');
                 done();

@@ -2,7 +2,7 @@ import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, isU
 import { Collection, Draggable, isNullOrUndefined, DragEventArgs, append } from '@syncfusion/ej2-base';
 import { EmitType, Event, formatUnit, ChildProperty, compile, closest } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, addClass, detach, removeClass, EventHandler } from '@syncfusion/ej2-base';
-import { DashboardLayoutModel, PanelModel } from './dashboardlayout-model';
+import { DashboardLayoutModel, PanelModel } from './dashboard-layout-model';
 
 
 // constant class definitions

@@ -1612,7 +1612,7 @@ export class Series extends SeriesBase {
                 stackingSeies.push(series);
                 for (let j: number = 0, pointsLength: number = series.points.length; j < pointsLength; j++) {
                     lastValue = 0;
-                    value = yValues[j];
+                    value = +yValues[j]; // Fix for chart not rendering while y value is given as string issue
                     if (lastPositive[stackingGroup][series.points[j].xValue] === undefined) {
                         lastPositive[stackingGroup][series.points[j].xValue] = 0;
                     }

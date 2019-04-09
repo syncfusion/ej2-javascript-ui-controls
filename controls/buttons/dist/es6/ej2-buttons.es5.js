@@ -905,8 +905,7 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
     RadioButton.prototype.updateChange = function (state) {
         var input;
         var instance;
-        var name = this.element.getAttribute('name');
-        var radioGrp = document.querySelectorAll('input.e-radio[name="' + name + '"]');
+        var radioGrp = this.getRadioGroup();
         for (var i = 0; i < radioGrp.length; i++) {
             input = radioGrp[i];
             if (input !== this.element) {
@@ -954,6 +953,25 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
     };
     RadioButton.prototype.getModuleName = function () {
         return 'radio';
+    };
+    /**
+     * To get the value of selected radio button in a group.
+     * @method getSelectedValue
+     * @return {string}
+     */
+    RadioButton.prototype.getSelectedValue = function () {
+        var input;
+        var radioGrp = this.getRadioGroup();
+        for (var i = 0, len = radioGrp.length; i < len; i++) {
+            input = radioGrp[i];
+            if (input.checked) {
+                return input.value;
+            }
+        }
+        return '';
+    };
+    RadioButton.prototype.getRadioGroup = function () {
+        return document.querySelectorAll('input.e-radio[name="' + this.element.getAttribute('name') + '"]');
     };
     /**
      * Gets the properties to be maintained in the persistence state.

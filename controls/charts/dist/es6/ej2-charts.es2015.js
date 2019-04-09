@@ -1410,14 +1410,8 @@ class Axis extends ChildProperty {
             let baseRange = this.actualRange;
             let start;
             let end;
-            if (!this.isInversed) {
-                start = this.actualRange.min + this.zoomPosition * this.actualRange.delta;
-                end = start + this.zoomFactor * this.actualRange.delta;
-            }
-            else {
-                start = this.actualRange.max - (this.zoomPosition * this.actualRange.delta);
-                end = start - (this.zoomFactor * this.actualRange.delta);
-            }
+            start = this.actualRange.min + this.zoomPosition * this.actualRange.delta;
+            end = start + this.zoomFactor * this.actualRange.delta;
             if (start < baseRange.min) {
                 end = end + (baseRange.min - start);
                 start = baseRange.min;
@@ -4216,7 +4210,7 @@ class CartesianAxisLayoutPanel {
             intervalLength = rect.width / length;
             width = ((axis.labelIntersectAction === 'Trim' || axis.labelIntersectAction === 'Wrap') && angle === 0
                 && elementSize.width > intervalLength) ? intervalLength : elementSize.width;
-            if (breakLabels.indexOf('<br>') !== -1 && label.breakLabelSize.width < axis.maxLabelSize.width) {
+            if (breakLabels.indexOf('<br>') !== -1 && label.breakLabelSize.width <= axis.maxLabelSize.width) {
                 pointX -= label.breakLabelSize.width / 2;
             }
             else {
@@ -5343,7 +5337,7 @@ class Series extends SeriesBase {
                 stackingSeies.push(series);
                 for (let j = 0, pointsLength = series.points.length; j < pointsLength; j++) {
                     lastValue = 0;
-                    value = yValues[j];
+                    value = +yValues[j]; // Fix for chart not rendering while y value is given as string issue
                     if (lastPositive[stackingGroup][series.points[j].xValue] === undefined) {
                         lastPositive[stackingGroup][series.points[j].xValue] = 0;
                     }
@@ -7561,6 +7555,8 @@ let Chart = class Chart extends Component {
         element.style.webkitUserSelect = 'none';
         element.style.position = 'relative';
         element.style.display = 'block';
+        // To fix angular and react tooltip div scrollbar issue
+        element.style.overflow = 'hidden';
     }
     /**
      * Finds the orientation.
@@ -22978,6 +22974,17 @@ let AccumulationChart = class AccumulationChart extends Component {
         return false;
     }
     /**
+     * Get visible series for accumulation chart by index
+     */
+    changeVisibleSeries(visibleSeries, index) {
+        for (let series of visibleSeries) {
+            if (index === series.index) {
+                return series;
+            }
+        }
+        return null;
+    }
+    /**
      * Get the properties to be maintained in the persisted state.
      * @private
      */
@@ -23032,8 +23039,11 @@ let AccumulationChart = class AccumulationChart extends Component {
                     if (!this.animateselected) {
                         let len = this.series.length;
                         let seriesRefresh = false;
+                        let series;
                         for (let i = 0; i < len; i++) {
+                            series = newProp.series[i];
                             if (newProp.series[i] && (newProp.series[i].dataSource || newProp.series[i].yName || newProp.series[i].xName)) {
+                                extend(this.changeVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }
                             if (newProp.series[i] && newProp.series[i].explodeIndex !== oldProp.series[i].explodeIndex) {
@@ -29174,7 +29184,7 @@ class StockEvents extends BaseTooltip {
                 textSize = measureText(stockEvent.text + 'W', stockEvent.textStyle);
                 if (!argsData.cancel) {
                     stockEventElement = sChart.renderer.createGroup({ id: this.chartId + '_Series_' + series.index + '_StockEvents_' + i });
-                    if (withIn(stockEvent.date.getTime(), series.xAxis.visibleRange)) {
+                    if (withIn(this.dateParse(stockEvent.date).getTime(), series.xAxis.visibleRange)) {
                         symbolLocation = this.findClosePoint(series, stockEvent);
                         if (!stockEvent.showOnSeries) {
                             symbolLocation.y = series.yAxis.rect.y + series.yAxis.rect.height;
@@ -29189,7 +29199,7 @@ class StockEvents extends BaseTooltip {
         return stockEventsElementGroup;
     }
     findClosePoint(series, sEvent) {
-        let closeIndex = this.getClosest(series, sEvent.date.getTime());
+        let closeIndex = this.getClosest(series, this.dateParse(sEvent.date).getTime());
         let pointData;
         let point;
         let xPixel;
@@ -29222,9 +29232,9 @@ class StockEvents extends BaseTooltip {
             case 'Flag':
             case 'Circle':
             case 'Square':
-                stockEventElement.appendChild(drawSymbol(new ChartLocation(lx, ly), 'Circle', new Size(2, 2), '', new PathOption(stockId + '_Circle', 'transparent', border.width, border.color), stockEve.date.toDateString()));
-                stockEventElement.appendChild(drawSymbol(new ChartLocation(lx, ly - 5), 'VerticalLine', new Size(9, 9), '', new PathOption(stockId + '_Path', border.color, border.width, border.color), stockEve.date.toDateString()));
-                stockEventElement.appendChild(drawSymbol(new ChartLocation(stockEve.type !== 'Flag' ? lx : lx + result.width / 2, ly - result.height), stockEve.type, result, '', new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color), stockEve.date.toDateString()));
+                stockEventElement.appendChild(drawSymbol(new ChartLocation(lx, ly), 'Circle', new Size(2, 2), '', new PathOption(stockId + '_Circle', 'transparent', border.width, border.color), this.dateParse(stockEve.date).toISOString()));
+                stockEventElement.appendChild(drawSymbol(new ChartLocation(lx, ly - 5), 'VerticalLine', new Size(9, 9), '', new PathOption(stockId + '_Path', border.color, border.width, border.color), this.dateParse(stockEve.date).toISOString()));
+                stockEventElement.appendChild(drawSymbol(new ChartLocation(stockEve.type !== 'Flag' ? lx : lx + result.width / 2, ly - result.height), stockEve.type, result, '', new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color), this.dateParse(stockEve.date).toISOString()));
                 textElement(new TextOption(stockId + '_Text', stockEve.type !== 'Flag' ? symbolLocation.x : symbolLocation.x + result.width / 2, (symbolLocation.y - result.height), 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
                 break;
             case 'ArrowUp':
@@ -29239,7 +29249,7 @@ class StockEvents extends BaseTooltip {
             case 'InvertedTriangle':
                 result.height = 3 * textSize.height;
                 result.width = textSize.width + (1.5 * textSize.width);
-                stockEventElement.appendChild(drawSymbol(new ChartLocation(symbolLocation.x, symbolLocation.y), stockEve.type, new Size(20, 20), '', new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color), stockEve.date.toDateString()));
+                stockEventElement.appendChild(drawSymbol(new ChartLocation(symbolLocation.x, symbolLocation.y), stockEve.type, new Size(20, 20), '', new PathOption(stockId + '_Shape', stockEve.background, border.width, border.color), this.dateParse(stockEve.date).toISOString()));
                 textElement(new TextOption(stockId + '_Text', symbolLocation.x, symbolLocation.y, 'middle', stockEve.text, '', 'middle'), stockEve.textStyle, stockEve.textStyle.color, stockEventElement);
                 break;
             case 'Text':
@@ -29354,6 +29364,16 @@ class StockEvents extends BaseTooltip {
         if (getElement(elementId)) {
             getElement(elementId).setAttribute('opacity', opacity.toString());
         }
+    }
+    /**
+     * @param value
+     * To convert the c# or javascript date formats into js format
+     * refer chart control's dateTime processing.
+     */
+    dateParse(value) {
+        let dateParser = this.chart.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
+        let dateFormatter = this.chart.intl.getDateFormat({ skeleton: 'full', type: 'dateTime' });
+        return new Date((Date.parse(dateParser(dateFormatter(new Date(DataUtil.parse.parseJson({ val: value }).val))))));
     }
 }
 function initialArray(numrows, numcols, initial) {

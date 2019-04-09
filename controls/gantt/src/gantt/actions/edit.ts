@@ -720,14 +720,19 @@ export class Edit {
         this.parent.hideSpinner();
         this.parent.initiateEditAction(false);
     }
-
-    private endEditAction(args: ITaskbarEditedEventArgs): void {
+    /**
+     * @private
+     */
+    public endEditAction(args: ITaskbarEditedEventArgs): void {
         this.resetEditProperties();
         if (args.action === 'TaskbarEditing') {
             this.parent.trigger('taskbarEdited', args);
         } else if (args.action === 'CellEditing') {
             this.parent.trigger('endEdit', args);
         } else if (args.action === 'DialogEditing') {
+            if (this.dialogModule.dialog && !this.dialogModule.dialogObj.isDestroyed) {
+                this.dialogModule.dialogObj.hide();
+            }
             this.dialogModule.dialogClose();
         }
     }
@@ -888,7 +893,7 @@ export class Edit {
             this.initiateDeleteAction(delereArgs);
             this.parent.isOnDelete = false;
         }
-        if (this.parent.toolbarModule) {
+        if (!isNullOrUndefined(this.parent.toolbarModule)) {
             this.parent.toolbarModule.refreshToolbarItems();
         }
     }
@@ -1029,11 +1034,15 @@ export class Edit {
             let deleteRecord: IGanttData = deletedRecords[i];
             let currentIndex: number = currentData.indexOf(deleteRecord);
             let flatIndex: number = flatData.indexOf(deleteRecord);
+            let treeGridParentIndex: number = this.parent.treeGrid.parentData.indexOf(deleteRecord);
             let childIndex: number;
             if (currentIndex !== -1) { currentData.splice(currentIndex, 1); }
             if (flatIndex !== -1) { flatData.splice(flatIndex, 1); }
             deleteRecordIDs.push(deleteRecord.ganttProperties.taskId.toString());
             if (flatIndex !== -1) { this.parent.ids.splice(flatIndex, 1); }
+            if (deleteRecord.level === 0 && treeGridParentIndex !== -1) {
+                this.parent.treeGrid.parentData.splice(treeGridParentIndex, 1);
+            }
             if (deleteRecord.parentItem) {
                 let parentItem: IGanttData = this.parent.getParentTask(deleteRecord.parentItem);
                 if (parentItem) {
@@ -1551,6 +1560,9 @@ export class Edit {
         } else {
             this.removeAddedRecord();
             this.reUpdatePreviousRecords();
+            if (this.dialogModule.dialog && !this.dialogModule.dialogObj.isDestroyed) {
+                this.dialogModule.dialogObj.hide();
+            }
             this.dialogModule.dialogClose();
         }
         this.parent.isOnEdit = false;
@@ -1580,6 +1592,9 @@ export class Edit {
         this.addSuccess(args);
         args = this.constructTaskAddedEventArgs(cAddedRecord, args.modifiedRecords, 'add');
         this.parent.trigger('actionComplete', args);
+        if (this.dialogModule.dialog && !this.dialogModule.dialogObj.isDestroyed) {
+            this.dialogModule.dialogObj.hide();
+        }
         this.dialogModule.dialogClose();
     }
 

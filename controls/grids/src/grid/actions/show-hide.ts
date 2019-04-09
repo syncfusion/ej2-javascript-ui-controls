@@ -73,7 +73,7 @@ export class ShowHide {
             keys, (key: string, index: number) => {
 
                 return iterateArrayOrObject<Column, Column>(
-                    <Column[]>this.parent.getColumns(), (item: Column, index: number) => {
+                    (<{columnModel?: Column[]}>this.parent).columnModel, (item: Column, index: number) => {
                         if (item[getKeyBy] === key) {
                             return item;
                         }
@@ -103,11 +103,20 @@ export class ShowHide {
                 });
             return;
         }
-        columns = isNullOrUndefined(columns) ? <Column[]>this.parent.getColumns() : columns;
+        let currentViewCols: Column[] = this.parent.getColumns();
+        columns = isNullOrUndefined(columns) ? currentViewCols : columns;
         if (this.parent.allowSelection && this.parent.getSelectedRecords().length) {
             this.parent.clearSelection();
         }
-        this.parent.notify(events.columnVisibilityChanged, columns);
+        if (this.parent.enableColumnVirtualization) {
+            let colsInCurrentView: Column[] =
+            columns.filter((col1: Column) => (currentViewCols.some((col2: Column) => col1.field === col2.field)));
+            if (colsInCurrentView.length) {
+                this.parent.notify(events.columnVisibilityChanged, columns);
+            }
+        } else {
+            this.parent.notify(events.columnVisibilityChanged, columns);
+        }
         if (this.parent.columnQueryMode !== 'All') {
             this.parent.refresh();
         }

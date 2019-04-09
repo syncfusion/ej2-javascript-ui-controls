@@ -8,6 +8,7 @@ import { Gantt } from '../base/gantt';
 import { FilterSettingsModel } from '../models/models';
 import { getValue, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
+import { NumericTextBox } from '@syncfusion/ej2-inputs';
 
 export class Filter {
     public parent: Gantt;
@@ -39,10 +40,10 @@ export class Filter {
      * @param args 
      */
     private columnMenuOpen(args: ColumnMenuOpenEventArgs): void {
-        if (this.filterMenuElement) {
+        if (this.filterMenuElement && this.parent.element.contains(this.filterMenuElement)) {
             remove(this.filterMenuElement);
-            this.filterMenuElement = null;
         }
+        this.filterMenuElement = null;
     }
     private actionBegin(args: FilterEventArgs): void {
         // ...
@@ -52,6 +53,7 @@ export class Filter {
             this.filterMenuElement = getValue('filterModel.dlgObj.element', args);
             this.updateFilterMenuPosition(this.filterMenuElement, args);
             // To set default values as 'contains' in filter dialog
+            let taskID: string = this.parent.taskFields.id;
             let predecessor: string = this.parent.taskFields.dependency;
             let resource: string = this.parent.taskFields.resourceInfo;
             let filterObj: object = this.parent.treeGrid.grid.filterModule;
@@ -62,6 +64,12 @@ export class Filter {
                 let instanceObj: DropDownList = getValue('ej2_instances[0]', element);
                 instanceObj.index = 2;
                 instanceObj.dataBind();
+            } else if (args.columnName === taskID && isNullOrUndefined(getValue(taskID, filterValues))) {
+                let element: HTMLElement = this.filterMenuElement.querySelector('.e-numerictextbox');
+                let instanceObj: NumericTextBox = getValue('ej2_instances[0]', element);
+                if (!isNullOrUndefined(instanceObj) && isNullOrUndefined(this.parent.columnByField[args.columnName].format)) {
+                    instanceObj.format = 'n';
+                }
             }
         }
     }

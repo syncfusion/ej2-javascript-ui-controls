@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.40 (2019-04-09)
+
+### RadioButton
+
+#### New Features
+
+- Provided `getSelectedValue` method to find the value of selected radio button in a group.
+
 ## 17.1.1-beta (2019-01-29)
 
 ### Chips

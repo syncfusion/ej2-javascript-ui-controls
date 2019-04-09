@@ -3,7 +3,7 @@
  */
 import { Gantt } from '../base/gantt';
 import { Toolbar as NavToolbar, ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
-import { createElement, extend, isNullOrUndefined, remove, getValue, EventHandler } from '@syncfusion/ej2-base';
+import { createElement, extend, isNullOrUndefined, remove, getValue, EventHandler, Browser, closest } from '@syncfusion/ej2-base';
 import * as cls from '../base/css-constants';
 import * as events from '../base/constant';
 import { ToolbarItem } from '../base/enum';
@@ -82,6 +82,10 @@ export class Toolbar {
             EventHandler.add(this.searchElement, 'focus', this.focusHandler, this);
             EventHandler.add(this.searchElement, 'blur', this.blurHandler, this);
         }
+        if (this.toolbar) {
+            let mouseDown: string = Browser.touchStartEvent;
+            EventHandler.add(this.toolbar.element, mouseDown, this.mouseDownHandler, this);
+        }
     }
     private unWireEvent(): void {
         if (this.searchElement) {
@@ -89,11 +93,24 @@ export class Toolbar {
             EventHandler.remove(this.searchElement, 'focus', this.focusHandler);
             EventHandler.remove(this.searchElement, 'blur', this.blurHandler);
         }
+        if (this.toolbar) {
+            let mouseDown: string = Browser.touchStartEvent;
+            EventHandler.remove(this.toolbar.element, mouseDown, this.mouseDownHandler);
+        }
     }
     private keyUpHandler(e: { keyCode: number }): void {
         if (e.keyCode === 13 && this.parent.searchSettings.key !== this.searchElement.value) {
             this.parent.searchSettings.key = this.searchElement.value;
             this.parent.dataBind();
+        }
+    }
+    private mouseDownHandler(e: PointerEvent): void {
+        if (e.target) {
+            let element: Element = closest(e.target as HTMLElement, '.e-toolbar-item');
+            if (!isNullOrUndefined(element) && !isNullOrUndefined(element.querySelector('.e-cancel'))) {
+                this.parent.editModule.cellEditModule.isCellEdit = false;
+                this.parent.treeGrid.closeEdit();
+            }
         }
     }
     private focusHandler(e: FocusEvent): void {
@@ -159,9 +176,10 @@ export class Toolbar {
                 gObj.treeGrid.endEdit();
                 break;
             case gID + '_cancel':
-                gObj.editModule.cellEditModule.isCellEdit = false;
-                gObj.treeGrid.closeEdit();
+                // gObj.editModule.cellEditModule.isCellEdit = false;
+                // gObj.treeGrid.closeEdit();
                 // console.log('Cancel editing');
+                event.stopPropagation();
                 break;
             case gID + '_add':
                 if (gObj.editModule && gObj.editSettings.allowAdding) {

@@ -775,7 +775,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.renderList();
             }
             this.searchKeyEvent = e;
-            if (!this.isRequested && !isNullOrUndefined(this.list.querySelector('li'))) {
+            if (!this.isRequested && !isNullOrUndefined(this.list.querySelector('li')) && this.enabled) {
                 this.incrementalSearch(e);
             }
         }
@@ -1592,7 +1592,7 @@ export class DropDownList extends DropDownBase implements IInput {
     protected updateActionCompleteData(li: HTMLElement, item: { [key: string]: Object }): void {
         if (this.getModuleName() !== 'autocomplete' && this.actionCompleteData.ulElement) {
             this.actionCompleteData.ulElement.appendChild(li.cloneNode(true));
-            if (this.isFiltering()) {
+            if (this.isFiltering() && this.actionCompleteData.list.indexOf(item) > 0) {
                 this.actionCompleteData.list.push(item);
             }
         }
@@ -2121,6 +2121,11 @@ export class DropDownList extends DropDownBase implements IInput {
         let dataItem: { [key: string]: string } = this.getItemData();
         this.setProperties({ 'value': dataItem.value, 'text': dataItem.text });
     }
+    private updateInputFields(): void {
+        if (this.getModuleName() === 'dropdownlist') {
+            Input.setValue(this.text, this.inputElement, this.floatLabelType, this.showClearButton);
+        }
+    }
     /**
      * Dynamically change the value of properties.
      * @private
@@ -2141,9 +2146,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 case 'placeholder': Input.setPlaceholder(newProp.placeholder, this.inputElement as HTMLInputElement);
                     break;
                 case 'filterBarPlaceholder':
-                    if (this.filterInput) {
-                        Input.setPlaceholder(newProp.filterBarPlaceholder, this.filterInput as HTMLInputElement);
-                    }
+                    if (this.filterInput) { Input.setPlaceholder(newProp.filterBarPlaceholder, this.filterInput as HTMLInputElement); }
                     break;
                 case 'readonly':
                     if (this.getModuleName() !== 'dropdownlist') {
@@ -2166,6 +2169,7 @@ export class DropDownList extends DropDownBase implements IInput {
                                 this.setSelectionData(newProp.text, oldProp.text, 'text');
                             } else { this.setOldText(oldProp.text); }
                         }
+                        this.updateInputFields();
                     }
                     break;
                 case 'value': if (newProp.value === null) { this.clear(); break; }
@@ -2182,6 +2186,7 @@ export class DropDownList extends DropDownBase implements IInput {
                                 this.setSelectionData(newProp.value, oldProp.value, 'value');
                             } else { this.setOldValue(oldProp.value); }
                         }
+                        this.updateInputFields();
                     }
                     break;
                 case 'index': if (newProp.index === null) { this.clear(); break; }
@@ -2197,6 +2202,7 @@ export class DropDownList extends DropDownBase implements IInput {
                                 this.setSelectionData(newProp.index, oldProp.index, 'index');
                             } else { this.index = oldProp.index; }
                         }
+                        this.updateInputFields();
                     }
                     break;
                 case 'footerTemplate': if (this.popupObj) { this.setFooterTemplate(this.popupObj.element); }

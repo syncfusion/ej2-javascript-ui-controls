@@ -1328,6 +1328,17 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
         return false;
     }
     /**
+     * Get visible series for accumulation chart by index
+     */
+    private changeVisibleSeries(visibleSeries: AccumulationSeries[], index: number): AccumulationSeries {
+        for (let series of visibleSeries) {
+            if (index === series.index) {
+                return series;
+            }
+        }
+        return null;
+    }
+    /**
      * Get the properties to be maintained in the persisted state.
      * @private
      */
@@ -1379,8 +1390,11 @@ export class AccumulationChart extends Component<HTMLElement> implements INotify
                     if (!this.animateselected) {
                         let len: number = this.series.length;
                         let seriesRefresh: boolean = false;
+                        let series: AccumulationSeriesModel;
                         for (let i: number = 0; i < len; i++) {
+                            series = newProp.series[i];
                             if (newProp.series[i] && (newProp.series[i].dataSource || newProp.series[i].yName || newProp.series[i].xName)) {
+                                extend(this.changeVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }
                             if (newProp.series[i] && newProp.series[i].explodeIndex !== oldProp.series[i].explodeIndex) {

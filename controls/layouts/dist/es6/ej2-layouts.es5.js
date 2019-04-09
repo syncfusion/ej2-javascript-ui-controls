@@ -3984,7 +3984,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
 }(Component));
 
 /**
- * portlet modules
+ * dashboardlayout modules
  */
 
 /**

@@ -175,6 +175,9 @@ export class GanttTreeGrid {
         if (getValue('requestType', args) === 'searching') {
             this.parent.notify('actionComplete', args);
         }
+        if (!isNullOrUndefined(getValue('batchChanges', args)) && !isNullOrUndefined(this.parent.toolbarModule)) {
+            this.parent.toolbarModule.refreshToolbarItems();
+        }
         this.parent.trigger('actionComplete', updatedArgs);
     }
 

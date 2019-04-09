@@ -1538,7 +1538,7 @@
   .e-float-input.e-control-wrapper textarea:valid ~ label.e-float-text.e-label-top,
   .e-float-input.e-control-wrapper textarea ~ label.e-float-text.e-label-top {
     @if ($input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4') {
-      font-weight: bold;
+      font-weight: $input-float-font-weight;
     }
     user-select: text;
   }
@@ -4123,7 +4123,7 @@
       transform: translate3d(-10px, -43px, 0) scale(1);
     }
     @else if $input-skin-name == 'bootstrap' {
-      font-weight: bold;
+      font-weight: $input-float-font-weight;
       padding-right: 0;
       transform: translate3d(-10px, -39px, 0) scale(1);
     }
@@ -4148,7 +4148,7 @@
       transform: translate3d(-10px, -43px, 0) scale(1);
     }
     @else if $input-skin-name == 'bootstrap' {
-      font-weight: bold;
+      font-weight: $input-float-font-weight;
       padding-right: 0;
       top: 17px;
       transform: translate3d(-10px, -39px, 0) scale(1);
@@ -4179,7 +4179,7 @@
     }
 
     @else if $input-skin-name == 'bootstrap' {
-      font-weight: bold;
+      font-weight: $input-float-font-weight;
       padding-right: 0;
       top: 16px;
       transform: translate3d(-10px, -39px, 0) scale(1);
@@ -4205,7 +4205,7 @@
       transform: translate3d(-10px, -43px, 0) scale(1);
     }
     @else if $input-skin-name == 'bootstrap' {
-      font-weight: bold;
+      font-weight: $input-float-font-weight;
       padding-right: 0;
       top: 14px;
       transform: translate3d(-10px, -39px, 0) scale(1);

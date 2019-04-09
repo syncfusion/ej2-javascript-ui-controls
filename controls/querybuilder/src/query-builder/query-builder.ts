@@ -798,7 +798,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             rbValue = parseInt(element.id.split('valuekey')[1], 0);
             dropDownObj =
             getComponent(closest(element, '.e-rule-container').querySelector('.e-filter-input') as HTMLElement, 'dropdownlist');
-            value = this.columns[dropDownObj.index].values[rbValue];
+            if (this.columns[dropDownObj.index].values) {
+                value = this.columns[dropDownObj.index].values[rbValue];
+            } else {
+                let valColl: string [] = ['True', 'False'];
+                value = valColl[rbValue];
+            }
         } else if (element.className.indexOf('e-multiselect') > -1) {
             value = (getComponent(element as HTMLElement, 'multiselect') as MultiSelect).value as string[];
         } else {
@@ -1357,6 +1362,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             if (!element) {
                 element = ruleElement.nextElementSibling.nextElementSibling.querySelector('div.e-control') as HTMLElement;
             }
+            if (!element) {
+                element = ruleElement.nextElementSibling.nextElementSibling.querySelector('.e-template');
+            }
             eventsArgs = { groupID: groupID, ruleID: ruleID, value: rule.rules[index].field , type: 'field' };
             this.updateValues(element, rule.rules[index]);
             this.triggerEvents(eventsArgs);
@@ -1717,6 +1725,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     break;
                 case 'rule':
                     this.rule = newProp.rule;
+                    newProp.rule = this.getRuleCollection(this.rule, false);
                     break;
                 case 'width':
                     this.width = newProp.width;

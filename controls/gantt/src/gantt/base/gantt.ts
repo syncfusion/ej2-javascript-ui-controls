@@ -28,8 +28,8 @@ import { Query, DataManager } from '@syncfusion/ej2-data';
 import { Column, ColumnModel } from '../models/column';
 import { TreeGrid, FilterSettingsModel as TreeGridFilterSettingModel } from '@syncfusion/ej2-treegrid';
 import { Sort } from '../actions/sort';
-import { CellSelectEventArgs, CellSelectingEventArgs } from '@syncfusion/ej2-grids';
-import { RowSelectingEventArgs, RowSelectEventArgs, RowDeselectEventArgs, CellDeselectEventArgs } from '@syncfusion/ej2-grids';
+import { CellSelectEventArgs, CellSelectingEventArgs, CellEditArgs } from '@syncfusion/ej2-grids';
+import { RowSelectingEventArgs, RowSelectEventArgs, RowDeselectEventArgs, CellDeselectEventArgs, IIndex } from '@syncfusion/ej2-grids';
 import { RowDataBoundEventArgs, HeaderCellInfoEventArgs, ColumnMenuClickEventArgs, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';
 import { QueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { Filter } from '../actions/filter';
@@ -208,6 +208,7 @@ export class Gantt extends Component<HTMLElement>
     public keyboardModule: KeyboardEvents;
     /** @hidden */
     public staticSelectedRowIndex: number = -1;
+    protected needsID: boolean = true;
     /**
      * Enables or disables the key board interaction of Gantt.
      * @hidden
@@ -668,6 +669,20 @@ export class Gantt extends Component<HTMLElement>
      */
     @Event()
     public taskbarEdited: EmitType<ITaskbarEditedEventArgs>;
+
+    /** 
+     * This will be triggered when a task get saved by cell edit.
+     * @event 
+     */
+    @Event()
+    public endEdit: EmitType<ITaskbarEditedEventArgs>;
+
+    /** 
+     * This will be triggered a cell get begins to edit.
+     * @event 
+     */
+    @Event()
+    public cellEdit: EmitType<CellEditArgs>;
 
     /** 
      * Triggered before the Gantt control gets rendered.
@@ -1910,6 +1925,21 @@ export class Gantt extends Component<HTMLElement>
             }
         }
     }
+    private closeGanttActions(): void {
+        if (this.editModule) {
+            if (this.editModule.cellEditModule && this.editModule.cellEditModule.isCellEdit) {
+                this.treeGrid.closeEdit();
+                this.editModule.cellEditModule.isCellEdit = false;
+                if (!isNullOrUndefined(this.toolbarModule)) {
+                    this.toolbarModule.refreshToolbarItems();
+                }
+            } else if (this.editModule.dialogModule && this.editModule.dialogModule.dialogObj &&
+                this.editModule.dialogModule.dialogObj.visible) {
+                this.editModule.dialogModule.dialogObj.hide();
+                this.editModule.dialogModule.dialogClose();
+            }
+        }
+    }
     /**
      * Method to get task by uniqueId value
      * @param id 
@@ -1936,12 +1966,12 @@ export class Gantt extends Component<HTMLElement>
     }
     /**
      * Method to set splitter position
-     * @param value 
-     * @param valueType 
+     * @param {string|number} value - value of the property.
+     * @param {string} type - property of SplitterSettings.
      */
-    public setSplitterPosition(value: string | number, valueType: string): void {
+    public setSplitterPosition(value: string | number, type: string): void {
         let tempSplitterSettings: Object = {};
-        tempSplitterSettings[valueType] = value;
+        tempSplitterSettings[type] = value;
         let splitterPosition: string = this.splitterModule.calculateSplitterPosition(
             tempSplitterSettings, true);
         let pane1: HTMLElement = this.splitterModule.splitterObject.element.querySelectorAll('.e-pane')[0] as HTMLElement;
@@ -2004,7 +2034,8 @@ export class Gantt extends Component<HTMLElement>
     }
 
     /**
-     * Add record public method.
+     * Method to update record by ID.
+     * @param  {object} data - Defines the data to modify.
      * @return {void}
      * @public
      */
@@ -2015,32 +2046,60 @@ export class Gantt extends Component<HTMLElement>
     }
 
     /**
-     * To add dependency for Task
+     * Method to update record by Index.
+     * @param  {number} index - Defines the index of data to modify.
+     * @param  {object} data - Defines the data to modify.
      * @return {void}
      * @public
      */
-    public addPredecessor(ganttRecord: IGanttData, predecessorString: string): void {
-        if (this.editModule) {
+    public updateRecordByIndex(index: number, data: Object): void {
+        if (this.editModule && this.editSettings.allowEditing) {
+            let record: IGanttData;
+            let tasks: TaskFieldsModel = this.taskFields;
+            record = this.currentViewData.length > 0 ?
+                !isNullOrUndefined(this.currentViewData[index]) ? this.currentViewData[index] : null : null;
+            if (!isNullOrUndefined(record)) {
+                data[tasks.id] = record[tasks.id];
+                this.editModule.updateRecordByID(data);
+            }
+        }
+    }
+
+    /**
+     * To add dependency for Task
+     * @param  {String|number} id - Defines the ID of data to modify.
+     * @param  {string} predecessorString - Defines the predecessor string to add.
+     * @return {void}
+     * @public
+     */
+    public addPredecessor(id: String | number, predecessorString: string): void {
+        let ganttRecord: IGanttData = this.getRecordByID(id.toString());
+        if (this.editModule && !isNullOrUndefined(ganttRecord)) {
             this.connectorLineEditModule.addPredecessor(ganttRecord, predecessorString);
         }
     }
     /**
      * To remove dependency from task
+     * @param  {String|number} id - Defines the ID of data to modify.
      * @return {void}
      * @public
      */
-    public removePredecessor(ganttRecord: IGanttData): void {
-        if (this.editModule) {
+    public removePredecessor(id: String | number): void {
+        let ganttRecord: IGanttData = this.getRecordByID(id.toString());
+        if (this.editModule && !isNullOrUndefined(ganttRecord)) {
             this.connectorLineEditModule.removePredecessor(ganttRecord);
         }
     }
     /**
      * To modify current dependency values of Task
+     * @param  {String|number} id - Defines the ID of data to modify.
+     * @param  {string} predecessorString - Defines the predecessor string to update.
      * @return {void}
      * @public
      */
-    public updatePredecessor(ganttRecord: IGanttData, predecessorString: string): void {
-        if (this.editModule) {
+    public updatePredecessor(id: String | number, predecessorString: string): void {
+        let ganttRecord: IGanttData = this.getRecordByID(id.toString());
+        if (this.editModule && !isNullOrUndefined(ganttRecord)) {
             this.connectorLineEditModule.updatePredecessor(ganttRecord, predecessorString);
         }
     }
@@ -2192,5 +2251,94 @@ export class Gantt extends Component<HTMLElement>
         let top: number = box.top + scrollTop - clientTop;
         let left: number = box.left + scrollLeft - clientLeft;
         return { top: Math.round(top), left: Math.round(left) };
+    }
+
+    /**
+     * Public method to expand all the rows of Gantt
+     * @return {void}
+     * @public
+     */
+    public expandAll(): void {
+        this.ganttChartModule.expandCollapseAll('expand');
+    }
+
+    /**
+     * Public method to collapse all the rows of Gantt
+     * @return {void}
+     * @public
+     */
+    public collapseAll(): void {
+        this.ganttChartModule.expandCollapseAll('collapse');
+    }
+
+    /**
+     * Gets the columns from the TreeGrid.
+     * @return {Column[]}
+     * @public
+     */
+    public getGridColumns(): Column[] {
+        return this.treeGrid.getColumns();
+    }
+
+    /**
+     * Gets the Gantt columns.
+     * @return {ColumnModel[]}
+     * @public
+     */
+    public getGanttColumns(): ColumnModel[] {
+        return this.ganttColumns;
+    }
+
+    /**
+     * Shows a column by its column name.
+     * @param  {string|string[]} keys - Defines a single or collection of column names.
+     * @param  {string} showBy - Defines the column key either as field name or header text.
+     * @return {void}
+     * @public
+     */
+    public ShowColumn(keys: string | string[], showBy?: string): void {
+        this.treeGrid.showColumns(keys, showBy);
+    }
+
+    /**
+     * Hides a column by column name.
+     * @param  {string|string[]} keys - Defines a single or collection of column names.
+     * @param  {string} hideBy - Defines the column key either as field name or header text.
+     * @return {void}
+     * @public
+     */
+    public hideColumn(keys: string | string[], hideBy?: string): void {
+        this.treeGrid.hideColumns(keys, hideBy);
+    }
+
+    /**
+     * To set scroll top for chart scroll container
+     * @param scrollTop - To set scroll top for scroll container
+     * @return {void}
+     * @public
+     */
+    public setScrollTop(scrollTop: number): void {
+        this.ganttChartModule.scrollObject.setScrollTop(scrollTop);
+    }
+
+    /**
+     * Cancels edited state.
+     * @return {void}
+     * @public
+     */
+    public cancelEdit(scrollTop: number): void {
+        this.closeGanttActions();
+    }
+
+    /**
+     * Selects a cell by the given index.
+     * @param  {IIndex} cellIndex - Defines the row and column indexes. 
+     * @param  {boolean} isToggle - If set to true, then it toggles the selection.
+     * @return {void}
+     */
+    public selectCells(cellIndex: IIndex, isToggle?: boolean): void {
+        if (this.selectionModule) {
+            this.selectionModule.selectCell(cellIndex, isToggle);
+        }
     }
 }

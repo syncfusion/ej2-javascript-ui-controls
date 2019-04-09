@@ -1,4 +1,4 @@
-import { createElement, isVisible, select, selectAll } from '@syncfusion/ej2-base';
+import { createElement, isVisible, select, selectAll, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { EventHandler } from '@syncfusion/ej2-base';
 import { FormValidatorModel } from '../../src/form-validator/form-validator-model';
 import { Event, L10n, setCulture } from '@syncfusion/ej2-base';
@@ -2657,6 +2657,55 @@ describe('Html5 rules data-validation and script side validation combination# ',
             expect((formObj as any).errorRules[1].message).toEqual("this is required field");
             expect((formObj as any).errorRules[2].message).toEqual("Enter your mail address");
         });
+    });
+
+    afterAll(function () {
+        formObj.destroy();
+    });
+});
+
+describe('Multiple forms with same name fields', () => {
+    beforeAll(() => {
+        let mail1: string = "<div>" + createElement("input", { attrs: { id: "Email", type: "text", name: "Email" } }).outerHTML + "</div>";
+        let htmlelement1: HTMLFormElement = <HTMLFormElement>createElement('form', { id: 'formId1', innerHTML: mail1 });
+        let options = {
+            rules: {
+                'Email': { email: [true, 'Enter valid email address'] }
+            }
+        };
+        formObj = new FormValidator(htmlelement1
+            , options);
+
+        let mail2: string = "<div>" + createElement("input", { attrs: { id: "Email", type: "text", name: "Email" } }).outerHTML + "</div>";
+        let htmlelement2: HTMLFormElement = <HTMLFormElement>createElement('form', { id: 'formId2', innerHTML: mail2 });
+        formObj2 = new FormValidator(htmlelement2, options);
+    });
+    it('Validate input element', (done) => {
+        setInputValue(formObj, 'Email', 'useremail');
+        formObj.validate('Email');
+        let element1: HTMLElement = <HTMLElement>formObj.element.querySelector('[name="Email"]').nextSibling;
+        expect(element1.innerText).toEqual("Enter valid email address");
+
+        setInputValue(formObj2, 'Email', 'useremail');
+        formObj2.validate('Email');
+        let element2: HTMLElement = <HTMLElement>formObj2.element.querySelector('[name="Email"]').nextSibling;
+        expect(element2.innerText).toEqual("Enter valid email address");
+        done();
+    });
+});
+
+describe('Skip the error element to append in DOM using custom placement', () => {
+    beforeAll(() => {
+        let customPlace: (element: HTMLElement, error: HTMLElement) => void = (element: HTMLElement, error: HTMLElement) => {
+            // Skips the error element to append in DOM
+        };
+        formObj = new FormValidator(formElement, { rules: { 'input1': { required: true } } });
+        formObj.customPlacement = customPlace;
+    });
+
+    it('while validate input', () => {
+        formObj.validate();
+        expect(isNullOrUndefined(formObj.element.querySelector('label.e-error'))).toBe(true);
     });
 
     afterAll(function () {

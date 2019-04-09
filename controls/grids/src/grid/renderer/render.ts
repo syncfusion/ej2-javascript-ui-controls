@@ -330,6 +330,12 @@ export class Render {
             if (args) {
                 let action: string = (args.requestType || '').toLowerCase() + '-complete';
                 this.parent.notify(action, args);
+                if (args.requestType === 'batchsave') {
+                    args.cancel = false;
+                    args.rows = [];
+                    args.isFrozen = this.parent.getFrozenColumns() !== 0 && !args.isFrozen;
+                    this.parent.trigger(events.actionComplete, args);
+                }
             }
             this.parent.hideSpinner();
         }

@@ -622,6 +622,42 @@ describe('DropDownList', () => {
         });
     });
 
+    describe('EJ2-24975: Form reset clear icon', () => {
+        let element: HTMLInputElement;
+        let data: { [key: string]: Object }[] = [
+            { id: 'list1', text: 'JAVA', icon: 'icon' },
+            { id: 'list2', text: 'C#' },
+            { id: 'list3', text: 'C++' },
+            { id: 'list4', text: '.NET', icon: 'icon' },
+            { id: 'list5', text: 'Oracle' }
+        ];
+        let listObj: DropDownList;
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('form', { id: 'form1' });
+            element.innerHTML = `<input type="text" id="ddl">
+            <input type="reset" id="resetForm"/>`;
+            document.body.appendChild(element);
+            listObj = new DropDownList({
+                dataSource: data,
+                showClearButton: true,
+                fields: { text: "text", value: "id" },
+                value: 'list1'
+            });
+            listObj.appendTo('#ddl');
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+        });
+        it(' reset the form', (done) => {
+            document.getElementById('resetForm').click();
+            setTimeout(() => {
+                expect(listObj.value === 'list1').toBe(true);
+                expect((listObj as any).inputWrapper.container.querySelector('.e-clear-icon').classList.contains('e-clear-icon-hide')).toBe(true);
+                done();
+            })
+        });
+    });
+
     describe('EJ2-18309 - Maximum call stack error while emptying dataSource with filtering and remote data', () => {
         let listObj: any;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });

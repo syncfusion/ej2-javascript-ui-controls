@@ -816,6 +816,9 @@ export class Edit implements IAction {
                 'max-width:' + inputClient.width + 'px;text-align:center;'
         });
 
+        if (isInline && client.left < left) {
+            div.style.left = parseInt(div.style.left, 10) - client.left + left + 'px';
+        }
         let content: Element = this.parent.createElement('div', { className: 'e-tip-content' });
         content.appendChild(error);
         let validationForBottomRowPos: boolean;
@@ -835,7 +838,10 @@ export class Edit implements IAction {
         }
         div.appendChild(content);
         div.appendChild(arrow);
-        table.appendChild(div);
+        this.formObj.element.appendChild(div);
+        if (isInline && gcontent.getBoundingClientRect().bottom < inputClient.bottom + inputClient.height) {
+            gcontent.scrollTop = gcontent.scrollTop + div.offsetHeight + arrow.scrollHeight;
+        }
         let lineHeight: number = parseInt(
             document.defaultView.getComputedStyle(div, null).getPropertyValue('font-size'), 10
         );

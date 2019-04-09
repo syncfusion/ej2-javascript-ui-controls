@@ -1777,7 +1777,7 @@ export class Selection implements IAction {
     }
 
     private getData(): object[] {
-        return this.parent.getDataModule().dataManager.dataSource.json;
+        return this.parent.getDataModule().dataManager.executeLocal(this.parent.getDataModule().generateQuery(true));
     }
 
     private refreshPersistSelection(): void {

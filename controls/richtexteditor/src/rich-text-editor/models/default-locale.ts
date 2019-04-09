@@ -128,7 +128,9 @@ export let defaultLocale: { [key: string]: string } = {
     'pasteFormatContent': 'Choose the formatting action',
     'plainText': 'Plain Text',
     'cleanFormat': 'Clean',
-    'keepFormat': 'Keep'
+    'keepFormat': 'Keep',
+    'pasteDialogOk': 'OK',
+    'pasteDialogCancel': 'Cancel'
 };
 
 export let toolsLocale: { [key: string]: string } = {

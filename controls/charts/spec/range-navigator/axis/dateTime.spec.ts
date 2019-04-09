@@ -583,7 +583,7 @@ describe('Range navigator', () => {
                 axisLabel = document.getElementById('container_AxisLabels');
                 expect(axisLabel.childNodes[1].childNodes.length).toEqual(0);
                 expect(axisLabel.childNodes[0].firstChild.textContent).toEqual('Mar 4');
-                expect(axisLabel.childNodes[0].lastChild.textContent === 'Nov 8' || axisLabel.childNodes[0].lastChild.textContent === 'Nov 1' ||
+                expect(axisLabel.childNodes[0].lastChild.textContent === 'Nov 6' || axisLabel.childNodes[0].lastChild.textContent === 'Nov 1' ||
                 axisLabel.childNodes[0].lastChild.textContent === 'Nov 2').toBe(true);
                 done();
             };

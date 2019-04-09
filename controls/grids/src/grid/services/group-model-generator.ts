@@ -137,9 +137,12 @@ export class GroupModelGenerator extends RowModelGenerator implements IModelGene
         let data: GroupedData = row.data;
         let col: Column = this.parent.getColumnByField(data.field);
         if (col && col.isForeignColumn && col.isForeignColumn()) {
+            let fkValue: string | Date = <string | Date>
+            (isNullOrUndefined(data.key) ? '' : (col.valueAccessor as Function)
+            (col.foreignKeyValue, getForeignData(col, {}, <string>data.key)[0], col));
             setValue(
                 'foreignKey',
-                (col.valueAccessor as Function)(col.foreignKeyValue, getForeignData(col, {}, <string>data.key)[0], col),
+                fkValue,
                 row.data);
         }
     }
