@@ -1,5 +1,10 @@
 @include export-module('timepicker-layout') {
   //   timepicker layout
+  .e-input-group.e-control-wrapper.e-time-wrapper.e-non-edit.e-input-focus .e-input:focus ~ .e-clear-icon,
+  .e-float-input.e-control-wrapper.e-input-group.e-time-wrapper.e-non-edit.e-input-focus input:focus ~ .e-clear-icon {
+    display: flex;
+  }
+
   .e-time-wrapper,
   &.e-control-wrapper.e-time-wrapper {
     // sass-lint:disable no-vendor-prefixes
@@ -7,8 +12,11 @@
 
     & .e-time-icon.e-icons {
       font-size: $timepicker-icon-normal-font-size;
-      min-height: $timepicker-normal-input-min-height;
-      min-width: $timepicker-normal-input-min-width;
+      @if $skin-name == 'material' or $skin-name == 'material-dark' {
+        min-height: $timepicker-normal-input-min-height;
+        min-width: $timepicker-normal-input-min-width;
+      }
+
     }
 
     & .e-time-icon.e-icons.e-disabled {
@@ -79,8 +87,10 @@
 
     & .e-time-icon.e-icons {
       font-size: $timepicker-icon-bigger-font-size;
-      min-height: $timepicker-bigger-input-min-height;
-      min-width: $timepicker-bigger-input-min-width;
+      @if $skin-name == 'material' or $skin-name == 'material-dark' {
+        min-height: $timepicker-bigger-input-min-height;
+        min-width: $timepicker-bigger-input-min-width;
+      }
     }
   }
 

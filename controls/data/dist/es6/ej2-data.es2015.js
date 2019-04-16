@@ -4615,7 +4615,7 @@ class DataManager {
             url: tableName,
             key: key || this.dataSource.key
         };
-        let req = this.adaptor.batchRequest(this, changes, args, query, original);
+        let req = this.adaptor.batchRequest(this, changes, args, query || new Query(), original);
         if (this.dataSource.offline) {
             return req;
         }

@@ -363,7 +363,7 @@ export class DataManager {
             key: key || this.dataSource.key
         };
 
-        let req: Object = this.adaptor.batchRequest(this, changes, args, query, original);
+        let req: Object = this.adaptor.batchRequest(this, changes, args, query || new Query(), original);
 
         if (this.dataSource.offline) {
             return req;

@@ -1,7 +1,6 @@
 /**
  * Grid Column chooser spec document
  */
-import { EmitType, createElement } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { Page } from '../../../src/grid/actions/page';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -20,7 +19,6 @@ describe('Column chooser module', () => {
     describe('Column chooser testing', () => {
         let gridObj: Grid;
         let beforeOpenColumnChooser: () => void;
-        let actionComplete: Function;
         beforeAll((done: Function) => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -66,13 +64,13 @@ describe('Column chooser module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = beforeOpenColumnChooser = null;
         });
     });
 
     describe('Column chooser event testing', () => {
         let gridObj: Grid;
         let beforeOpenColumnChooser: () => void;
-        let actionComplete: Function;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -106,13 +104,13 @@ describe('Column chooser module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = beforeOpenColumnChooser = null;
         });
     });
 
     describe('Column chooser Custom testing', () => {
         let gridObj: Grid;
         let beforeOpenColumnChooser: () => void;
-        let actionComplete: Function;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -146,13 +144,13 @@ describe('Column chooser module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = beforeOpenColumnChooser = null;
         });
     });
 
     describe('column chooser search', () => {
         let gridObj: Grid;
         let beforeOpenColumnChooser: () => void;
-        let actionComplete: Function;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -187,6 +185,7 @@ describe('Column chooser module', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = beforeOpenColumnChooser = null;
         });
 
     });
@@ -194,7 +193,6 @@ describe('Column chooser module', () => {
     describe('column chooser manual search', () => {
         let gridObj: Grid;
         let beforeOpenColumnChooser: () => void;
-        let actionComplete: Function;
 
         beforeAll((done: Function) => {
             gridObj = createGrid(
@@ -236,14 +234,13 @@ describe('Column chooser module', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = beforeOpenColumnChooser = null;
         });
 
     });
 
     describe('column chooser single field search', () => {
         let gridObj: Grid;
-        let beforeOpenColumnChooser: () => void;
-        let actionComplete: Function;
 
         beforeAll((done: Function) => {
             gridObj = createGrid(
@@ -279,6 +276,7 @@ describe('Column chooser module', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
 
     });
@@ -286,7 +284,6 @@ describe('Column chooser module', () => {
     describe('column chooser checkstate', () => {
         let gridObj: Grid;
         let beforeOpenColumnChooser: () => void;
-        let actionComplete: Function;
 
         beforeAll((done: Function) => {
             gridObj = createGrid(
@@ -337,6 +334,7 @@ describe('Column chooser module', () => {
         afterAll(() => {
             (<any>gridObj).columnChooserModule.destroy();
             destroy(gridObj);
+            gridObj = beforeOpenColumnChooser = null;
         });
 
     });
@@ -344,7 +342,6 @@ describe('Column chooser module', () => {
     describe('column chooser checkstate with Freeze pane', () => {
         let gridObj: Grid;
         let beforeOpenColumnChooser: () => void;
-        let actionComplete: Function;
 
         beforeAll((done: Function) => {
             gridObj = createGrid(
@@ -380,13 +377,13 @@ describe('Column chooser module', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = beforeOpenColumnChooser = null;
         });
     });
 
     describe('Column chooser rtl testing', () => {
         let gridObj: Grid;
         let beforeOpenColumnChooser: () => void;
-        let actionComplete: Function;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -440,12 +437,11 @@ describe('Column chooser module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = beforeOpenColumnChooser = null;
         });
     });
     describe('Colum chooser enable throw set model => ', () => {
         let gridObj: Grid;
-        let beforeOpenColumnChooser: () => void;
-        let columns: any;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -488,12 +484,12 @@ describe('Column chooser module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
     describe('Column Chooser ok button disabled =>', function () {
         let gridObj: Grid;
         let actionComplete: () => void;
-        let columns: any;
         beforeAll((done: Function) => {
             gridObj = createGrid({
                 dataSource: data,
@@ -529,13 +525,13 @@ describe('Column chooser module', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = actionComplete = null;
         });
     });
 
     describe('Open multiple column chooser in hierarchyGrid', () => {
         let gridObj: Grid;
         let beforeOpenColumnChooser: () => void;
-        let actionComplete: Function;
 
         beforeAll((done: Function) => {
             gridObj = createGrid(
@@ -586,6 +582,7 @@ describe('Column chooser module', () => {
         afterAll(() => {
             (<any>gridObj).columnChooserModule.destroy();
             destroy(gridObj);
+            gridObj = beforeOpenColumnChooser = null;
         });
     });
     

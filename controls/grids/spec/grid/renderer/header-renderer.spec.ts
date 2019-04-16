@@ -60,6 +60,7 @@ describe('header renderer module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
 
     });
@@ -94,6 +95,8 @@ describe('header renderer module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
+            document.getElementById('template').remove();
         });
     });
 describe('EJ2-6660-Header template', () => {
@@ -125,7 +128,9 @@ describe('EJ2-6660-Header template', () => {
         });
 
         afterAll(() => {
-            destroy(gridObj)
+            destroy(gridObj);
+            gridObj = null;
+            document.getElementById('template').remove();
         });
     });
     describe('Autogenerate columns', () => {
@@ -173,6 +178,7 @@ describe('EJ2-6660-Header template', () => {
 
         afterAll(() => {
             destroy(gridObj)
+            gridObj = null;
         });
     });
 

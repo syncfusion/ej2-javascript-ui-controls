@@ -3189,7 +3189,7 @@ var WParagraphFormat = /** @__PURE__ @class */ (function () {
             }
             for (var _b = 0, _c = tabStops.keys; _b < _c.length; _b++) {
                 var key = _c[_b];
-                if (!this.hasTabStop(key)) {
+                if (!this.hasTabStop(parseFloat(key.toFixed(4)))) {
                     inTabs.push(tabStops.get(key));
                 }
             }
@@ -3200,7 +3200,8 @@ var WParagraphFormat = /** @__PURE__ @class */ (function () {
     };
     WParagraphFormat.prototype.hasTabStop = function (position) {
         for (var i = 0; i < this.tabs.length; i++) {
-            if (this.tabs[i].position === position) {
+            if (parseFloat(this.tabs[i].position.toFixed(4)) === position ||
+                parseFloat(this.tabs[i].deletePosition.toFixed(4)) === position) {
                 return true;
             }
         }
@@ -11617,9 +11618,9 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
     };
     /**
      * To add and customize custom context menu
-     * @param {MenuItemModel[]} items -To add custom menu item
-     * @param {boolean} isEnable? -To hide existing menu item and show custom menu item alone
-     * @param {boolean} isBottom? -To show the custom menu item in bottom of the existing item
+     * @param {MenuItemModel[]} items - To add custom menu item
+     * @param {boolean} isEnable - To hide existing menu item and show custom menu item alone
+     * @param {boolean} isBottom - To show the custom menu item in bottom of the existing item
      */
     ContextMenu$$1.prototype.addCustomMenu = function (items, isEnable, isBottom) {
         var menuItems = JSON.parse(JSON.stringify(items));
@@ -11634,7 +11635,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
     };
     /**
      * Context Menu Items.
-     * @param {MenuItemModel[]} menuItems -To add MenuItem to context menu
+     * @param {MenuItemModel[]} menuItems - To add MenuItem to context menu
      * @private
      */
     ContextMenu$$1.prototype.addMenuItems = function (menuItems) {
@@ -12489,7 +12490,7 @@ var Layout = /** @__PURE__ @class */ (function () {
                 this.cutClientWidth(element.previousElement);
             }
         }
-        if (width < this.viewer.clientActiveArea.width || !this.viewer.textWrap) {
+        if (parseFloat(width.toFixed(4)) <= parseFloat(this.viewer.clientActiveArea.width.toFixed(4)) || !this.viewer.textWrap) {
             //Fits the text in current line.
             this.addElementToLine(paragraph, element);
             if (isNullOrUndefined(element.nextElement) && this.viewer.clientActiveArea.width > 0 && !element.line.isLastLine()) {
@@ -13888,7 +13889,9 @@ var Layout = /** @__PURE__ @class */ (function () {
                 elementBox.width = 0;
             }
             else {
-                this.viewer.textHelper.getTextSize(elementBox, elementBox.characterFormat);
+                if (elementBox instanceof TextElementBox) {
+                    this.viewer.textHelper.getTextSize(elementBox, elementBox.characterFormat);
+                }
             }
             if (elementBox instanceof TextElementBox && elementBox.text === '\t') {
                 return width;
@@ -14209,7 +14212,7 @@ var Layout = /** @__PURE__ @class */ (function () {
      * @param row
      */
     // tslint:disable-next-line:max-line-length
-    Layout.prototype.addWidgetToTable = function (viewer, tableCollection, rowCollection, row, endRowWidget) {
+    Layout.prototype.addWidgetToTable = function (viewer, tableCollection, rowCollection, row, endRowWidget, isInitialLayout) {
         //Adds table row widget to owner table widget.
         var tableWidget = tableCollection[0];
         var index = tableWidget.childWidgets.length;
@@ -14262,7 +14265,7 @@ var Layout = /** @__PURE__ @class */ (function () {
             !(tableWidget.containerWidget instanceof HeaderFooterWidget)) {
             tableWidget.containerWidget.height += row.height;
         }
-        this.updateHeightForRowWidget(viewer, false, tableCollection, rowCollection, row, false, endRowWidget);
+        this.updateHeightForRowWidget(viewer, false, tableCollection, rowCollection, row, false, endRowWidget, isInitialLayout);
         viewer.cutFromTop(row.y + row.height);
     };
     /**
@@ -14479,18 +14482,21 @@ var Layout = /** @__PURE__ @class */ (function () {
         if (row.ownerTable.continueHeader && !isHeader) {
             row.ownerTable.continueHeader = false;
         }
+        var isInitialLayout = row.ownerTable.isInsideTable;
         var isLastRow = false;
         cellSpacing = (!isNullOrUndefined(row.ownerTable) && !isNullOrUndefined(row.ownerTable.tableFormat)) ? HelperMethods.convertPointToPixel(row.ownerTable.tableFormat.cellSpacing) : 0;
         while (count < rowWidgets.length) {
             count = rowWidgets.length;
             if (row.ownerTable.isInsideTable || (viewer.splittedCellWidgets.length === 0 && tableRowWidget.y + tableRowWidget.height + cellSpacing <= viewer.clientArea.bottom)) {
-                this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget);
+                this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget, undefined, isInitialLayout);
                 if (viewer.splittedCellWidgets.length > 0 && isNullOrUndefined(rowWidgets[rowWidgets.length - 1].nextRow)) {
                     count--;
                     isLastRow = true;
                 }
+                isInitialLayout = false;
             }
             else {
+                isInitialLayout = false;
                 //Split widget for next page
                 if (viewer.splittedCellWidgets.length > 0 && tableRowWidget.y + tableRowWidget.height <= viewer.clientArea.bottom) {
                     var isRowSpanEnd = this.isRowSpanEnd(row, viewer);
@@ -14777,7 +14783,7 @@ var Layout = /** @__PURE__ @class */ (function () {
      * @param rowWidget
      */
     // tslint:disable-next-line:max-line-length
-    Layout.prototype.updateHeightForRowWidget = function (viewer, isUpdateVerticalPosition, tableCollection, rowCollection, rowWidget, isLayouted, endRowWidget) {
+    Layout.prototype.updateHeightForRowWidget = function (viewer, isUpdateVerticalPosition, tableCollection, rowCollection, rowWidget, isLayouted, endRowWidget, isInitialLayout) {
         for (var i = 0; i < rowWidget.childWidgets.length; i++) {
             var cellspacing = 0;
             var cellWidget = undefined;
@@ -14792,8 +14798,8 @@ var Layout = /** @__PURE__ @class */ (function () {
                 var currentRowWidgetIndex = rowWidget.containerWidget.childWidgets.indexOf(rowWidget);
                 // tslint:disable-next-line:max-line-length
                 var rowSpanWidgetEndIndex = currentRowWidgetIndex + rowSpan - 1 - (rowWidget.index - cellWidget.rowIndex);
-                if (viewer.clientArea.bottom < cellWidget.y + cellWidget.height + cellWidget.margin.bottom
-                    || rowSpanWidgetEndIndex >= currentRowWidgetIndex + 1) {
+                if (!isInitialLayout && (viewer.clientArea.bottom < cellWidget.y + cellWidget.height + cellWidget.margin.bottom
+                    || rowSpanWidgetEndIndex >= currentRowWidgetIndex + 1)) {
                     this.splitSpannedCellWidget(cellWidget, tableCollection, rowCollection, viewer);
                 }
                 var spanEndRowWidget = rowWidget;
@@ -17155,7 +17161,8 @@ var Renderer = /** @__PURE__ @class */ (function () {
     Renderer.prototype.getHeaderFooterType = function (page, isHeader) {
         var type;
         type = isHeader ? 'Header' : 'Footer';
-        if (page.bodyWidgets[0].sectionFormat.differentFirstPage && this.viewer.pages.indexOf(page) === 0) {
+        if (page.bodyWidgets[0].sectionFormat.differentFirstPage &&
+            (isNullOrUndefined(page.previousPage) || page.sectionIndex !== page.previousPage.sectionIndex)) {
             type = isHeader ? 'First Page Header' : 'First Page Footer';
         }
         else if (page.bodyWidgets[0].sectionFormat.differentOddAndEvenPages) {
@@ -17790,7 +17797,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
             isLastCell = tableCell.cellIndex === 0;
         }
         if (tableCell.ownerTable.tableFormat.cellSpacing > 0 || isLastCell) {
-            border = isBidiTable ? TableCellWidget.getCellRightBorder(tableCell) : TableCellWidget.getCellLeftBorder(tableCell);
+            border = isBidiTable ? TableCellWidget.getCellLeftBorder(tableCell) : TableCellWidget.getCellRightBorder(tableCell);
             // if (!isNullOrUndefined(border )) { //Renders the cell right border.           
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
             // tslint:disable-next-line:max-line-length
@@ -18532,7 +18539,8 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
                 }
                 _this.isComposingIME = false;
                 _this.lastComposedText = '';
-                _this.iframe.setAttribute('style', 'pointer-events:none;position:absolute;top:-10000px');
+                // tslint:disable-next-line:max-line-length
+                _this.iframe.setAttribute('style', 'pointer-events:none;position:absolute;left:' + _this.containerLeft + 'px;top:' + _this.containerTop + 'px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden');
                 _this.editableDiv.innerHTML = '';
                 if (_this.owner.editorHistory) {
                     _this.owner.editorHistory.updateComplexHistory();
@@ -18630,6 +18638,10 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
          */
         this.scrollHandler = function () {
             _this.clearContent();
+            if (!Browser.isDevice && !_this.isComposingIME) {
+                _this.iframe.style.top = _this.containerTop + 'px';
+                _this.iframe.style.left = _this.containerLeft + 'px';
+            }
             _this.updateScrollBars();
             var vtHeight = _this.containerTop + _this.visibleBounds.height;
             if (vtHeight > _this.pageContainer.offsetHeight) {
@@ -19549,7 +19561,8 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
         this.iframe = createElement('iframe', {
             attrs: {
                 'scrolling': 'no', 'src': 'javascript:false',
-                'style': 'pointer-events:none;position:absolute;top:-10000px'
+                // tslint:disable-next-line:max-line-length
+                'style': 'pointer-events:none;position:absolute;left:0px;top:0px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden'
             },
             className: 'e-de-text-target'
         });
@@ -20903,8 +20916,9 @@ var PageLayoutViewer = /** @__PURE__ @class */ (function (_super) {
     PageLayoutViewer.prototype.getHeaderFooterType = function (section, isHeader) {
         var type;
         type = isHeader ? 'OddHeader' : 'OddFooter';
+        var page = section.page;
         // tslint:disable-next-line:max-line-length
-        if (section.sectionFormat.differentFirstPage && (this.pages.length === 1 || this.pages[this.pages.length - 1].bodyWidgets[0].index !== section.index)) {
+        if (section.sectionFormat.differentFirstPage && (isNullOrUndefined(page.previousPage) || page.sectionIndex !== page.previousPage.sectionIndex)) {
             type = isHeader ? 'FirstPageHeader' : 'FirstPageFooter';
         }
         else if (section.sectionFormat.differentOddAndEvenPages && this.pages.length % 2 === 0) {
@@ -36275,7 +36289,10 @@ var OptionsPane = /** @__PURE__ @class */ (function () {
         });
         this.optionsPane.appendChild(this.searchDiv);
         // tslint:disable-next-line:max-line-length
-        this.closeButton = createElement('button', { className: 'e-de-op-close-button e-de-op-icon-btn e-btn e-flat e-icon-btn', id: 'close' });
+        this.closeButton = createElement('button', {
+            className: 'e-de-op-close-button e-de-op-icon-btn e-btn e-flat e-icon-btn', id: 'close',
+            attrs: { type: 'button' }
+        });
         this.optionsPane.appendChild(this.closeButton);
         var closeSpan = createElement('span', { className: 'e-de-op-close-icon e-btn-icon e-icons' });
         this.closeButton.appendChild(closeSpan);
@@ -36407,12 +36424,14 @@ var OptionsPane = /** @__PURE__ @class */ (function () {
         this.replaceButton = createElement('button', {
             className: 'e-control e-btn e-flat e-replace',
             styles: replaceButtonMargin,
-            innerHTML: this.localeValue.getConstant(this.replaceButtonText)
+            innerHTML: this.localeValue.getConstant(this.replaceButtonText),
+            attrs: { type: 'button' }
         });
         replaceButtonDiv.appendChild(this.replaceButton);
         this.replaceAllButton = createElement('button', {
             className: 'e-control e-btn e-flat e-replaceall',
-            innerHTML: this.localeValue.getConstant(this.replaceAllButtonText)
+            innerHTML: this.localeValue.getConstant(this.replaceAllButtonText),
+            attrs: { type: 'button' }
         });
         replaceButtonDiv.appendChild(this.replaceAllButton);
         this.matchDiv = createElement('div', { styles: 'display:none;padding-top:10px;' });
@@ -40212,7 +40231,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         var startLine = this.selection.getFirstParagraphInFirstCell(table).childWidgets[0];
         startPos.setPosition(startLine, true);
         this.selection.end.setPositionInternal(startPos);
-        var lastParagraph = this.selection.getLastParagraphInLastCell(table);
+        var lastParagraph = this.selection.getLastParagraphInLastCell(table.getSplitWidgets().pop());
         var endOffset = lastParagraph.getLength() + 1;
         if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
             // tslint:disable-next-line:max-line-length
@@ -46116,7 +46135,9 @@ var Editor = /** @__PURE__ @class */ (function () {
             var page = this.viewer.pages[j];
             if (page.bodyWidgets[0].index === sectionIndex) {
                 currentBlock = page.bodyWidgets[0].firstChild;
-                break;
+                if (!isNullOrUndefined(currentBlock)) {
+                    break;
+                }
             }
         }
         var isListUpdated = false;
@@ -46689,7 +46710,8 @@ var Editor = /** @__PURE__ @class */ (function () {
         for (var i = 0; i < this.viewer.pages.length; i++) {
             var bodyWidget = this.viewer.pages[i].bodyWidgets[0];
             if (bodyWidget.index === sectionIndex) {
-                if (bodyWidget.firstChild.index <= blockIndex && bodyWidget.lastChild.index >= blockIndex) {
+                if (bodyWidget.childWidgets.length > 0 && bodyWidget.firstChild.index <= blockIndex &&
+                    bodyWidget.lastChild.index >= blockIndex) {
                     return bodyWidget;
                 }
             }
@@ -54706,6 +54728,7 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         this.endLine = undefined;
         this.lists = undefined;
         this.document = undefined;
+        this.endCell = undefined;
     };
     /**
      * Serialize the data as Syncfusion document text.
@@ -54769,24 +54792,33 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
                     this.endCell = endCell;
                 }
             }
+            var nextBlock = void 0;
             if (startCell === endCell || isNullOrUndefined(startCell)) {
                 var paragraph = this.createParagraph(line.paragraph);
                 section.blocks.push(paragraph);
-                if (!this.writeParagraph(line.paragraph, paragraph, section.blocks, line.indexInOwner, startOffset)) {
-                    // Todo:continue in next section
+                nextBlock = this.writeParagraph(line.paragraph, paragraph, section.blocks, line.indexInOwner, startOffset);
+                while (nextBlock) {
+                    nextBlock = this.writeBlock(nextBlock, 0, section.blocks);
                 }
+                // Todo:continue in next section
             }
             else {
                 var table = this.createTable(startCell.ownerTable);
                 section.blocks.push(table);
-                this.writeTable(startCell.ownerTable, table, startCell.ownerRow.indexInOwner, section.blocks);
+                nextBlock = this.writeTable(startCell.ownerTable, table, startCell.ownerRow.indexInOwner, section.blocks);
+                while (nextBlock) {
+                    nextBlock = this.writeBlock(nextBlock, 0, section.blocks);
+                }
             }
         }
         else {
             if (this.viewer.pages.length > 0) {
                 var page = this.viewer.pages[0];
                 if (page.bodyWidgets.length > 0) {
-                    this.writeBodyWidget(page.bodyWidgets[0], 0);
+                    var nextBlock = page.bodyWidgets[0];
+                    do {
+                        nextBlock = this.writeBodyWidget(nextBlock, 0);
+                    } while (!isNullOrUndefined(nextBlock));
                 }
             }
         }
@@ -54798,20 +54830,21 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
     };
     SfdtExport.prototype.writeBodyWidget = function (bodyWidget, index) {
         if (!(bodyWidget instanceof BodyWidget)) {
-            return true;
+            return undefined;
         }
         var section = this.createSection(bodyWidget);
         this.document.sections.push(section);
         this.writeHeaderFooters(this.viewer.headersFooters[bodyWidget.index], section);
-        if (this.writeBlock(bodyWidget.childWidgets[index], 0, section.blocks)) {
-            return true;
-        }
+        var firstBlock = bodyWidget.childWidgets[index];
+        do {
+            firstBlock = this.writeBlock(firstBlock, 0, section.blocks);
+        } while (firstBlock);
         var next = bodyWidget;
         do {
             bodyWidget = next;
             next = next.nextRenderedWidget;
         } while (next instanceof BodyWidget && next.index === bodyWidget.index);
-        return this.writeBodyWidget(next, index);
+        return next;
     };
     SfdtExport.prototype.writeHeaderFooters = function (hfs, section) {
         if (isNullOrUndefined(hfs)) {
@@ -54831,7 +54864,10 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         var headerFooter = {};
         if (widget && widget.childWidgets && widget.childWidgets.length > 0) {
             headerFooter.blocks = [];
-            this.writeBlock(widget.firstChild, 0, headerFooter.blocks);
+            var firstBlock = widget.firstChild;
+            do {
+                firstBlock = this.writeBlock(firstBlock, 0, headerFooter.blocks);
+            } while (firstBlock);
         }
         return headerFooter;
     };
@@ -54855,31 +54891,19 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
     };
     SfdtExport.prototype.writeBlock = function (widget, index, blocks) {
         if (!(widget instanceof BlockWidget)) {
-            return true;
+            return undefined;
         }
         if (widget instanceof ParagraphWidget) {
             var paragraph = this.createParagraph(widget);
             blocks.push(paragraph);
-            if (this.writeParagraph(widget, paragraph, blocks)) {
-                return true;
-            }
+            return this.writeParagraph(widget, paragraph, blocks);
         }
         else {
             var tableWidget = widget;
             var table = this.createTable(tableWidget);
             blocks.push(table);
-            if (this.writeTable(tableWidget, table, 0, blocks)) {
-                return true;
-            }
+            return this.writeTable(tableWidget, table, 0, blocks);
         }
-        return false;
-    };
-    SfdtExport.prototype.writeNextBlock = function (widget, blocks) {
-        var next = widget.nextRenderedWidget;
-        if (next instanceof BlockWidget && next.containerWidget.index === widget.containerWidget.index) {
-            return this.writeBlock(widget.nextRenderedWidget, 0, blocks);
-        }
-        return false;
     };
     SfdtExport.prototype.writeParagraph = function (paragraphWidget, paragraph, blocks, lineIndex, start) {
         if (isNullOrUndefined(lineIndex)) {
@@ -54891,14 +54915,15 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         var next = paragraphWidget;
         while (next instanceof ParagraphWidget) {
             if (this.writeLines(next, lineIndex, start, paragraph.inlines)) {
-                return true;
+                return undefined;
             }
             lineIndex = 0;
             start = 0;
             paragraphWidget = next;
             next = paragraphWidget.nextSplitWidget;
         }
-        return this.writeNextBlock(paragraphWidget, blocks);
+        next = paragraphWidget.nextRenderedWidget;
+        return (next instanceof BlockWidget && paragraphWidget.containerWidget.index === next.containerWidget.index) ? next : undefined;
     };
     SfdtExport.prototype.writeInlines = function (paragraph, line, inlines) {
         var lineWidget = line.clone();
@@ -55061,7 +55086,7 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         var widget = tableWidget.childWidgets[index];
         if (widget instanceof TableRowWidget) {
             if (this.writeRow(widget, table.rows)) {
-                return true;
+                return undefined;
             }
         }
         var next = tableWidget;
@@ -55069,7 +55094,8 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
             tableWidget = next;
             next = tableWidget.nextSplitWidget;
         } while (next instanceof BlockWidget);
-        return this.writeNextBlock(tableWidget, blocks);
+        next = tableWidget.nextRenderedWidget;
+        return (next instanceof BlockWidget && next.containerWidget.index === tableWidget.containerWidget.index) ? next : undefined;
     };
     SfdtExport.prototype.writeRow = function (rowWidget, rows) {
         if (!(rowWidget instanceof TableRowWidget)) {
@@ -55099,9 +55125,10 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
     SfdtExport.prototype.writeCell = function (cellWidget, cells) {
         var cell = this.createCell(cellWidget);
         cells.push(cell);
-        if (this.writeBlock(cellWidget.firstChild, 0, cell.blocks)) {
-            return true;
-        }
+        var firstBlock = cellWidget.firstChild;
+        do {
+            firstBlock = this.writeBlock(firstBlock, 0, cell.blocks);
+        } while (firstBlock);
         return this.endCell instanceof TableCellWidget ? this.endCell.cellFormat === cellWidget.cellFormat : false;
     };
     SfdtExport.prototype.createTable = function (tableWidget) {
@@ -55821,7 +55848,10 @@ var BookmarkDialog = /** @__PURE__ @class */ (function () {
         commonDiv.appendChild(buttonDiv);
         var addbuttonDiv = createElement('div', { className: 'e-bookmark-addbutton' });
         buttonDiv.appendChild(addbuttonDiv);
-        var addButtonElement = createElement('button', { innerHTML: localValue.getConstant('Add'), id: 'add' });
+        var addButtonElement = createElement('button', {
+            innerHTML: localValue.getConstant('Add'), id: 'add',
+            attrs: { type: 'button' }
+        });
         addbuttonDiv.appendChild(addButtonElement);
         this.addButton = new Button({ cssClass: 'e-button-custom' });
         this.addButton.disabled = true;
@@ -55831,7 +55861,10 @@ var BookmarkDialog = /** @__PURE__ @class */ (function () {
         addButtonElement.addEventListener('click', this.addBookmark);
         var deleteButtonDiv = createElement('div', { className: 'e-bookmark-deletebutton' });
         buttonDiv.appendChild(deleteButtonDiv);
-        var deleteButtonElement = createElement('button', { innerHTML: localValue.getConstant('Delete'), id: 'delete' });
+        var deleteButtonElement = createElement('button', {
+            innerHTML: localValue.getConstant('Delete'), id: 'delete',
+            attrs: { type: 'button' }
+        });
         deleteButtonDiv.appendChild(deleteButtonElement);
         this.deleteButton = new Button({ cssClass: 'e-button-custom' });
         this.deleteButton.disabled = hasNoBookmark;
@@ -55839,7 +55872,10 @@ var BookmarkDialog = /** @__PURE__ @class */ (function () {
         deleteButtonElement.addEventListener('click', this.deleteBookmark);
         var gotoButtonDiv = createElement('div', { className: 'e-bookmark-gotobutton' });
         buttonDiv.appendChild(gotoButtonDiv);
-        var gotoButtonElement = createElement('button', { innerHTML: localValue.getConstant('Go To'), id: 'goto' });
+        var gotoButtonElement = createElement('button', {
+            innerHTML: localValue.getConstant('Go To'), id: 'goto',
+            attrs: { type: 'button' }
+        });
         gotoButtonDiv.appendChild(gotoButtonElement);
         this.gotoButton = new Button({ cssClass: 'e-button-custom' });
         this.gotoButton.disabled = hasNoBookmark;
@@ -56458,7 +56494,10 @@ var TableOfContentsDialog = /** @__PURE__ @class */ (function () {
         this.outline.appendTo(outline);
         var resetButtonDiv = createElement('div', { className: 'e-de-toc-reset-button' });
         fieldsDiv.appendChild(resetButtonDiv);
-        var resetElement = createElement('button', { innerHTML: locale.getConstant('Reset'), id: 'reset' });
+        var resetElement = createElement('button', {
+            innerHTML: locale.getConstant('Reset'), id: 'reset',
+            attrs: { type: 'button' }
+        });
         resetButtonDiv.appendChild(resetElement);
         var resetButton = new Button({ cssClass: 'e-btn e-flat' });
         resetButton.appendTo(resetElement);
@@ -56486,7 +56525,10 @@ var TableOfContentsDialog = /** @__PURE__ @class */ (function () {
         rightBottomGeneralDiv.appendChild(listViewDiv);
         var modifyButtonDiv = createElement('div', { className: 'e-de-toc-modify-button' });
         rightBottomGeneralDiv.appendChild(modifyButtonDiv);
-        var modifyElement = createElement('button', { innerHTML: locale.getConstant('Modify'), id: 'modify' });
+        var modifyElement = createElement('button', {
+            innerHTML: locale.getConstant('Modify'), id: 'modify',
+            attrs: { type: 'button' }
+        });
         modifyButtonDiv.appendChild(modifyElement);
         var modifyButton = new Button({ cssClass: 'e-btn e-flat' });
         modifyButton.appendTo(modifyElement);
@@ -58286,7 +58328,7 @@ var ListDialog = /** @__PURE__ @class */ (function () {
         var numberStyleDiv = createElement('div', { innerHTML: divStyle + '<label id="' + containerId + '_numberFormatLabel" style="display:block;" class=e-de-list-ddl-header>' + locale.getConstant('Number format') + '</label><label id="' + containerId + '_numberStyleLabel" style="display:block;" class=e-de-list-ddl-subheader>' + locale.getConstant('Number style for this level') + '</label><select style="height:20px;width:100%" id="' + containerId + '_numberStyle"><option>' + locale.getConstant('Arabic') + '</option><option>' + locale.getConstant('UpRoman') + '</option><option>' + locale.getConstant('LowRoman') + '</option><option>' + locale.getConstant('UpLetter') + '</option><option>' + locale.getConstant('LowLetter') + '</option><option>' + locale.getConstant('Number') + '</option><option>' + locale.getConstant('Leading zero') + '</option><option>' + locale.getConstant('Bullet') + '</option><option>' + locale.getConstant('Ordinal') + '</option><option>' + locale.getConstant('Ordinal Text') + '</option><option>' + locale.getConstant('Special') + '</option><option>' + locale.getConstant('For East') + '</option></select><label id="' + containerId + '_startAtLabel" style="display:block;" class=e-de-list-ddl-subheaderbottom>' + locale.getConstant('Start at') + '</label><input type="text" id="' + containerId + '_startAt">' });
         div.appendChild(numberStyleDiv);
         // tslint:disable-next-line:max-line-length
-        this.numberFormatDiv = createElement('div', { className: 'e-de-list-dlg-subdiv', innerHTML: '<div><div><label id="' + containerId + '_formatLabel" style="display:inline-block;width:86%" class=e-de-list-ddl-subheader>' + locale.getConstant('Enter formatting for number') + '</label><button id="' + containerId + '_list_info" class="e-control e-btn e-primary e-de-list-format-info">i</button></div><input style=width:180px; type="text" id="' + containerId + '_numberFormat" class=e-input></div><label id="' + containerId + '_restartLabel" style="display:block;" class=e-de-list-ddl-subheaderbottom>' + locale.getConstant('Restart list after') + '</label><select style="height:20px;width:100%" id="' + containerId + '_restartBy"><option>' + locale.getConstant('No Restart') + '</option></select></div>' });
+        this.numberFormatDiv = createElement('div', { className: 'e-de-list-dlg-subdiv', innerHTML: '<div><div><label id="' + containerId + '_formatLabel" style="display:inline-block;width:86%" class=e-de-list-ddl-subheader>' + locale.getConstant('Enter formatting for number') + '</label><button type="button" id="' + containerId + '_list_info" class="e-control e-btn e-primary e-de-list-format-info">i</button></div><input style=width:180px; type="text" id="' + containerId + '_numberFormat" class=e-input></div><label id="' + containerId + '_restartLabel" style="display:block;" class=e-de-list-ddl-subheaderbottom>' + locale.getConstant('Restart list after') + '</label><select style="height:20px;width:100%" id="' + containerId + '_restartBy"><option>' + locale.getConstant('No Restart') + '</option></select></div>' });
         div.appendChild(this.numberFormatDiv);
         this.target.appendChild(div);
         var indentsDivLabelStyle;
@@ -58934,7 +58976,10 @@ var StyleDialog = /** @__PURE__ @class */ (function () {
     };
     StyleDialog.prototype.createFormatDropdown = function (parentDiv, localValue, isRtl) {
         var _this = this;
-        var formatBtn = createElement('button', { id: 'style_format_dropdown', innerHTML: localValue.getConstant('Format') });
+        var formatBtn = createElement('button', {
+            id: 'style_format_dropdown', innerHTML: localValue.getConstant('Format'),
+            attrs: { type: 'button' }
+        });
         formatBtn.style.height = '31px';
         parentDiv.appendChild(formatBtn);
         var items = [{ text: localValue.getConstant('Font') + '..', id: 'style_font' },
@@ -59059,7 +59104,7 @@ var StyleDialog = /** @__PURE__ @class */ (function () {
         });
     };
     StyleDialog.prototype.createButtonElement = function (parentDiv, iconCss, className, id) {
-        var buttonElement = createElement('button');
+        var buttonElement = createElement('button', { attrs: { type: 'button' } });
         if (!isNullOrUndefined(id)) {
             buttonElement.id = id;
         }
@@ -60939,11 +60984,12 @@ var TablePropertiesDialog = /** @__PURE__ @class */ (function () {
         }
         this.bordersAndShadingButton = createElement('button', {
             innerHTML: localValue.getConstant('Borders and Shading'),
-            id: element.id + '_borders_and_shadings', className: 'e-control e-btn e-flat e-de-ok-button'
+            id: element.id + '_borders_and_shadings', className: 'e-control e-btn e-flat e-de-ok-button',
+            attrs: { type: 'button' }
         });
         this.tableOptionButton = createElement('button', {
             className: 'e-control e-btn e-flat', innerHTML: localValue.getConstant('Options'),
-            id: element.id + '_table_cellmargin'
+            id: element.id + '_table_cellmargin', attrs: { type: 'button' }
         });
         this.tableOptionButton.addEventListener('click', this.showTableOptionsDialog);
         this.bordersAndShadingButton.addEventListener('click', this.showBordersShadingsPropertiesDialog);
@@ -61433,7 +61479,7 @@ var TablePropertiesDialog = /** @__PURE__ @class */ (function () {
         });
         this.cellOptionButton = createElement('button', {
             innerHTML: localValue.getConstant('Options'), id: element.id + '_table_cellmargin',
-            className: 'e-control e-btn e-flat',
+            className: 'e-control e-btn e-flat', attrs: { type: 'button' }
         });
         this.cellOptionButton.style.cssFloat = isRtl ? 'left' : 'right';
         divAlignment.appendChild(topAlignDiv);
@@ -63466,14 +63512,20 @@ var StylesDialog = /** @__PURE__ @class */ (function () {
         commonDiv.appendChild(buttonDiv);
         var newButtonDiv = createElement('div', { className: 'e-styles-addbutton' });
         buttonDiv.appendChild(newButtonDiv);
-        var newButtonElement = createElement('button', { innerHTML: localValue.getConstant('New'), id: 'new' });
+        var newButtonElement = createElement('button', {
+            innerHTML: localValue.getConstant('New'), id: 'new',
+            attrs: { type: 'button' }
+        });
         newButtonDiv.appendChild(newButtonElement);
         var newbutton = new Button({ cssClass: 'e-button-custom' });
         newbutton.appendTo(newButtonElement);
         newButtonElement.addEventListener('click', this.addNewStyles);
         var modifybuttonDiv = createElement('div', { className: 'e-styles-addbutton' });
         buttonDiv.appendChild(modifybuttonDiv);
-        var modifyButtonElement = createElement('button', { innerHTML: localValue.getConstant('Modify'), id: 'modify' });
+        var modifyButtonElement = createElement('button', {
+            innerHTML: localValue.getConstant('Modify'), id: 'modify',
+            attrs: { type: 'button' }
+        });
         modifybuttonDiv.appendChild(modifyButtonElement);
         var addbutton = new Button({ cssClass: 'e-button-custom' });
         addbutton.appendTo(modifyButtonElement);
@@ -63663,7 +63715,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         toolbarContainer.appendChild(toolbarWrapper);
         // Show hide pane button initialization 
         var propertiesPaneDiv = createElement('div', { className: 'e-de-ctnr-properties-pane-btn' });
-        var buttonElement = createElement('button');
+        var buttonElement = createElement('button', { attrs: { type: 'button' } });
         propertiesPaneDiv.appendChild(buttonElement);
         var cssClassName = 'e-tbar-btn e-tbtn-txt e-control e-btn e-de-showhide-btn';
         if (this.container.enableRtl) {
@@ -64074,7 +64126,7 @@ var Text = /** @__PURE__ @class */ (function () {
         this.isRetrieving = false;
         this.appliedHighlightColor = 'rgb(255, 255, 0)';
         this.createHighlightColorSplitButton = function (id, width, divElement, toolTipText) {
-            var buttonElement = createElement('button', { id: id });
+            var buttonElement = createElement('button', { id: id, attrs: { type: 'button' } });
             // buttonElement.style.width = width + 'px';
             // buttonElement.style.padding = '1px';
             // buttonElement.style.height = 30 + 'px';
@@ -64463,7 +64515,7 @@ var Text = /** @__PURE__ @class */ (function () {
     };
     // tslint:disable-next-line:max-line-length
     Text.prototype.createButtonTemplate = function (id, iconcss, div, buttonClass, width, toolTipText) {
-        var button = createElement('Button', { id: id });
+        var button = createElement('Button', { id: id, attrs: { type: 'button' } });
         // button.style.width = width + 'px';
         // buttonElement.style.height = 32 + 'px';
         div.appendChild(button);
@@ -65057,14 +65109,14 @@ var Paragraph = /** @__PURE__ @class */ (function () {
         if (isRtl) {
             classList(listDiv, ['e-de-ctnr-segment-rtl', 'e-de-ctnr-group-btn'], []);
         }
-        var lineHeight = createElement('button', { id: element + '_lineHeight' });
+        var lineHeight = createElement('button', { id: element + '_lineHeight', attrs: { type: 'button' } });
         listDiv.appendChild(lineHeight);
         this.lineSpacing = this.createLineSpacingDropdown(lineHeight);
         var listDropDown = this.createDivElement(element + '_listDropDiv', listDiv);
         listDropDown.className = 'de-split-button';
-        var bulletButton = createElement('button', { id: element + '_bullet' });
+        var bulletButton = createElement('button', { id: element + '_bullet', attrs: { type: 'button' } });
         listDropDown.appendChild(bulletButton);
-        var numberingList = createElement('button', { id: element + '_numberingList' });
+        var numberingList = createElement('button', { id: element + '_numberingList', attrs: { type: 'button' } });
         listDropDown.appendChild(numberingList);
         this.createBulletListDropButton('e-de-ctnr-bullets e-icons', bulletButton);
         this.createNumberListDropButton('e-de-ctnr-numbering e-icons', numberingList);
@@ -65086,7 +65138,7 @@ var Paragraph = /** @__PURE__ @class */ (function () {
     };
     // tslint:disable-next-line:max-line-length
     Paragraph.prototype.createButtonTemplate = function (id, iconcss, div, buttonClass, width, toolTipText) {
-        var buttonElement = createElement('Button', { id: id });
+        var buttonElement = createElement('Button', { id: id, attrs: { type: 'button' } });
         // buttonElement.style.width = width + 'px';
         // buttonElement.style.height = 32 + 'px';
         div.appendChild(buttonElement);
@@ -66167,13 +66219,19 @@ var TocProperties = /** @__PURE__ @class */ (function () {
             }
             var footerElement = createElement('div', { id: 'footerDiv', styles: footerElementFloat });
             container.appendChild(footerElement);
-            var updatebuttoncontentStyleElement = createElement('button', { id: 'footerupdatebuttonDiv' });
+            var updatebuttoncontentStyleElement = createElement('button', {
+                id: 'footerupdatebuttonDiv',
+                attrs: { type: 'button' }
+            });
             footerElement.appendChild(updatebuttoncontentStyleElement);
             _this.updateBtn = new Button({
                 content: _this.localObj.getConstant('Update'), cssClass: 'btn-update', isPrimary: true
             });
             _this.updateBtn.appendTo(updatebuttoncontentStyleElement);
-            var cancelbuttoncontentStyleElement = createElement('button', { id: 'footercancelbuttonDiv' });
+            var cancelbuttoncontentStyleElement = createElement('button', {
+                id: 'footercancelbuttonDiv',
+                attrs: { type: 'button' }
+            });
             footerElement.appendChild(cancelbuttoncontentStyleElement);
             _this.cancelBtn = new Button({
                 content: _this.localObj.getConstant('Cancel'), cssClass: _this.isRtl ? 'e-de-btn-cancel-rtl' : 'e-de-btn-cancel'
@@ -66572,7 +66630,7 @@ var TableProperties = /** @__PURE__ @class */ (function () {
             styleTypeDiv.firstElementChild.lastElementChild.firstElementChild.firstElementChild.style.width = '100%';
             // tslint:disable-next-line:max-line-length
             classList(styleTypeDiv.lastElementChild.lastElementChild.lastElementChild.firstChild, ['e-de-ctnr-highlightcolor'], ['e-caret']);
-            var borderSizeButton = createElement('button', { id: _this.elementId + '_tableBorderSize', className: 'e-de-border-size-button', styles: 'font-size:10px;padding:0px;' });
+            var borderSizeButton = createElement('button', { id: _this.elementId + '_tableBorderSize', className: 'e-de-border-size-button', styles: 'font-size:10px;padding:0px;', attrs: { type: 'button' } });
             styleTypeDiv.appendChild(borderSizeButton);
             _this.borderSize = _this.createBorderSizeDropDown('e-de-ctnr-strokesize e-icons', borderSizeButton);
             parentDiv.appendChild(styleTypeDiv);
@@ -66769,7 +66827,7 @@ var TableProperties = /** @__PURE__ @class */ (function () {
         };
         // tslint:disable-next-line:max-line-length
         this.createDropDownButton = function (id, styles, parentDiv, iconCss, content, items, target) {
-            var buttonElement = createElement('button', { id: id, styles: styles });
+            var buttonElement = createElement('button', { id: id, styles: styles, attrs: { type: 'button' } });
             parentDiv.appendChild(buttonElement);
             var splitButtonClass = 'e-de-prop-splitbutton';
             if (_this.isRtl) {
@@ -66839,7 +66897,7 @@ var TableProperties = /** @__PURE__ @class */ (function () {
     });
     // tslint:disable-next-line:max-line-length
     TableProperties.prototype.createButtonTemplate = function (id, iconcss, div, buttonClass, styles, toolTipText, content, iconPos) {
-        var buttonElement = createElement('Button', { id: id, styles: styles });
+        var buttonElement = createElement('Button', { id: id, styles: styles, attrs: { type: 'button' } });
         div.appendChild(buttonElement);
         var btn = new Button({
             cssClass: buttonClass, iconCss: iconcss, enableRtl: this.isRtl, iconPosition: (iconPos ? iconPos : 'Left'),
@@ -66933,7 +66991,7 @@ var StatusBar = /** @__PURE__ @class */ (function () {
             div.appendChild(_this.pageCount);
             _this.updatePageCount();
             var zoomBtn = createElement('button', {
-                className: 'e-de-statusbar-zoom'
+                className: 'e-de-statusbar-zoom', attrs: { type: 'button' }
             });
             _this.statusBarDiv.appendChild(zoomBtn);
             zoomBtn.setAttribute('title', 'Zoom level. Click or tap to open the Zoom options.');
@@ -67367,6 +67425,7 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
             viewChange: this.onViewChange.bind(this),
             locale: this.locale
         });
+        this.documentEditor.acceptTab = true;
         this.documentEditor.enableLocalPaste = this.enableLocalPaste;
         this.documentEditor.enableAllModules();
         this.documentEditor.pageOutline = '#E0E0E0';

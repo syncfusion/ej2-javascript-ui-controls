@@ -1,11 +1,8 @@
 /**
  * Grid Reordering spec document
  */
-import { Browser, EventHandler, EmitType } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { SortDirection } from '../../../src/grid/base/enum';
-import { DataManager } from '@syncfusion/ej2-data';
 import { Grid } from '../../../src/grid/base/grid';
 import { getActualProperties, parentsUntil } from '../../../src/grid/base/util';
 import { Column } from '../../../src/grid/models/column';
@@ -54,7 +51,6 @@ describe('Reorder module', () => {
 
     describe('Reorder functionalities', () => {
         let gridObj: Grid;
-        let dataBound: Function;
         let actionComplete: (e?: Object) => void;
         let headers: any;
         let columns: Column[];
@@ -215,6 +211,7 @@ describe('Reorder module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
@@ -247,6 +244,7 @@ describe('Reorder module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
@@ -317,7 +315,6 @@ describe('Reorder module', () => {
 
     describe('Reorder functionalities with Freeze', () => {
         let gridObj: Grid;
-        let dataBound: Function;
         let headers: any;
         let columns: Column[];
 
@@ -386,11 +383,11 @@ describe('Reorder module', () => {
 
         afterAll((done) => {
             destroy(gridObj);
+            gridObj = headers = columns = null;
         });
     });
     describe('Reorder functionalities with virtual scrolling  =>', () => {
         let gridObj: Grid;
-        let dataBound: Function;
         let headers: any;
         let columns: Column[];
 
@@ -425,12 +422,12 @@ describe('Reorder module', () => {
 
         afterAll((done) => {
             destroy(gridObj);
+            gridObj = headers = columns = null;
         });
     });
 
     describe('Reorder functionalities-column level', () => {
         let gridObj: Grid;
-        let dataBound: Function;
         let actionComplete: (e?: Object) => void;
         let headers: any;
         let flag: boolean = false;
@@ -479,6 +476,7 @@ describe('Reorder module', () => {
         
         afterAll(() => {
             destroy(gridObj);
+            gridObj = headers = flag = actionComplete = columns = null;
         });
     });
 
@@ -569,6 +567,7 @@ describe('Reorder module', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = headers = columns = null;
         });
     });
 
@@ -616,6 +615,7 @@ describe('Reorder module', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = headers = columns = null;
         });
     });
 
@@ -708,6 +708,7 @@ describe('Reorder module', () => {
         });   
         afterAll(() => {
             destroy(gridObj);
+            gridObj = headers = columns = null;
         });
     });
 });

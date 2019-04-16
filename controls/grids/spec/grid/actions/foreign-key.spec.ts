@@ -1,11 +1,10 @@
 import { getValue } from '@syncfusion/ej2-base';
 import { createGrid, destroy } from '../base/specutil.spec';
-import { Grid, FilterSettings } from '../../../src/grid/base/grid';
+import { Grid } from '../../../src/grid/base/grid';
 import { fdata, employeeSelectData, fCustomerData, data } from '../base/datasource.spec';
 import { DataManager, Predicate, Query, Deferred } from '@syncfusion/ej2-data';
 import { Column } from '../../../src/grid/models/column';
 import { PredicateModel } from '../../../src/grid/base/grid-model';
-import { CheckBoxFilter } from '../../../src/grid/actions/checkbox-filter';
 import { Page } from '../../../src/grid/actions/page';
 import { Edit } from '../../../src/grid/actions/edit';
 import { Filter } from '../../../src/grid/actions/filter';
@@ -409,5 +408,6 @@ describe('Foreign Key =>', () => {
 
     afterAll(() => {
         destroy(gridObj);
+        gridObj = null;
     });
 });

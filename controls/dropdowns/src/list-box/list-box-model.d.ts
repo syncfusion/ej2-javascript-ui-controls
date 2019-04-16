@@ -69,7 +69,7 @@ export interface ListBoxModel extends DropDownBaseModel{
      * @default []
      * @aspType object
      */
-    value?: string[];
+    value?: string[] | number[] | boolean[];
 
     /**
      * Sets the height of the ListBox component.

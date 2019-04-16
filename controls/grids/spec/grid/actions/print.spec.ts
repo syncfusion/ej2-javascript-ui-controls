@@ -68,8 +68,10 @@ describe('Print module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
+            actionComplete = null;
         });
-    });
+     });
 
     describe('Print with paging', () => {
         let gridObj: Grid;
@@ -115,6 +117,8 @@ describe('Print module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
+            actionComplete = null;
         });
     });
 
@@ -166,6 +170,8 @@ describe('Print module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
+            actionComplete = null;
         });
     });
 
@@ -207,12 +213,15 @@ describe('Print module', () => {
         afterAll(() => {
             gridObj.printModule.destroy();
             destroy(gridObj);
+            gridObj = null;
+            actionComplete = null;
         });
     });
 
     describe('Print with hierarchy grid All mode=>', () => {
         let gridObj: Grid;
         let printGrid: Grid;
+        let c: number = 0;
         beforeAll((done: Function) => {
             gridObj = createGrid({
                 dataSource: employeeData.slice(0, 4),
@@ -228,6 +237,7 @@ describe('Print module', () => {
                     { field: 'Country', headerText: 'Country', width: 110 }
                 ],
                 childGrid: {
+                    created: () => ++c,
                     dataSource: data.slice(0, 20),
                     queryString: 'EmployeeID',
                     hierarchyPrintMode: 'All',
@@ -245,7 +255,8 @@ describe('Print module', () => {
                             { field: 'Phone', headerText: 'Phone', width: 100 },
                             { field: 'Address', headerText: 'Address', width: 120 },
                             { field: 'Country', headerText: 'Country', width: 100 }
-                        ]
+                        ],
+                        created: () => ++c
                     },
                 }
             }, done);
@@ -257,7 +268,7 @@ describe('Print module', () => {
                 expect(args.element.classList.contains('e-print-grid')).toBeTruthy();
                 expect(args.element.querySelectorAll('[aria-busy=true]').length).toBe(0);
                 expect((args.element as any).ej2_instances[0]['isPrinting']).toBeTruthy();
-                expect(args.element.querySelectorAll('.e-grid').length).toBe(14);
+                expect(args.element.querySelectorAll('.e-grid').length).toBe(c);
                 expect(trigger).toBe(0);
                 expect((<{printGridObj?: IGrid}>window).printGridObj.expandedRows).not.toBeUndefined();
                 printGrid = (<{printGridObj?: IGrid}>window).printGridObj as Grid;
@@ -276,7 +287,10 @@ describe('Print module', () => {
         afterAll(() => {
             gridObj.printModule.destroy();
             destroy(gridObj);
-            destroy(printGrid)
+            destroy(printGrid);
+            printGrid = null;
+            gridObj = null;
+            c = null;
         });
     });
 
@@ -365,6 +379,9 @@ describe('Print module', () => {
             gridObj.printModule.destroy();
             destroy(gridObj);
             destroy(printGrid);
+            gridObj = null;
+            childGrid = null;
+            printGrid = null;
         });
     });
 
@@ -451,6 +468,8 @@ describe('Print module', () => {
             gridObj.printModule.destroy();
             destroy(gridObj);
             destroy(printGrid);
+            gridObj = null;
+            printGrid = null;
         });
     });
 });

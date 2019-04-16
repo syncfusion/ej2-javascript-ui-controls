@@ -3,7 +3,7 @@ import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
 import { setStyleAttribute, remove } from '@syncfusion/ej2-base';
 import { getUpdateUsingRaf, appendChildren } from '../base/util';
 import * as events from '../base/constant';
-import { IRenderer, IGrid, NotifyArgs, IModelGenerator } from '../base/interface';
+import { IRenderer, IGrid, NotifyArgs, IModelGenerator, RowDataBoundEventArgs } from '../base/interface';
 import { Column } from '../models/column';
 import { Row } from '../models/row';
 import { Cell } from '../models/cell';
@@ -270,6 +270,8 @@ export class ContentRender implements IRenderer {
                         tr = appendChildren(frag, elements);
                     }
                 }
+                let arg: RowDataBoundEventArgs = { data: modelData[i].data, row: tr };
+                this.parent.trigger(events.rowDataBound, arg);
             }
             if (modelData[i].isDataRow) {
                 this.rowElements.push(tr);

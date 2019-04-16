@@ -97,6 +97,7 @@ describe('Aggregates Functionality testing', () => {
         });
         afterAll(() => {
             destroy(grid);
+            grid = rows = null;
         });
     });
 
@@ -140,6 +141,7 @@ describe('Aggregates Functionality testing', () => {
         });
         afterAll(() => {
             destroy(grid);
+            grid = rows = null;
         });
     });
 
@@ -186,6 +188,7 @@ describe('Aggregates Functionality testing', () => {
         });
         afterAll(() => {
             destroy(grid);
+            grid = rows = null;
         });
     });
 
@@ -249,6 +252,7 @@ describe('Aggregates Functionality testing', () => {
 
         afterAll(() => {
             destroy(grid);
+            grid = rows = null;
         });
     });
 
@@ -288,6 +292,7 @@ describe('Aggregates Functionality testing', () => {
 
         afterAll(() => {
             destroy(grid);
+            grid = rows = null;
         });
     });
 
@@ -347,6 +352,7 @@ describe('Aggregates Functionality testing', () => {
 
         afterAll(() => {
             destroy(grid);
+            grid = rows = customSum = null;
         });
     });
 
@@ -399,6 +405,7 @@ describe('Aggregates Functionality testing', () => {
 
             afterAll(() => {
                 destroy(grid);
+                grid = rows = null;
             });
         });
         describe('Enable summary without group/caption summary', () => {
@@ -441,6 +448,7 @@ describe('Aggregates Functionality testing', () => {
 
             afterAll(() => {
                 destroy(grid);
+                grid = rows = null;
             });
         });
         describe('Skip on other module update', () => {
@@ -490,6 +498,7 @@ describe('Aggregates Functionality testing', () => {
 
             afterAll(() => {
                 destroy(grid);
+                grid = rows = null;
             });
         });
     });
@@ -538,6 +547,7 @@ describe('Aggregates Functionality testing', () => {
         afterAll(() => {
             window['browserDetails']['isDevice'] = false;
             destroy(grid);
+            grid = rows = null;
         });
     });
 
@@ -583,6 +593,7 @@ describe('Aggregates Functionality testing', () => {
         });
         afterAll(() => {
             destroy(grid);
+            grid = rows = null;
         });
     });
  
@@ -780,6 +791,7 @@ describe('Aggregates Functionality testing', () => {
         });
         afterAll(() => {
             destroy(grid);
+            grid = rows = preventDefault = updateAggregatesVal = cell = customCount = null;
         });
     });
 
@@ -908,6 +920,7 @@ describe('Aggregates Functionality testing', () => {
 
         afterAll(() => {
             destroy(grid);
+            grid = rows = preventDefault = updateAggregatesVal = cell = customCount = null;
         });
     });
 
@@ -1006,6 +1019,7 @@ describe('Aggregates Functionality testing', () => {
         });
         afterAll(() => {
             destroy(grid);
+            grid = rows = preventDefault = updateAggregatesVal = cell = customCount = null;
         });
     });
 
@@ -1080,6 +1094,7 @@ describe('Aggregates Functionality testing', () => {
         });
         afterAll(() => {
             destroy(grid);
+            grid = rows = preventDefault = updateAggregatesVal = cell = customCount = null;
         });
     });
 
@@ -1132,6 +1147,7 @@ describe('Aggregates Functionality testing', () => {
         });   
         afterAll(() => {
             destroy(grid);
+            grid = rows = datas = null;
         });
     });
 });

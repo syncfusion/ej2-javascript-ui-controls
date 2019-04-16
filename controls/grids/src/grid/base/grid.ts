@@ -4037,7 +4037,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             if (this.prevElement !== element || e.type === 'mouseout') {
             this.toolTipObj.close();
             }
-            if (element && e.type !== 'mouseout') {
+            let tagName: string = (e.target as Element).tagName;
+            let elemNames: string[] = ['A', 'BUTTON', 'INPUT'];
+            if (element && e.type !== 'mouseout' && !(Browser.isDevice && elemNames.indexOf(tagName) !== -1)) {
                 if (element.getAttribute('aria-describedby')) {
                     return;
                 }

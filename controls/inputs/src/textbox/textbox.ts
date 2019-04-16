@@ -498,7 +498,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             if (this.isHiddenInput) {
                 this.element.value = this.respectiveElement.value;
                 }
-            this.value = '';
+            this.setProperties({value: this.respectiveElement.value}, true);
             let eventArgs: InputEventArgs = {
                 event: event,
                 value: this.respectiveElement.value,
@@ -506,6 +506,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                 container: this.textboxWrapper.container
             };
             this.trigger('input', eventArgs);
+            this.raiseChangeEvent(event, true);
         }
     }
 

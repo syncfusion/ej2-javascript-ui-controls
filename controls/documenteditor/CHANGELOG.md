@@ -2,6 +2,41 @@
 
 ## [Unreleased]
 
+## 17.1.41 (2019-04-16)
+
+### Document Editor
+
+#### Bug Fixes
+
+- #232616 - Document contents are now exported properly.
+- #232616 - Page hang on editing the document is fixed.
+- #232327 - Tables are now removed properly.
+
+## 17.1.40 (2019-04-09)
+
+### Document Editor
+
+#### Bug Fixes
+
+- Tab stop width is now calculated properly.
+- First page header and footer is now layout properly.
+- Scrollbar now updated properly in Internet Explorer.
+- Page reload issue on button click is fixed.
+
+## 17.1.38 (2019-03-29)
+
+### Document Editor
+
+#### New Features
+
+- Added API to customize the default character format and paragraph format of document editor.
+- Added support to customize context menu.
+- Optimized text rendering.
+
+#### Bug Fixes
+
+- Section break is now serialized properly.
+
 ## 17.1.32-beta (2019-03-13)
 
 ### Document Editor

@@ -1517,6 +1517,7 @@
     }
 
     .e-chk-hidden {
+      -moz-appearance: none; // sass-lint:disable-line no-vendor-prefixes
       height: 1px;
       opacity: 0;
       width: 1px;
@@ -2201,7 +2202,7 @@
   }
 
     .e-checkboxfiltertext {
-      width: 150px;
+      width: $grid-checkboxfiltertext-width;
       word-break: normal;
     }
 

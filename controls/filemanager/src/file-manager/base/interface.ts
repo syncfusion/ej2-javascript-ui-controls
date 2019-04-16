@@ -24,16 +24,6 @@ export interface IToolBarItems {
     tooltipText?: string;
 }
 
-export interface FileMenuOpenEventArgs {
-    element?: HTMLElement;
-    fileDetails?: Object;
-    items?: MenuItemModel[];
-    menuModule?: ContextMenu;
-    parentItem?: MenuItemModel;
-    cancel?: boolean;
-    target?: Element;
-}
-
 export interface NotifyArgs {
     module?: string;
     newProp?: FileManagerModel;
@@ -200,6 +190,33 @@ export interface FileMenuClickEventArgs {
      * Return the currently clicked context menu item as JSON object.
      */
     item?: MenuItemModel;
+}
+
+export interface FileMenuOpenEventArgs {
+    /**
+     * If you want to cancel this event then, set cancel as true. Otherwise, false.
+     */
+    cancel?: boolean;
+    /**
+     * Returns the current context menu element.
+     */
+    element?: HTMLElement;
+    /**
+     * Returns the currently selected folder/file item as JSON object.
+     */
+    fileDetails?: Object;
+    /**
+     * Returns the current context menu items as JSON object.
+     */
+    items?: MenuItemModel[];
+    /**
+     * Returns the instance of context menu component.
+     */
+    menuModule?: ContextMenu;
+    /**
+     * Returns the target element of context menu.
+     */
+    target?: Element;
 }
 
 export interface IFileManager extends Component<HTMLElement> {

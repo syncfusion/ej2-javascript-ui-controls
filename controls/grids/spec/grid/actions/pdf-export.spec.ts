@@ -126,6 +126,7 @@ describe('pdf Export =>', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
@@ -193,6 +194,7 @@ describe('pdf Export =>', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
@@ -237,12 +239,12 @@ describe('pdf Export =>', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
     describe('Hierarchy pdf export => ', () => {
         let gridObj: Grid;
-        let exportedMode: HierarchyGridPrintMode = 'Expanded';
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -329,6 +331,7 @@ describe('pdf Export =>', () => {
     
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 });

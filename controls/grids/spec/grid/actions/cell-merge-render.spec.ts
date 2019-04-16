@@ -4,12 +4,8 @@
 import { EmitType } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
-import { Column } from '../../../src/grid/models/column';
-import { ICellFormatter } from '../../../src/grid/base/interface';
-import { RowRenderer } from '../../../src/grid/renderer/row-renderer';
 import { CellMergeRender } from '../../../src/grid/renderer/cell-merge-renderer';
 import { ContentRender } from '../../../src/grid/renderer/content-renderer';
-import { Row } from '../../../src/grid/models/row';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { data } from '../base/datasource.spec';
 import { extend } from '@syncfusion/ej2-base';
@@ -90,6 +86,7 @@ describe('Cell Merge', () => {
 
         afterAll(() => {
             destroy(gridObject);
+            gridObject = null;
         });
 
     });
@@ -130,7 +127,6 @@ describe('Cell Merge', () => {
         
             describe('scroll left continous', () => {
                 let grid: Grid;
-                let rows: HTMLTableRowElement;
                 beforeAll((done: Function) => {
                     grid = createGrid(
                         {
@@ -178,6 +174,7 @@ describe('Cell Merge', () => {
                 
                 afterAll(() => {
                     destroy(grid);
+                    grid = null;
                 });
             });        
 

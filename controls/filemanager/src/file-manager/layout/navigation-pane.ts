@@ -77,7 +77,7 @@ export class NavigationPane {
         let eventArgs: FileBeforeLoadEventArgs = {
             element: args.node,
             fileDetails: args.nodeData,
-            module: 'navigationpane'
+            module: 'NavigationPane'
         };
         this.parent.trigger('beforeFileLoad', eventArgs);
     }
@@ -100,7 +100,9 @@ export class NavigationPane {
      * @private
      */
     private onNodeSelected(args: NodeSelectEventArgs): void {
-        this.parent.breadcrumbbarModule.searchObj.element.value = '';
+        if (this.parent.breadcrumbbarModule && this.parent.breadcrumbbarModule.searchObj) {
+            this.parent.breadcrumbbarModule.searchObj.element.value = '';
+        }
         this.parent.searchedItems = [];
         this.parent.activeElements = this.treeObj.element.querySelectorAll('.' + CLS.ACTIVE);
         if (!args.isInteracted) { return; }
@@ -199,7 +201,9 @@ export class NavigationPane {
 
     private onFinalizeEnd(args: ReadArgs): void {
         this.onInit(args);
-        this.addChild(args.files, getValue('nodeId', args.cwd), false);
+        let id: string = getValue('nodeId', args.cwd);
+        this.removeChildNodes(id);
+        this.addChild(args.files, id, false);
         this.treeObj.selectedNodes = [this.parent.pathId[this.parent.pathId.length - 1]];
     }
 
@@ -252,8 +256,7 @@ export class NavigationPane {
                     }
                     break;
                 case 'navigationPaneSettings':
-                    let args: ReadArgs = { files: getValue('/', this.parent.feFiles) };
-                    this.onFinalizeEnd(args);
+                    read(this.parent, events.finalizeEnd, '/');
                     break;
             }
         }

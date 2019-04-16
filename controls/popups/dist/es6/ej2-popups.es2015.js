@@ -1208,7 +1208,9 @@ function onMouseDown(e) {
     originalMouseY = e.pageY;
     e.target.classList.add(FOCUSED_HANDLER);
     if (!isNullOrUndefined(resizeStart)) {
-        resizeStart(e);
+        if (resizeStart(e) === true) {
+            return;
+        }
     }
     let target = (isNullOrUndefined(containerElement)) ? document : containerElement;
     EventHandler.add(target, 'mousemove', onMouseMove, this);
@@ -1254,7 +1256,9 @@ function onTouchStart(e) {
     originalMouseX = e.touches[0].pageX;
     originalMouseY = e.touches[0].pageY;
     if (!isNullOrUndefined(resizeStart)) {
-        resizeStart(e);
+        if (resizeStart(e) === true) {
+            return;
+        }
     }
     let touchMoveEvent = (Browser.info.name === 'msie') ? 'pointermove' : 'touchmove';
     let touchEndEvent = (Browser.info.name === 'msie') ? 'pointerup' : 'touchend';
@@ -1680,6 +1684,7 @@ let Dialog = class Dialog extends Component {
     }
     onResizeStart(args) {
         this.trigger('resizeStart', args);
+        return args.cancel;
     }
     onResizing(args) {
         this.trigger('resizing', args);

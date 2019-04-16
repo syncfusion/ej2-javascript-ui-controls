@@ -73,7 +73,7 @@ export class EventBase {
                 eventObj[fields.endTime] = util.addDays(util.resetTime(eventObj[fields.endTime] as Date), 1);
             }
         });
-        this.parent.blockProcessed = this.filterEvents(start, end, blockData);
+        this.parent.blockProcessed = blockData;
         return eventData;
     }
 
@@ -682,9 +682,12 @@ export class EventBase {
         let duration: number = endDate.getTime() - startDate.getTime();
         viewDate = new Date((viewDate || this.parent.activeView.startDate()).getTime() - duration);
         let exception: string = event[this.parent.eventFields.recurrenceException] as string;
-        let maxCount: number = ((+this.parent.activeView.endDate()) - (+util.resetTime(new Date(+viewDate)))) / util.MS_PER_DAY;
+        let maxCount: number;
+        if (this.parent.currentView !== 'Agenda') {
+            maxCount = util.getDateCount(this.parent.activeView.startDate(), this.parent.activeView.endDate()) + 1;
+        }
         let dates: number[] =
-            generate(startDate, eventRule, exception, this.parent.firstDayOfWeek, undefined, viewDate, this.parent.calendarMode);
+            generate(startDate, eventRule, exception, this.parent.firstDayOfWeek, maxCount, viewDate, this.parent.calendarMode);
         if (this.parent.currentView === 'Agenda' && eventRule.indexOf('COUNT') === -1 && eventRule.indexOf('UNTIL') === -1) {
             if (isNullOrUndefined(event.generatedDates)) {
                 event.generatedDates = { start: new Date(dates[0]), end: new Date(dates[dates.length - 1]) };
@@ -804,7 +807,8 @@ export class EventBase {
         let fields: EventFieldsMapping = this.parent.eventFields;
         eventCollection.forEach((event: { [key: string]: Object }) => {
             let dataCol: Object[] = [];
-            if (!isNullOrUndefined(event[fields.recurrenceRule]) && isNullOrUndefined(event[fields.recurrenceID])) {
+            if (!isNullOrUndefined(event[fields.recurrenceRule]) && (isNullOrUndefined(event[fields.recurrenceID])
+                || event[fields.id] !== event[fields.recurrenceID])) {
                 dataCol = this.parent.eventBase.generateOccurrence(event);
             } else {
                 dataCol.push(event);

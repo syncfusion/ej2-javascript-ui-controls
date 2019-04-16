@@ -2,7 +2,7 @@
  * tab spec document
  */
 import { Browser, createElement, closest, DomElements, L10n, isVisible, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
-import { Tab, SelectingEventArgs } from '../src/tab/tab';
+import { Tab, RemoveEventArgs, AddEventArgs, SelectingEventArgs } from '../src/tab/tab';
 import { TabActionSettingsModel, TabAnimationSettingsModel } from '../src/tab/tab-model';
 import { Toolbar } from '../src/toolbar/toolbar';
 import { profile, inMB, getMemoryProfile } from './common.spec';
@@ -3175,6 +3175,46 @@ describe('Tab Control', () => {
             expect(tab.items.length).toEqual(3);
             expect(tab.items[2].content).toEqual('Content3');
             expect(element.querySelectorAll('.e-toolbar-item').length).toEqual(3);
+        });
+        it('Items - canel argument for RemoveEventArgs', () => {
+            tab = new Tab({
+                showCloseButton: true,
+                removing: (args: RemoveEventArgs) => {
+                    args.cancel = true;
+                },
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" },
+                    { header: { "text": "item3" }, content: "Content3" },
+                    { header: { "text": "item4" }, content: "Content4" }
+                ]
+            });
+            tab.appendTo("#ej2Tab");
+            let ele: HTMLElement = tab.element;
+            let activeEle: HTMLElement = ele.querySelector('.e-toolbar-item.e-active') as HTMLElement;
+            let closebtn: HTMLElement = activeEle.querySelector('.e-close-icon');
+            expect(ele.querySelectorAll('.e-toolbar-item').length).toBe(4);
+            closebtn.click();
+            expect(ele.querySelector('.e-toolbar-item.e-active')).toEqual(activeEle);
+            expect(ele.querySelectorAll('.e-toolbar-item').length).toBe(4);
+        });
+        it('Items - canel argument for AddEventArgs', () => {
+            tab = new Tab({
+                adding: (args: AddEventArgs) => {
+                    args.cancel = true;
+                },
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" },
+                    { header: { "text": "item3" }, content: "Content3" },
+                    { header: { "text": "item4" }, content: "Content4" }
+                ]
+            });
+            tab.appendTo("#ej2Tab");
+            let ele: HTMLElement = tab.element;
+            expect(ele.querySelectorAll('.e-toolbar-item').length).toBe(4);
+            tab.addTab([ { header: { "text": "Newitem1" }, content: "NewContent1" } ], 1);
+            expect(ele.querySelectorAll('.e-toolbar-item').length).toBe(4);
         });
         it('Items - Animation with removeTab test', () => {
             tab = new Tab({

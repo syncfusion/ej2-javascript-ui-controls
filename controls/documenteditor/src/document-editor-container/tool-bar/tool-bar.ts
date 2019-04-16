@@ -99,7 +99,7 @@ export class Toolbar {
 
         // Show hide pane button initialization 
         let propertiesPaneDiv: HTMLElement = createElement('div', { className: 'e-de-ctnr-properties-pane-btn' });
-        let buttonElement: HTMLButtonElement = createElement('button') as HTMLButtonElement;
+        let buttonElement: HTMLButtonElement = createElement('button', { attrs: { type: 'button' } }) as HTMLButtonElement;
         propertiesPaneDiv.appendChild(buttonElement);
         let cssClassName: string = 'e-tbar-btn e-tbtn-txt e-control e-btn e-de-showhide-btn';
         if (this.container.enableRtl) {

@@ -176,9 +176,24 @@
       border-color: $treeview-item-hover-border-color;
     }
 
-    .e-list-item.e-active > .e-fullrow {
-      background-color: $treeview-item-active-bg;
-      border-color: $treeview-item-active-border-color;
+    .e-list-item.e-active {
+      &> .e-fullrow {
+        background-color: $treeview-item-active-bg;
+        border-color: $treeview-item-active-border-color;
+      }
+
+      &.e-animation-active > .e-fullrow {
+        background-color: transparent;
+        border-color: transparent;
+      }
+
+      &.e-animation-active > .e-text-content {
+        color: $treeview-text-color;
+
+        .e-list-text {
+          color: $treeview-text-color;
+        }
+      }
     }
 
     .e-list-item.e-active.e-hover > .e-fullrow {

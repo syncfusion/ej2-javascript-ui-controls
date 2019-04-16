@@ -1,10 +1,8 @@
 /**
  * Grid batch edit spec document
  */ 
-import { EmitType } from '@syncfusion/ej2-base';
 import { extend, getValue } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
-import { createElement, remove } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { isActionPrevent } from '../../../src/grid/base/util';
 import { QueryCellInfoEventArgs } from '../../../src/grid/base/interface';
@@ -14,24 +12,19 @@ import { Group } from '../../../src/grid/actions/group';
 import { Sort } from '../../../src/grid/actions/sort';
 import { Reorder } from '../../../src/grid/actions/reorder';
 import { Freeze } from '../../../src/grid/actions/freeze';
-import { BatchEdit } from '../../../src/grid/actions/batch-edit';
 import { Page } from '../../../src/grid/actions/page';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { Column } from '../../../src/grid/models/column';
 import { Selection } from '../../../src/grid/actions/selection';
-import { NumericEditCell } from '../../../src/grid/renderer/numeric-edit-cell';
-import { DropDownEditCell } from '../../../src/grid/renderer/dropdown-edit-cell';
-import { DatePickerEditCell } from '../../../src/grid/renderer/datepicker-edit-cell';
-import { BooleanEditCell } from '../../../src/grid/renderer/boolean-edit-cell';
 import { data, employeeData } from '../base/datasource.spec';
 import { DetailRow } from '../../../src/grid/actions/detail-row'
 import '../../../node_modules/es6-promise/dist/es6-promise';
-import { createGrid, destroy, getKeyUpObj, getClickObj, getKeyActionObj } from '../base/specutil.spec';
+import { createGrid, destroy, getClickObj } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import * as events from '../../../src/grid/base/constant';
+import { BatchEdit } from '../../../src';
 
 Grid.Inject(Filter, Page, Selection, Group, Edit, Sort, Reorder, Toolbar, Freeze, DetailRow);
-
 
 describe('Batch Editing module', () => {
 
@@ -42,6 +35,7 @@ describe('Batch Editing module', () => {
         }
         return datasrc;
     };
+    let batchData: Object[] = dataSource();
 
 
     describe('Batch editing render => ', () => {
@@ -56,7 +50,7 @@ describe('Batch Editing module', () => {
             }
             gridObj = createGrid(
                 {
-                    dataSource: dataSource(),
+                    dataSource: batchData,
                     allowFiltering: true,
                     allowGrouping: true,
                     editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', showConfirmDialog: true, showDeleteConfirmDialog: false },
@@ -300,6 +294,7 @@ describe('Batch Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
 
@@ -310,7 +305,7 @@ describe('Batch Editing module', () => {
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
-                    dataSource: dataSource(),
+                    dataSource: batchData,
                     allowFiltering: true,
                     allowGrouping: true,
                     editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', showConfirmDialog: true, showDeleteConfirmDialog: false },
@@ -465,6 +460,7 @@ describe('Batch Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
 
@@ -477,7 +473,7 @@ describe('Batch Editing module', () => {
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
-                    dataSource: dataSource(),
+                    dataSource: batchData,
                     allowFiltering: false,
                     allowGrouping: true,
                     editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', showConfirmDialog: true, showDeleteConfirmDialog: false },
@@ -916,18 +912,18 @@ describe('Batch Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
 
     describe('update cell and row method testing => ', () => {
         let gridObj: Grid;
         let actionBegin: () => void;
-        let preventDefault: Function = new Function();
         let actionComplete: () => void;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
-                    dataSource: dataSource(),
+                    dataSource: batchData,
                     allowFiltering: true,
                     allowGrouping: true,
                     editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', showConfirmDialog: true, showDeleteConfirmDialog: false },
@@ -1027,18 +1023,18 @@ describe('Batch Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
 
     describe('update cell and row method testing => ', () => {
         let gridObj: Grid;
         let actionBegin: () => void;
-        let preventDefault: Function = new Function();
         let actionComplete: () => void;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
-                    dataSource: dataSource(),
+                    dataSource: batchData,
                     allowFiltering: true,
                     allowGrouping: true,
                     editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', showConfirmDialog: true, showDeleteConfirmDialog: false },
@@ -1144,18 +1140,18 @@ describe('Batch Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
 
     describe('batch editing lose with other actions => ', () => {
         let gridObj: Grid;
         let actionBegin: () => void;
-        let preventDefault: Function = new Function();
         let actionComplete: (args: any) => void;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
-                    dataSource: dataSource(),
+                    dataSource: batchData,
                     allowFiltering: true,
                     allowGrouping: true,
                     allowReordering: true,
@@ -1394,18 +1390,18 @@ describe('Batch Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
 
     describe('cell edit types => ', () => {
         let gridObj: Grid;
         let actionBegin: () => void;
-        let preventDefault: Function = new Function();
         let actionComplete: () => void;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
-                    dataSource: dataSource(),
+                    dataSource: batchData,
                     allowFiltering: true,
                     allowGrouping: true,
                     editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', showConfirmDialog: true, showDeleteConfirmDialog: false },
@@ -1542,13 +1538,13 @@ describe('Batch Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
 
     describe('cell edit types => ', () => {
         let gridObj: Grid;
         let actionBegin: () => void;
-        let preventDefault: Function = new Function();
         let actionComplete: () => void;
         let datamManager = new DataManager(dataSource() as JSON[]);
         beforeAll((done: Function) => {
@@ -1604,13 +1600,13 @@ describe('Batch Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
 
     describe('Validation check => ', () => {
         let gridObj: Grid;
         let actionBegin: () => void;
-        let preventDefault: Function = new Function();
         let actionComplete: () => void;
         let datamManager = new DataManager(dataSource() as JSON[]);
         beforeAll((done: Function) => {
@@ -1685,6 +1681,7 @@ describe('Batch Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
     describe('keyboard shortcuts testing with cell spanning => ', () => {
@@ -1783,6 +1780,7 @@ describe('Batch Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
     describe('showConfirmDialog check => ', () => {
@@ -1853,6 +1851,7 @@ describe('Batch Editing module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
     // describe('EJ2-6255 - I193332 => ', () => {
@@ -1946,7 +1945,7 @@ describe('Batch Editing module', () => {
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
-                    dataSource: dataSource(),
+                    dataSource: batchData,
                     allowFiltering: true,
                     allowGrouping: true,
                     editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
@@ -1974,6 +1973,7 @@ describe('Batch Editing module', () => {
         afterAll((done: Function) => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
             setTimeout(function () {
                 done();
             }, 1000);
@@ -1985,7 +1985,7 @@ describe('Batch Editing module', () => {
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
-                    dataSource: dataSource(),
+                    dataSource: batchData,
                     frozenColumns: 2,
                     frozenRows: 2,
                     editSettings: {
@@ -2141,6 +2141,7 @@ describe('Batch Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
@@ -2166,7 +2167,7 @@ describe('Batch Editing module', () => {
                     ],
                     detailDataBound: detailDataBound,
                     childGrid: {
-                        dataSource: dataSource().concat([{
+                        dataSource: batchData.concat([{
                             OrderID: 10555, CustomerID: 'TOMSP', EmployeeID: 1, OrderDate: new Date(836505e6),
                             ShipName: 'Toms Spezialitäten', ShipCity: 'Münster', ShipAddress: 'Luisenstr. 48',
                             ShipRegion: 'CJ', ShipPostalCode: '44087', ShipCountry: 'Germany', Freight: 11.61, Verified: !1
@@ -2340,16 +2341,12 @@ describe('Batch Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
 
     describe('Editing with empty grid => ', () => {
         let gridObj: Grid;
-        let childGridObj: Grid;
-        let actionBegin: () => void;
-        let actionComplete: () => void;
-        let detailDataBound: () => void;
-        let preventDefault: Function = new Function();
 
         beforeAll((done: Function) => {
             gridObj = createGrid(
@@ -2380,6 +2377,7 @@ describe('Batch Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = null;
         });
     });
     describe('Batch editing the last column after grouping => ', () => {
@@ -2389,7 +2387,7 @@ describe('Batch Editing module', () => {
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
-                    dataSource: dataSource(),
+                    dataSource: batchData,
                     allowGrouping: true,
                     editSettings: { allowEditing: true, mode: 'Batch' },
                     allowPaging: true,
@@ -2441,6 +2439,7 @@ describe('Batch Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
 
@@ -2505,13 +2504,13 @@ describe('Batch Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
 
     describe('add record with multiple validation for enforce all cells => ', () => {
         let gridObj: Grid;
         let actionBegin: () => void;
-        let preventDefault: Function = new Function();
         let actionComplete: () => void;
         beforeAll((done: Function) => {
             gridObj = createGrid(
@@ -2595,6 +2594,7 @@ expect((gridObj.editModule as any).editModule.isAdded).toBe(false);
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
 
@@ -2607,7 +2607,7 @@ expect((gridObj.editModule as any).editModule.isAdded).toBe(false);
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
-                    dataSource: dataSource(),
+                    dataSource: batchData,
                     allowFiltering: false,
                     allowGrouping: true,
                     editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', showConfirmDialog: true, showDeleteConfirmDialog: false },
@@ -2716,6 +2716,7 @@ expect((gridObj.editModule as any).editModule.isAdded).toBe(false);
     afterAll(() => {
         gridObj.notify('tooltip-destroy', {});
         destroy(gridObj);
+        gridObj = actionBegin = actionComplete = cell = preventDefault = null;
     });
 });
 
@@ -2724,7 +2725,6 @@ expect((gridObj.editModule as any).editModule.isAdded).toBe(false);
 
 describe('Action Complete in batch edit => ', () => {
     let gridObj: Grid;
-    let preventDefault: Function = new Function();
     let actionComplete: () => void;
     beforeAll((done: Function) => {
         gridObj = createGrid(
@@ -2756,6 +2756,7 @@ describe('Action Complete in batch edit => ', () => {
     });
     afterAll(() => {
         destroy(gridObj);
+        gridObj = actionComplete = null;
     });
 });
 

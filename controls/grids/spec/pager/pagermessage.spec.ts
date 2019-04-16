@@ -34,6 +34,7 @@ describe('Pagermessage module', () => {
         afterAll(() => {
             pagerObj.destroy();
             elem.remove();
+            pagerObj = elem = null;
         });
 
     });
@@ -66,6 +67,7 @@ describe('Pagermessage module', () => {
         afterAll(() => {
             pagerObj.destroy();
             elem.remove();
+            pagerObj = elem = null;
         });
 
     });
@@ -109,6 +111,7 @@ describe('Pagermessage module', () => {
         afterAll(() => {
             pagerObj.destroy();
             elem.remove();
+            pagerObj = elem = null;
         });
 
     });

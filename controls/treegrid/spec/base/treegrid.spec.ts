@@ -1,7 +1,7 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from './treegridutil.spec';
-import { sampleData, projectData, treeMappedData, multiLevelSelfRef1, emptyChildData, allysonData, selfReferenceData } from './datasource.spec';
-import { PageEventArgs, extend, Page, doesImplementInterface } from '@syncfusion/ej2-grids';
+import { sampleData, projectData, testdata, treeMappedData, multiLevelSelfRef1, emptyChildData, allysonData, selfReferenceData } from './datasource.spec';
+import { PageEventArgs, extend, Page, doesImplementInterface, getObject } from '@syncfusion/ej2-grids';
 import { RowExpandingEventArgs, RowCollapsingEventArgs } from '../../src';
 import { ColumnMenu } from '../../src/treegrid/actions/column-menu';
 import {Toolbar} from '../../src/treegrid/actions/toolbar';
@@ -579,6 +579,7 @@ describe('TreeGrid base module', () => {
       destroy(gridObj);
     });
   });
+
    describe('EJ2-22983: DataSource is not proper whose parentIDMapping record is not defined', () => {
     let gridObj: TreeGrid;
     let rows: Element[];
@@ -651,6 +652,37 @@ describe('TreeGrid base module', () => {
       destroy(gridObj);
     });
   });
+
+
+  describe('EJ2-25219: uniqueIDCollection is not updated if the datasource contains level property', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    let actionComplete: ()=> void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: testdata,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          columns: [
+              { field: 'taskId', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 80 },
+              { field: 'taskName', headerText: 'Task Name', width: 200 },
+              { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 100, format: { skeleton: 'yMd', type: 'date' } },
+              { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 90 },
+              { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 90 }
+          ]
+        },
+        done
+      );
+    });
+    it('Checking uniqueIDCollection values', ()  => {
+      expect(Object.keys(getObject('uniqueIDCollection',gridObj)).length !== 0).toBe(true);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
 
   it('memory leak', () => {
     profile.sample();

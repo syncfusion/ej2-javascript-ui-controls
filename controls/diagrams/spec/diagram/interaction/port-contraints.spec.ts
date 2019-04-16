@@ -172,9 +172,6 @@ describe('Diagram Control', () => {
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
-
-
-
     });
     describe('Ports with constraints undo redo ', () => {
         let diagram: Diagram;
@@ -347,6 +344,251 @@ describe('Diagram Control', () => {
             diagram.undo();
             expect(document.getElementById("groupgroup_container_groupElement").children.length).toEqual(6)
             done();
+        });
+    });
+
+    describe('Ports with inconnect and outconnect ', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
+            ele = createElement('div', { id: 'diagram6' });
+            document.body.appendChild(ele);
+
+            let nodes: NodeModel[] = [
+                {
+                    id: "1",
+                    offsetX: 100,
+                    offsetY: 150,
+                    width: 100,
+                    height: 100,
+                    constraints: NodeConstraints.Default &~(NodeConstraints.InConnect | NodeConstraints.OutConnect),
+                    ports: [
+                        {
+                            offset: {
+                                x: 0,
+                                y: 0.5,
+                            },
+                            visibility: 1,
+                            constraints: PortConstraints.InConnect | PortConstraints.OutConnect | PortConstraints.Draw,
+                        },
+                        {
+                            id: "1port",
+                            offset: {
+                                x: 1,
+                                y: 0.5,
+                            },
+                            visibility: 1,
+                            constraints: PortConstraints.InConnect | PortConstraints.OutConnect | PortConstraints.Draw,
+                        }
+                    ]
+                },
+                {
+                    id: "2",
+                    offsetX: 400,
+                    offsetY: 150,
+                    width: 100,
+                    height: 100,
+                    constraints: NodeConstraints.Default &~(NodeConstraints.InConnect | NodeConstraints.OutConnect),
+                    ports: [
+                        {
+                            id: "2port",
+                            offset: {
+                                x: 0,
+                                y: 0.5,
+                            },
+                            visibility: 1,
+                            constraints: PortConstraints.InConnect | PortConstraints.OutConnect | PortConstraints.Draw,
+                        },
+                        {
+                            offset: {
+                                x: 1,
+                                y: 0.5,
+                            },
+                            visibility: 1,
+                            constraints: PortConstraints.InConnect | PortConstraints.OutConnect | PortConstraints.Draw,
+                        }
+                    ]
+                },
+                {
+                    id: '3', width: 100, height: 100, offsetX: 100, offsetY: 300,
+                    shape: { type: 'Basic', shape: 'Rectangle' }, constraints: NodeConstraints.Default,
+                    ports: [
+                                 { id: '3port', visibility: 1, height: 10, width: 10, offset: { x: 1, y: 0.5 }, constraints: PortConstraints.None },
+                      ]
+                },
+                {
+                    id: '4', width: 100, height: 100, offsetX: 400, offsetY: 300, annotations: [{ content: 'Node4' }],
+                    shape: { type: 'Basic', shape: 'Rectangle' }, constraints: NodeConstraints.Default,
+                    ports: [
+                                 { id: '4port', visibility: 1, height: 10, width: 10, offset: { x: 0, y: 0.5 }, constraints: PortConstraints.InConnect | PortConstraints.OutConnect },
+                      ]
+                },
+                {
+                    id: '5', width: 100, height: 100, offsetX: 100, offsetY: 500,
+                    shape: { type: 'Basic', shape: 'Rectangle' }, constraints: NodeConstraints.Default &~(NodeConstraints.InConnect | NodeConstraints.OutConnect),
+                    ports: [
+                                 { id: '5port', height: 10, width: 10, offset: { x: 1, y: 0.5 }, constraints: PortConstraints.InConnect | PortConstraints.OutConnect },
+                      ]
+                },
+                {
+                    id: '6', width: 100, height: 100, offsetX: 400, offsetY: 500,
+                    shape: { type: 'Basic', shape: 'Rectangle' }, constraints: NodeConstraints.Default &~(NodeConstraints.InConnect | NodeConstraints.OutConnect),
+                    ports: [
+                                 { id: '6port', height: 10, width: 10, offset: { x: 0, y: 0.5 }, constraints: PortConstraints.InConnect | PortConstraints.OutConnect },
+                      ]
+                }
+            ];
+
+            let connectors: ConnectorModel[] = [{
+                sourceID: "1",
+                sourcePortID: "1port",
+                targetID: "2",
+                targetPortID: "2port",
+            },
+            {
+                sourceID: "3",
+                sourcePortID: "3port",
+                targetID: "4",
+                targetPortID: "4port",
+            },
+            {
+                sourceID: "5",
+                targetID: "6",              
+            }
+          ];
+
+            diagram = new Diagram({
+                width: '500px', height: '500px', nodes: nodes, connectors: connectors
+            });
+
+            diagram.appendTo('#diagram6');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('port with inconnect and outconnect and node without inconnect and outconnect', (done: Function) => {
+            let mouseEvents: MouseEvents = new MouseEvents();
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 160, 150);
+            mouseEvents.mouseDownEvent(diagramCanvas, 155, 155);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 180, 150);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 180, 150);
+            expect(diagram.selectedItems.connectors[0].sourcePortID).toBe('')
+            mouseEvents.mouseMoveEvent(diagramCanvas, 155, 155);
+            mouseEvents.mouseLeaveEvent(diagramCanvas);
+            expect(diagram.selectedItems.connectors[0].sourcePortID).toBe('1port');
+            done();
+        });
+        it('port with None and node default', (done: Function) => {
+            let mouseEvents: MouseEvents = new MouseEvents();
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 160, 300);
+            mouseEvents.mouseDownEvent(diagramCanvas, 155, 300);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 180, 300);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 180, 300);
+            expect(diagram.selectedItems.connectors[0].sourceID).toBe('')
+            mouseEvents.mouseMoveEvent(diagramCanvas, 135, 300);
+            mouseEvents.mouseLeaveEvent(diagramCanvas);
+            expect(diagram.selectedItems.connectors[0].sourceID).toBe('3');
+            done();
+        });
+        it('Remove port inconnect runtime', (done: Function) => {
+             diagram.nodes[0].ports[1].constraints = PortConstraints.Default &~PortConstraints.OutConnect;
+             diagram.dataBind();
+             let mouseEvents: MouseEvents = new MouseEvents();
+             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+             mouseEvents.clickEvent(diagramCanvas, 160, 150);
+             mouseEvents.mouseDownEvent(diagramCanvas, 155, 155);
+             mouseEvents.mouseMoveEvent(diagramCanvas, 180, 150);
+             mouseEvents.mouseMoveEvent(diagramCanvas, 180, 150);
+             mouseEvents.mouseMoveEvent(diagramCanvas, 155, 155);
+             mouseEvents.mouseLeaveEvent(diagramCanvas);
+             expect(diagram.connectors[0].sourcePortID).toBe('');
+             done();
+        });
+        it('sourceport and targetport not defined and port constraints as inconnect and outconnect', (done: Function) => {    
+            expect(diagram.connectors[2].sourcePoint.x).toBe(0);
+            expect(diagram.connectors[2].sourcePoint.y).toBe(0);
+            expect(diagram.connectors[2].targetPoint.x).toBe(0);
+            expect(diagram.connectors[2].targetPoint.y).toBe(0);
+            diagram.drag(diagram.nodes[5], 200, 550);
+            expect(diagram.connectors[2].sourcePoint.x).toBe(0);
+            expect(diagram.connectors[2].sourcePoint.y).toBe(0);
+            expect(diagram.connectors[2].targetPoint.x).toBe(0);
+            expect(diagram.connectors[2].targetPoint.y).toBe(0);
+            done();
+        });
+    });
+    describe('Port Constraints - Draw', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramannotation' });
+            document.body.appendChild(ele);
+            let node: NodeModel = {
+                id: 'node1', width: 100, height: 100, offsetX: 200, offsetY: 200, annotations: [{ content: 'Node1' }],
+                ports: [
+                    {
+                        id: 'port11', visibility: PortVisibility.Visible, offset: { x: 0, y: 0.5 },
+                        constraints: PortConstraints.Default | PortConstraints.Draw
+                    },
+                    {
+                        id: 'port12', visibility: PortVisibility.Visible, offset: { x: 1, y: 0.5 },
+                        constraints: PortConstraints.Default | PortConstraints.Draw, height: 15, width: 15
+                    }
+                ],
+                constraints: NodeConstraints.Default & ~(NodeConstraints.InConnect | NodeConstraints.OutConnect)
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 100, height: 100, offsetX: 500, offsetY: 200, annotations: [{ content: 'Node2' }],
+                ports: [
+                    {
+                        id: 'port21', visibility: PortVisibility.Visible, offset: { x: 0, y: 0.5 },
+                        constraints: PortConstraints.Default | PortConstraints.Draw
+                    },
+                    {
+                        id: 'port22', visibility: PortVisibility.Visible, offset: { x: 1, y: 0.5 },
+                        constraints: PortConstraints.Default | PortConstraints.Draw
+                    }
+                ],
+                constraints: NodeConstraints.Default & ~(NodeConstraints.InConnect | NodeConstraints.OutConnect)
+            };
+            diagram = new Diagram({
+                width: '1000px', height: '1000px', nodes: [node, node2]
+
+            });
+            diagram.appendTo('#diagramannotation');
+        });
+
+        it('Check highlighter render or not', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 100.5, 80.5);
+            mouseEvents.mouseDownEvent(diagramCanvas, 250.5, 200.5);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 550.5, 180.5);
+            mouseEvents.mouseUpEvent(diagramCanvas, 550.5, 180.5);
+            let highlighter: HTMLElement = document.getElementById('diagram_diagramAdorner_svg_highlighter');
+            expect(highlighter === null).toBe(true);
+            done();
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
         });
     });
 });

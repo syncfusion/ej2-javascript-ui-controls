@@ -354,7 +354,7 @@ export class TableProperties {
         (styleTypeDiv.firstElementChild.lastElementChild.firstElementChild.firstElementChild as HTMLElement).style.width = '100%';
         // tslint:disable-next-line:max-line-length
         classList((styleTypeDiv.lastElementChild.lastElementChild.lastElementChild.firstChild as HTMLElement), ['e-de-ctnr-highlightcolor'], ['e-caret']);
-        let borderSizeButton: HTMLElement = createElement('button', { id: this.elementId + '_tableBorderSize', className: 'e-de-border-size-button', styles: 'font-size:10px;padding:0px;' });
+        let borderSizeButton: HTMLElement = createElement('button', { id: this.elementId + '_tableBorderSize', className: 'e-de-border-size-button', styles: 'font-size:10px;padding:0px;', attrs: { type: 'button' } });
         styleTypeDiv.appendChild(borderSizeButton);
         this.borderSize = this.createBorderSizeDropDown('e-de-ctnr-strokesize e-icons', borderSizeButton);
         parentDiv.appendChild(styleTypeDiv);
@@ -548,7 +548,7 @@ export class TableProperties {
     }
     // tslint:disable-next-line:max-line-length
     public createDropDownButton = (id: string, styles: string, parentDiv: HTMLElement, iconCss: string, content: string, items?: ItemModel[], target?: HTMLElement): DropDownButton => {
-        let buttonElement: HTMLButtonElement = createElement('button', { id: id, styles: styles }) as HTMLButtonElement;
+        let buttonElement: HTMLButtonElement = createElement('button', { id: id, styles: styles, attrs: { type: 'button' } }) as HTMLButtonElement;
         parentDiv.appendChild(buttonElement);
         let splitButtonClass: string = 'e-de-prop-splitbutton';
         if (this.isRtl) {
@@ -566,7 +566,7 @@ export class TableProperties {
     }
     // tslint:disable-next-line:max-line-length
     private createButtonTemplate(id: string, iconcss: string, div: HTMLElement, buttonClass: string, styles: string, toolTipText: string, content?: string, iconPos?: string): Button {
-        let buttonElement: HTMLButtonElement = createElement('Button', { id: id, styles: styles }) as HTMLButtonElement;
+        let buttonElement: HTMLButtonElement = createElement('Button', { id: id, styles: styles, attrs: { type: 'button' } }) as HTMLButtonElement;
         div.appendChild(buttonElement);
         let btn: Button = new Button({
             cssClass: buttonClass, iconCss: iconcss, enableRtl: this.isRtl, iconPosition: (iconPos ? iconPos as IconPosition : 'Left'),

@@ -943,7 +943,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
      * @return {void}
      */
     public toggle(): void {
-        this.splitBtn.toggle();
+        this.container.parentElement.classList.contains('e-popup-close') ? this.splitBtn.toggle() : this.closePopup(null);
     }
 
     /**
@@ -1020,7 +1020,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
         let beforeCloseArgs: BeforeOpenCloseEventArgs = { element: this.container, event: e, cancel: false };
         this.trigger('beforeClose', beforeCloseArgs);
         if (!beforeCloseArgs.cancel) {
-            this.toggle();
+            this.splitBtn.toggle();
             this.onPopupClose();
         }
     }
@@ -1690,7 +1690,6 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             let ele: Element = select('span[aria-label="' + this.roundValue(newProp) + '"]', this.container);
             if (ele) { this.addTileSelection(ele); }
         }
-        this.element.value = newProp.slice(0, 7);
     }
 
     private setInputEleProps(prop: boolean): void {
@@ -1766,14 +1765,20 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
      * @private
      */
     public onPropertyChanged(newProp: ColorPickerModel, oldProp: ColorPickerModel): void {
-        let wrapper: Element = this.getWrapper();
+        if (!isNullOrUndefined(newProp.value)) {
+            let value: string = this.roundValue(newProp.value);
+            if (value.length === 9) {
+                this.element.value = this.roundValue(value).slice(0, 7);
+                let preview: HTMLElement = this.splitBtn && select('.' + SPLITPREVIEW, this.splitBtn.element) as HTMLElement;
+                if (preview) { preview.style.backgroundColor = newProp.value; }
+            } else {
+                this.value = oldProp.value;
+            }
+        }
         if (!this.inline && isNullOrUndefined(newProp.inline)) {
             let otherCompModel: string[] = ['disabled', 'enableRtl'];
             this.splitBtn.setProperties(getModel(newProp, otherCompModel));
             if (!this.isPopupOpen()) {
-                if (newProp.value) {
-                    (select('.' + SPLITPREVIEW, this.splitBtn.element) as HTMLElement).style.backgroundColor = newProp.value;
-                }
                 this.changeCssClassProps(newProp.cssClass, oldProp.cssClass);
                 this.changeRtlProps(newProp.enableRtl);
                 return;
@@ -1823,7 +1828,7 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
                     this.changeDisabledProp(newProp.disabled);
                     break;
                 case 'value':
-                    this.changeValueProp(newProp.value);
+                    if (this.value !== oldProp.value) { this.changeValueProp(newProp.value); }
                     break;
                 case 'showButtons':
                     this.changeShowBtnProps(newProp.showButtons);

@@ -1202,6 +1202,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
     DataManipulation.prototype.convertToFlatData = function (data) {
         var _this = this;
         this.parent.flatData = (Object.keys(data).length === 0 ? this.parent.dataSource : []);
+        this.parent.parentData = [];
         if ((isRemoteData(this.parent) && !isOffline(this.parent)) && data instanceof DataManager) {
             var dm = this.parent.dataSource;
             if (this.parent.parentIdMapping) {
@@ -1414,7 +1415,16 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
      * @hidden
      */
     DataManipulation.prototype.dataProcessor = function (args) {
-        var dataObj = this.parent.grid.dataSource;
+        var isExport = getObject('isExport', args);
+        var expresults = getObject('expresults', args);
+        var exportType = getObject('exportType', args);
+        var dataObj;
+        if (isExport && !isNullOrUndefined(expresults)) {
+            dataObj = expresults;
+        }
+        else {
+            dataObj = this.parent.grid.dataSource;
+        }
         var results = dataObj instanceof DataManager ? dataObj.dataSource.json : dataObj;
         var count = results.length;
         if ((this.parent.grid.allowFiltering && this.parent.grid.filterSettings.columns.length) ||
@@ -1480,7 +1490,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
             }
         }
         count = results.length;
-        if (this.parent.allowPaging) {
+        if (this.parent.allowPaging && (!isExport || exportType === 'CurrentPage')) {
             this.parent.notify(pagingActions, { result: results, count: count });
             results = this.dataResults.result;
             count = this.dataResults.count;
@@ -2254,6 +2264,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         if (data instanceof Array && data.length > 0 && data[0].hasOwnProperty('level')) {
             this.flatData = data;
             this.flatData.filter(function (e) {
+                setValue('uniqueIDCollection.' + e.uniqueID, e, _this);
                 if (e.level === 0) {
                     _this.parentData.push(e);
                 }
@@ -2422,7 +2433,6 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         //   this.notify(events.cellSaved, args);
         // };
         this.grid.cellEdit = function (args) {
-            _this.trigger(cellEdit, args);
             _this.notify(cellEdit, args);
         };
         // this.grid.batchAdd = (args: BatchAddArgs): void => {
@@ -2735,7 +2745,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                         || this.dataSource.adaptor instanceof RemoteSaveAdaptor);
                     this.convertTreeData(this.dataSource);
                     if (this.isLocalData) {
-                        this.grid.dataSource = this.flatData.slice();
+                        this.grid.dataSource = this.flatData;
                     }
                     else {
                         this.grid.dataSource = this.dataSource;
@@ -2925,10 +2935,11 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * Adds a new record to the TreeGrid. Without passing parameters, it adds empty rows.
      * > `editSettings.allowEditing` should be true.
      * @param {Object} data - Defines the new add record data.
-     * @param {number} index - Defines the row index to be added
+     * @param {number} index - Defines the row index to be added.
+     * @param {RowPosition} position - Defines the new row position to be added.
      */
-    TreeGrid.prototype.addRecord = function (data, index) {
-        this.grid.editModule.addRecord(data, index);
+    TreeGrid.prototype.addRecord = function (data, index, position) {
+        this.editModule.addRecord(data, index, position);
     };
     /**
      * Cancels edited state.
@@ -3935,7 +3946,6 @@ var Reorder$1 = /** @__PURE__ @class */ (function () {
     function Reorder$$1(parent, treeColumn) {
         Grid.Inject(Reorder);
         this.parent = parent;
-        this.treeColumn = treeColumn;
         this.addEventListener();
     }
     /**
@@ -3950,14 +3960,12 @@ var Reorder$1 = /** @__PURE__ @class */ (function () {
      */
     Reorder$$1.prototype.addEventListener = function () {
         this.parent.on('getColumnIndex', this.getTreeColumn, this);
-        this.parent.on('setColumnIndex', this.setTreeColumnIndex, this);
     };
     Reorder$$1.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
             return;
         }
         this.parent.off('getColumnIndex', this.getTreeColumn);
-        this.parent.off('setColumnIndex', this.getTreeColumn);
     };
     /**
      * To destroy the Reorder
@@ -3968,18 +3976,18 @@ var Reorder$1 = /** @__PURE__ @class */ (function () {
         this.removeEventListener();
     };
     Reorder$$1.prototype.getTreeColumn = function () {
-        this.treeColumn = this.parent.columns[this.parent.treeColumnIndex];
-    };
-    Reorder$$1.prototype.setTreeColumnIndex = function () {
+        var treeColumn = this.parent.columns[this.parent.treeColumnIndex];
         var treeIndex;
-        for (var f = 0; f < this.parent.columns.length; f++) {
-            var treeColumnfield = getObject('field', this.treeColumn);
-            var parentColumnfield = getObject('field', this.parent.columns[f]);
+        var updatedCols = this.parent.getColumns();
+        for (var f = 0; f < updatedCols.length; f++) {
+            var treeColumnfield = getObject('field', treeColumn);
+            var parentColumnfield = getObject('field', updatedCols[f]);
             if (treeColumnfield === parentColumnfield) {
                 treeIndex = f;
+                break;
             }
         }
-        this.parent.treeColumnIndex = treeIndex;
+        this.parent.setProperties({ treeColumnIndex: treeIndex }, true);
     };
     return Reorder$$1;
 }());
@@ -4280,7 +4288,7 @@ var ExcelExport$1 = /** @__PURE__ @class */ (function () {
     /* tslint:disable-next-line:no-any */
     isMultipleExport, workbook, isBlob, isCsv) {
         var _this = this;
-        var dataSource = this.parent.flatData;
+        var dataSource = this.parent.dataSource;
         var property = Object();
         setValue('isCsv', isCsv, property);
         setValue('cancel', false, property);
@@ -4296,7 +4304,7 @@ var ExcelExport$1 = /** @__PURE__ @class */ (function () {
                 return null;
             }
             dm.executeQuery(query).then(function (e) {
-                _this.manipulateExportProperties(excelExportProperties, dataSource, _this.isLocal() ? null : e);
+                excelExportProperties = _this.manipulateExportProperties(excelExportProperties, dataSource, e);
                 return _this.parent.grid.excelExportModule.Map(_this.parent.grid, excelExportProperties, isMultipleExport, workbook, isCsv, isBlob);
             });
         });
@@ -4312,22 +4320,23 @@ var ExcelExport$1 = /** @__PURE__ @class */ (function () {
         return query;
     };
     ExcelExport$$1.prototype.manipulateExportProperties = function (property, dtSrc, queryResult) {
-        if (isNullOrUndefined(queryResult)) {
-            if (this.parent.grid.sortSettings.columns.length === 0 &&
-                (this.parent.grid.filterSettings.columns.length > 0 || this.parent.grid.searchSettings.key)) {
-                dtSrc = this.parent.filterModule.filteredResult;
-            }
+        //count not required for this query
+        var args = Object();
+        setValue('query', this.parent.grid.getDataModule().generateQuery(true), args);
+        setValue('isExport', true, args);
+        if (!isNullOrUndefined(property) && !isNullOrUndefined(property.exportType)) {
+            setValue('exportType', property.exportType, args);
         }
-        else {
+        if (!this.isLocal() || !isNullOrUndefined(this.parent.parentIdMapping)) {
             this.parent.parentData = [];
-            //count not required for this query
             this.parent.dataModule.convertToFlatData(getObject('result', queryResult));
-            var args = Object();
-            setValue('query', this.parent.grid.getDataModule().generateQuery(true), args);
-            this.parent.notify('dataProcessor', args);
-            //args = this.parent.dataModule.dataProcessor(args);
-            args = this.dataResults;
-            dtSrc = isNullOrUndefined(args.result) ? this.parent.flatData.slice(0) : args.result;
+            setValue('expresults', this.parent.flatData, args);
+        }
+        this.parent.notify('dataProcessor', args);
+        //args = this.parent.dataModule.dataProcessor(args);
+        args = this.dataResults;
+        dtSrc = isNullOrUndefined(args.result) ? this.parent.flatData.slice(0) : args.result;
+        if (!this.isLocal()) {
             this.parent.flatData = [];
         }
         property = isNullOrUndefined(property) ? Object() : property;
@@ -4409,10 +4418,10 @@ var PdfExport$1 = /** @__PURE__ @class */ (function () {
     /* tslint:disable-next-line:no-any */
     isMultipleExport, pdfDoc, isBlob) {
         var _this = this;
-        var dtSrc = this.parent.flatData;
+        var dtSrc = this.parent.dataSource;
         var prop = Object();
-        setValue('cancel', false, prop);
         var isLocal = !isRemoteData(this.parent) && isOffline(this.parent);
+        setValue('cancel', false, prop);
         return new Promise(function (resolve, reject) {
             var dm = isLocal ? new DataManager(dtSrc) : _this.parent.dataSource;
             var query = new Query();
@@ -4425,7 +4434,7 @@ var PdfExport$1 = /** @__PURE__ @class */ (function () {
                 return null;
             }
             dm.executeQuery(query).then(function (e) {
-                _this.manipulatePdfProperties(pdfExportProperties, dtSrc, isLocal ? null : e);
+                pdfExportProperties = _this.manipulatePdfProperties(pdfExportProperties, dtSrc, e);
                 return _this.parent.grid.pdfExportModule.Map(_this.parent.grid, pdfExportProperties, isMultipleExport, pdfDoc, isBlob);
             });
         });
@@ -4441,23 +4450,24 @@ var PdfExport$1 = /** @__PURE__ @class */ (function () {
         return query;
     };
     PdfExport$$1.prototype.manipulatePdfProperties = function (prop, dtSrc, queryResult) {
-        if (isNullOrUndefined(queryResult)) {
-            if ((this.parent.grid.filterSettings.columns.length > 0 || this.parent.grid.searchSettings.key)
-                && this.parent.grid.sortSettings.columns.length === 0) {
-                dtSrc = this.parent.filterModule.filteredResult;
-            }
+        var args = {};
+        //count not required for this query  
+        var isLocal = !isRemoteData(this.parent) && isOffline(this.parent);
+        setValue('query', this.parent.grid.getDataModule().generateQuery(true), args);
+        setValue('isExport', true, args);
+        if (!isNullOrUndefined(prop) && !isNullOrUndefined(prop.exportType)) {
+            setValue('exportType', prop.exportType, args);
         }
-        else {
+        if (!isLocal || !isNullOrUndefined(this.parent.parentIdMapping)) {
             this.parent.parentData = [];
-            //count not required for this query
-            var args = {};
             this.parent.dataModule.convertToFlatData(getValue('result', queryResult));
-            setValue('query', this.parent.grid.getDataModule().generateQuery(true), args);
-            this.parent.notify('dataProcessor', args);
-            //args = this.parent.dataModule.dataProcessor(args);
-            args = this.dataResults;
-            dtSrc = isNullOrUndefined(args.result)
-                ? this.parent.flatData.slice(0) : args.result;
+            setValue('expresults', this.parent.flatData, args);
+        }
+        this.parent.notify('dataProcessor', args);
+        //args = this.parent.dataModule.dataProcessor(args);
+        args = this.dataResults;
+        dtSrc = isNullOrUndefined(args.result) ? this.parent.flatData.slice(0) : args.result;
+        if (!isLocal) {
             this.parent.flatData = [];
         }
         prop = isNullOrUndefined(prop) ? {} : prop;
@@ -5323,6 +5333,9 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         delete this.parent[id][value];
     };
     Edit$$1.prototype.cellEdit = function (args) {
+        if (this.keyPress !== 'enter') {
+            this.parent.trigger(cellEdit, args);
+        }
         if (this.doubleClickTarget && (this.doubleClickTarget.classList.contains('e-treegridexpand') ||
             this.doubleClickTarget.classList.contains('e-treegridcollapse'))) {
             args.cancel = true;
@@ -5406,7 +5419,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             row = this.parent.grid.getRows()[rowIndex_1];
             this.parent.trigger(actionBegin, arg);
             if (!arg.cancel) {
-                this.parent.grid.editModule.updateRow(rowIndex_1, args.rowData);
+                this.updateCell(args, rowIndex_1);
                 if (this.parent.grid.aggregateModule) {
                     this.parent.grid.aggregateModule.refresh(args.rowData);
                 }
@@ -5429,6 +5442,10 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                 this.parent.grid.isEdit = true;
             }
         }
+    };
+    Edit$$1.prototype.updateCell = function (args, rowIndex) {
+        this.parent.grid.editModule.updateRow(rowIndex, args.rowData);
+        this.parent.grid.getRowsObject()[rowIndex].data = args.rowData;
     };
     Edit$$1.prototype.crudAction = function (details, columnName) {
         editAction(details, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, columnName);
@@ -5619,6 +5636,30 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             value.index = 0;
         }
         return args;
+    };
+    /**
+     * If the data,index and position given, Adds the record to treegrid rows otherwise it will create edit form.
+     * @return {void}
+     */
+    Edit$$1.prototype.addRecord = function (data, index, position) {
+        this.previousNewRowPosition = this.parent.editSettings.newRowPosition;
+        if (data) {
+            if (index > -1) {
+                this.selectedIndex = index;
+                this.addRowIndex = index;
+            }
+            else {
+                this.selectedIndex = this.parent.selectedRowIndex;
+                this.addRowIndex = this.parent.selectedRowIndex;
+            }
+            if (position) {
+                this.parent.setProperties({ editSettings: { newRowPosition: position } }, true);
+            }
+            this.parent.grid.editModule.addRecord(data, index);
+        }
+        else {
+            this.parent.grid.editModule.addRecord(data, index);
+        }
     };
     /**
      * Checks the status of validation at the time of editing. If validation is passed, it returns true.

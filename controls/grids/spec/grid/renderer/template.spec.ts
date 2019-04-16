@@ -45,6 +45,7 @@ describe('Template render module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
 
     });
@@ -74,6 +75,8 @@ describe('Template render module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            document.getElementById('template').remove();
+            gridObj = null;
         });
 
     });
@@ -104,6 +107,7 @@ describe('Template render module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
 
     });
@@ -158,6 +162,7 @@ describe('Template render module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
 
     });
@@ -193,6 +198,8 @@ describe('Template render module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
+            document.getElementById('captiontemplate').remove();
         });
 
     });

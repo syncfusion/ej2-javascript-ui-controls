@@ -34,8 +34,7 @@ export function doesImplementInterface(target: Object, checkFor: string): boolea
  * @hidden
  */
 export function valueAccessor(field: string, data: Object, column: ColumnModel): Object {
-    field = isNullOrUndefined(field) ? '' : field;
-    return DataUtil.getObject(field, data);
+    return (isNullOrUndefined(field) || field === '') ? '' : DataUtil.getObject(field, data);
 }
 
 /**

@@ -265,7 +265,7 @@ export class DatePicker extends Calendar implements IInput {
         this.bindEvents();
     }
 
-    private setAllowEdit(): void {
+    protected setAllowEdit(): void {
         if (this.allowEdit) {
             if (!this.readonly) {
                 this.inputElement.removeAttribute('readonly');
@@ -273,14 +273,17 @@ export class DatePicker extends Calendar implements IInput {
         } else {
             attributes(this.inputElement, { 'readonly': '' });
         }
+        this.updateIconState();
     }
-    private updateIconState(): void {
-        if (!this.allowEdit) {
+    protected updateIconState(): void {
+        if (!this.allowEdit && this.inputWrapper && !this.readonly) {
             if (this.inputElement.value === '') {
                 removeClass([this.inputWrapper.container], [NONEDIT]);
             } else {
                 addClass([this.inputWrapper.container], [NONEDIT]);
             }
+        } else if (this.inputWrapper) {
+            removeClass([this.inputWrapper.container], [NONEDIT]);
         }
     }
     private initialize(): void {
@@ -494,7 +497,7 @@ export class DatePicker extends Calendar implements IInput {
             EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
             // To prevent the twice triggering.
             EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
-            if (this.showClearButton) {
+            if (this.showClearButton && this.inputWrapper.clearButton) {
                 EventHandler.add(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler, this);
             }
             if (this.formElement) {
@@ -505,7 +508,7 @@ export class DatePicker extends Calendar implements IInput {
             EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
             EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
             EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
-            if (this.showClearButton) {
+            if (this.showClearButton && this.inputWrapper.clearButton) {
                 EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
             }
             if (this.formElement) {
@@ -564,7 +567,11 @@ export class DatePicker extends Calendar implements IInput {
 
     private dateIconHandler(e?: MouseEvent): void {
         if (Browser.isDevice) {
-            this.element.setAttribute('readonly', '');
+            if (this.element.tagName === 'EJS-DATEPICKER') {
+                this.inputElement.setAttribute('readonly', '');
+            } else {
+                this.element.setAttribute('readonly', '');
+            }
             this.inputElement.blur();
         }
         e.preventDefault();
@@ -1064,9 +1071,13 @@ export class DatePicker extends Calendar implements IInput {
             EventHandler.remove(document, 'mousedown touchstart', this.documentHandler);
         }
         if (Browser.isDevice && this.allowEdit && !this.readonly) {
-            this.element.removeAttribute('readonly');
+            if (this.element.tagName === 'EJS-DATEPICKER') {
+                this.inputElement.removeAttribute('readonly');
+            } else {
+                this.element.removeAttribute('readonly');
+            }
         }
-        this.updateIconState();
+        this.setAllowEdit();
     }
     /**
      * Sets the focus to widget for interaction.
@@ -1542,4 +1553,3 @@ export interface PreventableEventArgs {
     preventDefault?: Function;
 
 }
-

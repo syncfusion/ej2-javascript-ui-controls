@@ -280,14 +280,20 @@ export class TocProperties {
         }
         let footerElement: HTMLElement = createElement('div', { id: 'footerDiv', styles: footerElementFloat });
         container.appendChild(footerElement);
-        let updatebuttoncontentStyleElement: HTMLElement = createElement('button', { id: 'footerupdatebuttonDiv' });
+        let updatebuttoncontentStyleElement: HTMLElement = createElement('button', {
+            id: 'footerupdatebuttonDiv',
+            attrs: { type: 'button' }
+        });
         footerElement.appendChild(updatebuttoncontentStyleElement);
         this.updateBtn = new Button({
             content: this.localObj.getConstant('Update'), cssClass: 'btn-update', isPrimary: true
         });
         this.updateBtn.appendTo(updatebuttoncontentStyleElement);
 
-        let cancelbuttoncontentStyleElement: HTMLElement = createElement('button', { id: 'footercancelbuttonDiv' });
+        let cancelbuttoncontentStyleElement: HTMLElement = createElement('button', {
+            id: 'footercancelbuttonDiv',
+            attrs: { type: 'button' }
+        });
         footerElement.appendChild(cancelbuttoncontentStyleElement);
         this.cancelBtn = new Button({
             content: this.localObj.getConstant('Cancel'), cssClass: this.isRtl ? 'e-de-btn-cancel-rtl' : 'e-de-btn-cancel'

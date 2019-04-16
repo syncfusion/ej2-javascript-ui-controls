@@ -69,6 +69,7 @@ const PRIMARY: string = 'e-primary';
 const FLAT: string = 'e-flat';
 const CSS: string = 'e-css';
 const ZOOMIN: string = 'e-zoomin';
+const NONEDITABLE: string = 'e-non-edit';
 
 export class Presets extends ChildProperty<Presets> {
     /** 
@@ -715,8 +716,19 @@ export class DateRangePicker extends CalendarBase {
         } else {
             attributes(this.inputElement, { 'readonly': '' });
         }
+        this.updateClearIconState();
     }
-
+    private updateClearIconState(): void {
+        if (!this.allowEdit && this.inputWrapper && !this.readonly) {
+            if (this.inputElement.value === '') {
+                removeClass([this.inputWrapper.container], [NONEDITABLE]);
+            } else {
+                addClass([this.inputWrapper.container], [NONEDITABLE]);
+            }
+        } else if (this.inputWrapper) {
+            removeClass([this.inputWrapper.container], [NONEDITABLE]);
+        }
+    }
     protected validationAttribute(element: HTMLElement, input: Element): void {
         let name: string = element.getAttribute('name') ? element.getAttribute('name') : element.getAttribute('id');
         input.setAttribute('name', name);
@@ -760,7 +772,7 @@ export class DateRangePicker extends CalendarBase {
             EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
             EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
             EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
-            if (this.showClearButton) {
+            if (this.showClearButton && this.inputWrapper.clearButton) {
                 EventHandler.add(this.inputWrapper.clearButton, 'mousedown', this.resetHandler, this);
             }
             if (!this.isMobile) {
@@ -778,7 +790,7 @@ export class DateRangePicker extends CalendarBase {
             EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
             EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
             EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
-            if (this.showClearButton) {
+            if (this.showClearButton && this.inputWrapper.clearButton) {
                 EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
             }
             if (!this.isMobile) {
@@ -1179,6 +1191,7 @@ export class DateRangePicker extends CalendarBase {
             this.preventFocus = true;
             this.trigger('focus', focusArguments);
         }
+        this.updateClearIconState();
         this.updateHiddenInput();
     }
 
@@ -2730,7 +2743,7 @@ export class DateRangePicker extends CalendarBase {
                         if (this.startValue && isNullOrUndefined(this.endValue)) {
                             if (view === 'Month' && this.startValue.getMonth() < this.rightCalCurrentDate.getMonth() &&
                                 this.startValue.getFullYear() <= this.rightCalCurrentDate.getFullYear()) {
-                                    super.navigateTo.call(this, view, new Date(+this.startValue));
+                                super.navigateTo.call(this, view, new Date(+this.startValue));
                             } else if (view === 'Year' && this.startValue.getFullYear() < this.rightCalCurrentDate.getFullYear()) {
                                 super.navigateTo.call(this, view, new Date(+this.startValue));
                             } else {
@@ -3973,6 +3986,7 @@ export class DateRangePicker extends CalendarBase {
                 }
             }
         }
+        this.updateClearIconState();
         this.updateHiddenInput();
         if (this.isMobile && this.allowEdit && !this.readonly) {
             this.element.removeAttribute('readonly');
@@ -4067,6 +4081,7 @@ export class DateRangePicker extends CalendarBase {
                 case 'readonly':
                     Input.setReadonly(this.readonly, this.inputElement);
                     this.inputElement.setAttribute('aria-readonly', '' + this.readonly);
+                    this.setRangeAllowEdit();
                     break;
                 case 'cssClass':
                     if (this.popupWrapper) { this.popupWrapper.className += ' ' + newProp.cssClass; }

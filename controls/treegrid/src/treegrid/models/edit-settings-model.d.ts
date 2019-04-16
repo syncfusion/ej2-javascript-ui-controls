@@ -30,7 +30,6 @@ export interface EditSettingsModel {
      * * Dialog
      * * Batch
      * @default Cell 
-     * @aspDefaultValueIgnore
      * @isEnumeration true
      */
     mode?: EditMode;

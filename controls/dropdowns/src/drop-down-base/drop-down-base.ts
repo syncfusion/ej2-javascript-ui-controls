@@ -1051,6 +1051,7 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         }
         if (itemsCount === 0 && isNullOrUndefined(this.list.querySelector('ul'))) {
             this.list.innerHTML = '';
+            this.list.classList.remove(dropDownBaseClasses.noData);
             this.list.appendChild(this.ulElement);
             append(liCollections, this.ulElement);
         } else {

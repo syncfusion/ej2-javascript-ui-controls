@@ -4,7 +4,7 @@
 import { EmitType, Browser, createElement, isNullOrUndefined, setCulture, L10n, extend } from '@syncfusion/ej2-base';
 import { DropDownBase, FilteringEventArgs, dropDownBaseClasses } from '../../src/drop-down-base/drop-down-base';
 import { DropDownList } from '../../src/drop-down-list/drop-down-list';
-import { DataManager, ODataV4Adaptor, ODataAdaptor, Query } from '@syncfusion/ej2-data';
+import { DataManager, ODataV4Adaptor, ODataAdaptor, Query, WebApiAdaptor } from '@syncfusion/ej2-data';
 import { isCollide } from '@syncfusion/ej2-popups';
 import '../../node_modules/es6-promise/dist/es6-promise';
 
@@ -289,16 +289,26 @@ describe('DropDownList', () => {
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
 
         let dataSource = new DataManager({
-            url: 'http://js.syncfusion.com/demos/ejServices/Wcf/Northwind.svc/',
+            url: 'https://ej2services.syncfusion.com/production/web-services/api/Employees',
+            adaptor: new WebApiAdaptor,
             crossDomain: true
         });
-        let query = new Query().from('Customers').select('ContactName').take(0);
-        let query1 = new Query().from('Customers').select('ContactName').take(3);
+        let query = new Query().select('FirstName').take(0).requiresCount();
+        let query1 = new Query().select('FirstName').take(3).requiresCount();
         let originalTimeout: number;
         beforeEach(() => {
             originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 8000;
             document.body.appendChild(element);
+            listObj = new DropDownList({
+                dataSource: dataSource,
+                query: query,
+                fields: { text: 'FirstName', value: 'FirstName' },
+                actionComplete: (e: any) => {
+                    expect(e.name === 'actionComplete').toBe(true);
+                }
+            });
+            listObj.appendTo(element);
         });
         afterEach(() => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
@@ -307,16 +317,7 @@ describe('DropDownList', () => {
                 document.body.innerHTML = '';
             }
         });
-        it('when "no records" template is added to the dropdownlist', (done) => {
-            listObj = new DropDownList({
-                dataSource: dataSource,
-                query: query,
-                fields: { text: 'ContactName', value: 'ContactName' },
-                actionComplete: (e: any) => {
-                    expect(e.name === 'actionComplete').toBe(true);
-                }
-            });
-            listObj.appendTo(element);
+        it('when "no records" template is added to the dropdownlist', (done) => { 
             listObj.showPopup();
             setTimeout(() => {
                 expect(listObj.list.classList.contains('e-nodata')).toBe(true);
@@ -360,13 +361,13 @@ describe('DropDownList', () => {
         it('set null datasource ', (done) => {
             listObj.hidePopup();
             listObj.dataSource = null;
-            listObj.query = query;
+            listObj.query = null;
             listObj.dataBind();
             listObj.showPopup();
             setTimeout(() => {
-                expect(listObj.list.classList.contains('e-nodata')).toBe(true);
+                expect(listObj.list.classList.contains('e-nodata')).toBe(true); 
                 done();
-            }, 1000);
+            }, 2000);
         });
     });
     describe('EJ2-16375: Form reset', () => {
@@ -575,6 +576,53 @@ describe('DropDownList', () => {
                 document.body.innerHTML = '';
             }
         });
+    }); 
+    describe('template item not generate', () => {
+        let element: HTMLInputElement;
+        let listObj: DropDownList;
+        let popup: HTMLElement;
+        let liEle: HTMLElement;
+        let divNode: HTMLDivElement;
+        let textContent: string;
+        let empList: { [key: string]: Object }[] = [
+            { Name: 'Andrew Fuller', Eimg: '7', Designation: 'Team Lead', Country: 'England' },
+            { Name: 'Anne Dodsworth', Eimg: '1', Designation: 'Developer', Country: 'USA' }
+        ];
+        let changeData: any = [
+            { Name: 'Janet Leverling', Eimg: '3', Designation: 'HR', Country: 'USA' },
+            { Name: 'Laura Callahan', Eimg: '2', Designation: 'Product Manager', Country: 'USA' },
+            { Name: 'Margaret Peacock', Eimg: '6', Designation: 'Developer', Country: 'USA' },
+            { Name: 'Michael Suyama', Eimg: '9', Designation: 'Team Lead', Country: 'USA' },
+            { Name: '111Nancy Davolio', Eimg: '4', Designation: 'hahahProduct Manager111', Country: 'USA11' },
+            { Name: 'Robert King', Eimg: '8', Designation: 'Developer ', Country: 'England' },
+            { Name: 'Steven Buchanan', Eimg: '10', Designation: 'CEO', Country: 'England' }
+        ];
+        beforeAll(() => {
+            element = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+            document.body.appendChild(element);
+            listObj = new DropDownList({
+                dataSource: empList,
+                fields: { text: 'Name', value: 'Eimg' },
+                itemTemplate: '<div class="ename"> ${Name}</div><div class="job"> ${Designation} </div>',
+                valueTemplate: '<div class="name" style="display:inline;"> ${Name} </div>'
+            });
+            listObj.appendTo(element);
+        });
+        it("while change the datasource dynamically", function () {
+            listObj.showPopup();
+            expect(((listObj as any).ulElement.querySelector('li').firstElementChild as HTMLElement).innerText === 'Andrew Fuller').toBe(true);
+            expect((listObj as any).ulElement.querySelectorAll('li').length === 2).toBe(true);
+            listObj.dataSource = changeData;
+            listObj.dataBind();
+            expect(((listObj as any).ulElement.querySelector('li').firstElementChild as HTMLElement).innerText === 'Janet Leverling').toBe(true);
+            expect((listObj as any).ulElement.querySelectorAll('li').length === (listObj.dataSource as any).length).toBe(true);
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
     });
     describe(' add item with Template', () => {
         let element: HTMLInputElement;
@@ -668,13 +716,13 @@ describe('DropDownList', () => {
             document.body.appendChild(element);
             listObj = new DropDownList({
                 dataSource: new DataManager({
-                    url: 'https://js.syncfusion.com/demos/ejServices/Wcf/Northwind.svc/Customers',
-                    adaptor: new ODataAdaptor,
+                    url: 'https://ej2services.syncfusion.com/production/web-services/api/Employees',
+                    adaptor: new WebApiAdaptor,
                     crossDomain: true
                 }),
-                query: new Query().select(['ContactName', 'CustomerID']),
-                fields: { text: 'ContactName', value: 'CustomerID' },
-                value: "ALFKI"
+                query: new Query().select(['FirstName', 'EmployeeID']),
+                fields: { text: 'FirstName', value: 'EmployeeID' },
+                value: 2
 
             });
             listObj.appendTo(element);
@@ -690,6 +738,7 @@ describe('DropDownList', () => {
         it('set empty datasource ', (done) => {
             setTimeout(() => {
                 listObj.dataSource = [];
+                listObj.query = null;
                 listObj.dataBind();
                 listObj.showPopup();
                 setTimeout(() => {

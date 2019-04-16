@@ -104,7 +104,10 @@ export class OptionsPane {
         });
         this.optionsPane.appendChild(this.searchDiv);
         // tslint:disable-next-line:max-line-length
-        this.closeButton = createElement('button', { className: 'e-de-op-close-button e-de-op-icon-btn e-btn e-flat e-icon-btn', id: 'close' });
+        this.closeButton = createElement('button', {
+            className: 'e-de-op-close-button e-de-op-icon-btn e-btn e-flat e-icon-btn', id: 'close',
+            attrs: { type: 'button' }
+        });
         this.optionsPane.appendChild(this.closeButton);
         let closeSpan: HTMLSpanElement = createElement('span', { className: 'e-de-op-close-icon e-btn-icon e-icons' });
         this.closeButton.appendChild(closeSpan);
@@ -234,12 +237,14 @@ export class OptionsPane {
         this.replaceButton = createElement('button', {
             className: 'e-control e-btn e-flat e-replace',
             styles: replaceButtonMargin,
-            innerHTML: this.localeValue.getConstant(this.replaceButtonText)
+            innerHTML: this.localeValue.getConstant(this.replaceButtonText),
+            attrs: { type: 'button' }
         });
         replaceButtonDiv.appendChild(this.replaceButton);
         this.replaceAllButton = createElement('button', {
             className: 'e-control e-btn e-flat e-replaceall',
-            innerHTML: this.localeValue.getConstant(this.replaceAllButtonText)
+            innerHTML: this.localeValue.getConstant(this.replaceAllButtonText),
+            attrs: { type: 'button' }
         });
         replaceButtonDiv.appendChild(this.replaceAllButton);
         this.matchDiv = createElement('div', { styles: 'display:none;padding-top:10px;' });

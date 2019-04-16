@@ -2,6 +2,32 @@
 
 ## [Unreleased]
 
+## 17.1.41 (2019-04-16)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- #232673 - Issue with browser freeze when clear value using clear button has been fixed.
+
+- #231997 - Issue with duplicate placeholder on multiselect issue has been fixed.
+
+- #232218 - The popup open downward when select the items after scroll the page issue has been resolved.
+
+- #231920 - The Custom value with pre select value not updated when set empty data source issue has been resolved.
+
+### DropDownList
+
+#### Bug Fixes
+
+- #142944 - Item template not loaded, when change the datasource dynamically issue has been resolved.
+
+### ComboBox
+
+#### Bug Fixes
+
+- #225254, #227938 - Template interpolated data not updated while filtering issue has been resolved.
+
 ## 17.1.40 (2019-04-09)
 
 ### ListBox
@@ -49,6 +75,8 @@ The ListBox is a graphical user interface component used to display a list of it
 #### Bug Fixes
 
 - Placeholder is not updated properly when removed the value issue has been resolved.
+
+- F143612 - Dropdown icon disappeared when set the lengthy placeholder issue has been fixed.
 
 ## 17.1.32-beta (2019-03-13)
 

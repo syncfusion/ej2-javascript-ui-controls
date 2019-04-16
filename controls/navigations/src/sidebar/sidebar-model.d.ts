@@ -10,7 +10,7 @@ export interface SidebarModel extends ComponentModel{
     /**
      * Specifies the size of the Sidebar in dock state.
      * > For more details about dockSize refer to 
-     * [`Dock`](https://ej2.syncfusion.com/documentation/sidebar/docking-sidebar/) documentation.
+     * [`Dock`](../../sidebar/docking-sidebar#dock) documentation.
      * @default 'auto'
      */
     dockSize?: string | number;
@@ -23,7 +23,7 @@ export interface SidebarModel extends ComponentModel{
      *   });
      * ```
      * > For more details about mediaQuery refer to 
-     * [`Auto Close`](https://ej2.syncfusion.com/documentation/sidebar/auto-close/) documentation.
+     * [`Auto Close`](../../sidebar/auto-close#auto-close) documentation.
      * @default null
      * @aspType string
      */
@@ -32,7 +32,7 @@ export interface SidebarModel extends ComponentModel{
     /**
      * Specifies the docking state of the component.
      * > For more details about enableDock refer to 
-     * [`Dock`](https://ej2.syncfusion.com/documentation/sidebar/docking-sidebar/) documentation.
+     * [`Dock`](../../sidebar/docking-sidebar/#dock) documentation.
      * @default false
      */
     enableDock?: boolean;
@@ -60,7 +60,9 @@ export interface SidebarModel extends ComponentModel{
     enableGestures?: boolean;
 
     /**
-     * Gets or sets the Sidebar component is open or close.
+     * Gets or sets the Sidebar component is open or close. 
+     * > When the Sidebar type is set to `Auto`,
+     * the component will be expanded in the desktop and collapsed in the mobile mode regardless of the isOpen property.
      * @default false
      */
     isOpen?: boolean;
@@ -93,7 +95,7 @@ export interface SidebarModel extends ComponentModel{
     /**
      * Specifies the position of the Sidebar (Left/Right) corresponding to the main content.
      * > For more details about SidebarPosition refer to 
-     * [`position`](https://ej2.syncfusion.com/documentation/sidebar/getting-started/#position) documentation.
+     * [`position`](../../sidebar/getting-started#position) documentation.
      * @default 'Left'
      */
     position?: SidebarPosition;
@@ -101,7 +103,7 @@ export interface SidebarModel extends ComponentModel{
     /**
      * Allows to place the sidebar inside the target element.
      * > For more details about target refer to 
-     * [`Custom Context`](https://ej2.syncfusion.com/documentation/sidebar/custom-context/) documentation.
+     * [`Custom Context`](../../sidebar/custom-context#target) documentation.
      * @default null
      */
     target?: HTMLElement | string;
@@ -109,7 +111,7 @@ export interface SidebarModel extends ComponentModel{
     /**
      * Specifies the whether to apply overlay options to main content when the Sidebar is in an open state.
      * > For more details about showBackdrop refer to 
-     * [`Backdrop`](https://ej2.syncfusion.com/documentation/sidebar/getting-started/#enable-backdrop) documentation.
+     * [`Backdrop`](../../sidebar/getting-started/#enable-backdrop) documentation.
      * @default false
      */
     showBackdrop?: boolean;
@@ -122,7 +124,7 @@ export interface SidebarModel extends ComponentModel{
      * The main content area will not be adjusted within the screen width.
      * * `Auto` - Sidebar with `Over` type in mobile resolution and `Push` type in other higher resolutions.
      * > For more details about SidebarType refer to 
-     * [`SidebarType`](./variations.html#types) documentation.
+     * [`SidebarType`](../../sidebar/variations/#types) documentation.
      * @default 'Auto'
      */
     type?: SidebarType;
@@ -131,7 +133,6 @@ export interface SidebarModel extends ComponentModel{
      * Specifies the width of the Sidebar. By default, the width of the Sidebar sets based on the size of its content.
      * Width can also be set in pixel values.
      * @default 'auto'
-     * @aspType string
      */
     width?: string | number;
 

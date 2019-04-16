@@ -3,10 +3,12 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { DiagramTools } from '../../../src/diagram/enum/enum';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
+import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
 import { DiagramScroller } from '../../../src/diagram/interaction/scroller';
 import { Rect } from '../../../src/index';
 import { MouseEvents } from '../../../spec/diagram/interaction/mouseevents.spec';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
+Diagram.Inject(BpmnDiagrams);
 /**
  * PageSettings Spec
  */
@@ -108,6 +110,72 @@ describe('PageSettings', () => {
             diagram.pageSettings.orientation = 'Landscape';
             diagram.dataBind();
             expect(diagram.pageSettings.width === 600 && diagram.pageSettings.height == 300).toBe(true);
+            done();
+        });
+    });
+    describe('BPMN Sequence connector', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagrambpmn' });
+            document.body.appendChild(ele);
+            let connector: ConnectorModel[] = [{
+                id: 'Connector1',
+                sourcePoint: { x: 100, y: 100 },
+                targetPoint: { x: 200, y: 200 },
+                type: 'Straight',
+                shape: {
+                    type: 'Bpmn',
+                    flow: 'Sequence',
+                    sequence: 'Default'
+                },
+                cornerRadius: 10
+            },
+            {
+                id: 'Connector2',
+                sourcePoint: { x: 300, y: 100 },
+                targetPoint: { x: 400, y: 200 },
+                type: 'Straight',
+                shape: {
+                    type: 'Bpmn',
+                    flow: 'Sequence',
+                    sequence: 'Conditional'
+                },
+                cornerRadius: 10
+            }];
+            diagram = new Diagram({
+                width: '1000px', height: '1000px',
+                connectors: connector
+            });
+            diagram.appendTo('#diagrambpmn');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('BPMN Sequence default Rendering', (done: Function) => {
+
+            let pathElement: HTMLElement = document.getElementById('Connector1_Default');
+            expect(pathElement.getAttribute('transform') === "rotate(45,121.71,121.71)translate(113.22499938964843,113.22499938964843)").toBe(true);
+            done();
+        });
+
+        it('BPMN Sequence connector Dragging', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.select([diagram.connectors[0]]);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 155, 147);
+            mouseEvents.mouseDownEvent(diagramCanvas, 155, 147);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 180, 100);
+            mouseEvents.mouseUpEvent(diagramCanvas, 180, 100);
+            let pathElement: HTMLElement = document.getElementById('Connector1_Default');
+            console.log(pathElement.getAttribute('transform'));
+            expect(pathElement.getAttribute('transform') === "rotate(45,146.71,74.71)translate(138.22499938964845,66.22499938964843)" ||
+            pathElement.getAttribute('transform') === 'rotate(45,141.71,81.71)translate(133.22499938964845,73.22499938964843)').toBe(true);
             done();
         });
     });

@@ -1,15 +1,12 @@
 /**
  * Grid base spec 
  */
-import { EmitType } from '@syncfusion/ej2-base';
-import { createElement, remove } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { Page } from '../../../src/grid/actions/page';
 import { Freeze } from '../../../src/grid/actions/freeze';
 import { data } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy } from '../base/specutil.spec';
-import { dataBound, freezeRender } from '../../../src/grid/base/constant';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
 Grid.Inject(Page, Freeze);
@@ -69,6 +66,7 @@ describe('auto wrap testing', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = actionComplete = null;
         });
     });
     describe('auto wrap properties for stacked headercolumns', () => {
@@ -105,6 +103,7 @@ describe('auto wrap testing', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = actionComplete = null;
         });
     });
     describe('auto wrap properties for GroupedColumns', () => {
@@ -151,6 +150,7 @@ describe('auto wrap testing', () => {
         });   
         afterAll(() => {
             destroy(gridObj);
+            gridObj = actionComplete = null;
         });
     });
 

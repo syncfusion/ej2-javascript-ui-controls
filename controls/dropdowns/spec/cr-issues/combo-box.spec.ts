@@ -412,4 +412,63 @@ describe('ComboBox', () => {
         });
     });
 
+    describe('template item not generate', () => {
+        let element: HTMLInputElement;
+        let listObj: any;
+        let popup: HTMLElement;
+        let liEle: HTMLElement;
+        let divNode: HTMLDivElement;
+        let textContent: string;
+        let keyEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            keyCode: 74
+        };
+        let empList: { [key: string]: Object }[] = [
+            { Name: 'Andrew Fuller', Eimg: '7', Designation: 'Team Lead', Country: 'England' },
+            { Name: 'Anne Dodsworth', Eimg: '1', Designation: 'Developer', Country: 'USA' },
+            { Name: 'Janet Leverling', Eimg: '3', Designation: 'HR', Country: 'USA' },
+            { Name: 'Laura Callahan', Eimg: '2', Designation: 'Product Manager', Country: 'USA' },
+            { Name: 'Margaret Peacock', Eimg: '6', Designation: 'Developer', Country: 'USA' },
+            { Name: 'Michael Suyama', Eimg: '9', Designation: 'Team Lead', Country: 'USA' },
+            { Name: '111Nancy Davolio', Eimg: '4', Designation: 'hahahProduct Manager111', Country: 'USA11' },
+            { Name: 'Robert King', Eimg: '8', Designation: 'Developer ', Country: 'England' },
+            { Name: 'Steven Buchanan', Eimg: '10', Designation: 'CEO', Country: 'England' }
+        ];
+        beforeAll(() => {
+            
+            element = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });
+            document.body.appendChild(element);
+            listObj = new ComboBox({
+                dataSource: empList,
+                allowFiltering: true,
+                fields: { text: 'Name', value: 'Eimg' },
+                itemTemplate: '<div class="ename"> ${Name}</div><div class="job"> ${Designation} </div>',
+                valueTemplate: '<div class="name" style="display:inline;"> ${Name} </div>'
+            });
+            listObj.appendTo(element);
+        });
+        it('tempalte data filtering', () => {
+            listObj.filterInput.value = "a";
+            listObj.onInput();
+            listObj.onFilterUp(keyEventArgs);
+            expect(((listObj as any).ulElement.querySelector('li').firstElementChild as HTMLElement).innerText === 'Andrew Fuller').toBe(true);
+                
+        });
+        it('empty data filtering', () => {
+            listObj.filterInput.value = "";
+            listObj.onInput();
+            listObj.onFilterUp(keyEventArgs); 
+            let liElement = listObj.list.querySelectorAll('li');
+            expect(liElement.length === listObj.dataSource.length).toBe(true);
+            expect((liElement[0].firstElementChild as HTMLElement).innerText === 'Andrew Fuller' ).toBe(true);
+               
+        }); 
+        afterAll(() => {
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+    });
+
 });

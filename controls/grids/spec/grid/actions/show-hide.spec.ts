@@ -84,6 +84,7 @@ describe('ShowHide module testing', () => {
 
         afterAll(() => {
             destroy(grid);
+            rows = null;
         });
     });
 
@@ -127,6 +128,7 @@ describe('ShowHide module testing', () => {
 
         afterAll(() => {
             destroy(grid);
+            rows = null;
         });
     });
 
@@ -170,6 +172,7 @@ describe('ShowHide module testing', () => {
 
         afterAll(() => {
             destroy(grid);
+            rows = null;
         });
     });
 
@@ -213,6 +216,7 @@ describe('ShowHide module testing', () => {
 
         afterAll(() => {
             destroy(grid);
+            rows = null;
         });
     });
 
@@ -256,6 +260,7 @@ describe('ShowHide module testing', () => {
 
         afterAll(() => {
             destroy(grid);
+            rows = null;
         });
     });
 
@@ -299,6 +304,7 @@ describe('ShowHide module testing', () => {
 
         afterAll(() => {
             destroy(grid);
+            rows = null;
         });
     });
 
@@ -342,6 +348,7 @@ describe('ShowHide module testing', () => {
 
         afterAll(() => {
             destroy(grid);
+            rows = null;
         });
     });
 
@@ -396,6 +403,7 @@ describe('ShowHide module testing', () => {
 
         afterAll(() => {
             destroy(grid);
+            rows = null;
         });
     });
 
@@ -591,6 +599,7 @@ describe('ShowHide module testing', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            rows = null;
         });
     });
 

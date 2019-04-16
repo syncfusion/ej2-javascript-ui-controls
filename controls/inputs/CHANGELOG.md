@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 17.1.41 (2019-04-16)
+
+### NumericTextBox
+
+#### Bug Fixes
+
+- #231530 - Now, `change` event trigger when click on clear button.
+
+### TextBox
+
+#### Bug Fixes
+
+- #231530 - Issue with event argument has null value when click on clear button has been fixed.
+
 ## 17.1.40 (2019-04-09)
 
 ### Uploader

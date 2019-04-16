@@ -4,7 +4,7 @@ import { Column } from '../models/column';
 import { Row } from '../models/row';
 import { Cell } from '../models/cell';
 import { rowDataBound, queryCellInfo } from '../base/constant';
-import { setStyleAndAttributes, getObject } from '../base/util';
+import { setStyleAndAttributes, getObject, extendObjWithFn } from '../base/util';
 import { ICellRenderer, IRowRenderer, IRow, QueryCellInfoEventArgs, RowDataBoundEventArgs, IGrid } from '../base/interface';
 import { CellType } from '../base/enum';
 import { CellRendererFactory } from '../services/cell-render-factory';
@@ -56,7 +56,7 @@ export class RowRenderer<T> implements IRowRenderer<T> {
      */
     public refresh(row: Row<T>, columns: Column[], isChanged: boolean, attributes?: { [x: string]: Object }, rowTemplate?: string): void {
         if (isChanged) {
-            row.data = extend({}, row.changes);
+            row.data = extendObjWithFn({}, row.changes);
             this.refreshMergeCells(row);
         }
         let node: Element = this.parent.element.querySelector('[data-uid=' + row.uid + ']');

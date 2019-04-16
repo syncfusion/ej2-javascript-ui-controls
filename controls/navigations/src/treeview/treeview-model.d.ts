@@ -1,4 +1,4 @@
-﻿import { Component, EmitType, isUndefined, Browser, compile } from '@syncfusion/ej2-base';import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions } from '@syncfusion/ej2-base';import { Draggable, DragEventArgs, Droppable, DropEventArgs } from '@syncfusion/ej2-base';import { addClass, removeClass, closest, matches, detach, select, selectAll, isVisible, createElement, append } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { isNullOrUndefined as isNOU, Touch, TapEventArgs, getValue, setValue } from '@syncfusion/ej2-base';import { ListBase, ListBaseOptions, AriaAttributesMapping, FieldsMapping } from '@syncfusion/ej2-lists';import { createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';import { Input, InputObject } from '@syncfusion/ej2-inputs';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
+﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined } from '@syncfusion/ej2-base';import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Complex } from '@syncfusion/ej2-base';import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions } from '@syncfusion/ej2-base';import { Draggable, DragEventArgs, Droppable, DropEventArgs } from '@syncfusion/ej2-base';import { addClass, removeClass, closest, matches, detach, select, selectAll, isVisible, createElement, append } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { isNullOrUndefined as isNOU, Touch, TapEventArgs, getValue, setValue } from '@syncfusion/ej2-base';import { ListBase, ListBaseOptions, AriaAttributesMapping, FieldsMapping } from '@syncfusion/ej2-lists';import { createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';import { Input, InputObject } from '@syncfusion/ej2-inputs';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import {ExpandOnSettings,SortOrder,DataBoundEventArgs,DataSourceChangedEventArgs,DrawNodeEventArgs,NodeKeyPressEventArgs,NodeCheckEventArgs,NodeClickEventArgs,NodeExpandEventArgs,DragAndDropEventArgs,NodeEditEventArgs,NodeSelectEventArgs} from "./treeview";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -60,9 +60,9 @@ export interface FieldsSettingsModel {
     parentID?: string;
 
     /**
-     * Defines the external [`Query`](http://ej2.syncfusion.com/documentation/data/api-query.html) 
-     * that will execute along with data processing.    
-     * @default null    
+     * Defines the external [`Query`](http://ej2.syncfusion.com/documentation/data/api-query.html)
+     * that will execute along with data processing.
+     * @default null
      */
     query?: Query;
 
@@ -146,14 +146,14 @@ export interface TreeViewModel extends ComponentModel{
      * Indicates whether the TreeView allows drag and drop of nodes. To drag and drop a node in
      * desktop, hold the mouse on the node, drag it to the target node and drop the node by releasing
      * the mouse. For touch devices, drag and drop operation is performed by touch, touch move
-     * and touch end. For more information on drag and drop nodes concept, refer to 
+     * and touch end. For more information on drag and drop nodes concept, refer to
      * [Drag and Drop](../treeview/drag-and-drop/).
      * @default false
      */
     allowDragAndDrop?: boolean;
 
     /**
-     * Enables or disables editing of the text in the TreeView node. When `allowEditing` property is set 
+     * Enables or disables editing of the text in the TreeView node. When `allowEditing` property is set
      * to true, the TreeView allows you to edit the node by double clicking the node or by navigating to
      * the node and pressing **F2** key. For more information on node editing, refer
      * to [Node Editing](../treeview/node-editing/).
@@ -166,8 +166,8 @@ export interface TreeViewModel extends ComponentModel{
      * * Select the nodes by holding down the CTRL key while clicking on the nodes.
      * * Select consecutive nodes by clicking the first node to select and hold down the **SHIFT** key
      * and click the last node to select.
-     * 
-     * For more information on multi-selection, refer to 
+     *
+     * For more information on multi-selection, refer to
      * [Multi-Selection](../treeview/multiple-selection/).
      * @default false
      */
@@ -212,7 +212,7 @@ export interface TreeViewModel extends ComponentModel{
     enableRtl?: boolean;
 
     /**
-     * Represents the expanded nodes in the TreeView component. We can set the nodes that need to be 
+     * Represents the expanded nodes in the TreeView component. We can set the nodes that need to be
      * expanded or get the ID of the nodes that are currently expanded by using this property.
      * @default []
      */
@@ -239,7 +239,7 @@ export interface TreeViewModel extends ComponentModel{
     fields?: FieldsSettingsModel;
 
     /**
-     * On enabling this property, the entire row of the TreeView node gets selected by clicking a node. 
+     * On enabling this property, the entire row of the TreeView node gets selected by clicking a node.
      * When disabled only the corresponding node's text gets selected.
      * For more information on Fields concept, refer to
      * [Fields](../treeview/data-binding#local-data).
@@ -255,9 +255,9 @@ export interface TreeViewModel extends ComponentModel{
     loadOnDemand?: boolean;
 
     /**
-     * Specifies a template to render customized content for all the nodes. If the `nodeTemplate` property 
+     * Specifies a template to render customized content for all the nodes. If the `nodeTemplate` property
      * is set, the template content overrides the displayed node text. The property accepts template string
-     * [template string](http://ej2.syncfusion.com/documentation/base/template-engine.html) 
+     * [template string](http://ej2.syncfusion.com/documentation/base/template-engine.html)
      * or HTML element ID holding the content. For more information on template concept, refer to
      * [Template](../treeview/template/).
      * @default null
@@ -265,11 +265,11 @@ export interface TreeViewModel extends ComponentModel{
     nodeTemplate?: string;
 
     /**
-     * Represents the selected nodes in the TreeView component. We can set the nodes that need to be 
-     * selected or get the ID of the nodes that are currently selected by using this property. 
-     * On enabling `allowMultiSelection` property we can select multiple nodes and on disabling 
+     * Represents the selected nodes in the TreeView component. We can set the nodes that need to be
+     * selected or get the ID of the nodes that are currently selected by using this property.
+     * On enabling `allowMultiSelection` property we can select multiple nodes and on disabling
      * it we can select only a single node.
-     * For more information on selectedNodes, refer to 
+     * For more information on selectedNodes, refer to
      * [selectedNodes](../treeview/multiple-selection#selected-nodes).
      * @default []
      */
@@ -307,14 +307,14 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers when data source is populated in the TreeView.
-     * @event 
+     * @event
      */
     dataBound?: EmitType<DataBoundEventArgs>;
 
     /**
      * Triggers when data source is changed in the TreeView. The data source will be changed after performing some operation like
      * drag and drop, node editing, adding and removing node.
-     * @event 
+     * @event
      */
     dataSourceChanged?: EmitType<DataSourceChangedEventArgs>;
 
@@ -338,13 +338,13 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers when the TreeView node is checked/unchecked successfully.
-     * @event 
+     * @event
      */
     nodeChecked?: EmitType<NodeCheckEventArgs>;
 
     /**
      * Triggers before the TreeView node is to be checked/unchecked.
-     * @event 
+     * @event
      */
     nodeChecking?: EmitType<NodeCheckEventArgs>;
 
@@ -356,73 +356,73 @@ export interface TreeViewModel extends ComponentModel{
 
     /**
      * Triggers when the TreeView node collapses successfully.
-     * @event 
+     * @event
      */
     nodeCollapsed?: EmitType<NodeExpandEventArgs>;
 
     /**
      * Triggers before the TreeView node collapses.
-     * @event 
+     * @event
      */
     nodeCollapsing?: EmitType<NodeExpandEventArgs>;
 
     /**
      * Triggers when the TreeView node is dragged (moved) continuously.
-     * @event 
+     * @event
      */
     nodeDragging?: EmitType<DragAndDropEventArgs>;
 
     /**
      * Triggers when the TreeView node drag (move) starts.
-     * @event 
+     * @event
      */
     nodeDragStart?: EmitType<DragAndDropEventArgs>;
 
     /**
      * Triggers when the TreeView node drag (move) is stopped.
-     * @event 
+     * @event
      */
     nodeDragStop?: EmitType<DragAndDropEventArgs>;
 
     /**
      * Triggers when the TreeView node is dropped on target element successfully.
-     * @event 
+     * @event
      */
     nodeDropped?: EmitType<DragAndDropEventArgs>;
 
     /**
      * Triggers when the TreeView node is renamed successfully.
-     * @event 
+     * @event
      */
     nodeEdited?: EmitType<NodeEditEventArgs>;
 
     /**
      * Triggers before the TreeView node is renamed.
-     * @event 
+     * @event
      */
     nodeEditing?: EmitType<NodeEditEventArgs>;
 
     /**
      * Triggers when the TreeView node expands successfully.
-     * @event 
+     * @event
      */
     nodeExpanded?: EmitType<NodeExpandEventArgs>;
 
     /**
      * Triggers before the TreeView node is to be expanded.
-     * @event 
+     * @event
      */
     nodeExpanding?: EmitType<NodeExpandEventArgs>;
 
     /**
      * Triggers when the TreeView node is selected/unselected successfully.
-     * @event 
+     * @event
      */
     nodeSelected?: EmitType<NodeSelectEventArgs>;
 
     /**
      * Triggers before the TreeView node is selected/unselected.
-     * @event 
+     * @event
      */
     nodeSelecting?: EmitType<NodeSelectEventArgs>;
 

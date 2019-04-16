@@ -29,7 +29,7 @@ describe('Auto fit command ', () => {
         document.body.innerHTML = '';
         setTimeout(() => {
             done();
-        }, 1000);
+        }, 750);
     });
     it('apply Fit to content', () => {
         editor.editor.insertTable(2, 2);
@@ -93,5 +93,62 @@ describe('Auto fit command ', () => {
         editor.editor.insertText('Syncfusion');
         table = editor.selection.start.paragraph.associatedCell.ownerTable;
         expect(table.tableHolder.getTotalWidth(0)).toBe(previousTableWidth);
+    });
+});
+
+describe("Insert and delete table validation", () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true });
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 750);
+    });
+    it("Insert Table Validation", () => {
+        editor.editorModule.applyStyle("Heading 1");
+        editor.editorModule.insertTable(30, 2);
+        expect(editor.selection.start.paragraph.isInsideTable).toBe(true);
+        expect(editor.pageCount).toBe(2);
+    });
+    it("Delete Table Validation", () => {
+        editor.editorModule.deleteTable();
+        expect(editor.selection.start.paragraph.isInsideTable).toBe(false);
+        expect(editor.pageCount).toBe(1);
+    });
+    it("Undo and redo delete operation", () => {
+        editor.editorHistory.undo();
+        expect(editor.selection.start.paragraph.isInsideTable).toBe(true);
+        expect(editor.pageCount).toBe(2);
+        editor.editorHistory.redo();
+        expect(editor.selection.start.paragraph.isInsideTable).toBe(false);
+        expect(editor.pageCount).toBe(1);
+    });
+    it("Insert table undo and redo", () => {
+        editor.openBlank();
+        editor.editorModule.applyStyle("Heading 1");
+        editor.editorModule.insertTable(30, 2);
+        expect(editor.selection.start.paragraph.isInsideTable).toBe(true);
+        expect(editor.pageCount).toBe(2);
+        editor.editorHistory.undo();
+        expect(editor.selection.start.paragraph.isInsideTable).toBe(false);
+        expect(editor.pageCount).toBe(1);
+        editor.editorHistory.redo();
+        //expect(editor.selection.start.paragraph.isInsideTable).toBe(true);
+        expect(editor.pageCount).toBe(2);
     });
 });

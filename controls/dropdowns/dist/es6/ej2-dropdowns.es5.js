@@ -958,6 +958,7 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
         }
         if (itemsCount === 0 && isNullOrUndefined(this.list.querySelector('ul'))) {
             this.list.innerHTML = '';
+            this.list.classList.remove(dropDownBaseClasses.noData);
             this.list.appendChild(this.ulElement);
             append(liCollections, this.ulElement);
         }
@@ -1693,6 +1694,9 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DropDownList.prototype.keyActionHandler = function (e) {
+        if (!this.enabled) {
+            return;
+        }
         var preventAction = e.action === 'pageUp' || e.action === 'pageDown';
         var preventHomeEnd = this.getModuleName() !== 'dropdownlist' && (e.action === 'home' || e.action === 'end');
         this.isEscapeKey = e.action === 'escape';
@@ -2260,7 +2264,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
     DropDownList.prototype.filteringAction = function (dataSource, query, fields) {
         if (!isNullOrUndefined(this.filterInput)) {
             this.beforePopupOpen = true;
-            if (this.filterInput.value.trim() === '') {
+            if (this.filterInput.value.trim() === '' && !this.itemTemplate) {
                 this.actionCompleteData.isUpdated = false;
                 this.isTyped = false;
                 if (!isNullOrUndefined(this.actionCompleteData.ulElement) && !isNullOrUndefined(this.actionCompleteData.list)) {
@@ -2283,6 +2287,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                         dataSource = this.listData;
                     }
                 }
+                query = (this.filterInput.value.trim() === '') ? null : query;
                 this.resetList(dataSource, fields, query);
             }
         }
@@ -2588,6 +2593,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 if (!_this.isDocumentClick) {
                     _this.focusDropDown();
                 }
+                _this.isNotSearchList = false;
                 _this.isDocumentClick = false;
                 _this.destroyPopup();
             },
@@ -2940,6 +2946,12 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             this.popupObj.refreshPosition(this.inputWrapper.container);
         }
     };
+    DropDownList.prototype.checkDatasource = function (newProp) {
+        if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource)) && this.itemTemplate && this.allowFiltering) {
+            this.list = null;
+            this.actionCompleteData = { ulElement: null, list: null, isUpdated: false };
+        }
+    };
     DropDownList.prototype.updateDataSource = function (props) {
         this.clear(null, props);
         if (!(!isNullOrUndefined(props) && (isNullOrUndefined(props.dataSource)
@@ -2966,6 +2978,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
      */
     DropDownList.prototype.onPropertyChanged = function (newProp, oldProp) {
         if (this.getModuleName() === 'dropdownlist') {
+            this.checkDatasource(newProp);
             this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp);
         }
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
@@ -3168,7 +3181,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         this.beforePopupOpen = true;
-        if (this.isFiltering() && !this.isActive && this.actionCompleteData.list && this.actionCompleteData.list[0]) {
+        if (this.isFiltering() && !this.isActive && this.actionCompleteData.list && this.actionCompleteData.list[0] && !this.itemTemplate) {
             this.isActive = true;
             this.onActionComplete(this.actionCompleteData.ulElement, this.actionCompleteData.list, null, true);
         }
@@ -4442,9 +4455,7 @@ function createFloatLabel(overAllWrapper, searchWrapper, element, inputElement, 
         floatLabelElement.innerHTML = inputElement.placeholder;
         inputElement.removeAttribute('placeholder');
     }
-    if (!isNullOrUndefined(placeholder) && placeholder !== '') {
-        floatLabelElement.innerHTML = placeholder;
-    }
+    floatLabelElement.innerHTML = placeholder;
     searchWrapper.appendChild(floatLinelement);
     searchWrapper.appendChild(floatLabelElement);
     overAllWrapper.classList.add('e-float-input');
@@ -4674,7 +4685,11 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                         this.enable(false);
                         break;
                     case 'placeholder':
-                        this.inputElement.setAttribute(htmlAttr, this.htmlAttributes[htmlAttr]);
+                        if (!this.placeholder) {
+                            this.inputElement.setAttribute(htmlAttr, this.htmlAttributes[htmlAttr]);
+                            this.setProperties({ placeholder: this.inputElement.placeholder }, true);
+                            this.refreshPlaceHolder();
+                        }
                         break;
                     default:
                         var defaultAttr = ['id'];
@@ -4737,7 +4752,6 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         }
         var animModel = { name: 'FadeIn', duration: 100 };
         var eventArgs = { popup: this.popupObj, cancel: false, animation: animModel };
-        this.popupObj.wireScrollEvents();
         this.trigger('open', eventArgs);
         if (eventArgs.cancel) {
             return;
@@ -4849,6 +4863,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         if (this.mainList && this.listData) {
             this.refreshSelection();
         }
+        this.checkPlaceholderSize();
     };
     MultiSelect.prototype.onActionFailure = function (e) {
         _super.prototype.onActionFailure.call(this, e);
@@ -5322,15 +5337,18 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         this.checkPlaceholderSize();
     };
     MultiSelect.prototype.checkPlaceholderSize = function () {
-        if ((!this.value || !this.value.length) && this.showDropDownIcon && this.inputElement &&
-            (this.componentWrapper.offsetWidth <= this.inputElement.offsetWidth) &&
-            this.inputElement.size > 1) {
+        if (this.showDropDownIcon) {
             var downIconWidth = this.dropIcon.offsetWidth +
                 parseInt(window.getComputedStyle(this.dropIcon).marginRight, 10);
-            do {
-                this.inputElement.size -= 1;
-            } while ((downIconWidth + this.inputElement.offsetWidth) >= this.componentWrapper.offsetWidth &&
-                this.inputElement.size > 1);
+            this.setPlaceholderSize(downIconWidth);
+        }
+    };
+    MultiSelect.prototype.setPlaceholderSize = function (downIconWidth) {
+        if (isNullOrUndefined(this.value) || this.value.length === 0) {
+            this.searchWrapper.style.width = 'calc(100% - ' + downIconWidth + 'px)';
+        }
+        else if (!isNullOrUndefined(this.value)) {
+            this.searchWrapper.removeAttribute('style');
         }
     };
     MultiSelect.prototype.refreshInputHight = function () {
@@ -5555,6 +5573,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                     if (this.mode !== 'CheckBox') {
                         this.selectByKey(e);
                     }
+                    this.checkPlaceholderSize();
                     return;
                 case 32:
                     this.spaceKeySelection(e);
@@ -5797,6 +5816,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         if (this.closePopupOnSelect) {
             this.hidePopup();
         }
+        this.checkPlaceholderSize();
     };
     MultiSelect.prototype.moveByTop = function (state) {
         var elements = this.list.querySelectorAll('li.' + dropDownBaseClasses.li);
@@ -5910,6 +5930,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             this.updateDelimeter(this.delimiterChar);
             if (this.placeholder && this.floatLabelType === 'Never') {
                 this.makeTextBoxEmpty();
+                this.checkPlaceholderSize();
             }
             else {
                 this.inputElement.value = '';
@@ -5955,7 +5976,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             };
             this.trigger('removing', eventArgs);
             if (eventArgs.cancel) {
-                return;
+                return true;
             }
             this.value.splice(index, 1);
             this.setProperties({ value: [].concat([], this.value) }, true);
@@ -6310,6 +6331,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                 zIndex: this.zIndex,
                 close: function () {
                     if (_this.popupObj.element.parentElement) {
+                        _this.popupObj.unwireScrollEvents();
                         detach(_this.popupObj.element);
                     }
                 },
@@ -6321,6 +6343,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                         }
                         _this.isFirstClick = true;
                     }
+                    _this.popupObj.wireScrollEvents();
                     _this.loadTemplate();
                     _this.setScrollPosition();
                     if (_this.allowFiltering) {
@@ -6376,7 +6399,9 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             var tempValues = this.value ? this.value.slice() : [];
             if (this.value) {
                 for (temp = this.value[0]; this.value.length !== 0; temp = this.value[0]) {
-                    this.removeValue(temp, e);
+                    if (this.removeValue(temp, e)) {
+                        break;
+                    }
                 }
             }
             if (this.mainList && this.listData && this.allowFiltering) {
@@ -6518,6 +6543,10 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             this.setProperties({ value: null }, true);
         }
     };
+    MultiSelect.prototype.renderList = function (isEmptyData) {
+        _super.prototype.render.call(this, isEmptyData);
+        this.wireListEvents();
+    };
     MultiSelect.prototype.initialValueUpdate = function () {
         if (this.list) {
             var text = void 0;
@@ -6543,7 +6572,13 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                         var newValue = {};
                         setValue(this.fields.text, value, newValue);
                         setValue(this.fields.value, value, newValue);
+                        var noDataEle = this.popupWrapper.querySelector('.' + dropDownBaseClasses.noData);
                         this.addItem(newValue, indexItem);
+                        if (this.popupWrapper.contains(noDataEle)) {
+                            this.list.setAttribute('style', noDataEle.getAttribute('style'));
+                            this.popupWrapper.replaceChild(this.list, noDataEle);
+                            this.wireListEvents();
+                        }
                         this.addChip(text, value);
                         this.addListSelection(element);
                     }
@@ -6569,6 +6604,12 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                     this.showDelimWrapper();
                 }
             }
+        }
+    };
+    MultiSelect.prototype.updateActionCompleteData = function (li, item) {
+        if (this.value && this.value.indexOf(li.getAttribute('data-value')) > -1) {
+            this.mainList = this.ulElement;
+            addClass([li], HIDE_LIST);
         }
     };
     MultiSelect.prototype.isValidLI = function (li) {
@@ -6750,6 +6791,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             this.refreshListItems(isNullOrUndefined(li) ? null : li.textContent);
         }
         this.refreshPlaceHolder();
+        this.checkPlaceholderSize();
     };
     MultiSelect.prototype.onMouseOver = function (e) {
         var currentLi = closest(e.target, '.' + dropDownBaseClasses.li);
@@ -7126,6 +7168,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource))) {
             this.mainList = null;
             this.mainData = null;
+            this.isFirstClick = false;
         }
         if (this.getModuleName() === 'multiselect') {
             this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp);
@@ -7249,6 +7292,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             this.refreshInputHight();
             this.refreshPlaceHolder();
             this.updateValueState(null, newProp, oldProp);
+            this.checkPlaceholderSize();
         }
     };
     /**
@@ -7278,7 +7322,6 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             this.popupObj.hide();
             removeClass([document.body, this.popupObj.element], 'e-popup-full-page');
             EventHandler.remove(this.list, 'keydown', this.onKeyDown);
-            this.popupObj.unwireScrollEvents();
         }
     };
     /**
@@ -8403,7 +8446,8 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     ListBox.prototype.dragEnd = function (args) {
         var _this = this;
         var listData;
-        var dropValue = args.droppedElement.getAttribute('data-value');
+        var selectedOptions;
+        var dropValue = this.getFormattedValue(args.droppedElement.getAttribute('data-value'));
         var droppedData = this.getDataByValue(dropValue);
         var listObj = this.getComponent(args.droppedElement);
         var dragArgs = extend({}, this.getDragArgs({ target: args.droppedElement }, true), { target: args.target });
@@ -8412,7 +8456,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         }
         if (listObj === this) {
             var ul_1 = this.ulElement;
-            var selectedOptions = this.value.indexOf(dropValue) > -1 ? this.value : [dropValue];
+            selectedOptions = Array.prototype.indexOf.call(this.value, dropValue) > -1 ? this.value : [dropValue];
             listData = [].slice.call(this.listData);
             var fromIdx_1 = args.previousIndex;
             var toIdx_1 = args.currentIndex;
@@ -8438,7 +8482,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             var currIdx_1 = args.currentIndex;
             var ul_2 = listObj.ulElement;
             listData = [].slice.call(listObj.listData);
-            var selectedOptions = this.value.indexOf(dropValue) > -1 ? this.value : [dropValue];
+            selectedOptions = Array.prototype.indexOf.call(this.value, dropValue) > -1 ? this.value : [dropValue];
             selectedOptions.forEach(function (value) {
                 droppedData = _this.getDataByValue(value);
                 _this.listData.splice(value === dropValue ? prevIdx_1 : _this.getIndexByValue(value), 1);
@@ -8908,10 +8952,11 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         return index;
     };
     ListBox.prototype.updateSelectedOptions = function () {
+        var _this = this;
         var selectedOptions = [];
         this.getSelectedItems().forEach(function (ele) {
             if (!ele.classList.contains('e-grabbed')) {
-                selectedOptions.push(ele.getAttribute('data-value'));
+                selectedOptions.push(_this.getFormattedValue(ele.getAttribute('data-value')));
             }
         });
         this.setProperties({ value: selectedOptions }, true);
@@ -8943,7 +8988,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     ListBox.prototype.updateSelectTag = function () {
         var ele = this.getSelectTag();
         ele.innerHTML = '';
-        this.value.forEach(function (value) {
+        Array.prototype.forEach.call(this.value, function (value) {
             ele.innerHTML += '<option selected value="' + value + '"></option>';
         });
     };

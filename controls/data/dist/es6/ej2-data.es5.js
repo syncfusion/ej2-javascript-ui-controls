@@ -4706,7 +4706,7 @@ var DataManager = /** @__PURE__ @class */ (function () {
             url: tableName,
             key: key || this.dataSource.key
         };
-        var req = this.adaptor.batchRequest(this, changes, args, query, original);
+        var req = this.adaptor.batchRequest(this, changes, args, query || new Query(), original);
         if (this.dataSource.offline) {
             return req;
         }

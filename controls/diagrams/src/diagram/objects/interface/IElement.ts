@@ -104,13 +104,13 @@ export interface ICollectionChangeEventArgs {
  */
 export interface IPropertyChangeEventArgs {
     /** returns the selected element */
-    element: (NodeModel | ConnectorModel)[];
+    element: (NodeModel | ConnectorModel | Diagram);
     /** returns the action is nudge or not */
     cause: DiagramAction;
     /** returns the old value of the property that is being changed */
-    oldValue: DiagramModel;
+    oldValue: DiagramModel | NodeModel | ConnectorModel;
     /** returns the new value of the node property that is being changed */
-    newValue: DiagramModel;
+    newValue: DiagramModel | NodeModel | ConnectorModel;
 }
 
 /**

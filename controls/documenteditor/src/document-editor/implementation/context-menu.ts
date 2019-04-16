@@ -422,9 +422,9 @@ export class ContextMenu {
     }
     /**
      * To add and customize custom context menu
-     * @param {MenuItemModel[]} items -To add custom menu item
-     * @param {boolean} isEnable? -To hide existing menu item and show custom menu item alone
-     * @param {boolean} isBottom? -To show the custom menu item in bottom of the existing item
+     * @param {MenuItemModel[]} items - To add custom menu item
+     * @param {boolean} isEnable - To hide existing menu item and show custom menu item alone
+     * @param {boolean} isBottom - To show the custom menu item in bottom of the existing item
      */
     public addCustomMenu(items: MenuItemModel[], isEnable?: boolean, isBottom?: boolean): void {
         let menuItems: MenuItemModel[] = JSON.parse(JSON.stringify(items));
@@ -439,7 +439,7 @@ export class ContextMenu {
     }
     /**
      * Context Menu Items.
-     * @param {MenuItemModel[]} menuItems -To add MenuItem to context menu
+     * @param {MenuItemModel[]} menuItems - To add MenuItem to context menu
      * @private
      */
     public addMenuItems(menuItems: MenuItemModel[]): MenuItemModel[] {

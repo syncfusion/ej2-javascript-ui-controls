@@ -7793,7 +7793,6 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
     Connector.prototype.getBpmnSequenceFlow = function () {
         var segment = new PathElement();
         var pathseq = new PathElement();
-        var pathseqData;
         if ((this.shape.sequence) === 'Normal' && this.type !== 'Bezier') {
             this.targetDecorator.shape = 'Arrow';
             this.targetDecorator.style.fill = 'black';
@@ -7801,16 +7800,7 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
         if ((this.shape.sequence) === 'Default') {
             segment = this.getSegmentElement(this, segment);
             var anglePoints = this.intermediatePoints;
-            for (var j = 0; j < anglePoints.length - 1; j++) {
-                length = length + this.distance(anglePoints[j], anglePoints[j + 1]);
-                pathseqData = this.findPath(anglePoints[j], anglePoints[j + 1]);
-                pathseq.data = pathseqData[0];
-                pathseq.id = this.id + '_' + (this.shape.sequence);
-                pathseq.offsetX = pathseqData[1].x;
-                pathseq.offsetY = pathseqData[1].y;
-                pathseq.rotateAngle = 45;
-                pathseq.transform = Transform.Self;
-            }
+            pathseq = updatePathElement(anglePoints, this);
             this.targetDecorator.shape = 'Arrow';
             this.targetDecorator.style.fill = 'black';
         }
@@ -7894,19 +7884,11 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
     };
     /** @private */
     Connector.prototype.distance = function (pt1, pt2) {
-        return Math.sqrt(Math.pow(pt2.x - pt1.x, 2) + Math.pow(pt2.y - pt1.y, 2));
+        return findDistance(pt1, pt2);
     };
     /**   @private  */
     Connector.prototype.findPath = function (sourcePt, targetPt) {
-        var beginningpoint = { x: sourcePt.x, y: sourcePt.y };
-        var distance = this.distance(sourcePt, targetPt);
-        distance = Math.min(30, distance / 2);
-        var angle = findAngle(sourcePt, targetPt);
-        var transferpoint = Point.transform({ x: beginningpoint.x, y: beginningpoint.y }, angle, distance);
-        var startpoint1 = Point.transform({ x: transferpoint.x, y: transferpoint.y }, angle, -12);
-        var endpoint1 = Point.transform({ x: startpoint1.x, y: startpoint1.y }, angle, 12 * 2);
-        var path = 'M' + startpoint1.x + ' ' + startpoint1.y + ' L' + endpoint1.x + ' ' + endpoint1.y;
-        return [path, transferpoint];
+        return findPath(sourcePt, targetPt);
     };
     /** @private */
     Connector.prototype.getAnnotationElement = function (annotation, points, bounds, getDescription, diagramId) {
@@ -16105,6 +16087,37 @@ var alignElement = function (element, offsetX, offsetY, diagram, flip) {
         }
     }
 };
+/** @private */
+var updatePathElement = function (anglePoints, connector) {
+    var pathElement = new PathElement();
+    var pathseqData;
+    for (var j = 0; j < anglePoints.length - 1; j++) {
+        pathseqData = findPath(anglePoints[j], anglePoints[j + 1]);
+        pathElement.data = pathseqData[0];
+        pathElement.id = connector.id + '_' + (connector.shape.sequence);
+        pathElement.offsetX = pathseqData[1].x;
+        pathElement.offsetY = pathseqData[1].y;
+        pathElement.rotateAngle = 45;
+        pathElement.transform = Transform.Self;
+    }
+    return pathElement;
+};
+/** @private */
+var findPath = function (sourcePoint, targetPoint) {
+    var beginningpoint = { x: sourcePoint.x, y: sourcePoint.y };
+    var distance = findDistance(sourcePoint, targetPoint);
+    distance = Math.min(30, distance / 2);
+    var angle = findAngle(sourcePoint, targetPoint);
+    var transferpt = Point.transform({ x: beginningpoint.x, y: beginningpoint.y }, angle, distance);
+    var startpoint = Point.transform({ x: transferpt.x, y: transferpt.y }, angle, -12);
+    var endpoint = Point.transform({ x: startpoint.x, y: startpoint.y }, angle, 12 * 2);
+    var path = 'M' + startpoint.x + ' ' + startpoint.y + ' L' + endpoint.x + ' ' + endpoint.y;
+    return [path, transferpt];
+};
+/** @private */
+var findDistance = function (point1, point2) {
+    return Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
+};
 
 /**
  * Defines the functionalities that need to access DOM
@@ -18057,6 +18070,10 @@ var SvgRenderer = /** @__PURE__ @class */ (function () {
             var pivotX = options.x + options.width * options.pivotX;
             var pivotY = options.y + options.height * options.pivotY;
             if (options.doWrap || options.textOverflow !== 'Wrap') {
+                var innerHtmlTextElement = document.getElementById(options.id + '_text');
+                if (innerHtmlTextElement) {
+                    innerHtmlTextElement.innerHTML = '';
+                }
                 this.setSvgStyle(text, options, diagramId);
                 this.setSvgFontStyle(text, options);
                 textNode = document.createTextNode(options.content);
@@ -20697,6 +20714,7 @@ var SelectTool = /** @__PURE__ @class */ (function (_super) {
         //draw selected region
         if (this.inAction && Point.equals(this.currentPosition, this.prevPosition) === false) {
             var rect = Rect.toBounds([this.prevPosition, this.currentPosition]);
+            this.commandHandler.clearSelectedItems();
             this.commandHandler.drawSelectionRectangle(rect.x, rect.y, rect.width, rect.height);
         }
         return !this.blocked;
@@ -21571,7 +21589,7 @@ var ConnectorDrawingTool = /** @__PURE__ @class */ (function (_super) {
                 this.drawingObject = this.commandHandler.drawObject(connector);
             }
             args.source = this.drawingObject;
-            if (args.target) {
+            if (args.target && (this.endPoint !== 'ConnectorTargetEnd' || (canInConnect(args.target)))) {
                 this.commandHandler.connect(this.endPoint, args);
             }
             this.endPoint = 'ConnectorTargetEnd';
@@ -22153,8 +22171,10 @@ var ConnectorEditing = /** @__PURE__ @class */ (function (_super) {
     /**   @private  */
     ConnectorEditing.prototype.mouseUp = function (args) {
         var connector;
+        var oldValues;
         if (args.source && args.source.connectors) {
             connector = args.source.connectors[0];
+            oldValues = { segments: connector.segments };
         }
         if (args && args.source && args.info && args.info.ctrlKey && args.info.shiftKey && connector.type === 'Straight') {
             this.addOrRemoveSegment(connector, this.currentPosition);
@@ -22182,7 +22202,7 @@ var ConnectorEditing = /** @__PURE__ @class */ (function (_super) {
                         }
                     }
                 }
-                this.commandHandler.updateEndPoint(connector);
+                this.commandHandler.updateEndPoint(connector, oldValues);
             }
         }
         if (this.undoElement) {
@@ -22264,6 +22284,7 @@ var ConnectorEditing = /** @__PURE__ @class */ (function (_super) {
     ConnectorEditing.prototype.addOrRemoveSegment = function (connector, point) {
         var updateSeg;
         var segmentIndex;
+        var oldValues = { segments: connector.segments };
         for (var i = 0; i < connector.segments.length; i++) {
             var segment = (connector.segments)[i];
             if (contains(point, segment.point, connector.hitPadding)) {
@@ -22294,7 +22315,7 @@ var ConnectorEditing = /** @__PURE__ @class */ (function (_super) {
             }
         }
         if (updateSeg) {
-            this.commandHandler.updateEndPoint(connector);
+            this.commandHandler.updateEndPoint(connector, oldValues);
         }
     };
     ConnectorEditing.prototype.findIndex = function (connector, point) {
@@ -22336,6 +22357,7 @@ var ConnectorEditing = /** @__PURE__ @class */ (function (_super) {
     };
     ConnectorEditing.prototype.dragOrthogonalSegment = function (obj, segment, point, segmentIndex) {
         var segmentPoint = { x: 0, y: 0 };
+        var oldValues = { segments: obj.segments };
         segmentPoint.x = ((segment.points[segmentIndex].x + segment.points[segmentIndex + 1].x) / 2);
         segmentPoint.y = ((segment.points[segmentIndex].y + segment.points[segmentIndex + 1].y) / 2);
         var ty = point.y - segmentPoint.y;
@@ -22361,7 +22383,7 @@ var ConnectorEditing = /** @__PURE__ @class */ (function (_super) {
                 this.segmentIndex = 0;
             }
             this.updateAdjacentSegments(obj, index, tx, ty);
-            this.commandHandler.updateEndPoint(obj);
+            this.commandHandler.updateEndPoint(obj, oldValues);
         }
         return true;
     };
@@ -22451,6 +22473,7 @@ var ConnectorEditing = /** @__PURE__ @class */ (function (_super) {
         }
     };
     ConnectorEditing.prototype.addTerminalSegment = function (connector, segment, tx, ty, segmentIndex) {
+        var oldValues = { segments: connector.segments };
         var index = connector.segments.indexOf(segment);
         var first;
         var insertseg;
@@ -22481,7 +22504,7 @@ var ConnectorEditing = /** @__PURE__ @class */ (function (_super) {
         }
         var lastseg = new OrthogonalSegment(connector, 'segments', { type: 'Orthogonal' }, true);
         connector.segments.push(lastseg);
-        this.commandHandler.updateEndPoint(connector);
+        this.commandHandler.updateEndPoint(connector, oldValues);
         index = index + segmentIndex;
         return index;
     };
@@ -22591,6 +22614,7 @@ var ConnectorEditing = /** @__PURE__ @class */ (function (_super) {
         var current = connector.segments[index];
         var prev = connector.segments[index - 1];
         var sourcePoint;
+        var oldValues = { segments: connector.segments };
         if (prev.length < 0 && connector.sourceID) {
             var sourceNode = connector.sourceWrapper.corners;
             var segments = [];
@@ -22669,7 +22693,7 @@ var ConnectorEditing = /** @__PURE__ @class */ (function (_super) {
             }
             this.selectedSegment = ((removeCurrentPrev) ? connector.segments[index - 1] :
                 connector.segments[index + 1]);
-            this.commandHandler.updateEndPoint(connector);
+            this.commandHandler.updateEndPoint(connector, oldValues);
         }
     };
     ConnectorEditing.prototype.updateLastSegment = function (connector, selectedSegment) {
@@ -25024,7 +25048,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 newChanges[portEndId] = oldPortId;
             }
             else {
-                this.diagram.connectorPropertyChange(connector, {}, newChanges);
+                this.diagram.connectorPropertyChange(connector, oldChanges, newChanges);
                 this.diagram.updateDiagramObject(connector);
                 arg = {
                     connector: connector, oldValue: { nodeId: oldNodeId, portId: oldPortId },
@@ -25969,17 +25993,17 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         var layer = this.getLayer(layerName);
         if (layer && layer.zIndex < this.diagram.layers.length - 1) {
             var index = layer.zIndex;
+            var targetLayer = this.getLayer(this.diagram.layerZIndexTable[index + 1]);
             if (this.diagram.mode === 'SVG') {
-                var targetObject = this.getLayer(this.diagram.layerZIndexTable[index + 1]).objects[0];
-                var currentLayerObject = layer.objects;
-                for (var _i = 0, currentLayerObject_2 = currentLayerObject; _i < currentLayerObject_2.length; _i++) {
-                    var obj = currentLayerObject_2[_i];
-                    if (targetObject) {
-                        this.moveSvgNode(targetObject, obj);
+                var currentLayerObject = layer.objects[0];
+                var targetLayerObjects = targetLayer.objects;
+                for (var _i = 0, targetLayerObjects_1 = targetLayerObjects; _i < targetLayerObjects_1.length; _i++) {
+                    var obj = targetLayerObjects_1[_i];
+                    if (obj) {
+                        this.moveSvgNode(obj, currentLayerObject);
                     }
                 }
             }
-            var targetLayer = this.getLayer(this.diagram.layerZIndexTable[index + 1]);
             targetLayer.zIndex = targetLayer.zIndex - 1;
             layer.zIndex = layer.zIndex + 1;
             var temp = this.diagram.layerZIndexTable[index];
@@ -26060,17 +26084,26 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 var diagramLayer = this.diagram.diagramLayer;
                 var child = this.getChildElements(this.diagram.nameTable[objectName].wrapper.children);
                 var element = getDiagramElement(objectName + '_groupElement', this.diagram.element.id);
-                element.parentNode.removeChild(element);
                 var nodes = this.diagram.selectedItems.nodes;
                 if (nodes.length > 0 && (nodes[0].shape.type === 'Native' || nodes[0].shape.type === 'HTML')) {
+                    element.parentNode.removeChild(element);
                     for (var j = 0; j < this.diagram.views.length; j++) {
                         element = getDiagramElement(objectName + (nodes[0].shape.type === 'HTML' ? '_content_html_element' : '_content_groupElement'), this.diagram.views[j]);
                         var lastChildNode = element.parentNode.lastChild;
                         lastChildNode.parentNode.insertBefore(element, lastChildNode.nextSibling);
                     }
+                    var htmlLayer = getHTMLLayer(this.diagram.element.id);
+                    this.diagram.diagramRenderer.renderElement(this.diagram.nameTable[objectName].wrapper, diagramLayer, htmlLayer);
                 }
-                var htmlLayer = getHTMLLayer(this.diagram.element.id);
-                this.diagram.diagramRenderer.renderElement(this.diagram.nameTable[objectName].wrapper, diagramLayer, htmlLayer);
+                else {
+                    var layer = this.getObjectLayer(objectName);
+                    for (var i = 0; i < layer.objects.length; i++) {
+                        if (layer.objects[i] !== objectName) {
+                            this.moveSvgNode(layer.objects[i], objectName);
+                            this.updateNativeNodeIndex(objectName);
+                        }
+                    }
+                }
             }
             else {
                 this.diagram.refreshCanvasLayers();
@@ -26202,7 +26235,6 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
     /** @private */
     CommandHandler.prototype.doRubberBandSelection = function (region) {
         this.clearSelectionRectangle();
-        this.clearSelection();
         var selArray = [];
         var rubberArray = [];
         selArray = this.diagram.getNodesConnectors(selArray);
@@ -26292,6 +26324,12 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 }
             }
         }
+    };
+    /** @private */
+    CommandHandler.prototype.clearSelectedItems = function () {
+        var selectedNodes = this.diagram.selectedItems.nodes ? this.diagram.selectedItems.nodes.length : 0;
+        var selectedConnectors = this.diagram.selectedItems.connectors ? this.diagram.selectedItems.connectors.length : 0;
+        this.clearSelection((selectedNodes + selectedConnectors) > 0 ? true : false);
     };
     /**
      * @private
@@ -26393,7 +26431,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                     if (obj && obj.shape && obj.shape.type === 'UmlClassifier') {
                         obj.wrapper.measureChildren = true;
                     }
-                    this.diagram.nodePropertyChange(obj, oldValues, { offsetX: obj.offsetX, offsetY: obj.offsetY });
+                    this.diagram.nodePropertyChange(obj, oldValues, { offsetX: obj.offsetX, offsetY: obj.offsetY }, undefined, undefined, false);
                     obj.wrapper.measureChildren = false;
                 }
                 if (obj.shape.type === 'SwimLane' && !this.diagram.currentSymbol) {
@@ -26404,6 +26442,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             }
             else {
                 var connector = obj;
+                var oldValues = { sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint };
                 var update = connector.type === 'Bezier' ? true : false;
                 var hasEnds = false;
                 if (!connector.sourceWrapper) {
@@ -26421,7 +26460,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 if (!hasEnds) {
                     this.dragControlPoint(connector, tx, ty, true);
                     var conn = { sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint };
-                    this.diagram.connectorPropertyChange(connector, {}, conn);
+                    this.diagram.connectorPropertyChange(connector, oldValues, conn);
                 }
             }
         }
@@ -26489,7 +26528,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         }
     };
     /** @private */
-    CommandHandler.prototype.updateEndPoint = function (connector) {
+    CommandHandler.prototype.updateEndPoint = function (connector, oldChanges) {
         var conn = {
             sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint,
             sourceID: connector.sourceID ? connector.sourceID : undefined,
@@ -26498,23 +26537,45 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             targetPortID: connector.targetPortID ? connector.targetPortID : undefined,
             segments: connector.segments ? connector.segments : undefined
         };
-        this.diagram.connectorPropertyChange(connector, {}, conn);
+        var newValue = { sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint };
+        if (connector.sourceID) {
+            newValue.sourceID = connector.sourceID;
+        }
+        if (connector.targetID) {
+            newValue.targetID = connector.targetID;
+        }
+        if (connector.sourcePortID) {
+            newValue.sourcePortID = connector.sourcePortID;
+        }
+        if (connector.targetPortID) {
+            newValue.targetPortID = connector.targetPortID;
+        }
+        if (connector.segments) {
+            newValue.segments = connector.segments;
+        }
+        this.diagram.connectorPropertyChange(connector, oldChanges ? oldChanges : {}, newValue);
         // this.diagram.refreshDiagramLayer();
         this.diagram.updateSelector();
     };
     /** @private */
     CommandHandler.prototype.dragSourceEnd = function (obj, tx, ty, preventUpdate, point, endPoint, update, target, targetPortId, isDragSource, segment) {
         var connector = this.diagram.nameTable[obj.id];
+        var oldChanges = {};
         var checkBoundaryConstraints = this.checkBoundaryConstraints(tx, ty, connector.wrapper.bounds);
         if (canDragSourceEnd(connector) && checkBoundaryConstraints
             && (endPoint !== 'BezierSourceThumb') && canPageEditable(this.diagram)) {
+            oldChanges = { sourcePoint: connector.sourcePoint };
             connector.sourcePoint.x += tx;
             connector.sourcePoint.y += ty;
             if (endPoint === 'ConnectorSourceEnd' && connector.type === 'Orthogonal') {
                 this.changeSegmentLength(connector, target, targetPortId, isDragSource);
             }
+            if (connector.shape.type === 'Bpmn' && connector.shape.sequence === 'Default') {
+                this.updatePathElementOffset(connector);
+            }
         }
         if (connector.type === 'Bezier') {
+            oldChanges = { sourcePoint: connector.sourcePoint };
             if (segment) {
                 this.translateBezierPoints(obj, (endPoint === '') ? 'ConnectorSourceEnd' : endPoint, tx, ty, segment, point, !update);
             }
@@ -26525,10 +26586,20 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             }
         }
         if (!preventUpdate) {
-            this.updateEndPoint(connector);
+            this.updateEndPoint(connector, oldChanges);
         }
         this.diagram.refreshCanvasLayers();
         return checkBoundaryConstraints;
+    };
+    /**
+     * Update Path Element offset
+     */
+    CommandHandler.prototype.updatePathElementOffset = function (connector) {
+        connector.wrapper.children.splice(3, 1);
+        var pathElement = new PathElement();
+        var anglePoints = connector.intermediatePoints;
+        pathElement = updatePathElement(anglePoints, connector);
+        connector.wrapper.children.splice(3, 0, pathElement);
     };
     /**
      * Upadte the connector segments when change the source node
@@ -26856,9 +26927,11 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
     /** @private */
     CommandHandler.prototype.dragTargetEnd = function (obj, tx, ty, preventUpdate, point, endPoint, update, segment) {
         var connector = this.diagram.nameTable[obj.id];
+        var oldChanges;
         var boundaryConstraints = this.checkBoundaryConstraints(tx, ty, connector.wrapper.bounds);
         if (canDragTargetEnd(connector) && endPoint !== 'BezierTargetThumb'
             && boundaryConstraints && canPageEditable(this.diagram)) {
+            oldChanges = { targetPoint: connector.targetPoint };
             connector.targetPoint.x += tx;
             connector.targetPoint.y += ty;
             if (endPoint === 'ConnectorTargetEnd' && connector.type === 'Orthogonal' &&
@@ -26875,8 +26948,12 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                     prev.direction = Point.direction(prev.points[0], prev.points[prev.points.length - 1]);
                 }
             }
+            if (connector.shape.type === 'Bpmn' && connector.shape.sequence === 'Default') {
+                this.updatePathElementOffset(connector);
+            }
         }
         if (connector.type === 'Bezier') {
+            oldChanges = { targetPoint: connector.targetPoint };
             if (segment) {
                 this.translateBezierPoints(obj, (endPoint === '') ? 'ConnectorTargetEnd' : endPoint, tx, ty, segment, point, !update);
             }
@@ -26887,7 +26964,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             }
         }
         if (!preventUpdate) {
-            this.updateEndPoint(connector);
+            this.updateEndPoint(connector, oldChanges);
         }
         this.diagram.refreshCanvasLayers();
         return boundaryConstraints;
@@ -26917,17 +26994,19 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         pivot = pivot || {};
         var matrix = identityMatrix();
         rotateMatrix(matrix, angle, pivot.x, pivot.y);
+        var oldValues;
         for (var _i = 0, objects_2 = objects; _i < objects_2.length; _i++) {
             var obj = objects_2[_i];
             if (obj instanceof Node) {
                 if (canRotate(obj) && canPageEditable(this.diagram)) {
                     if (includeParent !== false || parent !== obj) {
+                        oldValues = { rotateAngle: obj.rotateAngle };
                         obj.rotateAngle += angle;
                         obj.rotateAngle = (obj.rotateAngle + 360) % 360;
                         var newOffset = transformPointByMatrix(matrix, { x: obj.offsetX, y: obj.offsetY });
                         obj.offsetX = newOffset.x;
                         obj.offsetY = newOffset.y;
-                        this.diagram.nodePropertyChange(obj, {}, { offsetX: obj.offsetX, offsetY: obj.offsetY, rotateAngle: obj.rotateAngle });
+                        this.diagram.nodePropertyChange(obj, oldValues, { rotateAngle: obj.rotateAngle });
                     }
                     if (obj.processId) {
                         var parent_1 = this.diagram.nameTable[obj.processId];
@@ -27072,10 +27151,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
     CommandHandler.prototype.scaleObject = function (sw, sh, pivot, obj, element, refObject) {
         sw = sw < 0 ? 1 : sw;
         sh = sh < 0 ? 1 : sh;
-        var oldValues = {
-            offsetX: obj.wrapper.offsetX, offsetY: obj.wrapper.offsetY,
-            width: obj.wrapper.actualSize.width, height: obj.wrapper.actualSize.height
-        };
+        var oldValues = {};
         if (sw !== 1 || sh !== 1) {
             var width = void 0;
             var height = void 0;
@@ -27083,6 +27159,11 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 var node = obj;
                 var isResize = void 0;
                 var bound = void 0;
+                oldValues = {
+                    width: obj.wrapper.actualSize.width, height: obj.wrapper.actualSize.height,
+                    offsetX: obj.wrapper.offsetX, offsetY: obj.wrapper.offsetY,
+                    margin: { top: node.margin.top, left: node.margin.left }
+                };
                 if (node.shape.type === 'Bpmn' && node.shape.activity.subProcess.processes
                     && node.shape.activity.subProcess.processes.length > 0) {
                     bound = this.diagram.bpmnModule.getChildrenBound(node, node.id, this.diagram);
@@ -27165,7 +27246,7 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                         checkChildNodeInContainer(this.diagram, obj);
                     }
                     else {
-                        this.diagram.nodePropertyChange(obj, {}, {
+                        this.diagram.nodePropertyChange(obj, oldValues, {
                             width: node.width, height: node.height, offsetX: node.offsetX, offsetY: node.offsetY,
                             margin: { top: node.margin.top + (top_1 - oldtop), left: node.margin.left + (left - oldleft) }
                         });
@@ -27174,11 +27255,9 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
             }
             else {
                 var connector = obj;
+                var oldValues_1 = { sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint };
                 if (!connector.sourceWrapper || !connector.targetWrapper) {
-                    connector.sourcePoint = transformPointByMatrix(matrix, connector.sourcePoint);
-                    connector.targetPoint = transformPointByMatrix(matrix, connector.targetPoint);
-                    var newProp = { sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint };
-                    this.diagram.connectorPropertyChange(connector, {}, newProp);
+                    this.scaleConnector(connector, matrix, oldValues_1);
                 }
             }
             var parentNode = this.diagram.nameTable[obj.processId];
@@ -27189,6 +27268,15 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 this.diagram.bpmnModule.updateSubProcessess(bound, obj, this.diagram);
             }
         }
+    };
+    CommandHandler.prototype.scaleConnector = function (connector, matrix, oldValues) {
+        connector.sourcePoint = transformPointByMatrix(matrix, connector.sourcePoint);
+        connector.targetPoint = transformPointByMatrix(matrix, connector.targetPoint);
+        if (connector.shape.type === 'Bpmn' && connector.shape.sequence === 'Default') {
+            this.updatePathElementOffset(connector);
+        }
+        var newProp = { sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint };
+        this.diagram.connectorPropertyChange(connector, oldValues, newProp);
     };
     /** @private */
     CommandHandler.prototype.portDrag = function (obj, portElement, tx, ty) {
@@ -29420,7 +29508,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     /* tslint:disable */
     Diagram.prototype.onPropertyChanged = function (newProp, oldProp) {
         // Model Changed
-        var objectArray = [];
+        var isPropertyChanged = true;
         var refreshLayout = false;
         var refereshColelction = false;
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
@@ -29451,8 +29539,16 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                             var actualObject = this.nodes[index];
                             var changedProp = newProp.nodes[index];
                             refreshLayout = refreshLayout || changedProp.excludeFromLayout !== undefined;
-                            this.nodePropertyChange(actualObject, oldProp.nodes[index], changedProp, undefined, true);
-                            objectArray.push(actualObject);
+                            this.nodePropertyChange(actualObject, oldProp.nodes[index], changedProp, undefined, true, true);
+                            var args = {
+                                element: actualObject, cause: this.diagramActions,
+                                oldValue: oldProp.nodes[index],
+                                newValue: newProp.nodes[index]
+                            };
+                            this.triggerEvent(DiagramEvent.propertyChange, args);
+                            if (isPropertyChanged) {
+                                isPropertyChanged = false;
+                            }
                         }
                         if (this.mode === 'Canvas') {
                             this.refreshDiagramLayer();
@@ -29471,10 +29567,18 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                             var index = Number(key);
                             var actualObject = this.connectors[index];
                             var changedProp = newProp.connectors[index];
-                            this.connectorPropertyChange(actualObject, oldProp.connectors[index], changedProp, true);
-                            objectArray.push(actualObject);
+                            this.connectorPropertyChange(actualObject, oldProp.connectors[index], changedProp, true, true);
+                            var args = {
+                                element: actualObject, cause: this.diagramActions,
+                                oldValue: oldProp.connectors[index],
+                                newValue: newProp.connectors[index]
+                            };
+                            this.triggerEvent(DiagramEvent.propertyChange, args);
                             if (actualObject && actualObject.parentId && this.nameTable[actualObject.parentId].shape.type === 'UmlClassifier') {
                                 this.updateConnectorEdges(this.nameTable[actualObject.parentId] || actualObject);
+                            }
+                            if (isPropertyChanged) {
+                                isPropertyChanged = false;
                             }
                         }
                         this.updateBridging();
@@ -29570,8 +29674,10 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         if (refreshLayout) {
             this.doLayout();
         }
-        var args = { element: objectArray, cause: this.diagramActions, oldValue: oldProp, newValue: newProp };
-        this.triggerEvent(DiagramEvent.propertyChange, args);
+        if (isPropertyChanged) {
+            var args = { element: this, cause: this.diagramActions, oldValue: oldProp, newValue: newProp };
+            this.triggerEvent(DiagramEvent.propertyChange, args);
+        }
         if (!refereshColelction && (this.canLogChange()) && (this.modelChanged(newProp, oldProp))) {
             var entry = { type: 'PropertyChanged', undoObject: oldProp, redoObject: newProp, category: 'Internal' };
             this.addHistoryEntry(entry);
@@ -32110,10 +32216,27 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Diagram.prototype.initializeDiagramLayers = function () {
+        var tempLayers = this.layers;
+        for (var i = 0; i < this.layers.length; i++) {
+            if (this.layers[i].zIndex !== -1) {
+                var temp = this.layers[i];
+                this.layers[i] = this.layers[this.layers[i].zIndex];
+                this.layers[temp.zIndex] = temp;
+            }
+        }
         for (var _i = 0, _a = this.layers; _i < _a.length; _i++) {
             var layer = _a[_i];
-            layer.zIndex = this.layers.indexOf(layer);
+            layer.zIndex = layer.zIndex !== -1 ? layer.zIndex : this.layers.indexOf(layer);
             this.layerZIndexTable[layer.zIndex] = layer.id;
+        }
+        for (var i = 0; i < this.layers.length; i++) {
+            for (var j = i + 1; j < this.layers.length; j++) {
+                if (this.layers[i].zIndex > this.layers[j].zIndex) {
+                    var temp = this.layers[i];
+                    this.layers[i] = this.layers[j];
+                    this.layers[j] = temp;
+                }
+            }
         }
         if (this.layers.length === 0) {
             var defaultLayer = {
@@ -32186,19 +32309,21 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 }
                 var sourceNode = this.nameTable[obj.sourceID];
                 var targetNode = this.nameTable[obj.targetID];
-                if (sourceNode !== undefined && canOutConnect(sourceNode)) {
+                var port = this.getConnectedPort(sourceNode, obj);
+                var targetPort = this.getConnectedPort(targetNode, obj);
+                var outPort = this.findInOutConnectPorts(sourceNode, false);
+                var inPort = this.findInOutConnectPorts(targetNode, true);
+                if ((sourceNode !== undefined && canOutConnect(sourceNode)) || (obj.sourcePortID !== '' && canPortOutConnect(outPort))) {
                     obj.sourceWrapper = this.getEndNodeWrapper(sourceNode, obj, true);
                     if (obj.sourcePortID) {
-                        var port = this.getConnectedPort(sourceNode, obj);
                         if (port && port.constraints && !(port.constraints & PortConstraints.None)) {
                             obj.sourcePortWrapper = this.getWrapper(sourceNode.wrapper, obj.sourcePortID);
                         }
                     }
                 }
-                if (targetNode !== undefined && canInConnect(targetNode)) {
+                if ((targetNode !== undefined && canInConnect(targetNode)) || (obj.targetPortID !== '' && canPortInConnect(inPort))) {
                     obj.targetWrapper = this.getEndNodeWrapper(targetNode, obj, false);
                     if (obj.targetPortID) {
-                        var targetPort = this.getConnectedPort(targetNode, obj);
                         if (targetPort && targetPort.constraints && !(targetPort.constraints & PortConstraints.None)) {
                             obj.targetPortWrapper = this.getWrapper(targetNode.wrapper, obj.targetPortID);
                         }
@@ -33911,7 +34036,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     };
     /* tslint:disable */
     /** @private */
-    Diagram.prototype.nodePropertyChange = function (actualObject, oldObject, node, isLayout, rotate) {
+    Diagram.prototype.nodePropertyChange = function (actualObject, oldObject, node, isLayout, rotate, propertyChange) {
         var existingBounds = actualObject.wrapper.outerBounds;
         var existingInnerBounds = actualObject.wrapper.bounds;
         var updateConnector$$1 = false;
@@ -34172,6 +34297,11 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 actualObject.status = 'Update';
             }
         }
+        if (!propertyChange) {
+            var element = actualObject;
+            var args = { element: element, cause: this.diagramActions, oldValue: oldObject, newValue: node };
+            this.triggerEvent(DiagramEvent.propertyChange, args);
+        }
     };
     Diagram.prototype.updatePorts = function (actualObject, flip) {
         if (actualObject && actualObject.ports.length > 0) {
@@ -34226,7 +34356,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint, sourceID: connector.sourceID,
                 targetID: connector.targetID, sourcePortID: connector.sourcePortID, targetPortID: connector.targetPortID
             };
-            this.connectorPropertyChange(connector, {}, conn);
+            this.connectorPropertyChange(connector, {}, conn, undefined, true);
         }
     };
     /** @private */
@@ -34263,7 +34393,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         return updateSelector;
     };
     /** @private */
-    Diagram.prototype.connectorPropertyChange = function (actualObject, oldProp, newProp, disableBridging) {
+    Diagram.prototype.connectorPropertyChange = function (actualObject, oldProp, newProp, disableBridging, propertyChange) {
         var existingBounds = actualObject.wrapper.bounds;
         var updateSelector = false;
         var points = [];
@@ -34280,7 +34410,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             if ((newProp.sourceID !== undefined && newProp.sourceID !== oldProp.sourceID) || newProp.sourcePortID) {
                 var sourceNode = this.nameTable[actualObject.sourceID];
                 outPort = this.findInOutConnectPorts(sourceNode, false);
-                if (!sourceNode || (canOutConnect(sourceNode) || canPortOutConnect(outPort))) {
+                if (!sourceNode || (canOutConnect(sourceNode) || (actualObject.sourcePortID !== '' && canPortOutConnect(outPort)))) {
                     actualObject.sourceWrapper = sourceNode ? this.getEndNodeWrapper(sourceNode, actualObject, true) : undefined;
                 }
                 if (newProp.sourceID !== undefined && oldProp.sourceID !== undefined && oldProp.sourceID !== '') {
@@ -34294,7 +34424,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             if (newProp.targetID !== undefined && newProp.targetID !== oldProp.targetID) {
                 var targetNode = this.nameTable[newProp.targetID];
                 inPort = this.findInOutConnectPorts(targetNode, true);
-                if (!targetNode || (canInConnect(targetNode) || canPortInConnect(inPort))) {
+                if (!targetNode || (canInConnect(targetNode) || (actualObject.targetPortID !== '' && canPortInConnect(inPort)))) {
                     actualObject.targetWrapper = targetNode ? this.getEndNodeWrapper(targetNode, actualObject, false) : undefined;
                 }
                 if (oldProp !== undefined && oldProp.targetID !== undefined && oldProp.targetID !== '') {
@@ -34310,15 +34440,21 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 if (actualObject.sourceID && this.nameTable[actualObject.sourceID]) {
                     source = this.nameTable[actualObject.sourceID].wrapper;
                 }
-                actualObject.sourcePortWrapper = source ? this.getWrapper(source, newProp.sourcePortID) : undefined;
+                var sourceNode = this.nameTable[actualObject.sourceID];
+                if (!sourceNode || (canOutConnect(sourceNode) || (actualObject.sourcePortID !== '' && canPortOutConnect(outPort)))) {
+                    actualObject.sourcePortWrapper = source ? this.getWrapper(source, newProp.sourcePortID) : undefined;
+                }
             }
             if (newProp.targetPortID !== undefined && newProp.targetPortID !== oldProp.targetPortID) {
                 var target = void 0;
                 if (actualObject.targetID && this.nameTable[actualObject.targetID]) {
                     target = this.nameTable[actualObject.targetID].wrapper;
                 }
-                actualObject.targetPortWrapper = target ?
-                    this.getWrapper(target, newProp.targetPortID) : undefined;
+                var targetNode = this.nameTable[actualObject.targetID];
+                if (!targetNode || (canInConnect(targetNode) || (actualObject.targetPortID !== '' && canPortInConnect(inPort)))) {
+                    actualObject.targetPortWrapper = target ?
+                        this.getWrapper(target, newProp.targetPortID) : undefined;
+                }
             }
             if (newProp.flip !== undefined) {
                 actualObject.flip = newProp.flip;
@@ -34366,6 +34502,11 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
         }
         if (this.diagramActions && actualObject.status !== 'New') {
             actualObject.status = 'Update';
+        }
+        if (!propertyChange) {
+            var element = actualObject;
+            var args = { element: element, cause: this.diagramActions, oldValue: oldProp, newValue: newProp };
+            this.triggerEvent(DiagramEvent.propertyChange, args);
         }
     };
     Diagram.prototype.findInOutConnectPorts = function (node, isInconnect) {
@@ -35068,6 +35209,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                                     _this.findChild(newObj, entryTable);
                                 }
                                 _this.preventUpdate = true;
+                                if (newObj.zIndex !== -1) {
+                                    newObj.zIndex = -1;
+                                }
                                 _this.initObject(newObj, undefined, undefined, true);
                                 _this.currentSymbol = newObj;
                                 if (_this.mode !== 'SVG') {
@@ -46774,6 +46918,17 @@ var SymbolPalette = /** @__PURE__ @class */ (function (_super) {
                     this.accordionElement.expandMode = this.expandMode;
                     refresh = true;
                     break;
+                case 'allowDrag':
+                    this.allowDrag = newProp.allowDrag;
+                    if (!this.allowDrag) {
+                        this.draggable.helper = function () {
+                            return null;
+                        };
+                    }
+                    else {
+                        this.draggable.helper = this.helper;
+                    }
+                    break;
             }
         }
         if (refresh) {
@@ -48803,5 +48958,5 @@ var Overview = /** @__PURE__ @class */ (function (_super) {
  * Diagram component exported items
  */
 
-export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, setUMLActivityDefaults, findNearestPoint, isDiagramChild, groupHasType, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, UserHandle, Selector, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolPreview, SymbolPalette, Ruler, Overview };
+export { Diagram, PrintAndExport, Size, Rect, MatrixTypes, Matrix, identityMatrix, transformPointByMatrix, transformPointsByMatrix, rotateMatrix, scaleMatrix, translateMatrix, multiplyMatrix, Point, PortVisibility, SnapConstraints, SelectorConstraints, ConnectorConstraints, AnnotationConstraints, NodeConstraints, ElementAction, ThumbsConstraints, DiagramConstraints, DiagramTools, Transform, RenderMode, KeyModifiers, Keys, DiagramAction, RendererAction, RealAction, NoOfSegments, DiagramEvent, PortConstraints, contextMenuClick, contextMenuOpen, contextMenuBeforeItemRender, Thickness, Margin, Shadow, Stop, Gradient, LinearGradient, RadialGradient, ShapeStyle, StrokeStyle, TextStyle, DiagramElement, PathElement, ImageElement, TextElement, Container, Canvas, GridPanel, RowDefinition, ColumnDefinition, GridRow, GridCell, StackPanel, findConnectorPoints, swapBounds, findAngle, findPoint, getIntersection, getIntersectionPoints, orthoConnection2Segment, getPortDirection, getOuterBounds, getOppositeDirection, processPathData, parsePathData, getRectanglePath, getPolygonPath, pathSegmentCollection, transformPath, updatedSegment, scalePathData, splitArrayCollection, getPathString, getString, randomId, cornersPointsBeforeRotation, getBounds, cloneObject, getInternalProperties, cloneArray, extendObject, extendArray, textAlignToString, wordBreakToString, bBoxText, middleElement, overFlow, whiteSpaceToString, rotateSize, rotatePoint, getOffset, getFunction, completeRegion, findNodeByName, findObjectType, setSwimLaneDefaults, setUMLActivityDefaults, findNearestPoint, isDiagramChild, groupHasType, isPointOverConnector, intersect3, intersect2, getLineSegment, getPoints, getTooltipOffset, sort, getAnnotationPosition, getOffsetOfConnector, getAlignedPosition, alignLabelOnSegments, getBezierDirection, removeChildNodes, serialize, deserialize, upgrade, updateStyle, updateHyperlink, updateShapeContent, updateShape, updateContent, updateUmlActivityNode, getUMLFinalNode, getUMLActivityShapes, removeGradient, removeItem, updateConnector, getUserHandlePosition, canResizeCorner, canShowCorner, checkPortRestriction, findAnnotation, findPort, getInOutConnectPorts, findObjectIndex, getObjectFromCollection, scaleElement, arrangeChild, insertObject, getElement, getPoint, getObjectType, flipConnector, updatePortEdges, alignElement, updatePathElement, findPath, findDistance, CanvasRenderer, DiagramRenderer, DataBinding, getBasicShape, getPortShape, getDecoratorShape, getIconShape, getFlowShape, Hyperlink, Annotation, ShapeAnnotation, PathAnnotation, Port, PointPort, menuClass, DiagramContextMenu, Shape, Path, Native, Html, Image$1 as Image, Text, BasicShape, FlowShape, BpmnGateway, BpmnDataObject, BpmnTask, BpmnEvent, BpmnSubEvent, BpmnTransactionSubProcess, BpmnSubProcess, BpmnActivity, BpmnAnnotation, BpmnShape, UmlActivityShape, MethodArguments, UmlClassAttribute, UmlClassMethod, UmlClass, UmlInterface, UmlEnumerationMember, UmlEnumeration, UmlClassifierShape, Node, Header, Lane, Phase, SwimLane, ChildContainer, BpmnDiagrams, getBpmnShapePathData, getBpmnTriggerShapePathData, getBpmnGatewayShapePathData, getBpmnTaskShapePathData, getBpmnLoopShapePathData, Decorator, Vector, ConnectorShape, ActivityFlow, BpmnFlow, ConnectorSegment, StraightSegment, BezierSegment, OrthogonalSegment, getDirection, isEmptyVector, getBezierPoints, getBezierBounds, bezierPoints, MultiplicityLabel, ClassifierMultiplicity, RelationShip, Connector, ConnectorBridging, Snapping, UndoRedo, DiagramTooltip, initTooltip, updateTooltip, LayoutAnimation, UserHandle, Selector, ToolBase, SelectTool, ConnectTool, MoveTool, RotateTool, ResizeTool, NodeDrawingTool, ConnectorDrawingTool, TextDrawingTool, ZoomPanTool, ExpandTool, LabelTool, PolygonDrawingTool, PolyLineDrawingTool, LabelDragTool, LabelResizeTool, LabelRotateTool, DiagramEventHandler, CommandHandler, findToolToActivate, findPortToolToActivate, contains, hasSelection, hasSingleConnection, isSelected, getCursor, ConnectorEditing, updateCanvasBounds, removeChildInContainer, findBounds, createHelper, renderContainerHelper, checkParentAsContainer, checkChildNodeInContainer, addChildToContainer, updateLaneBoundsAfterAddChild, renderStackHighlighter, moveChildInStack, CrudAction, ConnectionDataSource, DataSource, Gridlines, SnapSettings, KeyGesture, Command, CommandManager, ContextMenuSettings, Layout, MindMap, HierarchicalTree, RadialTree, GraphForceNode, SymmetricLayout, GraphLayoutManager, ComplexHierarchicalTree, Palette, SymbolPreview, SymbolPalette, Ruler, Overview };
 //# sourceMappingURL=ej2-diagrams.es5.js.map

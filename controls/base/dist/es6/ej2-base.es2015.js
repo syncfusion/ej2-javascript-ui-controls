@@ -4794,7 +4794,6 @@ class Internationalization {
      * Returns the parser function for given options.
      * @param {DateFormatOptions} options - Specifies the format options in which the parser function will return.
      * @returns {Function}
-     * @private
      */
     getDateParser(options) {
         return DateParser.dateParser(this.getCulture(), options || { skeleton: 'short', type: 'date' }, cldrData);
@@ -5328,6 +5327,20 @@ let Draggable = Draggable_1 = class Draggable extends Base {
         clearTimeout(this.tapHoldTimer);
         EventHandler.remove(document, Browser.touchMoveEvent, this.removeTapholdTimer);
     }
+    /* istanbul ignore next */
+    getScrollableParent(element, axis) {
+        let scroll = { 'vertical': 'scrollHeight', 'horizontal': 'scrollWidth' };
+        let client = { 'vertical': 'clientHeight', 'horizontal': 'clientWidth' };
+        if (isNullOrUndefined(element)) {
+            return null;
+        }
+        if (element[scroll[axis]] > element[client[axis]]) {
+            return element;
+        }
+        else {
+            return this.getScrollableParent(element.parentNode, axis);
+        }
+    }
     initialize(evt, curTarget) {
         this.target = (evt.currentTarget || curTarget);
         this.dragProcessStarted = false;
@@ -5344,8 +5357,12 @@ let Draggable = Draggable_1 = class Draggable extends Base {
         this.initialPosition = { x: intCoord.pageX, y: intCoord.pageY };
         if (!this.clone) {
             let pos = this.element.getBoundingClientRect();
-            this.relativeXPosition = intCoord.pageX - pos.left;
-            this.relativeYPosition = intCoord.pageY - pos.top;
+            let verticalScrollParent = this.getScrollableParent(this.element.parentNode, 'vertical');
+            let horizontalScrollParent = this.getScrollableParent(this.element.parentNode, 'horizontal');
+            let parentScrollX = horizontalScrollParent ? horizontalScrollParent.scrollLeft : 0;
+            let parentScrollY = verticalScrollParent ? verticalScrollParent.scrollTop : 0;
+            this.relativeXPosition = intCoord.pageX - (pos.left + parentScrollX);
+            this.relativeYPosition = intCoord.pageY - (pos.top + parentScrollY);
         }
         if (this.externalInitialize) {
             this.intDragStart(evt);

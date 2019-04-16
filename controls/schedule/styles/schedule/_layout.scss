@@ -1229,6 +1229,8 @@
     }
 
     &.e-rtl {
+      text-align: right;
+
       .e-vertical-view {
         &.e-timescale-disable .e-appointment-details {
           text-align: right;
@@ -1750,6 +1752,10 @@
 
         .e-resource-tree-icon {
           float: right;
+        }
+
+        .e-appointment.e-schedule-event-clone .e-appointment-details .e-inner-wrap {
+          text-align: right;
         }
       }
     }
@@ -2422,6 +2428,10 @@
     .e-quick-dialog-cancel {
       box-shadow: none;
     }
+
+    &.e-rtl {
+      text-align: right;
+    }
   }
 
   .e-bigger #{&}.e-dialog.e-quick-dialog {
@@ -2429,6 +2439,7 @@
   }
 
   /*! schedule event window */
+
   .e-schedule-dialog {
     .e-disable {
       display: none;
@@ -2549,6 +2560,8 @@
     }
 
     &.e-rtl {
+      text-align: right;
+
       .e-all-day-container {
         margin-left: 16px;
         margin-right: 0;
@@ -3210,6 +3223,8 @@
     }
 
     &.e-rtl {
+      text-align: right;
+
       .e-cell-popup {
         .e-header-icon-wrapper {
           left: 6px;

@@ -4,7 +4,7 @@
 import { EmitType, EventHandler } from '@syncfusion/ej2-base';
 import { extend } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
-import { createElement, remove } from '@syncfusion/ej2-base';
+import { createElement } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { Sort } from '../../../src/grid/actions/sort';
 import { Group } from '../../../src/grid/actions/group';
@@ -12,7 +12,7 @@ import { Selection } from '../../../src/grid/actions/selection';
 import { Filter } from '../../../src/grid/actions/filter';
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 import { GridModel } from '../../../src/grid/base/grid-model';
-import { Column, ColumnModel } from '../../../src/grid/models/column';
+import { Column } from '../../../src/grid/models/column';
 import { Row } from '../../../src/grid/models/row';
 import { VirtualContentRenderer } from '../../../src/grid/renderer/virtual-content-renderer';
 import { VirtualRowModelGenerator } from '../../../src/grid/services/virtual-row-model-generator';
@@ -122,7 +122,6 @@ describe('Virtualization testing', () => {
 
     describe('scroll continous', () => {
         let grid: Grid;
-        let rows: HTMLTableRowElement;
         beforeAll((done: Function) => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -175,12 +174,12 @@ describe('Virtualization testing', () => {
         // });
         afterAll(() => {
             destroy(grid);
+            grid = null;
         });
     });
 
     describe('virtualization with grouping enabled', () => {
         let grid: Grid;
-        let rows: HTMLTableRowElement;
         beforeAll((done: Function) => {
             grid = createGrid(
                 {
@@ -236,6 +235,7 @@ describe('Virtualization testing', () => {
         });
         afterAll(() => {
             destroy(grid);
+            grid = null;
         });
     });
 
@@ -269,12 +269,13 @@ describe('Virtualization testing', () => {
 
         afterAll(() => {
             destroy(grid);
+            grid = null;
         });
     });
 
     describe('Check scroll position after grid filter actions', () => {
         let grid: Grid;
-        let rows: HTMLTableRowElement; let oneTime: boolean = true;
+        let oneTime: boolean = true;
         beforeAll(() => {
             grid = createGrid(
                 {
@@ -301,12 +302,12 @@ describe('Virtualization testing', () => {
         });
         afterAll(() => {
             destroy(grid);
+            grid = oneTime = null;
         });
     });
 
     describe('Check scroll position after grid sort actions', () => {
         let grid: Grid; let oneTime: boolean = true;
-        let rows: HTMLTableRowElement;
         beforeAll((done: Function) => {
             grid = createGrid(
                 {
@@ -339,13 +340,13 @@ describe('Virtualization testing', () => {
         });
         afterAll(() => {
             destroy(grid);
+            grid = oneTime = null;
         });
     });
 
     describe('Selection feature testing', () => {
         describe('without scrolling', () => {
-            let grid: Grid; let oneTime: boolean = true;
-            let rows: HTMLTableRowElement;
+            let grid: Grid;
             beforeAll((done: Function) => {
                 grid = createGrid(
                     {
@@ -372,11 +373,11 @@ describe('Virtualization testing', () => {
             });
             afterAll(() => {
                 destroy(grid);
+                grid = null;
             });
         });
         describe('after scrolling', () => {
-            let grid: Grid; let oneTime: boolean = true;
-            let rows: HTMLTableRowElement;
+            let grid: Grid;
             beforeAll((done: Function) => {
                 grid = createGrid(
                     {
@@ -409,6 +410,7 @@ describe('Virtualization testing', () => {
             });
             afterAll(() => {
                 destroy(grid);
+                grid = null;
             });
         });
         // describe('selection maintainance check', () => { //random failure
@@ -450,7 +452,6 @@ describe('Column virtualization', () => {
 
     describe('scroll left continous', () => {
         let grid: Grid;
-        let rows: HTMLTableRowElement;
         beforeAll((done: Function) => {
             grid = createGrid(
                 {
@@ -494,12 +495,12 @@ describe('Column virtualization', () => {
         });
         afterAll(() => {
             destroy(grid);
+            grid = null;
         });
     });
 
     describe('Grouping enabled', () => {
         let grid: Grid;
-        let rows: HTMLTableRowElement;
         beforeAll((done: Function) => {
             grid = createGrid(
                 {
@@ -570,6 +571,7 @@ describe('Column virtualization', () => {
         });
         afterAll(() => {
             destroy(grid);
+            grid = null;
         });
     });
     describe('Check scroll position after selecting and scroll', () => {
@@ -607,6 +609,7 @@ describe('Column virtualization', () => {
         // });
         afterAll(() => {
             destroy(grid);
+            grid = null;
         });
     });
     describe('Ensure the virtual table after changing the datasource dynamically', () => {
@@ -645,12 +648,12 @@ describe('Column virtualization', () => {
         });
         afterAll(() => {
             destroy(grid);
+            grid = button = null;
         });
     });
 
     describe('Ensure the virtual table while rendering the Grid', () => {
         let grid: Grid;
-        let button: HTMLElement;
         beforeAll((done: Function) => {
             grid = createGrid(
                 {
@@ -675,12 +678,12 @@ describe('Column virtualization', () => {
         });
         afterAll(() => {
             destroy(grid);
+            grid = null;
         });
     });
 
     describe('Grouping enabled', () => {
         let grid: Grid;
-        let rows: HTMLTableRowElement;
         beforeAll((done: Function) => {
             grid = createGrid(
                 {
@@ -703,6 +706,7 @@ describe('Column virtualization', () => {
         });
         afterAll(() => {
             destroy(grid);
+            grid = null;
         });
     });
 });

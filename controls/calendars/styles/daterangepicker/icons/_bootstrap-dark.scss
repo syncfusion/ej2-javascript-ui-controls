@@ -4,8 +4,6 @@
   &.e-control-wrapper .e-input-group-icon.e-range-icon {
     font-size: $range-icon-font-size;
     margin: $range-icon-margin;
-    min-height: $range-icon-container-min-height;
-    min-width: $range-icon-container-min-width;
     outline: none;
 
     &::before {
@@ -41,8 +39,6 @@
     & .e-control-wrapper .e-input-group-icon.e-range-icon {
       font-size: $range-bigger-icon-font-size;
       margin: $range-icon-bigger-margin;
-      min-height: $range-icon-container-min-height;
-      min-width: $range-icon-container-min-width;
       outline: none;
     }
   }

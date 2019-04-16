@@ -69,7 +69,7 @@ export interface MultiSelectModel extends DropDownBaseModel{
     /**
      * Accepts the template design and assigns it to the selected list item in the input element of the component.
      * For more details about the available template options refer to 
-     * [`Template`](../../multi-select/templates.html) documentation.
+     * [`Template`](../../multi-select/templates) documentation.
      * 
      * We have built-in `template engine`
      * which provides options to compile template string into a executable function. 

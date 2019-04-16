@@ -97,6 +97,8 @@ export class Selection implements IAction {
     private bdrAFRight: HTMLElement;
     private bdrAFTop: HTMLElement;
     private bdrAFBottom: HTMLElement;
+    private isInteracted: boolean;
+    private checkSelectAllClicked: boolean;
     //Module declarations
     private parent: IGrid;
     private focus: FocusStrategy;
@@ -104,7 +106,6 @@ export class Selection implements IAction {
     private isPreventCellSelect: boolean = false;
     private disableUI: boolean = false;
     private isPersisted: boolean = false;
-    private isInteracted: boolean;
 
     /**
      * Constructor for the Grid selection module
@@ -375,6 +376,9 @@ export class Selection implements IAction {
             this.selectRowIndex(rowIndex);
             if (isUnSelected && ((checkboxColumn.length ? true : this.selectionSettings.enableToggle) || this.isMultiCtrlRequest)) {
                 this.rowDeselect(events.rowDeselecting, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target);
+                if (this.isCancelDeSelect) {
+                    return;
+                }
                 this.selectedRowIndexes.splice(this.selectedRowIndexes.indexOf(rowIndex), 1);
                 this.selectedRecords.splice(this.selectedRecords.indexOf(selectedRow), 1);
                 selectedRow.removeAttribute('aria-selected');
@@ -436,7 +440,7 @@ export class Selection implements IAction {
 
     private clearRow(): void {
         this.clearRowSelection();
-        if (this.isCancelDeSelect === true) {
+        if (this.isCancelDeSelect && this.parent.checkAllRows !== 'Check') {
             return;
         }
         this.selectedRowIndexes = [];
@@ -587,8 +591,21 @@ export class Selection implements IAction {
                     mRow.push(gObj.getMovableRows()[this.selectedRowIndexes[i]]);
                 }
             }
+            if (this.selectionSettings.persistSelection) {
+                this.isInteracted = this.checkSelectAllClicked ? true : false;
+            }
             this.rowDeselect(events.rowDeselecting, rowIndex, data, row, foreignKeyData, target, mRow);
-            if (this.isCancelDeSelect === true) {
+            if (this.isCancelDeSelect && (this.isInteracted || this.checkSelectAllClicked)) {
+                if (this.parent.isPersistSelection) {
+                    if (this.getCheckAllStatus(this.parent.element.querySelector('.e-checkselectall')) === 'Intermediate') {
+                        for (let i: number = 0; i < this.selectedRecords.length; i++) {
+                            this.updatePersistCollection(this.selectedRecords[i], true);
+                        }
+                    } else {
+                        this.parent.checkAllRows = 'Check';
+                        this.updatePersistSelectedData(true);
+                    }
+                }
                 return;
             }
             rows.filter((record: HTMLElement) => record.hasAttribute('aria-selected')).forEach((ele: HTMLElement) => {
@@ -621,15 +638,19 @@ export class Selection implements IAction {
     private rowDeselect(
         type: string, rowIndex: number[], data: Object, row: Element[],
         foreignKeyData: Object[], target: Element, mRow?: Element[]): void {
-        let cancl: string = 'cancel';
-        this.updatePersistCollection(row[0], false);
-        let rowDeselectObj: Object = {
-            rowIndex: rowIndex, data: data, row: row, foreignKeyData: foreignKeyData,
-            cancel: false, target: target, isInteracted: this.isInteracted
-        };
-        this.parent.trigger(type, this.parent.getFrozenColumns() ? { ...rowDeselectObj, ...{ mRow: mRow } } : rowDeselectObj);
-        this.isCancelDeSelect = rowDeselectObj[cancl];
-        this.updateCheckBoxes(row[0], undefined, rowIndex[0]);
+        if ((this.selectionSettings.persistSelection && this.isInteracted) || !this.selectionSettings.persistSelection) {
+            let cancl: string = 'cancel';
+            let rowDeselectObj: Object = {
+                rowIndex: rowIndex, data: data, row: row, foreignKeyData: foreignKeyData,
+                cancel: false, target: target, isInteracted: this.isInteracted
+            };
+            this.parent.trigger(type, this.parent.getFrozenColumns() ? { ...rowDeselectObj, ...{ mRow: mRow } } : rowDeselectObj);
+            this.isCancelDeSelect = rowDeselectObj[cancl];
+            if (!this.isCancelDeSelect || (!this.isInteracted && !this.checkSelectAllClicked)) {
+                this.updatePersistCollection(row[0], false);
+                this.updateCheckBoxes(row[0], undefined, rowIndex[0]);
+            }
+        }
     }
 
     private getRowObj(row: Element | number = this.currentIndex): Row<Column> {
@@ -2045,6 +2066,7 @@ export class Selection implements IAction {
         this.preventFocus = true;
         let checkBox: HTMLInputElement;
         let checkWrap: HTMLElement = parentsUntil(target, 'e-checkbox-wrapper') as HTMLElement;
+        this.checkSelectAllClicked = checkWrap && checkWrap.querySelectorAll('.e-checkselectall') ? true : false;
         if (checkWrap && checkWrap.querySelectorAll('.e-checkselect,.e-checkselectall').length > 0) {
             checkBox = checkWrap.querySelector('input[type="checkbox"]') as HTMLInputElement;
             chkSelect = true;

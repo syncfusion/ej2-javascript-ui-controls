@@ -1516,6 +1516,30 @@ describe('Recurrence Date Generator Specs', () => {
                         new Date(2024, 11, 13, 10).getTime(), new Date(2025, 11, 13, 10).getTime(),
                         new Date(2026, 11, 13, 10).getTime()]));
         });
+    });    
+
+    describe('Schedule - recurrence rule with end date as never', () => {
+        let startDate: Date = new Date('Tue, 06 May 2014');
+        it('Yearly with max count', () => {
+            let dates: number[] = generate(startDate, 'FREQ=DAILY;', null, 0, 90);
+            expect(dates.length).toBe(90);
+        });
+        it('WEEKLY with max count', () => {
+            let dates: number[] = generate(startDate, 'FREQ=WEEKLY;', null, 0, 120);
+            expect(dates.length).toBe(120);
+        });
+        it('MONTHLY with max count', () => {
+            let dates: number[] = generate(startDate, 'FREQ=MONTHLY;', null, 0, 10);
+            expect(dates.length).toBe(10);
+        });
+        it('YEARLY with max count', () => {
+            let dates: number[] = generate(startDate, 'FREQ=YEARLY;', null, 0, 30);
+            expect(dates.length).toBe(30);
+        });
+        it('DAILY without max count', () => {
+            let dates: number[] = generate(startDate, 'FREQ=DAILY;', null, 0);
+            expect(dates.length).toBe(43);
+        });
     });
 
     it('memory leak', () => {

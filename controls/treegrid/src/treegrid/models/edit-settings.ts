@@ -33,7 +33,6 @@ export class EditSettings extends ChildProperty<EditSettings> {
      * * Dialog
      * * Batch
      * @default Cell 
-     * @aspDefaultValueIgnore
      * @isEnumeration true
      */
     @Property('Cell')

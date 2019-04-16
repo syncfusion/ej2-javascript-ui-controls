@@ -124,6 +124,55 @@ describe('Symbol Palette - Group', () => {
             events.mouseMoveEvent(diagram.element, 300, 300, false, false);
             events.mouseUpEvent(diagram.element, 300, 300, false, false);
             expect(diagram.nodes.length).toBe(5);
+            done();
+        });
+        it('Checking Allow Drag', (done: Function) => {
+            palette.allowDrag = false;
+            palette.dataBind();
+            let events: MouseEvents = new MouseEvents();
+            events.mouseDownEvent(palette.element, 75, 100, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            expect(document.getElementsByClassName('e-dragclone').length == 0).toBe(true);
+            expect(diagram.nodes.length).toBe(5);
+            done();
+        });
+
+        it('Enable Allow drag', (done: Function) => {
+            palette.allowDrag = true;
+            palette.dataBind();
+            palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
+                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let position: PointModel = palette['getMousePosition'](e.sender);
+                let symbols: IElement = palette.symbolTable['group'];
+                palette['selectedSymbols'] = symbols;
+                if (symbols !== undefined) {
+                    clonedElement = palette['getSymbolPreview'](symbols, e.sender, palette.element);
+                    clonedElement.setAttribute('paletteId', palette.element.id);
+                }
+                return clonedElement;
+            };
+            diagram.dragEnter = (arg) => {
+                expect(arg.source instanceof SymbolPalette).toBe(true);
+                done();
+            };
+            diagram.dragOver = (arg) => {
+                expect(arg.diagram !== undefined).toBe(true);
+                done();
+            };
+            diagram.drop = (arg) => {
+                expect((arg.element as NodeModel).id === diagram.currentSymbol.id).toBe(true);
+                done();
+            };
+            let events: MouseEvents = new MouseEvents();
+            events.mouseDownEvent(palette.element, 75, 100, false, false);
+            events.mouseMoveEvent(palette.element, 100, 100, false, false);
+            events.mouseMoveEvent(palette.element, 200, 200, false, false);
+            expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
+            events.mouseMoveEvent(diagram.element, 300, 300, false, false);
+            events.mouseUpEvent(diagram.element, 300, 300, false, false);
+            expect(diagram.nodes.length).toBe(8);
+            done();
         });
         it('Remove Palette Item', (done: Function) => {
             let cpalette: PaletteModel = palette.palettes[0];

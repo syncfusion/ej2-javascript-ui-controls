@@ -1858,6 +1858,7 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                             let newProperty: Str = Object(newProp.items[index])[property];
                             if (this.tbarAlign || property === 'align') {
                                 this.refresh();
+                                this.trigger('created');
                                 break;
                             }
                             let popupPriCheck: Boolean = property === 'showAlwaysInPopup' && !newProperty;

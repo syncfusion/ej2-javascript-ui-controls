@@ -310,6 +310,9 @@ describe('ColorPicker', () => {
             colorPicker.value = '#5e35b1';
             colorPicker.dataBind();
             expect(colorPicker.value).toBe('#5e35b1');
+            colorPicker.value = '#12a474';
+            colorPicker.dataBind();
+            expect(colorPicker.value).toBe('#12a474');
             colorPicker.destroy();
             //For Picker type
             colorPicker = new ColorPicker({ mode: 'Picker' }, '#color-picker');
@@ -502,6 +505,20 @@ describe('ColorPicker', () => {
             expect(colorPicker.container.querySelector('.e-opacity-slider')).toBeDefined();
             expect(colorPicker.container.querySelector('.e-opacity-value')).toBeNull();
 
+        });
+
+        it('Invalid color value', () => {
+            colorPicker = new ColorPicker({}, '#color-picker');
+            colorPicker.splitBtn.toggle();
+            expect(colorPicker.value).toEqual('#008000ff');
+            colorPicker.inline = true;
+            colorPicker.value = '#1';
+            colorPicker.dataBind();
+            expect(colorPicker.value).toEqual('#008000ff');
+            colorPicker.value = '#111';
+            colorPicker.dataBind();
+            expect(colorPicker.value).toEqual('#111');
+            expect(colorPicker.element.value).toEqual('#111111');
         });
     });
 

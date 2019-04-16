@@ -2,20 +2,21 @@
 
 ## [Unreleased]
 
+## 17.1.41 (2019-04-16)
+
+### TreeGrid
+
+#### Bug Fixes
+
+-#143815 - `GridLine` property is working fine in MVC
+
 ## 17.1.40 (2019-04-09)
 
 ### TreeGrid
 
-#### New Features
-
-- Checkbox selection support has been provided that allows users to select rows using checkbox.
-- Checkbox Column support has been provided that allows users to check rows using checkbox in treegrid column.
-
 #### Bug Fixes
 
-- Change detection for properties `dataSource` and `query` were handled for remote data.
-- Edited records can be searched/filtered.
-- Inner level records will be collapsed/expanded after filtering/searching actions.
+- `addRecord` method is working fine and also allows to add record at desired row position.
 
 ## 17.1.1-beta (2019-01-29)
 

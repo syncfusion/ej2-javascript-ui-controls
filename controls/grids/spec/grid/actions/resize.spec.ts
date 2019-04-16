@@ -1,10 +1,8 @@
 /**
  * Grid Resize spec document
  */
-import { Browser, EventHandler, EmitType } from '@syncfusion/ej2-base';
-import { createElement, remove } from '@syncfusion/ej2-base';
-import { SortDirection } from '../../../src/grid/base/enum';
-import { DataManager } from '@syncfusion/ej2-data';
+import { Browser, EmitType } from '@syncfusion/ej2-base';
+import { createElement } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { ResizeArgs } from '../../../src/grid/base/interface';
 import { Column } from '../../../src/grid/models/column';
@@ -21,9 +19,8 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { GridModel } from '../../../src/grid/base/grid-model';
 import { extend } from '@syncfusion/ej2-base';
 import { Aggregate } from '../../../src/grid/actions/aggregate';
-import { AggregateColumn } from '../../../src/grid/models/aggregate';
-import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { resizeStart } from '../../../src';
 
 Grid.Inject(Sort, Page, Filter, Reorder, Group, Resize, Selection, Aggregate, Freeze);
 
@@ -31,7 +28,6 @@ describe('Resize module', () => {
     describe('Resize functionalities for columns', () => {
         let gridObj: Grid;
         let headers: any;
-        let columns: Column[];
         beforeAll((done: Function) => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -71,13 +67,13 @@ describe('Resize module', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = headers = null;
         });
     });
     describe('Resize functionalities for columns', () => {
         let gridObj: Grid;
         let contentTable: any;
         let footerTable: any;
-        let columns: Column[];
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -112,12 +108,12 @@ describe('Resize module', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = contentTable = footerTable = null;
         });
     });
     describe('Resize functionalities for all columns', () => {
         let gridObj: Grid;
         let headers: any;
-        let columns: Column[];
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -155,12 +151,12 @@ describe('Resize module', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = headers = null;
         });
     });
     describe('Resize functionalities for Hidden columns', () => {
         let gridObj: Grid;
         let headers: any;
-        let columns: Column[];
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -185,13 +181,12 @@ describe('Resize module', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = headers = null;
         });
     });
 
     describe('allowResizing functionality', () => {
         let gridObj: any;
-        let headers: any;
-        let columns: Column[];
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -333,6 +328,7 @@ describe('Resize module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
@@ -341,7 +337,6 @@ describe('Resize module', () => {
         let resizeStop: EmitType<ResizeArgs> = jasmine.createSpy('resizeStartStop');
         let resize: EmitType<ResizeArgs> = jasmine.createSpy('resize');
         let gridObj: any;
-        let columns: Column[];
         beforeAll((done) => {
             jasmine.Ajax.install();
             gridObj = createGrid(
@@ -375,13 +370,13 @@ describe('Resize module', () => {
         afterAll(() => {
             jasmine.Ajax.uninstall();
             destroy(gridObj);
+            gridObj = resizeStartevent = resizeStop = resize = null;
         });
     });
 
     describe('resize start event', () => {
 
         let gridObj: any;
-        let columns: Column[];
         beforeAll((done) => {
             gridObj = createGrid(
                 {
@@ -412,12 +407,12 @@ describe('Resize module', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
     describe('resize event', () => {
 
         let gridObj: any;
-        let columns: Column[];
         beforeAll((done) => {
             gridObj = createGrid(
                 {
@@ -449,12 +444,12 @@ describe('Resize module', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
     describe('Resize in mobile layout', () => {
         let gridObj: any;
-        let columns: Column[];
         beforeAll((done: Function) => {
             let iphoneUa: string = 'Mozilla/5.0 (iPhone; CPU iPhone OS 10_2_1 like Mac OS X) AppleWebKit/602.4.6' +
                 ' (KHTML, like Gecko) Version/10.0 Mobile/14D27 Safari/602.1';
@@ -475,6 +470,7 @@ describe('Resize module', () => {
             destroy(gridObj);
             let desktop: string = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36';
             Browser.userAgent = desktop;
+            gridObj = null;
         });
 
         it('resize start', () => {
@@ -547,7 +543,6 @@ describe('Resize module', () => {
 
     describe('Resize with footer table', () => {
         let grid: Grid;
-        let rows: HTMLTableRowElement;
         beforeAll((done: Function) => {
             grid = createGrid(
                 {
@@ -602,6 +597,7 @@ describe('Resize module', () => {
 
         afterAll(() => {
             destroy(grid);
+            grid = null;
         });
     });
 
@@ -609,7 +605,6 @@ describe('Resize module', () => {
         describe('Resize functionalities for columns', () => {
             let gridObj: Grid;
             let headers: any;
-            let columns: Column[];
             beforeAll((done: Function) => {
                 gridObj = createGrid(
                     {
@@ -642,12 +637,11 @@ describe('Resize module', () => {
             });           
             afterAll(() => {
                 destroy(gridObj);
+                gridObj = headers = null;
             });
         });
         describe('allowResizing functionality', () => {
             let gridObj: any;
-            let headers: any;
-            let columns: Column[];
             beforeAll((done: Function) => {
                 gridObj = createGrid(
                     {
@@ -731,6 +725,7 @@ describe('Resize module', () => {
     
             afterAll(() => {
                 destroy(gridObj);
+                gridObj = null;
             });
         });
         describe('Events', () => {
@@ -738,7 +733,6 @@ describe('Resize module', () => {
             let resizeStop: EmitType<ResizeArgs> = jasmine.createSpy('resizeStartStop');
             let resize: EmitType<ResizeArgs> = jasmine.createSpy('resize');
             let gridObj: any;
-            let columns: Column[];
             beforeAll((done) => {
                 jasmine.Ajax.install();
                 gridObj = createGrid(
@@ -776,13 +770,13 @@ describe('Resize module', () => {
             afterAll(() => {
                 jasmine.Ajax.uninstall();
                 destroy(gridObj);
+                gridObj = resizeStartevent = resizeStop = resize = null;
             });
         });
 
         describe('resize start event', () => {
 
             let gridObj: any;
-            let columns: Column[];
             beforeAll((done) => {
                 gridObj = createGrid(
                     {
@@ -817,6 +811,7 @@ describe('Resize module', () => {
             });
             afterAll(() => {
                 destroy(gridObj);
+                gridObj = null;
             });
         });
     });
@@ -824,7 +819,6 @@ describe('Resize module', () => {
     describe('Resize functionalities for all columns', () => {
         let gridObj: Grid;
         let headers: any;
-        let columns: Column[];
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -865,13 +859,12 @@ describe('Resize module', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = headers = null;
         });
     });
 
     describe('Resize functionalities for stacked columns', () => {
         let gridObj: Grid;
-        let headers: any;
-        let columns: Column[];
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -927,6 +920,7 @@ describe('Resize module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 });

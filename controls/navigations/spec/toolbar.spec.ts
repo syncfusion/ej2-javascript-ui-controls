@@ -11778,6 +11778,43 @@ describe('Hscroll module scrollStep change in beforeCreate', () => {
         });
     });
 
+    describe('Refresh method gets called in toolbar component ', () => {
+        let toolbar: Toolbar;
+        let i: number = 0;
+        function clickFn(): void {
+            i++;
+        }
+        beforeEach((): void => {
+            toolbar = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Toolbar' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (toolbar) {
+                toolbar.destroy();
+            }
+        });
+
+        it('When we update the tooltip text', () => {
+            toolbar = new Toolbar({
+                width: '500px',
+                created: clickFn,
+                items: [{
+                    type: 'Button',
+                    text: 'Bold',
+                    tooltipText: 'Bold',
+                    align: "Right"
+                }]
+            });
+            toolbar.appendTo('#ej2Toolbar');
+            expect(i).toEqual(1);
+            toolbar.items[0].tooltipText = 'Bold Text';
+            toolbar.dataBind();
+            expect(i).toEqual(2);
+        });
+
+    });
+
     it('memory leak', () => {     
         profile.sample();
         let average: any = inMB(profile.averageChange)

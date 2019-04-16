@@ -658,6 +658,30 @@ describe('Calendar', () => {
             expect(calendar.min.valueOf()).toBe(new Date(1900, 0, 1).valueOf());
             expect(calendar.max.valueOf()).toBe(new Date(2099, 11, 31).valueOf());
         });
+        it('min or max  with null type test case', () => {
+            calendar = new Calendar({
+                min: null,
+                max: new Date('5/17/2017'),
+                value: new Date('5/6/2017')
+            });
+            calendar.appendTo('#calendar');
+            expect(calendar.min.valueOf()).toBe(new Date(1900, 0, 1).valueOf());
+            calendar.max = null;
+            calendar.dataBind();
+            expect(calendar.max.valueOf()).toBe(new Date(2099, 11, 31).valueOf());
+        });
+        it('min or max  with null type test case', () => {
+            calendar = new Calendar({
+                max: null,
+                min: new Date('5/17/2017'),
+                value: new Date('5/19/2017')
+            });
+            calendar.appendTo('#calendar');
+            expect(calendar.max.valueOf()).toBe(new Date(2099, 11, 31).valueOf());
+            calendar.min = null;
+            calendar.dataBind();
+            expect(calendar.min.valueOf()).toBe(new Date(1900, 0, 1).valueOf());
+        });
         it('min test case', () => {
             calendar = new Calendar({
                 min: new Date('2/2/2017')

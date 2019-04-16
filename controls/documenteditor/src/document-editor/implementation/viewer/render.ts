@@ -207,7 +207,8 @@ export class Renderer {
     private getHeaderFooterType(page: Page, isHeader: boolean): string {
         let type: string;
         type = isHeader ? 'Header' : 'Footer';
-        if (page.bodyWidgets[0].sectionFormat.differentFirstPage && this.viewer.pages.indexOf(page) === 0) {
+        if (page.bodyWidgets[0].sectionFormat.differentFirstPage &&
+            (isNullOrUndefined(page.previousPage) || page.sectionIndex !== page.previousPage.sectionIndex)) {
             type = isHeader ? 'First Page Header' : 'First Page Footer';
         } else if (page.bodyWidgets[0].sectionFormat.differentOddAndEvenPages) {
             if ((this.viewer.pages.indexOf(page) + 1) % 2 === 0) {
@@ -843,7 +844,7 @@ export class Renderer {
             isLastCell = tableCell.cellIndex === 0;
         }
         if (tableCell.ownerTable.tableFormat.cellSpacing > 0 || isLastCell) {
-            border = isBidiTable ? TableCellWidget.getCellRightBorder(tableCell) : TableCellWidget.getCellLeftBorder(tableCell);
+            border = isBidiTable ? TableCellWidget.getCellLeftBorder(tableCell) : TableCellWidget.getCellRightBorder(tableCell);
             // if (!isNullOrUndefined(border )) { //Renders the cell right border.           
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
             // tslint:disable-next-line:max-line-length

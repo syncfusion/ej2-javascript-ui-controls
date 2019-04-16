@@ -428,12 +428,12 @@ describe('Schedule Resources', () => {
 
         it('Public method for add resource', () => {
             schObj.addResource({ Text: 'New Resource', Id: 11, GroupID: 1, Color: '#7499e1' }, 'Owners', 1);
-            expect((<Object[]>schObj.resources.slice(-1)[0].dataSource).length).toEqual(4);
+            expect((<Object[]>schObj.resourceCollection.slice(-1)[0].dataSource).length).toEqual(4);
         });
 
         it('Public method for remove resource', () => {
             schObj.removeResource(11, 'Owners');
-            expect((<Object[]>schObj.resources.slice(-1)[0].dataSource).length).toEqual(3);
+            expect((<Object[]>schObj.resourceCollection.slice(-1)[0].dataSource).length).toEqual(3);
         });
 
         it('Public method setWorkHours checking with resource', () => {

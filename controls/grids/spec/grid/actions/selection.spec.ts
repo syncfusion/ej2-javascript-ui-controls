@@ -3,7 +3,7 @@
  */
 import { Browser, EmitType } from '@syncfusion/ej2-base';
 import { EventHandler, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
-import { createElement, remove } from '@syncfusion/ej2-base';
+import { createElement } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { Freeze } from '../../../src/grid/actions/freeze';
 import { Selection } from '../../../src/grid/actions/selection';
@@ -12,9 +12,6 @@ import { data } from '../base/datasource.spec';
 import { Group } from '../../../src/grid/actions/group';
 import { Sort } from '../../../src/grid/actions/sort';
 import { Edit } from '../../../src/grid/actions/edit';
-import { FocusStrategy } from '../../../src/grid/services/focus-strategy'; 
-import { CheckBox } from '@syncfusion/ej2-buttons';
-import { employeeSelectData } from '../base/datasource.spec';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { QueryCellInfoEventArgs } from '../../../src/grid/base/interface';
@@ -313,6 +310,7 @@ describe('Selection Shortcuts testing', () => {
 
     afterAll(() => {
         destroy(gridObj);
+        gridObj = preventDefault = selectionModule = rows = null;
     });
 });
 
@@ -661,6 +659,7 @@ describe('Selection Shortcuts testing with Freeze pane', () => {
     
     afterAll(() => {
         destroy(gridObj);
+        gridObj = preventDefault = selectionModule = rows = fColLen = null;
     });
 });
 
@@ -816,6 +815,7 @@ describe('Grid Selection module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = selectionModule = rows = null;
         });
     });
 
@@ -918,6 +918,7 @@ describe('Grid Selection module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = selectionModule = rows = null;
         });
     });
 });
@@ -926,7 +927,6 @@ describe('Mode and Type changes', () => {
     let gridObj: Grid;
     let selectionModule: Selection;
     let rows: Element[];
-    let cells: NodeListOf<Element>;
     let shiftEvt: MouseEvent = document.createEvent('MouseEvent');
     shiftEvt.initMouseEvent(
         'click',
@@ -1016,6 +1016,7 @@ describe('Mode and Type changes', () => {
       });
       afterAll(() => {
         destroy(gridObj);
+        gridObj = selectionModule = rows = shiftEvt = null;
     });
     }); 
 
@@ -1189,6 +1190,7 @@ describe('Grid Selection module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = selectionModule = rows = shiftEvt = null;
         });
     });
 
@@ -1225,6 +1227,7 @@ describe('Grid Selection module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = selectionModule = rows = null;
         });
     });
 
@@ -1392,6 +1395,7 @@ describe('Grid Selection module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = selectionModule = rows = shiftEvt = null;
         });
     });
 });
@@ -1610,6 +1614,7 @@ describe('Grid Selection module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = selectionModule = rows = shiftEvt = null;
         });
 
     });
@@ -1620,7 +1625,6 @@ describe('Grid Selection module', () => {
         let rows: Element[];
         let mRows: Element[];
         let cells: NodeListOf<Element>;
-        let mCells: NodeListOf<Element>;
         let shiftEvt: MouseEvent = document.createEvent('MouseEvent');
         shiftEvt.initMouseEvent(
             'click',
@@ -1769,6 +1773,7 @@ describe('Grid Selection module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = selectionModule = rows = mRows = cells = ctrlEvt = shiftEvt = null;
         });
     });
 });
@@ -1899,6 +1904,7 @@ describe('Grid Selection module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = selectionModule = rows = cell = null;
         });
     });
 
@@ -2015,6 +2021,7 @@ describe('Grid Selection module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = selectionModule = rows = cell = mRows = null;
         });
     });
 
@@ -2113,6 +2120,7 @@ describe('Grid Selection module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = selectionModule = rows = cell = null;
         });
     });
 });
@@ -2123,7 +2131,6 @@ describe('Grid Touch Selection', () => {
         let gridObj: Grid;
         let selectionModule: Selection;
         let rows: Element[];
-        let cell: HTMLElement;
         let gridPopUp: HTMLElement;
         let spanElement: Element;
         let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
@@ -2181,6 +2188,7 @@ describe('Grid Touch Selection', () => {
             destroy(gridObj);
             let desktop: string = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36';
             Browser.userAgent = desktop;
+            gridObj = selectionModule = rows = androidPhoneUa = spanElement = null;
 
         });
     });
@@ -2190,7 +2198,6 @@ describe('Grid Touch Selection', () => {
         let selectionModule: Selection;
         let rows: Element[];
         let mRows: Element[];
-        let cell: HTMLElement;
         let gridPopUp: HTMLElement;
         let spanElement: Element;
         let androidPhoneUa: string = 'Mozilla/5.0 (Linux; Android 4.3; Nexus 7 Build/JWR66Y) ' +
@@ -2251,6 +2258,7 @@ describe('Grid Touch Selection', () => {
             destroy(gridObj);
             let desktop: string = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36';
             Browser.userAgent = desktop;
+            gridObj = selectionModule = rows = androidPhoneUa = spanElement = null;
         });
     });
 
@@ -2259,8 +2267,6 @@ describe('Grid Touch Selection', () => {
         let gridObj: Grid;
         let actionBegin: () => void;
         let actionComplete: () => void;
-        let columns: any;
-        let rowSelected: EmitType<Object>;
         let rowSelecting: EmitType<Object>;
         let cellSelected: EmitType<Object>;
         let cellSelecting: EmitType<Object>;
@@ -2624,6 +2630,7 @@ describe('Grid Touch Selection', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = rowSelecting = cellSelected = rows = cellSelecting = preventDefault = null;
         });
     });
 
@@ -2789,6 +2796,7 @@ describe('Grid Touch Selection', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = rowSelecting = cellSelected = cellSelecting = preventDefault = null;
         });
     });
     // navigate selected cells with hidden columns
@@ -2943,6 +2951,7 @@ describe('Grid Touch Selection', () => {
             setTimeout(function () {
                 done();
             }, 1000);
+            gridObj = rowSelecting = cellSelected = cellSelecting = preventDefault = null;
         });
     });
 
@@ -3027,8 +3036,8 @@ describe('Grid Touch Selection', () => {
             expect(gridObj.getRows()[0].children[0].classList.contains('e-gridchkbox')).toBeTruthy();
         });
         it('select the cell', () => {
-            cellSelected = (args: Object) => {
-                expect(gridObj.getRows()[0].children[2].classList.contains('e-cellselectionbackground')).toBeTruthy();
+            cellSelected = (args: {currentCell: any}) => {
+                expect(args.currentCell.classList.contains('e-cellselectionbackground')).toBeTruthy();
                 gridObj.cellSelected = undefined;
             };
             gridObj.cellSelected = cellSelected;
@@ -3037,6 +3046,7 @@ describe('Grid Touch Selection', () => {
         });
             afterAll(() => {
             destroy(gridObj);
+            gridObj = cellSelected = template = null;
         });
     });
 

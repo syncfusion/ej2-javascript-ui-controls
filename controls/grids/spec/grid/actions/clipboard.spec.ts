@@ -1,14 +1,13 @@
 /**
  * Grid Clipboard spec document
  */
-import { Browser, EmitType, extend } from '@syncfusion/ej2-base';
-import { createElement, remove } from '@syncfusion/ej2-base';
+import { Browser } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { Selection } from '../../../src/grid/actions/selection';
 import { Clipboard } from '../../../src/grid/actions/clipboard';
 import { employeeData } from '../base/datasource.spec';
 import { BeforeCopyEventArgs } from '../../../src/grid/base/interface';
-import { createGrid, destroy,  getKeyUpObj, getClickObj, getKeyActionObj } from '../base/specutil.spec';
+import { createGrid, destroy, getKeyActionObj } from '../base/specutil.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
@@ -16,9 +15,6 @@ Grid.Inject(Selection, Clipboard);
 
 describe('Grid clipboard copy testing - row type selection => ', () => {
     let gridObj: Grid;
-    let preventDefault: Function = new Function();
-    let selectionModule: Selection;
-    let rows: Element[];
     beforeAll((done: Function) => {
         const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -85,15 +81,13 @@ describe('Grid clipboard copy testing - row type selection => ', () => {
 
     afterAll(() => {
        destroy(gridObj);
+       gridObj = null;
     });
 });
 
 describe('Grid clipboard copy testing - cells type selection => ', () => {
     let gridObj: Grid;
-    let preventDefault: Function = new Function();
-    let selectionModule: Selection;
     let gridBeforeCopy: (e: BeforeCopyEventArgs) => void;
-    let rows: Element[];
     beforeAll((done: Function) => {
         gridObj = createGrid(
             {
@@ -158,12 +152,12 @@ describe('Grid clipboard copy testing - cells type selection => ', () => {
 
     afterAll(() => {
        destroy(gridObj);
+       gridObj = gridBeforeCopy = null;
     });
 });
 
     describe('EJ2-7314/7299===>Grid clipboard => ', () => {
         let gridObj: Grid;
-        let selectionModule: Selection;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -201,5 +195,6 @@ describe('Grid clipboard copy testing - cells type selection => ', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });

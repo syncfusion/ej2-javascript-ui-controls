@@ -1,5 +1,5 @@
-import { Component, Property, Event, EmitType, closest, Collection, Complex, attributes, detach, Instance } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, AnimationOptions, select, isVisible } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, MouseEventArgs, Effect, Browser, formatUnit, DomElements, L10n } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll, addClass, removeClass } from '@syncfusion/ej2-base';import { EventHandler, rippleEffect, Touch, SwipeEventArgs, compile, Animation, AnimationModel, BaseEventArgs } from '@syncfusion/ej2-base';import { Popup, PopupModel } from '@syncfusion/ej2-popups';import { Toolbar, OverflowMode, ClickEventArgs } from '../toolbar/toolbar';
-import {HeaderPosition,HeightStyles,SelectingEventArgs,SelectEventArgs,RemoveEventArgs} from "./tab";
+import { Component, Property, Event, EmitType, closest, Collection, Complex, attributes, detach, Instance } from '@syncfusion/ej2-base';import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, AnimationOptions, select, isVisible } from '@syncfusion/ej2-base';import { KeyboardEvents, KeyboardEventArgs, MouseEventArgs, Effect, Browser, formatUnit, DomElements, L10n } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll, addClass, removeClass, remove } from '@syncfusion/ej2-base';import { EventHandler, rippleEffect, Touch, SwipeEventArgs, compile, Animation, AnimationModel, BaseEventArgs } from '@syncfusion/ej2-base';import { Popup, PopupModel } from '@syncfusion/ej2-popups';import { Toolbar, OverflowMode, ClickEventArgs } from '../toolbar/toolbar';
+import {HeaderPosition,HeightStyles,AddEventArgs,SelectingEventArgs,SelectEventArgs,RemoveEventArgs} from "./tab";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -233,13 +233,13 @@ export interface TabModel extends ComponentModel{
      * The event will be fired before adding the item to the Tab.
      * @event
      */
-    adding?: EmitType<Event>;
+    adding?: EmitType<AddEventArgs>;
 
     /**
      * The event will be fired after adding the item to the Tab.
      * @event
      */
-    added?: EmitType<Event>;
+    added?: EmitType<AddEventArgs>;
 
     /**
      * The event will be fired before the item gets selected.

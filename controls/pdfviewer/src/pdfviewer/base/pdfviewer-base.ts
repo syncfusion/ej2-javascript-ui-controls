@@ -789,12 +789,6 @@ export class PdfViewerBase {
         this.clear(false);
         this.pageContainer.parentNode.removeChild(this.pageContainer);
         this.viewerContainer.parentNode.removeChild(this.viewerContainer);
-        if (this.pdfViewer.thumbnailViewModule) {
-            this.pdfViewer.thumbnailViewModule.clear();
-        }
-        if (this.pdfViewer.bookmarkViewModule) {
-            this.pdfViewer.bookmarkViewModule.clear();
-        }
         this.contextMenuModule.destroy();
     }
     /**

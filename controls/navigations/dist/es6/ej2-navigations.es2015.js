@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, classList, closest, compile, createElement, detach, formatUnit, getInstance, getUniqueID, getValue, isNullOrUndefined, isUndefined, isVisible, matches, removeClass, rippleEffect, select, selectAll, setStyleAttribute, setValue } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, attributes, classList, closest, compile, createElement, detach, formatUnit, getInstance, getUniqueID, getValue, isNullOrUndefined, isUndefined, isVisible, matches, remove, removeClass, rippleEffect, select, selectAll, setStyleAttribute, setValue } from '@syncfusion/ej2-base';
 import { ListBase } from '@syncfusion/ej2-lists';
 import { Popup, calculatePosition, createSpinner, fit, getScrollableParent, getZindexPartial, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Button, createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';
@@ -4169,6 +4169,7 @@ let Toolbar = class Toolbar extends Component {
                             let newProperty = Object(newProp.items[index])[property];
                             if (this.tbarAlign || property === 'align') {
                                 this.refresh();
+                                this.trigger('created');
                                 break;
                             }
                             let popupPriCheck = property === 'showAlwaysInPopup' && !newProperty;
@@ -4393,11 +4394,7 @@ let Accordion = class Accordion extends Component {
         super.destroy();
         this.unwireEvents();
         this.isDestroy = true;
-        this.templateEle.forEach((eleStr) => {
-            if (!isNullOrUndefined(this.element.querySelector(eleStr))) {
-                document.body.appendChild(this.element.querySelector(eleStr)).style.display = 'none';
-            }
-        });
+        this.restoreContent(null);
         while (ele.firstChild) {
             ele.removeChild(ele.firstChild);
         }
@@ -4819,7 +4816,9 @@ let Accordion = class Accordion extends Component {
             ele.innerHTML = value;
         }
         if (!isNullOrUndefined(temString)) {
-            this.templateEle.push(value);
+            if (this.templateEle.indexOf(value) === -1) {
+                this.templateEle.push(value);
+            }
         }
         return ele;
     }
@@ -5077,6 +5076,7 @@ let Accordion = class Accordion extends Component {
         if (isNullOrUndefined(ele)) {
             return;
         }
+        this.restoreContent(index);
         detach(ele);
         this.items.splice(index, 1);
         this.itemAttribUpdate();
@@ -5198,12 +5198,30 @@ let Accordion = class Accordion extends Component {
         isExpand ? this.expand(ctn) : this.collapse(ctn);
     }
     destroyItems() {
-        [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM$1)).forEach((el) => { detach(el); });
+        this.restoreContent(null);
+        [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM$1)).forEach((el) => {
+            detach(el);
+        });
+    }
+    restoreContent(index) {
+        let ctnElePos;
+        if (isNullOrUndefined(index)) {
+            ctnElePos = this.element;
+        }
+        else {
+            ctnElePos = this.element.querySelectorAll('.' + CLS_ITEM$1)[index];
+        }
+        this.templateEle.forEach((eleStr) => {
+            if (!isNullOrUndefined(ctnElePos.querySelector(eleStr))) {
+                document.body.appendChild(ctnElePos.querySelector(eleStr)).style.display = 'none';
+            }
+        });
     }
     updateItem(item, index) {
         if (!isNullOrUndefined(item)) {
             let itemObj = this.items[index];
             this.items.splice(index, 1);
+            this.restoreContent(index);
             detach(item);
             this.addItem(itemObj, index);
         }
@@ -5724,7 +5742,9 @@ let Tab = class Tab extends Component {
         });
         this.expTemplateContent();
         if (!this.isTemplate) {
-            this.element.innerHTML = '';
+            while (this.element.firstChild) {
+                remove(this.element.firstChild);
+            }
         }
         else {
             let cntEle = select('.' + CLS_TAB + ' > .' + CLS_CONTENT$1, this.element);
@@ -6782,8 +6802,12 @@ let Tab = class Tab extends Component {
      */
     addTab(items, index) {
         let lastEleIndex = 0;
+        let addArgs = { addedItems: items, cancel: false };
         if (!this.isReplace) {
-            this.trigger('adding', { addedItems: items });
+            this.trigger('adding', addArgs);
+        }
+        if (addArgs.cancel) {
+            return;
         }
         this.hdrEle = select('.' + CLS_HEADER$1, this.element);
         if (isNullOrUndefined(this.hdrEle)) {
@@ -6847,9 +6871,9 @@ let Tab = class Tab extends Component {
      */
     removeTab(index) {
         let trg = selectAll('.' + CLS_TB_ITEM, this.element)[index];
-        let removeArgs = { removedItem: trg, removedIndex: index };
+        let removeArgs = { removedItem: trg, removedIndex: index, cancel: false };
         this.trigger('removing', removeArgs);
-        if (isNullOrUndefined(trg)) {
+        if (removeArgs.cancel || isNullOrUndefined(trg)) {
             return;
         }
         this.tbObj.removeItems(index);
@@ -7196,6 +7220,7 @@ const IMAGE = 'e-list-img';
 const BIGGER = 'e-bigger';
 const SMALL = 'e-small';
 const CHILD = 'e-has-child';
+const ITEM_ANIMATION_ACTIVE = 'e-animation-active';
 const treeAriaAttr = {
     treeRole: 'tree',
     itemRole: 'treeitem',
@@ -7786,7 +7811,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         if (!isNullOrUndefined(this.nodeTemplateFn)) {
             let textEle = e.item.querySelector('.' + LISTTEXT);
             textEle.innerHTML = '';
-            append(this.nodeTemplateFn(e.curData), textEle);
+            let tempArr = this.nodeTemplateFn(e.curData);
+            tempArr = Array.prototype.slice.call(tempArr);
+            append(tempArr, textEle);
         }
         let eventArgs = {
             node: e.item,
@@ -8469,6 +8496,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 let ul = select('.' + PARENTITEM, currLi);
                 let liEle = currLi;
                 this.setHeight(liEle, ul);
+                let activeElement = select('.' + LISTITEM + '.' + ACTIVE, currLi);
                 if (this.isAnimate) {
                     this.aniObj.animate(ul, {
                         name: this.animation.expand.effect,
@@ -8476,6 +8504,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                         timingFunction: this.animation.expand.easing,
                         begin: (args) => {
                             liEle.style.overflow = 'hidden';
+                            if (!isNullOrUndefined(activeElement) && activeElement instanceof HTMLElement) {
+                                activeElement.classList.add(ITEM_ANIMATION_ACTIVE);
+                            }
                             start = liEle.offsetHeight;
                             end = select('.' + TEXTWRAP, currLi).offsetHeight;
                         },
@@ -8485,6 +8516,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                         },
                         end: (args) => {
                             args.element.style.display = 'block';
+                            if (!isNullOrUndefined(activeElement) && activeElement instanceof HTMLElement) {
+                                activeElement.classList.remove(ITEM_ANIMATION_ACTIVE);
+                            }
                             this.expandedNode(liEle, ul, icon);
                         }
                     });
@@ -8548,6 +8582,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         let proxy = this;
         let ul = select('.' + PARENTITEM, currLi);
         let liEle = currLi;
+        let activeElement = select('.' + LISTITEM + '.' + ACTIVE, currLi);
         if (this.isAnimate) {
             this.aniObj.animate(ul, {
                 name: this.animation.collapse.effect,
@@ -8555,6 +8590,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 timingFunction: this.animation.collapse.easing,
                 begin: (args) => {
                     liEle.style.overflow = 'hidden';
+                    if (!isNullOrUndefined(activeElement) && activeElement instanceof HTMLElement) {
+                        activeElement.classList.add(ITEM_ANIMATION_ACTIVE);
+                    }
                     start = select('.' + TEXTWRAP, currLi).offsetHeight;
                     end = liEle.offsetHeight;
                 },
@@ -8563,6 +8601,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 },
                 end: (args) => {
                     args.element.style.display = 'none';
+                    if (!isNullOrUndefined(activeElement) && activeElement instanceof HTMLElement) {
+                        activeElement.classList.remove(ITEM_ANIMATION_ACTIVE);
+                    }
                     this.collapsedNode(liEle, ul, icon, colArgs);
                 }
             });
@@ -9582,7 +9623,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         let newData = setValue(this.editFields.text, newText, this.editData);
         if (!isNullOrUndefined(this.nodeTemplateFn)) {
             txtEle.innerHTML = '';
-            append(this.nodeTemplateFn(newData), txtEle);
+            let tempArr = this.nodeTemplateFn(newData);
+            tempArr = Array.prototype.slice.call(tempArr);
+            append(tempArr, txtEle);
         }
         else {
             txtEle.innerHTML = newText;
@@ -10559,7 +10602,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             this.updateChildField(obj, mapper, id, key, value);
         }
     }
-    updateChildField(obj, mapper, id, key, value, remove) {
+    updateChildField(obj, mapper, id, key, value, remove$$1) {
         let removedData;
         if (isNullOrUndefined(obj)) {
             return removedData;
@@ -10567,7 +10610,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         for (let i = 0, objlen = obj.length; i < objlen; i++) {
             let nodeId = getValue(mapper.id, obj[i]);
             if (obj[i] && nodeId && nodeId.toString() === id) {
-                if (remove) {
+                if (remove$$1) {
                     removedData = obj.splice(i, 1);
                 }
                 else {
@@ -10578,14 +10621,14 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             }
             else if (typeof mapper.child === 'string' && !isNullOrUndefined(getValue(mapper.child, obj[i]))) {
                 let childData = getValue(mapper.child, obj[i]);
-                removedData = this.updateChildField(childData, this.getChildMapper(mapper), id, key, value, remove);
+                removedData = this.updateChildField(childData, this.getChildMapper(mapper), id, key, value, remove$$1);
                 if (removedData !== undefined) {
                     break;
                 }
             }
             else if (this.fields.dataSource instanceof DataManager && !isNullOrUndefined(getValue('child', obj[i]))) {
                 let childItems = getValue('child', obj[i]);
-                removedData = this.updateChildField(childItems, this.getChildMapper(mapper), id, key, value, remove);
+                removedData = this.updateChildField(childItems, this.getChildMapper(mapper), id, key, value, remove$$1);
                 if (removedData !== undefined) {
                     break;
                 }
@@ -11440,6 +11483,7 @@ let Sidebar = class Sidebar extends Component {
         else {
             this.setMediaQuery();
         }
+        this.checkType(true);
         this.setType(this.type);
         this.setCloseOnDocumentClick();
         this.setEnableRTL();
@@ -11505,14 +11549,24 @@ let Sidebar = class Sidebar extends Component {
         removeClass([this.element], [OPEN, CLOSE, RIGHT, LEFT, SLIDE, PUSH, OVER]);
         this.element.classList.add(ROOT$1);
         addClass([this.element], (this.position === 'Right') ? RIGHT : LEFT);
-        if (this.type === 'Auto' && !Browser.isDevice && !this.enableDock) {
-            addClass([this.element], OPEN);
+        if (this.type === 'Auto' && !Browser.isDevice) {
+            this.show();
         }
-        else {
+        else if (!this.isOpen) {
             addClass([this.element], CLOSE);
         }
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
         this.element.setAttribute('tabindex', this.tabIndex);
+    }
+    checkType(val) {
+        if (!(this.type === 'Push' || this.type === 'Over' || this.type === 'Slide')) {
+            this.type = 'Auto';
+        }
+        else {
+            if (!this.element.classList.contains(CLOSE) && !val) {
+                this.hide();
+            }
+        }
     }
     destroyBackDrop() {
         let sibling = document.querySelector('.e-main-content') ||
@@ -11750,9 +11804,11 @@ let Sidebar = class Sidebar extends Component {
                     this.setAnimation();
                     break;
                 case 'type':
+                    this.checkType(false);
                     removeClass([this.element], [VISIBILITY]);
                     this.addClass();
-                    this.setType(this.type);
+                    addClass([this.element], this.type === 'Auto' ? (Browser.isDevice ? ['e-over'] :
+                        ['e-push']) : ['e-' + this.type.toLowerCase()]);
                     break;
                 case 'position':
                     this.element.style.transform = '';
@@ -11873,7 +11929,6 @@ let Sidebar = class Sidebar extends Component {
                     if (sibling && (this.enableDock || this.element.classList.contains(OPEN))) {
                         this.position === 'Left' ? sibling.style.marginLeft = margin : sibling.style.marginRight = margin;
                     }
-                    this.setProperties({ isOpen: true }, true);
                 }
                 this.createBackDrop();
         }

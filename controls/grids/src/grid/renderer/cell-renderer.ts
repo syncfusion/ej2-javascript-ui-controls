@@ -56,6 +56,7 @@ export class CellRenderer implements ICellRenderer<Column> {
             let dummyData: Object = extendObjWithFn({}, data, { [foreignKeyData]: fData });
             result = cell.column.getColumnTemplate()(extend({ 'index': attributes[literals[0]] }, dummyData), this.parent, 'template');
             appendChildren(node, result);
+            this.parent.notify('template-result', { template: result });
             result = null;
             node.setAttribute('aria-label', (<HTMLElement>node).innerText + ' is template cell' + ' column header ' +
                 cell.column.headerText);

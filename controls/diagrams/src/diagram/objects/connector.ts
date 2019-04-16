@@ -11,6 +11,7 @@ import { Rect } from '../primitives/rect';
 import { Size } from '../primitives/size';
 import { findAngle, findConnectorPoints, Bridge, getOuterBounds } from '../utility/connector';
 import { getAnnotationPosition, alignLabelOnSegments, updateConnector, setUMLActivityDefaults } from '../utility/diagram-util';
+import { findDistance, findPath, updatePathElement } from '../utility/diagram-util';
 import { randomId, getFunction } from './../utility/base-util';
 import { flipConnector } from './../utility/diagram-util';
 import { PathElement } from '../core/elements/path-element';
@@ -1058,14 +1059,7 @@ export class Connector extends NodeBase implements IElement {
         if (((this.shape as BpmnFlow).sequence) === 'Default') {
             segment = this.getSegmentElement(this, segment);
             let anglePoints: PointModel[] = this.intermediatePoints as PointModel[];
-            for (let j: number = 0; j < anglePoints.length - 1; j++) {
-                length = length + this.distance(anglePoints[j], anglePoints[j + 1]);
-                pathseqData = this.findPath(anglePoints[j], anglePoints[j + 1]);
-                pathseq.data = pathseqData[0];
-                pathseq.id = this.id + '_' + ((this.shape as BpmnFlow).sequence);
-                pathseq.offsetX = pathseqData[1].x; pathseq.offsetY = pathseqData[1].y; pathseq.rotateAngle = 45;
-                pathseq.transform = Transform.Self;
-            }
+            pathseq = updatePathElement(anglePoints, this);
             this.targetDecorator.shape = 'Arrow'; this.targetDecorator.style.fill = 'black';
         }
         if (((this.shape as BpmnFlow).sequence) === 'Conditional') {
@@ -1146,19 +1140,11 @@ export class Connector extends NodeBase implements IElement {
 
     /** @private */
     public distance(pt1: PointModel, pt2: PointModel): number {
-        return Math.sqrt(Math.pow(pt2.x - pt1.x, 2) + Math.pow(pt2.y - pt1.y, 2));
+        return findDistance(pt1, pt2);
     }
     /**   @private  */
     public findPath(sourcePt: PointModel, targetPt: PointModel): Object {
-        let beginningpoint: PointModel = { x: sourcePt.x, y: sourcePt.y };
-        let distance: number = this.distance(sourcePt, targetPt);
-        distance = Math.min(30, distance / 2);
-        let angle: number = findAngle(sourcePt, targetPt);
-        let transferpoint: PointModel = Point.transform({ x: beginningpoint.x, y: beginningpoint.y }, angle, distance);
-        let startpoint1: PointModel = Point.transform({ x: transferpoint.x, y: transferpoint.y }, angle, -12);
-        let endpoint1: PointModel = Point.transform({ x: startpoint1.x, y: startpoint1.y }, angle, 12 * 2);
-        let path: string = 'M' + startpoint1.x + ' ' + startpoint1.y + ' L' + endpoint1.x + ' ' + endpoint1.y;
-        return [path, transferpoint];
+        return findPath(sourcePt, targetPt);
     }
     /** @private */
     public getAnnotationElement(
@@ -1524,7 +1510,6 @@ export class Connector extends NodeBase implements IElement {
                     this.getUMLExceptionFlow(connector.wrapper.children[0] as PathElement);
                 }
                 break;
-
         }
     }
     /** @private */

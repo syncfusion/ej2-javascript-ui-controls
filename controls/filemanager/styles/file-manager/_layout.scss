@@ -56,7 +56,12 @@
 
     .e-toolbar {
       border-bottom-style: solid;
-      border-width: 0 0 1px;
+      @if $fm-skin-name == 'bootstrap-dark' {
+        border-width: 1px;
+      }
+      @else {
+        border-width: 0 0 1px;
+      }
 
       .e-toolbar-items .e-toolbar-item .e-dropdown-btn.e-btn.e-tbar-btn {
         border: 0;
@@ -76,7 +81,7 @@
 
         .e-tbar-btn-text.e-tbar-ddb-text {
           padding-right: 0;
-      }
+        }
 
         &.e-active {
           border: $fe-tb-ddb-border;
@@ -109,7 +114,7 @@
       .e-status {
         //Based on icon size modify the font-size 
         font-size: $fe-tbr-text-font-size;
-        padding: 0 2px 3px 0;
+        padding: $fe-tb-text-padding;
       }
 
       .e-fe-clear {
@@ -185,6 +190,9 @@
 
       .e-fe-breadcrumb.e-icons {
         padding-bottom: 6px;
+        @if $fm-skin-name == 'material-dark' {
+          padding-bottom: 0;
+        }
       }
 
       .e-search-wrap {
@@ -235,6 +243,10 @@
 
           .e-breadcrumb-submenu {
             height: $fe-bc-submenu-height;
+            @if $fm-skin-name == 'material-dark' {
+              padding-bottom: 0;
+              padding-top: 0;
+            }
           }
         }
       }
@@ -515,7 +527,7 @@
         padding: $fe-lg-item-padding;
         width: $fe-lg-item-width;
 
-        @if $fm-skin-name == 'bootstrap4' {
+        @if $fm-skin-name == 'bootstrap4' or $fm-skin-name == 'bootstrap-dark' {
           border-radius: 4px;
         }
 
@@ -571,6 +583,7 @@
       .e-toolbar {
 
         .e-fe-grid {
+          display: inline-table;
           transform: rotate(180deg);
         }
       }
@@ -705,6 +718,14 @@
     &.e-contextmenu-wrapper ul .e-menu-item.e-separator {
       margin: $fe-cm-separator-margin;
     }
+
+    &.e-rtl {
+
+      .e-fe-grid {
+        display: inline-table;
+        transform: rotate(180deg);
+      }
+    }
   }
 
   #{&}.e-filemanager,
@@ -808,6 +829,9 @@
 
         .e-addressbar-ul {
           height: $fe-mobile-search-height;
+          @if $fm-skin-name == 'material-dark' {
+            padding: $fe-big-bc-padding;
+          }
         }
 
         .e-address-list-item .e-icons {
@@ -1073,6 +1097,9 @@
 
       .e-breadcrumb-menu .e-breadcrumb-submenu {
         height: $fe-big-bc-submenu-height;
+        @if $fm-skin-name == 'material-dark' {
+          margin-top: -3px;
+        }
       }
 
       .e-address-list-item {

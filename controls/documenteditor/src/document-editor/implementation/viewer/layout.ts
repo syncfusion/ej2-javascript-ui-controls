@@ -503,7 +503,7 @@ export class Layout {
                 this.cutClientWidth(element.previousElement);
             }
         }
-        if (width < this.viewer.clientActiveArea.width || !this.viewer.textWrap) {
+        if (parseFloat(width.toFixed(4)) <= parseFloat(this.viewer.clientActiveArea.width.toFixed(4)) || !this.viewer.textWrap) {
             //Fits the text in current line.
             this.addElementToLine(paragraph, element);
             if (isNullOrUndefined(element.nextElement) && this.viewer.clientActiveArea.width > 0 && !element.line.isLastLine()) {
@@ -1854,7 +1854,9 @@ export class Layout {
                 }
                 elementBox.width = 0;
             } else {
-                this.viewer.textHelper.getTextSize(elementBox as TextElementBox, elementBox.characterFormat);
+                if (elementBox instanceof TextElementBox) {
+                    this.viewer.textHelper.getTextSize(elementBox, elementBox.characterFormat);
+                }
             }
             if (elementBox instanceof TextElementBox && (elementBox as TextElementBox).text === '\t') {
                 return width;
@@ -2167,7 +2169,7 @@ export class Layout {
      * @param row 
      */
     // tslint:disable-next-line:max-line-length
-    private addWidgetToTable(viewer: LayoutViewer, tableCollection: TableWidget[], rowCollection: TableRowWidget[], row: TableRowWidget, endRowWidget?: TableRowWidget): void {
+    private addWidgetToTable(viewer: LayoutViewer, tableCollection: TableWidget[], rowCollection: TableRowWidget[], row: TableRowWidget, endRowWidget?: TableRowWidget, isInitialLayout?: boolean): void {
         //Adds table row widget to owner table widget.
         let tableWidget: TableWidget = tableCollection[0] as TableWidget;
         let index: number = tableWidget.childWidgets.length;
@@ -2219,7 +2221,7 @@ export class Layout {
             !(tableWidget.containerWidget instanceof HeaderFooterWidget)) {
             tableWidget.containerWidget.height += row.height;
         }
-        this.updateHeightForRowWidget(viewer, false, tableCollection, rowCollection, row, false, endRowWidget);
+        this.updateHeightForRowWidget(viewer, false, tableCollection, rowCollection, row, false, endRowWidget, isInitialLayout);
         viewer.cutFromTop(row.y + row.height);
     }
     /**
@@ -2435,17 +2437,20 @@ export class Layout {
         if (row.ownerTable.continueHeader && !isHeader) {
             row.ownerTable.continueHeader = false;
         }
+        let isInitialLayout: boolean = row.ownerTable.isInsideTable;
         let isLastRow: boolean = false;
         cellSpacing = (!isNullOrUndefined(row.ownerTable) && !isNullOrUndefined(row.ownerTable.tableFormat)) ? HelperMethods.convertPointToPixel(row.ownerTable.tableFormat.cellSpacing) : 0;
         while (count < rowWidgets.length) {
             count = rowWidgets.length;
             if (row.ownerTable.isInsideTable || (viewer.splittedCellWidgets.length === 0 && tableRowWidget.y + tableRowWidget.height + cellSpacing <= viewer.clientArea.bottom)) {
-                this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget);
+                this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget, undefined, isInitialLayout);
                 if (viewer.splittedCellWidgets.length > 0 && isNullOrUndefined(rowWidgets[rowWidgets.length - 1].nextRow)) {
                     count--;
                     isLastRow = true;
                 }
+                isInitialLayout = false;
             } else {
+                isInitialLayout = false;
                 //Split widget for next page
                 if (viewer.splittedCellWidgets.length > 0 && tableRowWidget.y + tableRowWidget.height <= viewer.clientArea.bottom) {
                     let isRowSpanEnd: boolean = this.isRowSpanEnd(row, viewer);
@@ -2722,7 +2727,7 @@ export class Layout {
      * @param rowWidget
      */
     // tslint:disable-next-line:max-line-length
-    private updateHeightForRowWidget(viewer: LayoutViewer, isUpdateVerticalPosition: boolean, tableCollection: TableWidget[], rowCollection: TableRowWidget[], rowWidget: TableRowWidget, isLayouted: boolean, endRowWidget?: TableRowWidget): void {
+    private updateHeightForRowWidget(viewer: LayoutViewer, isUpdateVerticalPosition: boolean, tableCollection: TableWidget[], rowCollection: TableRowWidget[], rowWidget: TableRowWidget, isLayouted: boolean, endRowWidget?: TableRowWidget, isInitialLayout?: boolean): void {
         for (let i: number = 0; i < rowWidget.childWidgets.length; i++) {
             let cellspacing: number = 0;
             let cellWidget: TableCellWidget = undefined;
@@ -2737,8 +2742,8 @@ export class Layout {
                 let currentRowWidgetIndex: number = rowWidget.containerWidget.childWidgets.indexOf(rowWidget);
                 // tslint:disable-next-line:max-line-length
                 let rowSpanWidgetEndIndex: number = currentRowWidgetIndex + rowSpan - 1 - (rowWidget.index - cellWidget.rowIndex);
-                if (viewer.clientArea.bottom < cellWidget.y + cellWidget.height + cellWidget.margin.bottom
-                    || rowSpanWidgetEndIndex >= currentRowWidgetIndex + 1) {
+                if (!isInitialLayout && (viewer.clientArea.bottom < cellWidget.y + cellWidget.height + cellWidget.margin.bottom
+                    || rowSpanWidgetEndIndex >= currentRowWidgetIndex + 1)) {
                     this.splitSpannedCellWidget(cellWidget, tableCollection, rowCollection, viewer);
                 }
                 let spanEndRowWidget: TableRowWidget = rowWidget;

@@ -3626,12 +3626,6 @@ var PdfViewerBase = /** @__PURE__ @class */ (function () {
         this.clear(false);
         this.pageContainer.parentNode.removeChild(this.pageContainer);
         this.viewerContainer.parentNode.removeChild(this.viewerContainer);
-        if (this.pdfViewer.thumbnailViewModule) {
-            this.pdfViewer.thumbnailViewModule.clear();
-        }
-        if (this.pdfViewer.bookmarkViewModule) {
-            this.pdfViewer.bookmarkViewModule.clear();
-        }
         this.contextMenuModule.destroy();
     };
     /**
@@ -5737,7 +5731,8 @@ var Magnification = /** @__PURE__ @class */ (function () {
                     this.zoomLevel = 2;
                 }
             }
-            return scaleX * 100;
+            // tslint:disable-next-line:radix
+            return parseInt((scaleX * 100).toString());
         }
         else {
             var pageHeight = 0;
@@ -5747,12 +5742,8 @@ var Magnification = /** @__PURE__ @class */ (function () {
                     highestHeight = pageHeight;
                 }
             }
-            if (this.pdfViewerBase.pageCount === 1) {
-                return ((viewerHeight - this.pdfViewerBase.pageSize[0].top) / highestHeight) * 100;
-            }
-            else {
-                return (viewerHeight / highestHeight) * 100;
-            }
+            // tslint:disable-next-line:radix
+            return parseInt(((viewerHeight / highestHeight) * 100).toString());
         }
     };
     /**

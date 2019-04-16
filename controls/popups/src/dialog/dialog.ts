@@ -533,8 +533,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         setMinHeight(headerHeight + 30 + footerHeight);
     }
 
-    private onResizeStart(args: MouseEvent | TouchEvent): void {
+   private onResizeStart(args: ResizeMouseEventArgs | ResizeTouchEventArgs): boolean {
         this.trigger('resizeStart', args);
+        return args.cancel;
     }
 
     private onResizing(args: MouseEvent | TouchEvent): void {
@@ -1623,4 +1624,11 @@ export interface ConfirmDialogArgs {
     zIndex?: number;
     open?: EmitType<Object>;
     close?: EmitType<Object>;
+}
+interface ResizeMouseEventArgs extends MouseEvent  {
+    cancel?: boolean;
+}
+
+interface ResizeTouchEventArgs extends MouseEvent  {
+    cancel?: boolean;
 }

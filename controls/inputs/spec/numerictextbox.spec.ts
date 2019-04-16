@@ -5194,4 +5194,31 @@ describe('Change Event testing', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(inMB(profile.samples[profile.samples.length - 1]) + 0.25);
     }); 
+    describe('Click on clear button', () => {
+        let numeric: any;
+        let clickEvent: MouseEvent = document.createEvent('MouseEvents');
+        clickEvent.initEvent('mousedown', true, true);
+        beforeEach((): void => {
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'Numeric' });
+            document.body.appendChild(ele);
+            numeric = new NumericTextBox({ value: 25, showClearButton:true, floatLabelType: "Auto", change: (args) =>{
+                expect(args.event != null).toBe(true);
+            } });
+            numeric.appendTo('#Numeric');
+        });
+        afterEach((): void => {
+            if (numeric) {
+                numeric.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('change event testing ', () => {
+            let input: HTMLInputElement = <HTMLInputElement>document.getElementById('Numeric');
+            input.value = '123456';
+            document.getElementById('Numeric').focus();
+            let clearBtn = document.getElementById('Numeric').parentElement.querySelector('.e-clear-icon');
+            clearBtn.dispatchEvent(clickEvent);
+            expect(input.value === '').toEqual(true);
+       });
+    });
 });

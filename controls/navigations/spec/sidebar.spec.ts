@@ -152,14 +152,14 @@ describe("Sidebar DOM class Testing ", () => {
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
         sidebar = new Sidebar({ type: 'Auto', mediaQuery: '(min-width:1400px)' }, ele);
         expect(document.getElementById('sidebar').classList.contains('e-visibility')).toBe(false);
-        expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(true);
+        expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(false);
     });
     it("Sidebar with auto type and mediaQuer list test case", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
         sidebar = new Sidebar({ type: 'Auto', mediaQuery: window.matchMedia('min-width:1400px') }, ele);
         expect(document.getElementById('sidebar').classList.contains('e-visibility')).toBe(false);
-        expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(true);
+        expect(document.getElementById('sidebar').classList.contains('e-close')).toBe(false);
     });
 
     // animation onproperty change test case
@@ -478,6 +478,123 @@ describe("Sidebar DOM class Testing ", () => {
         expect(sidebar.element.classList.contains('e-close')).toBe(true);
     });
 
+    // IsOpen property against test cases in normal case
+    it("isOpen false against auto", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ isOpen: false, type: 'Auto' }, ele);
+        expect(sidebar.element.classList.contains('e-open')).toBe(true);
+        expect(sidebar.isOpen).toBe(true);
+    });
+    it("isOpen true against auto", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ isOpen: true, type: 'Auto' }, ele);
+        expect(sidebar.element.classList.contains('e-open')).toBe(true);
+        expect(sidebar.isOpen).toBe(true);
+    });
+    it("isOpen false against slide", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ isOpen: false, type: 'Slide' }, ele);
+        expect(sidebar.element.classList.contains('e-close')).toBe(true);
+        expect(sidebar.isOpen).toBe(false);
+    });
+    it("isOpen true against slide", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ isOpen: true, type: 'Slide' }, ele);
+        expect(sidebar.element.classList.contains('e-open')).toBe(true);
+        expect(sidebar.isOpen).toBe(true);
+    });
+    it("isOpen false against push", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ isOpen: false, type: 'Push' }, ele);
+        expect(sidebar.element.classList.contains('e-close')).toBe(true);
+        expect(sidebar.isOpen).toBe(false);
+    });
+    it("isOpen true against push", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ isOpen: true, type: 'Push' }, ele);
+        expect(sidebar.element.classList.contains('e-open')).toBe(true);
+        expect(sidebar.isOpen).toBe(true);
+    });
+    it("isOpen false against over", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ isOpen: false, type: 'Push' }, ele);
+        expect(sidebar.element.classList.contains('e-close')).toBe(true);
+        expect(sidebar.isOpen).toBe(false);
+    });
+    it("isOpen true against over", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ isOpen: true, type: 'Push' }, ele);
+        expect(sidebar.element.classList.contains('e-open')).toBe(true);
+        expect(sidebar.isOpen).toBe(true);
+    });
+
+
+    // IsOpen property against test cases in dock case
+    it("isOpen false against auto in dock mode", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ isOpen: false, type: 'Auto', enableDock: true, dockSize: '72px' }, ele);
+        expect(sidebar.element.classList.contains('e-open')).toBe(true);
+        expect(sidebar.isOpen).toBe(true);
+    });
+    it("isOpen true against auto in dock mode", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ isOpen: true, type: 'Auto', enableDock: true, dockSize: '72px' }, ele);
+        expect(sidebar.element.classList.contains('e-open')).toBe(true);
+        expect(sidebar.isOpen).toBe(true);
+    });
+    it("isOpen false against slide in dock mode", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ isOpen: false, type: 'Slide', enableDock: true, dockSize: '72px' }, ele);
+        expect(sidebar.element.classList.contains('e-close')).toBe(true);
+        expect(sidebar.isOpen).toBe(false);
+    });
+    it("isOpen true against slide in dock mode", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ isOpen: true, type: 'Slide', enableDock: true, dockSize: '72px' }, ele);
+        expect(sidebar.element.classList.contains('e-open')).toBe(true);
+        expect(sidebar.isOpen).toBe(true);
+    });
+    it("isOpen false against push in dock mode", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ isOpen: false, type: 'Push', enableDock: true, dockSize: '72px' }, ele);
+        expect(sidebar.element.classList.contains('e-close')).toBe(true);
+        expect(sidebar.isOpen).toBe(false);
+    });
+    it("isOpen true against push in dock mode", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ isOpen: true, type: 'Push', enableDock: true, dockSize: '72px' }, ele);
+        expect(sidebar.element.classList.contains('e-open')).toBe(true);
+        expect(sidebar.isOpen).toBe(true);
+    });
+    it("isOpen false against over in dock mode", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ isOpen: false, type: 'Push', enableDock: true, dockSize: '72px' }, ele);
+        expect(sidebar.element.classList.contains('e-close')).toBe(true);
+        expect(sidebar.isOpen).toBe(false);
+    });
+    it("isOpen true against over in dock mode", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ isOpen: true, type: 'Push', enableDock: true, dockSize: '72px' }, ele);
+        expect(sidebar.element.classList.contains('e-open')).toBe(true);
+        expect(sidebar.isOpen).toBe(true);
+    });
+
     it("Sidebar closeOnDocumentClick onproperty change test", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
@@ -500,35 +617,97 @@ describe("Sidebar DOM class Testing ", () => {
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
         sidebar = new Sidebar({ enableDock: true }, ele);
         expect(ele.classList.contains("e-dock")).toEqual(true);
+        expect(ele.classList.contains("e-open")).toEqual(true);
+        expect(ele.classList.contains("e-close")).toEqual(false);
         expect(ele.style.width).toEqual("auto");
         expect(ele.style.transform).toBe("");
     });
 
-    it("Sidebar with dock size(250px) test case", () => {
+    it("Sidebar with dock size(250px) default test case", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
-        sidebar = new Sidebar({ enableDock: true, dockSize: "250px" }, ele);
+        sidebar = new Sidebar({ enableDock: true, dockSize: "250px", width: '500px' }, ele);
         expect(ele.classList.contains("e-dock")).toEqual(true);
-        expect(ele.style.width).toEqual("250px");
-        expect(ele.style.transform).toBe("translateX(-100%) translateX(250px)");
+        expect(ele.classList.contains("e-open")).toEqual(true);
+        expect(ele.classList.contains("e-close")).toEqual(false);
+        expect(ele.style.width).toEqual("500px");
+        expect(ele.style.transform).toBe("");
+        expect(sidebar.isOpen).toBe(true);
     });
 
-    it("Sidebar with dock size test case", () => {
+    it("Sidebar with dock size default test case", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
-        sidebar = new Sidebar({ enableDock: true, dockSize: '300' }, ele);
+        sidebar = new Sidebar({ enableDock: true, dockSize: '300', width: '500px' }, ele);
         expect(ele.classList.contains("e-dock")).toEqual(true);
-        expect(ele.style.width).toEqual("300px");
+        expect(ele.classList.contains("e-open")).toEqual(true);
+        expect(ele.classList.contains("e-close")).toEqual(false);
+        expect(ele.style.width).toEqual("500px");
+        expect(sidebar.isOpen).toBe(true);
     });
+
+    it("Sidebar with dock size(250px) closed test case", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ enableDock: true, dockSize: "250px", width: '300px', isOpen: false }, ele);
+        expect(ele.classList.contains("e-dock")).toEqual(true);
+        expect(ele.classList.contains("e-open")).toEqual(true);
+        expect(ele.classList.contains("e-close")).toEqual(false);
+        expect(ele.style.width).toEqual("300px");
+        expect(ele.style.transform).toBe("");
+        expect(sidebar.isOpen).toBe(true);
+    });
+
+    it("Sidebar with dock size closed test case", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ enableDock: true, dockSize: '150', width: '300px', isOpen: false }, ele);
+        expect(ele.classList.contains("e-dock")).toEqual(true);
+        expect(ele.classList.contains("e-open")).toEqual(true);
+        expect(ele.classList.contains("e-close")).toEqual(false);
+        expect(ele.style.width).toEqual("300px");
+        expect(sidebar.isOpen).toBe(true);
+    });
+
+    it("Sidebar with dock size slide test case", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ enableDock: true, dockSize: '300', type: 'Slide' }, ele);
+        expect(ele.classList.contains("e-dock")).toEqual(true);
+        expect(ele.classList.contains("e-open")).toEqual(false);
+        expect(ele.classList.contains("e-close")).toEqual(true);
+        expect(ele.style.width).toEqual("300px");
+        expect(ele.style.transform).toBe("translateX(-100%) translateX(300px)");
+        expect(sidebar.isOpen).toBe(false);
+    });
+
+    it("Sidebar with dock size push test case", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ enableDock: true, dockSize: '300', type: 'Push' }, ele);
+        expect(ele.classList.contains("e-dock")).toEqual(true);
+        expect(ele.classList.contains("e-open")).toEqual(false);
+        expect(ele.classList.contains("e-close")).toEqual(true);
+        expect(ele.style.width).toEqual("300px");
+        expect(ele.style.transform).toBe("translateX(-100%) translateX(300px)");
+        expect(sidebar.isOpen).toBe(false);
+    });
+
+    it("Sidebar with dock size over test case", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+        sidebar = new Sidebar({ enableDock: true, dockSize: '300', type: 'Over' }, ele);
+        expect(ele.classList.contains("e-dock")).toEqual(true);
+        expect(ele.classList.contains("e-open")).toEqual(false);
+        expect(ele.classList.contains("e-close")).toEqual(true);
+        expect(ele.style.width).toEqual("300px");
+        expect(ele.style.transform).toBe("translateX(-100%) translateX(300px)");
+        expect(sidebar.isOpen).toBe(false);
+    });
+
 
     //mediaQuery test case
     it("Sidebar  with mediaQuery greater than 700px test case", () => {
-        let ele: HTMLElement = document.getElementById("sidebar");
-        let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
-        sidebar = new Sidebar({ type: 'Push', mediaQuery:'(min-width:700px)' }, ele);
-        expect(ele.classList.contains("e-open")).toEqual(true);
-    });
-    it("Sidebar  with mediaQuery list greater than 700px test case", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
         sidebar = new Sidebar({ type: 'Push', mediaQuery: window.matchMedia('(min-width:700px)') }, ele);
@@ -545,7 +724,7 @@ describe("Sidebar DOM class Testing ", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
         sidebar = new Sidebar({ type: 'Auto', mediaQuery: '(max-width:400px)' }, ele);
-        expect(ele.classList.contains("e-close")).toEqual(true);
+        expect(ele.classList.contains("e-close")).toEqual(false);
         sidebar.mediaQuery ='(min-width:700px)';
         sidebar.dataBind();
         expect(ele.classList.contains("e-open")).toEqual(true);
@@ -555,14 +734,14 @@ describe("Sidebar DOM class Testing ", () => {
         let ele: HTMLElement = document.getElementById("sidebar");
         let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
         sidebar = new Sidebar({ type: 'Auto', mediaQuery: '(max-width:400px)' }, ele);
-        expect(ele.classList.contains("e-close")).toEqual(true);
+        //expect(ele.classList.contains("e-close")).toEqual(false);
         sidebar.isOpen = true;
         sidebar.dataBind();
         //expect(ele.classList.contains("e-open")).toEqual(true);
         sidebar.isOpen = false;
         sidebar.dataBind();
-        expect(ele.classList.contains("e-open")).toEqual(false);
-        expect(ele.classList.contains("e-close")).toEqual(true);
+        //expect(ele.classList.contains("e-open")).toEqual(false);
+        //expect(ele.classList.contains("e-close")).toEqual(true);
     });
 
     // position Testing
@@ -971,6 +1150,28 @@ describe("Sidebar DOM class Testing ", () => {
         expect((<HTMLElement>document.querySelector('.e-content-section')).style.transform).toBe("translateX(300px)");
         expect(document.getElementById('sidebar').classList.contains('e-slide')).toBe(true);
         expect(document.getElementById('sidebar').classList.contains('e-left')).toBe(true);
+    });
+
+     //Spec for dynamically changing the type property
+     it("Setting spell mistake type on on property change", () => {
+        let ele: HTMLElement = document.getElementById("sidebar");
+        sidebar = new Sidebar({
+            change: function (args: any) {
+                expect(args.name).toBe("change");
+            }
+        }, ele);
+        sidebar.type= "Slide";
+        sidebar.dataBind();
+        expect(sidebar.element.classList.contains('e-slide')).toBe(true);
+        sidebar.type= "abc";
+        sidebar.dataBind();
+        expect(sidebar.element.classList.contains('e-push')).toBe(true);
+        sidebar.type= "Auto";
+        sidebar.dataBind();
+        expect(sidebar.element.classList.contains('e-push')).toBe(true);
+        sidebar.type= "Over";
+        sidebar.dataBind();
+        expect(sidebar.element.classList.contains('e-over')).toBe(true);
     });
 
     it("Sidebar over type with dock type test case", () => {
@@ -1395,6 +1596,211 @@ describe("Sidebar DOM class Testing ", () => {
             sidebar = new Sidebar({ target: <HTMLElement>document.querySelector('.e-context-element') }, ele);
             sidebar.destroy();
             expect(sidebar.element.classList.length).toBe(0);
+        });
+
+        // IsOpen property against test cases in normal case
+        it("isOpen false against auto", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ isOpen: false, type: 'Auto' }, ele);
+            expect(sidebar.element.classList.contains('e-close')).toBe(true);
+            expect(sidebar.isOpen).toBe(false);
+        });
+        it("isOpen true against auto", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ isOpen: true, type: 'Auto' }, ele);
+            expect(sidebar.element.classList.contains('e-open')).toBe(true);
+            expect(sidebar.isOpen).toBe(true);
+        });
+        it("isOpen false against slide", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ isOpen: false, type: 'Slide' }, ele);
+            expect(sidebar.element.classList.contains('e-close')).toBe(true);
+            expect(sidebar.isOpen).toBe(false);
+        });
+        it("isOpen true against slide", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ isOpen: true, type: 'Slide' }, ele);
+            expect(sidebar.element.classList.contains('e-open')).toBe(true);
+            expect(sidebar.isOpen).toBe(true);
+        });
+        it("isOpen false against push", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ isOpen: false, type: 'Push' }, ele);
+            expect(sidebar.element.classList.contains('e-close')).toBe(true);
+            expect(sidebar.isOpen).toBe(false);
+        });
+        it("isOpen true against push", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ isOpen: true, type: 'Push' }, ele);
+            expect(sidebar.element.classList.contains('e-open')).toBe(true);
+            expect(sidebar.isOpen).toBe(true);
+        });
+        it("isOpen false against over", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ isOpen: false, type: 'Push' }, ele);
+            expect(sidebar.element.classList.contains('e-close')).toBe(true);
+            expect(sidebar.isOpen).toBe(false);
+        });
+        it("isOpen true against over", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ isOpen: true, type: 'Push' }, ele);
+            expect(sidebar.element.classList.contains('e-open')).toBe(true);
+            expect(sidebar.isOpen).toBe(true);
+        });
+
+        // IsOpen property against test cases in dock case
+        it("isOpen false against auto in dock mode", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ isOpen: false, type: 'Auto', enableDock: true, dockSize: '72px' }, ele);
+            expect(sidebar.element.classList.contains('e-close')).toBe(true);
+            expect(sidebar.isOpen).toBe(false);
+        });
+        it("isOpen true against auto in dock mode", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ isOpen: true, type: 'Auto', enableDock: true, dockSize: '72px' }, ele);
+            expect(sidebar.element.classList.contains('e-open')).toBe(true);
+            expect(sidebar.isOpen).toBe(true);
+        });
+        it("isOpen false against slide in dock mode", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ isOpen: false, type: 'Slide', enableDock: true, dockSize: '72px' }, ele);
+            expect(sidebar.element.classList.contains('e-close')).toBe(true);
+            expect(sidebar.isOpen).toBe(false);
+        });
+        it("isOpen true against slide in dock mode", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ isOpen: true, type: 'Slide', enableDock: true, dockSize: '72px' }, ele);
+            expect(sidebar.element.classList.contains('e-open')).toBe(true);
+            expect(sidebar.isOpen).toBe(true);
+        });
+        it("isOpen false against push in dock mode", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ isOpen: false, type: 'Push', enableDock: true, dockSize: '72px' }, ele);
+            expect(sidebar.element.classList.contains('e-close')).toBe(true);
+            expect(sidebar.isOpen).toBe(false);
+        });
+        it("isOpen true against push in dock mode", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ isOpen: true, type: 'Push', enableDock: true, dockSize: '72px' }, ele);
+            expect(sidebar.element.classList.contains('e-open')).toBe(true);
+            expect(sidebar.isOpen).toBe(true);
+        });
+        it("isOpen false against over in dock mode", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ isOpen: false, type: 'Push', enableDock: true, dockSize: '72px' }, ele);
+            expect(sidebar.element.classList.contains('e-close')).toBe(true);
+            expect(sidebar.isOpen).toBe(false);
+        });
+        it("isOpen true against over in dock mode", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ isOpen: true, type: 'Push', enableDock: true, dockSize: '72px' }, ele);
+            expect(sidebar.element.classList.contains('e-open')).toBe(true);
+            expect(sidebar.isOpen).toBe(true);
+        });
+
+        it("Sidebar with dock size slide test case", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ enableDock: true, dockSize: '300' }, ele);
+            expect(ele.classList.contains("e-dock")).toEqual(true);
+            expect(ele.classList.contains("e-open")).toEqual(false);
+            expect(ele.classList.contains("e-close")).toEqual(true);
+            expect(ele.style.width).toEqual("300px");
+            expect(sidebar.isOpen).toBe(false);
+        });
+
+        it("Sidebar with dock size slide test case", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ enableDock: true, dockSize: '300', type: 'Slide' }, ele);
+            expect(ele.classList.contains("e-dock")).toEqual(true);
+            expect(ele.classList.contains("e-open")).toEqual(false);
+            expect(ele.classList.contains("e-close")).toEqual(true);
+            expect(ele.style.width).toEqual("300px");
+            expect(sidebar.isOpen).toBe(false);
+        });
+
+        it("Sidebar with dock size push test case", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ enableDock: true, dockSize: '300', type: 'Push' }, ele);
+            expect(ele.classList.contains("e-dock")).toEqual(true);
+            expect(ele.classList.contains("e-open")).toEqual(false);
+            expect(ele.classList.contains("e-close")).toEqual(true);
+            expect(ele.style.width).toEqual("300px");
+            expect(sidebar.isOpen).toBe(false);
+        });
+
+        it("Sidebar with dock size over test case", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ enableDock: true, dockSize: '300', type: 'Over' }, ele);
+            expect(ele.classList.contains("e-dock")).toEqual(true);
+            expect(ele.classList.contains("e-open")).toEqual(false);
+            expect(ele.classList.contains("e-close")).toEqual(true);
+            expect(ele.style.width).toEqual("300px");
+            expect(sidebar.isOpen).toBe(false);
+        });
+
+
+        it("Sidebar with dock size test case", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ enableDock: true, dockSize: '300', isOpen: true, width: '500px' }, ele);
+            expect(ele.classList.contains("e-dock")).toEqual(true);
+            expect(ele.classList.contains("e-open")).toEqual(true);
+            expect(ele.classList.contains("e-close")).toEqual(false);
+            expect(ele.style.width).toEqual("500px");
+            expect(sidebar.isOpen).toBe(true);
+        });
+
+        it("Sidebar with dock size slide test case", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ enableDock: true, dockSize: '300', type: 'Slide', isOpen: true, width: '500px' }, ele);
+            expect(ele.classList.contains("e-dock")).toEqual(true);
+            expect(ele.classList.contains("e-open")).toEqual(true);
+            expect(ele.classList.contains("e-close")).toEqual(false);
+            expect(ele.style.width).toEqual("500px");
+            expect(sidebar.isOpen).toBe(true);
+        });
+
+        it("Sidebar with dock size push test case", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ enableDock: true, dockSize: '300', type: 'Push', isOpen: true, width: '500px' }, ele);
+            expect(ele.classList.contains("e-dock")).toEqual(true);
+            expect(ele.classList.contains("e-open")).toEqual(true);
+            expect(ele.classList.contains("e-close")).toEqual(false);
+            expect(ele.style.width).toEqual("500px");
+            expect(sidebar.isOpen).toBe(true);
+        });
+
+        it("Sidebar with dock size over test case", () => {
+            let ele: HTMLElement = document.getElementById("sidebar");
+            let sibling: HTMLElement = <HTMLElement>ele.nextElementSibling;
+            sidebar = new Sidebar({ enableDock: true, dockSize: '300', type: 'Over', isOpen: true, width: '500px' }, ele);
+            expect(ele.classList.contains("e-dock")).toEqual(true);
+            expect(ele.classList.contains("e-open")).toEqual(true);
+            expect(ele.classList.contains("e-close")).toEqual(false);
+            expect(ele.style.width).toEqual("500px");
+            expect(sidebar.isOpen).toBe(true);
         });
 
         it("Sidebar target property onproperty change test case", () => {

@@ -794,6 +794,34 @@ describe("Accordion Testing", () => {
             accordion.dataBind();
             expect(ele.getAttribute('aria-multiselectable')).toBe('true');
         });
+        it("Accordion Onproperty Change testing for header text", () => {
+            let ele: HTMLElement = document.getElementById("accordion");
+            let contentEle1: HTMLElement = document.createElement("div");
+            let contentEle2: HTMLElement = document.createElement("div");
+            contentEle1.id = "content1";
+            contentEle1.innerText = "content of item1";
+            document.body.appendChild(contentEle1);
+            contentEle2.id = "content2";
+            contentEle2.innerText = "content of item2";
+            document.body.appendChild(contentEle2);
+            accordion = new Accordion(
+                {
+                    items: [
+                        { header: "Item1", content: "#content1", expanded: true },
+                        { header: "Item2", content: "#content2", expanded: true },
+                    ]
+            }, ele);
+            expect(accordion.items[0].header).toEqual("Item1");
+            expect(accordion.items[1].header).toEqual("Item2");
+            expect(ele.querySelector(accordion.items[0].content).innerHTML).toEqual("content of item1");           
+            expect(ele.querySelector(accordion.items[1].content).innerHTML).toEqual("content of item2");
+            accordion.items[0].header = "newItem1";
+            accordion.dataBind();
+            expect(accordion.items[0].header).toEqual("newItem1");
+            expect(accordion.items[1].header).toEqual("Item2");
+            expect(ele.querySelector(accordion.items[0].content).innerHTML).toEqual("content of item1");
+            expect(ele.querySelector(accordion.items[1].content).innerHTML).toEqual("content of item2");
+        });
     });
     describe("Accordion expandMode on property Change behavior", () => {
         let accordion: any;

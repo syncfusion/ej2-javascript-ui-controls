@@ -1009,4 +1009,98 @@ describe('MultiSelect', () => {
             expect((listObj as any).inputElement.placeholder === listObj.placeholder).toBe(true);
         });
     });
+    describe('EJ2-25259- browser freeze when click the clear all.', () => {
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdown' });
+        let dropDowns: any;
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            element.remove();
+            document.body.innerHTML = '';
+        });
+
+        it(' clear the value maintain in list item', () => {
+            let keyEventArgs: any = { preventDefault: (): void => { }, action: 'down' };
+            dropDowns = new MultiSelect({
+                dataSource: ['JavaScript', 'AS.NET'],
+                value: ['JavaScript'],
+                removing: function(args: any) {
+                    args.cancel = true;
+                }
+
+            });
+            dropDowns.appendTo(element);
+            dropDowns.showPopup();
+            dropDowns.ClearAll(keyboardEventArgs);
+            expect(dropDowns.componentWrapper.querySelector('.e-delim-view.e-delim-values').innerText === 'JavaScript').toBe(true);
+        });
+    });
+    describe('EJ2-25134 - popup open downward', () => {
+        let listObj: any;
+        let data: string[] = ['JAVA', 'C#', 'C++', '.NET', 'Oracle'];
+        let mouseEventArgs: any = { preventDefault: function () { }, target: null };
+        let divEle = createElement('div', {id:'parent', styles: 'height: 1000px; overflow: auto;'});
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
+        divEle.appendChild(element);
+        beforeAll(() => { 
+            document.body.appendChild(divEle);
+            listObj = new MultiSelect({
+                dataSource: data,
+                placeholder: 'select the value'
+            });
+            listObj.appendTo(element); 
+            listObj.componentWrapper.style.paddingTop = '700px';
+        });
+        afterAll(() => { 
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+
+        it(' when select the items', () => {  
+            window.scrollTo(0, document.body.scrollHeight);
+            mouseEventArgs.target = listObj.componentWrapper;
+            mouseEventArgs.type = 'mousedown';
+            (<any>listObj).wrapperClick(mouseEventArgs);
+            expect(listObj.isPopupOpen()).toBe(true);
+            let list: Array<HTMLElement> = (<any>listObj).ulElement.querySelectorAll('li');
+            mouseEventArgs.target = list[0];
+            mouseEventArgs.type = 'click';
+            (<any>listObj).onMouseClick(mouseEventArgs);
+            window.scrollTo(0, document.body.scrollHeight);
+            mouseEventArgs.target = document.body;
+            listObj.onBlur(mouseEventArgs);
+            mouseEventArgs.target = listObj.componentWrapper;
+            mouseEventArgs.type = 'mousedown';
+            (<any>listObj).wrapperClick(mouseEventArgs);
+            expect(listObj.isPopupOpen()).toBe(true);
+        });
+    });
+    describe('EJ2-24839- custom value with pre select not working', () => {
+        let listObj: any;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
+        beforeAll(() => { 
+            document.body.appendChild(element);
+            listObj = new MultiSelect({ 
+                value: ['JAVA'],
+                allowCustomValue: true,
+                placeholder: 'select the value'
+            });
+            listObj.appendTo(element); 
+            listObj.componentWrapper.style.paddingTop = '700px';
+        });
+        afterAll(() => { 
+            if (element) {
+                element.remove();
+                document.body.innerHTML = '';
+            }
+        });
+
+        it('when set empty data source.', () => {  
+            expect(listObj.componentWrapper.querySelector('.e-delim-view.e-delim-values').innerText === 'JAVA').toBe(true);
+            expect(listObj.ulElement.querySelectorAll('li').length === 1).toBe(true);
+        });
+    });
 });

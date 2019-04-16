@@ -34,12 +34,12 @@ describe('Position editable div on', () => {
     });
     it('IME start event', (done: DoneFn) => {
         editor.editor.insertText('Syncfusion Software ');
-        expect(editor.viewer.iframe.getAttribute('style')).toBe('pointer-events:none;position:absolute;top:-10000px');
+        expect(editor.viewer.iframe.getAttribute('style')).toBe('pointer-events:none;position:absolute;left:0px;top:0px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden');
         let event: CompositionEvent = document.createEvent('CompositionEvent');
         event.initEvent('compositionstart', true, true);
         editor.viewer.editableDiv.dispatchEvent(event);
         setTimeout(() => {
-            expect(editor.viewer.iframe.getAttribute('style')).not.toBe('pointer-events:none;position:absolute;top:-10000px');
+            expect(editor.viewer.iframe.getAttribute('style')).not.toBe('pointer-events:none;position:absolute;left:0px;top:0px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden');
             let left: string = editor.viewer.iframe.style.left;
             let page: Page = editor.selection.start.paragraph.bodyWidget.page;
             let marginLeft: number = HelperMethods.convertPointToPixel(editor.selection.start.paragraph.bodyWidget.sectionFormat.leftMargin);
@@ -56,7 +56,7 @@ describe('Position editable div on', () => {
         event.initEvent('compositionend', true, true);
         editor.viewer.editableDiv.dispatchEvent(event);
         setTimeout(() => {
-            expect(editor.viewer.iframe.getAttribute('style')).toBe('pointer-events:none;position:absolute;top:-10000px');
+            expect(editor.viewer.iframe.getAttribute('style')).toBe('pointer-events:none;position:absolute;left:' + editor.viewer.containerLeft + 'px;top:' + editor.viewer.containerTop + 'px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden');
             done();
         }, 10);
     });

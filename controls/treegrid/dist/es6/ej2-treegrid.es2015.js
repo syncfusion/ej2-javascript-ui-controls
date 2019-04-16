@@ -1139,6 +1139,7 @@ class DataManipulation {
      */
     convertToFlatData(data) {
         this.parent.flatData = (Object.keys(data).length === 0 ? this.parent.dataSource : []);
+        this.parent.parentData = [];
         if ((isRemoteData(this.parent) && !isOffline(this.parent)) && data instanceof DataManager) {
             let dm = this.parent.dataSource;
             if (this.parent.parentIdMapping) {
@@ -1350,7 +1351,16 @@ class DataManipulation {
      * @hidden
      */
     dataProcessor(args) {
-        let dataObj = this.parent.grid.dataSource;
+        let isExport = getObject('isExport', args);
+        let expresults = getObject('expresults', args);
+        let exportType = getObject('exportType', args);
+        let dataObj;
+        if (isExport && !isNullOrUndefined(expresults)) {
+            dataObj = expresults;
+        }
+        else {
+            dataObj = this.parent.grid.dataSource;
+        }
         let results = dataObj instanceof DataManager ? dataObj.dataSource.json : dataObj;
         let count = results.length;
         if ((this.parent.grid.allowFiltering && this.parent.grid.filterSettings.columns.length) ||
@@ -1416,7 +1426,7 @@ class DataManipulation {
             }
         }
         count = results.length;
-        if (this.parent.allowPaging) {
+        if (this.parent.allowPaging && (!isExport || exportType === 'CurrentPage')) {
             this.parent.notify(pagingActions, { result: results, count: count });
             results = this.dataResults.result;
             count = this.dataResults.count;
@@ -2091,6 +2101,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         if (data instanceof Array && data.length > 0 && data[0].hasOwnProperty('level')) {
             this.flatData = data;
             this.flatData.filter((e) => {
+                setValue('uniqueIDCollection.' + e.uniqueID, e, this);
                 if (e.level === 0) {
                     this.parentData.push(e);
                 }
@@ -2257,7 +2268,6 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         //   this.notify(events.cellSaved, args);
         // };
         this.grid.cellEdit = (args) => {
-            this.trigger(cellEdit, args);
             this.notify(cellEdit, args);
         };
         // this.grid.batchAdd = (args: BatchAddArgs): void => {
@@ -2567,7 +2577,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                         || this.dataSource.adaptor instanceof RemoteSaveAdaptor);
                     this.convertTreeData(this.dataSource);
                     if (this.isLocalData) {
-                        this.grid.dataSource = this.flatData.slice();
+                        this.grid.dataSource = this.flatData;
                     }
                     else {
                         this.grid.dataSource = this.dataSource;
@@ -2754,10 +2764,11 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
      * Adds a new record to the TreeGrid. Without passing parameters, it adds empty rows.
      * > `editSettings.allowEditing` should be true.
      * @param {Object} data - Defines the new add record data.
-     * @param {number} index - Defines the row index to be added
+     * @param {number} index - Defines the row index to be added.
+     * @param {RowPosition} position - Defines the new row position to be added.
      */
-    addRecord(data, index) {
-        this.grid.editModule.addRecord(data, index);
+    addRecord(data, index, position) {
+        this.editModule.addRecord(data, index, position);
     }
     /**
      * Cancels edited state.
@@ -3750,7 +3761,6 @@ class Reorder$1 {
     constructor(parent, treeColumn) {
         Grid.Inject(Reorder);
         this.parent = parent;
-        this.treeColumn = treeColumn;
         this.addEventListener();
     }
     /**
@@ -3765,14 +3775,12 @@ class Reorder$1 {
      */
     addEventListener() {
         this.parent.on('getColumnIndex', this.getTreeColumn, this);
-        this.parent.on('setColumnIndex', this.setTreeColumnIndex, this);
     }
     removeEventListener() {
         if (this.parent.isDestroyed) {
             return;
         }
         this.parent.off('getColumnIndex', this.getTreeColumn);
-        this.parent.off('setColumnIndex', this.getTreeColumn);
     }
     /**
      * To destroy the Reorder
@@ -3783,18 +3791,18 @@ class Reorder$1 {
         this.removeEventListener();
     }
     getTreeColumn() {
-        this.treeColumn = this.parent.columns[this.parent.treeColumnIndex];
-    }
-    setTreeColumnIndex() {
+        let treeColumn = this.parent.columns[this.parent.treeColumnIndex];
         let treeIndex;
-        for (let f = 0; f < this.parent.columns.length; f++) {
-            let treeColumnfield = getObject('field', this.treeColumn);
-            let parentColumnfield = getObject('field', this.parent.columns[f]);
+        let updatedCols = this.parent.getColumns();
+        for (let f = 0; f < updatedCols.length; f++) {
+            let treeColumnfield = getObject('field', treeColumn);
+            let parentColumnfield = getObject('field', updatedCols[f]);
             if (treeColumnfield === parentColumnfield) {
                 treeIndex = f;
+                break;
             }
         }
-        this.parent.treeColumnIndex = treeIndex;
+        this.parent.setProperties({ treeColumnIndex: treeIndex }, true);
     }
 }
 
@@ -4091,7 +4099,7 @@ class ExcelExport$1 {
     Map(excelExportProperties, 
     /* tslint:disable-next-line:no-any */
     isMultipleExport, workbook, isBlob, isCsv) {
-        let dataSource = this.parent.flatData;
+        let dataSource = this.parent.dataSource;
         let property = Object();
         setValue('isCsv', isCsv, property);
         setValue('cancel', false, property);
@@ -4107,7 +4115,7 @@ class ExcelExport$1 {
                 return null;
             }
             dm.executeQuery(query).then((e) => {
-                this.manipulateExportProperties(excelExportProperties, dataSource, this.isLocal() ? null : e);
+                excelExportProperties = this.manipulateExportProperties(excelExportProperties, dataSource, e);
                 return this.parent.grid.excelExportModule.Map(this.parent.grid, excelExportProperties, isMultipleExport, workbook, isCsv, isBlob);
             });
         });
@@ -4123,22 +4131,23 @@ class ExcelExport$1 {
         return query;
     }
     manipulateExportProperties(property, dtSrc, queryResult) {
-        if (isNullOrUndefined(queryResult)) {
-            if (this.parent.grid.sortSettings.columns.length === 0 &&
-                (this.parent.grid.filterSettings.columns.length > 0 || this.parent.grid.searchSettings.key)) {
-                dtSrc = this.parent.filterModule.filteredResult;
-            }
+        //count not required for this query
+        let args = Object();
+        setValue('query', this.parent.grid.getDataModule().generateQuery(true), args);
+        setValue('isExport', true, args);
+        if (!isNullOrUndefined(property) && !isNullOrUndefined(property.exportType)) {
+            setValue('exportType', property.exportType, args);
         }
-        else {
+        if (!this.isLocal() || !isNullOrUndefined(this.parent.parentIdMapping)) {
             this.parent.parentData = [];
-            //count not required for this query
             this.parent.dataModule.convertToFlatData(getObject('result', queryResult));
-            let args = Object();
-            setValue('query', this.parent.grid.getDataModule().generateQuery(true), args);
-            this.parent.notify('dataProcessor', args);
-            //args = this.parent.dataModule.dataProcessor(args);
-            args = this.dataResults;
-            dtSrc = isNullOrUndefined(args.result) ? this.parent.flatData.slice(0) : args.result;
+            setValue('expresults', this.parent.flatData, args);
+        }
+        this.parent.notify('dataProcessor', args);
+        //args = this.parent.dataModule.dataProcessor(args);
+        args = this.dataResults;
+        dtSrc = isNullOrUndefined(args.result) ? this.parent.flatData.slice(0) : args.result;
+        if (!this.isLocal()) {
             this.parent.flatData = [];
         }
         property = isNullOrUndefined(property) ? Object() : property;
@@ -4218,10 +4227,10 @@ class PdfExport$1 {
     Map(pdfExportProperties, 
     /* tslint:disable-next-line:no-any */
     isMultipleExport, pdfDoc, isBlob) {
-        let dtSrc = this.parent.flatData;
+        let dtSrc = this.parent.dataSource;
         let prop = Object();
-        setValue('cancel', false, prop);
         let isLocal = !isRemoteData(this.parent) && isOffline(this.parent);
+        setValue('cancel', false, prop);
         return new Promise((resolve, reject) => {
             let dm = isLocal ? new DataManager(dtSrc) : this.parent.dataSource;
             let query = new Query();
@@ -4234,7 +4243,7 @@ class PdfExport$1 {
                 return null;
             }
             dm.executeQuery(query).then((e) => {
-                this.manipulatePdfProperties(pdfExportProperties, dtSrc, isLocal ? null : e);
+                pdfExportProperties = this.manipulatePdfProperties(pdfExportProperties, dtSrc, e);
                 return this.parent.grid.pdfExportModule.Map(this.parent.grid, pdfExportProperties, isMultipleExport, pdfDoc, isBlob);
             });
         });
@@ -4250,23 +4259,24 @@ class PdfExport$1 {
         return query;
     }
     manipulatePdfProperties(prop, dtSrc, queryResult) {
-        if (isNullOrUndefined(queryResult)) {
-            if ((this.parent.grid.filterSettings.columns.length > 0 || this.parent.grid.searchSettings.key)
-                && this.parent.grid.sortSettings.columns.length === 0) {
-                dtSrc = this.parent.filterModule.filteredResult;
-            }
+        let args = {};
+        //count not required for this query  
+        let isLocal = !isRemoteData(this.parent) && isOffline(this.parent);
+        setValue('query', this.parent.grid.getDataModule().generateQuery(true), args);
+        setValue('isExport', true, args);
+        if (!isNullOrUndefined(prop) && !isNullOrUndefined(prop.exportType)) {
+            setValue('exportType', prop.exportType, args);
         }
-        else {
+        if (!isLocal || !isNullOrUndefined(this.parent.parentIdMapping)) {
             this.parent.parentData = [];
-            //count not required for this query
-            let args = {};
             this.parent.dataModule.convertToFlatData(getValue('result', queryResult));
-            setValue('query', this.parent.grid.getDataModule().generateQuery(true), args);
-            this.parent.notify('dataProcessor', args);
-            //args = this.parent.dataModule.dataProcessor(args);
-            args = this.dataResults;
-            dtSrc = isNullOrUndefined(args.result)
-                ? this.parent.flatData.slice(0) : args.result;
+            setValue('expresults', this.parent.flatData, args);
+        }
+        this.parent.notify('dataProcessor', args);
+        //args = this.parent.dataModule.dataProcessor(args);
+        args = this.dataResults;
+        dtSrc = isNullOrUndefined(args.result) ? this.parent.flatData.slice(0) : args.result;
+        if (!isLocal) {
             this.parent.flatData = [];
         }
         prop = isNullOrUndefined(prop) ? {} : prop;
@@ -5109,6 +5119,9 @@ class Edit$1 {
         delete this.parent[id][value];
     }
     cellEdit(args) {
+        if (this.keyPress !== 'enter') {
+            this.parent.trigger(cellEdit, args);
+        }
         if (this.doubleClickTarget && (this.doubleClickTarget.classList.contains('e-treegridexpand') ||
             this.doubleClickTarget.classList.contains('e-treegridcollapse'))) {
             args.cancel = true;
@@ -5192,7 +5205,7 @@ class Edit$1 {
             row = this.parent.grid.getRows()[rowIndex];
             this.parent.trigger(actionBegin, arg);
             if (!arg.cancel) {
-                this.parent.grid.editModule.updateRow(rowIndex, args.rowData);
+                this.updateCell(args, rowIndex);
                 if (this.parent.grid.aggregateModule) {
                     this.parent.grid.aggregateModule.refresh(args.rowData);
                 }
@@ -5215,6 +5228,10 @@ class Edit$1 {
                 this.parent.grid.isEdit = true;
             }
         }
+    }
+    updateCell(args, rowIndex) {
+        this.parent.grid.editModule.updateRow(rowIndex, args.rowData);
+        this.parent.grid.getRowsObject()[rowIndex].data = args.rowData;
     }
     crudAction(details, columnName) {
         editAction(details, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, columnName);
@@ -5405,6 +5422,30 @@ class Edit$1 {
             value.index = 0;
         }
         return args;
+    }
+    /**
+     * If the data,index and position given, Adds the record to treegrid rows otherwise it will create edit form.
+     * @return {void}
+     */
+    addRecord(data, index, position) {
+        this.previousNewRowPosition = this.parent.editSettings.newRowPosition;
+        if (data) {
+            if (index > -1) {
+                this.selectedIndex = index;
+                this.addRowIndex = index;
+            }
+            else {
+                this.selectedIndex = this.parent.selectedRowIndex;
+                this.addRowIndex = this.parent.selectedRowIndex;
+            }
+            if (position) {
+                this.parent.setProperties({ editSettings: { newRowPosition: position } }, true);
+            }
+            this.parent.grid.editModule.addRecord(data, index);
+        }
+        else {
+            this.parent.grid.editModule.addRecord(data, index);
+        }
     }
     /**
      * Checks the status of validation at the time of editing. If validation is passed, it returns true.

@@ -1,10 +1,7 @@
 /**
  * Grid dialog edit spec document
  */
-import { EventHandler, ChildProperty, EmitType } from '@syncfusion/ej2-base';
 import { extend, getValue } from '@syncfusion/ej2-base';
-import { DataManager } from '@syncfusion/ej2-data';
-import { createElement, remove } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { Filter } from '../../../src/grid/actions/filter';
 import { Edit } from '../../../src/grid/actions/edit';
@@ -13,14 +10,9 @@ import { Sort } from '../../../src/grid/actions/sort';
 import { Reorder } from '../../../src/grid/actions/reorder';
 import { Page } from '../../../src/grid/actions/page';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
-import { CellType } from '../../../src/grid/base/enum';
-import { ValueFormatter } from '../../../src/grid/services/value-formatter';
-import { Column } from '../../../src/grid/models/column';
 import { Selection } from '../../../src/grid/actions/selection';
-import { NumericEditCell } from '../../../src/grid/renderer/numeric-edit-cell';
-import { DropDownEditCell } from '../../../src/grid/renderer/dropdown-edit-cell';
 import { filterData } from '../base/datasource.spec';
-import { createGrid, destroy,  getKeyUpObj, getClickObj, getKeyActionObj } from '../base/specutil.spec';
+import { createGrid, destroy } from '../base/specutil.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
@@ -35,6 +27,7 @@ describe('Dialog Editing module', () => {
         }
         return data;
     };
+    let dialogData: Object[] = dataSource();
 
     describe('Dialog editing render => ', () => {
         let gridObj: Grid;
@@ -48,7 +41,7 @@ describe('Dialog Editing module', () => {
             }
             gridObj = createGrid(
                 {
-                    dataSource: dataSource(),
+                    dataSource: dialogData,
                     allowFiltering: true,
                     allowGrouping: true,
                     editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Dialog', showConfirmDialog: false, showDeleteConfirmDialog: false },
@@ -426,6 +419,7 @@ describe('Dialog Editing module', () => {
             setTimeout(function () {
                 done();
             }, 1000);
+            gridObj = actionBegin = actionComplete = null;
     
         });
     });
@@ -434,7 +428,7 @@ describe('Dialog Editing module', () => {
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
-                    dataSource: dataSource(),
+                    dataSource: dialogData,
                     editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, 
                         mode: 'Dialog', dialog: { params : {height: '500px', width: '400px'} }},
                     toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
@@ -468,6 +462,7 @@ describe('Dialog Editing module', () => {
             setTimeout(function () {
                 done();
             }, 1000);
+            gridObj = dialogData = dataSource = null;
     
         });
     });

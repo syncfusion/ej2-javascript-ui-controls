@@ -7,7 +7,9 @@ import { TextElement } from '../core/elements/text-element';
 import { PointModel } from '../primitives/point-model';
 import { MouseEventArgs } from './event-handlers';
 import { PointPortModel } from '../objects/port-model';
-import { ConnectorModel, StraightSegmentModel, OrthogonalSegmentModel, BezierSegmentModel } from '../objects/connector-model';
+import {
+    ConnectorModel, StraightSegmentModel, OrthogonalSegmentModel, BezierSegmentModel, BpmnFlowModel
+} from '../objects/connector-model';
 import { NodeModel, BpmnTransactionSubProcessModel, BpmnAnnotationModel, SwimLaneModel } from '../objects/node-model';
 import { OrthogonalSegment } from '../objects/connector';
 import { Rect } from '../primitives/rect';
@@ -15,7 +17,10 @@ import { Diagram } from '../../diagram/diagram';
 import { DiagramElement, Corners } from './../core/elements/diagram-element';
 import { identityMatrix, rotateMatrix, transformPointByMatrix, scaleMatrix, Matrix } from './../primitives/matrix';
 import { cloneObject as clone, cloneObject, getBounds } from './../utility/base-util';
-import { completeRegion, getTooltipOffset, sort, findObjectIndex, intersect3, getAnnotationPosition } from './../utility/diagram-util';
+import {
+    completeRegion, getTooltipOffset, sort, findObjectIndex, intersect3,
+    getAnnotationPosition, updatePathElement
+} from './../utility/diagram-util';
 import { randomId, cornersPointsBeforeRotation } from './../utility/base-util';
 import { SelectorModel } from './selector-model';
 import { Selector } from './selector';
@@ -56,6 +61,7 @@ import { getConnectors, updateConnectorsProperties, findLaneIndex } from './../u
 import { GridPanel } from '../core/containers/grid';
 import { SwimLane } from '../objects/node';
 import { swimLaneSelection, pasteSwimLane, gridSelection } from '../utility/swim-lane-util';
+
 
 /**
  * Defines the behavior of commands
@@ -439,7 +445,7 @@ export class CommandHandler {
                 connector[nodeEndId] = oldNodeId; connector[portEndId] = oldPortId;
                 newChanges[nodeEndId] = oldNodeId; newChanges[portEndId] = oldPortId;
             } else {
-                this.diagram.connectorPropertyChange(connector as Connector, {} as Connector, newChanges);
+                this.diagram.connectorPropertyChange(connector as Connector, oldChanges, newChanges);
                 this.diagram.updateDiagramObject(connector);
                 arg = {
                     connector: connector, oldValue: { nodeId: oldNodeId, portId: oldPortId },
@@ -1385,16 +1391,16 @@ export class CommandHandler {
         let layer: LayerModel = this.getLayer(layerName);
         if (layer && layer.zIndex < this.diagram.layers.length - 1) {
             let index: number = layer.zIndex;
+            let targetLayer: LayerModel = this.getLayer(this.diagram.layerZIndexTable[index + 1]);
             if (this.diagram.mode === 'SVG') {
-                let targetObject: string = this.getLayer(this.diagram.layerZIndexTable[index + 1]).objects[0];
-                let currentLayerObject: string[] = layer.objects;
-                for (let obj of currentLayerObject) {
-                    if (targetObject) {
-                        this.moveSvgNode(targetObject, obj);
+                let currentLayerObject: string = layer.objects[0];
+                let targetLayerObjects: string[] = targetLayer.objects;
+                for (let obj of targetLayerObjects) {
+                    if (obj) {
+                        this.moveSvgNode(obj, currentLayerObject);
                     }
                 }
             }
-            let targetLayer: LayerModel = this.getLayer(this.diagram.layerZIndexTable[index + 1]);
             targetLayer.zIndex = targetLayer.zIndex - 1;
             layer.zIndex = layer.zIndex + 1;
             let temp: string = this.diagram.layerZIndexTable[index];
@@ -1477,9 +1483,9 @@ export class CommandHandler {
                 let child: string[] = this.getChildElements(this.diagram.nameTable[objectName].wrapper.children);
                 let targerNodes: Object = [];
                 let element: HTMLElement = getDiagramElement(objectName + '_groupElement', this.diagram.element.id);
-                element.parentNode.removeChild(element);
                 let nodes: NodeModel[] = this.diagram.selectedItems.nodes;
                 if (nodes.length > 0 && (nodes[0].shape.type === 'Native' || nodes[0].shape.type === 'HTML')) {
+                    element.parentNode.removeChild(element);
                     for (let j: number = 0; j < this.diagram.views.length; j++) {
                         element = getDiagramElement(
                             objectName + (nodes[0].shape.type === 'HTML' ? '_content_html_element' : '_content_groupElement'),
@@ -1487,9 +1493,18 @@ export class CommandHandler {
                         let lastChildNode: HTMLElement = element.parentNode.lastChild as HTMLElement;
                         lastChildNode.parentNode.insertBefore(element, lastChildNode.nextSibling);
                     }
+                    let htmlLayer: HTMLElement = getHTMLLayer(this.diagram.element.id);
+                    this.diagram.diagramRenderer.renderElement(this.diagram.nameTable[objectName].wrapper, diagramLayer, htmlLayer);
+                } else {
+                    let target: string;
+                    let layer: LayerModel = this.getObjectLayer(objectName);
+                    for (let i: number = 0; i < layer.objects.length; i++) {
+                        if (layer.objects[i] !== objectName) {
+                            this.moveSvgNode(layer.objects[i], objectName);
+                            this.updateNativeNodeIndex(objectName);
+                        }
+                    }
                 }
-                let htmlLayer: HTMLElement = getHTMLLayer(this.diagram.element.id);
-                this.diagram.diagramRenderer.renderElement(this.diagram.nameTable[objectName].wrapper, diagramLayer, htmlLayer);
             } else {
                 this.diagram.refreshCanvasLayers();
             }
@@ -1622,7 +1637,6 @@ export class CommandHandler {
     /** @private */
     public doRubberBandSelection(region: Rect): void {
         this.clearSelectionRectangle();
-        this.clearSelection();
         let selArray: (NodeModel | ConnectorModel)[] = [];
         let rubberArray: (NodeModel | ConnectorModel)[] = [];
         selArray = this.diagram.getNodesConnectors(selArray);
@@ -1719,6 +1733,13 @@ export class CommandHandler {
                 }
             }
         }
+    }
+
+    /** @private */
+    public clearSelectedItems(): void {
+        let selectedNodes: number = this.diagram.selectedItems.nodes ? this.diagram.selectedItems.nodes.length : 0;
+        let selectedConnectors: number = this.diagram.selectedItems.connectors ? this.diagram.selectedItems.connectors.length : 0;
+        this.clearSelection((selectedNodes + selectedConnectors) > 0 ? true : false);
     }
 
     /** 
@@ -1821,7 +1842,9 @@ export class CommandHandler {
                     if (obj && obj.shape && obj.shape.type === 'UmlClassifier') {
                         obj.wrapper.measureChildren = true;
                     }
-                    this.diagram.nodePropertyChange(obj as Node, oldValues as Node, { offsetX: obj.offsetX, offsetY: obj.offsetY } as Node);
+                    this.diagram.nodePropertyChange(
+                        obj as Node, oldValues as Node,
+                        { offsetX: obj.offsetX, offsetY: obj.offsetY } as Node, undefined, undefined, false);
                     obj.wrapper.measureChildren = false;
                 }
                 if (obj.shape.type === 'SwimLane' && !this.diagram.currentSymbol) {
@@ -1831,6 +1854,7 @@ export class CommandHandler {
                 }
             } else {
                 let connector: Connector = obj as Connector;
+                let oldValues: Connector = { sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint } as Connector;
                 let update: boolean = connector.type === 'Bezier' ? true : false;
                 let hasEnds: boolean = false;
                 if (!connector.sourceWrapper) {
@@ -1846,7 +1870,7 @@ export class CommandHandler {
                 if (!hasEnds) {
                     this.dragControlPoint(connector, tx, ty, true);
                     let conn: Connector = { sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint } as Connector;
-                    this.diagram.connectorPropertyChange(connector as Connector, {} as Connector, conn);
+                    this.diagram.connectorPropertyChange(connector as Connector, oldValues, conn);
                 }
             }
         }
@@ -1916,7 +1940,7 @@ export class CommandHandler {
     }
 
     /** @private */
-    public updateEndPoint(connector: Connector): void {
+    public updateEndPoint(connector: Connector, oldChanges?: Connector): void {
         let conn: Connector = {
             sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint,
             sourceID: connector.sourceID ? connector.sourceID : undefined,
@@ -1925,7 +1949,23 @@ export class CommandHandler {
             targetPortID: connector.targetPortID ? connector.targetPortID : undefined,
             segments: connector.segments ? connector.segments : undefined
         } as Connector;
-        this.diagram.connectorPropertyChange(connector as Connector, {} as Connector, conn);
+        let newValue: Connector = { sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint } as Connector;
+        if (connector.sourceID) {
+            newValue.sourceID = connector.sourceID;
+        }
+        if (connector.targetID) {
+            newValue.targetID = connector.targetID;
+        }
+        if (connector.sourcePortID) {
+            newValue.sourcePortID = connector.sourcePortID;
+        }
+        if (connector.targetPortID) {
+            newValue.targetPortID = connector.targetPortID;
+        }
+        if (connector.segments) {
+            newValue.segments = connector.segments;
+        }
+        this.diagram.connectorPropertyChange(connector as Connector, oldChanges ? oldChanges : {} as Connector, newValue);
         // this.diagram.refreshDiagramLayer();
         this.diagram.updateSelector();
     }
@@ -1938,16 +1978,22 @@ export class CommandHandler {
         targetPortId?: string, isDragSource?: boolean, segment?: BezierSegmentModel):
         boolean {
         let connector: Connector = this.diagram.nameTable[obj.id];
+        let oldChanges: Connector = {} as Connector;
         let checkBoundaryConstraints: boolean = this.checkBoundaryConstraints(tx, ty, connector.wrapper.bounds);
         if (canDragSourceEnd(connector as Connector) && checkBoundaryConstraints
             && (endPoint !== 'BezierSourceThumb') && canPageEditable(this.diagram)) {
+            oldChanges = { sourcePoint: connector.sourcePoint } as Connector;
             connector.sourcePoint.x += tx;
             connector.sourcePoint.y += ty;
             if (endPoint === 'ConnectorSourceEnd' && connector.type === 'Orthogonal') {
                 this.changeSegmentLength(connector, target, targetPortId, isDragSource);
             }
+            if (connector.shape.type === 'Bpmn' && (connector.shape as BpmnFlowModel).sequence === 'Default') {
+                this.updatePathElementOffset(connector);
+            }
         }
         if (connector.type === 'Bezier') {
+            oldChanges = { sourcePoint: connector.sourcePoint } as Connector;
             if (segment) {
                 this.translateBezierPoints(obj, (endPoint === '') ? 'ConnectorSourceEnd' : endPoint, tx, ty, segment, point, !update);
             } else {
@@ -1958,10 +2004,22 @@ export class CommandHandler {
             }
         }
         if (!preventUpdate) {
-            this.updateEndPoint(connector as Connector);
+            this.updateEndPoint(connector as Connector, oldChanges);
         }
         this.diagram.refreshCanvasLayers();
         return checkBoundaryConstraints;
+    }
+
+    /**
+     * Update Path Element offset
+     */
+
+    public updatePathElementOffset(connector: ConnectorModel): void {
+        connector.wrapper.children.splice(3, 1);
+        let pathElement: PathElement = new PathElement();
+        let anglePoints: PointModel[] = (connector as Connector).intermediatePoints as PointModel[];
+        pathElement = updatePathElement(anglePoints, connector);
+        connector.wrapper.children.splice(3, 0, pathElement);
     }
 
     /** 
@@ -2279,9 +2337,11 @@ export class CommandHandler {
         update?: boolean, segment?: OrthogonalSegmentModel | BezierSegmentModel | StraightSegmentModel):
         boolean {
         let connector: ConnectorModel = this.diagram.nameTable[obj.id];
+        let oldChanges: Connector;
         let boundaryConstraints: boolean = this.checkBoundaryConstraints(tx, ty, connector.wrapper.bounds);
         if (canDragTargetEnd(connector as Connector) && endPoint !== 'BezierTargetThumb'
             && boundaryConstraints && canPageEditable(this.diagram)) {
+            oldChanges = { targetPoint: connector.targetPoint } as Connector;
             connector.targetPoint.x += tx;
             connector.targetPoint.y += ty;
             if (endPoint === 'ConnectorTargetEnd' && connector.type === 'Orthogonal' &&
@@ -2297,8 +2357,12 @@ export class CommandHandler {
                     prev.direction = Point.direction(prev.points[0], prev.points[prev.points.length - 1]) as Direction;
                 }
             }
+            if (connector.shape.type === 'Bpmn' && (connector.shape as BpmnFlowModel).sequence === 'Default') {
+                this.updatePathElementOffset(connector);
+            }
         }
         if (connector.type === 'Bezier') {
+            oldChanges = { targetPoint: connector.targetPoint } as Connector;
             if (segment) {
                 this.translateBezierPoints(obj, (endPoint === '') ? 'ConnectorTargetEnd' : endPoint, tx, ty, segment, point, !update);
             } else {
@@ -2309,7 +2373,7 @@ export class CommandHandler {
             }
         }
         if (!preventUpdate) {
-            this.updateEndPoint(connector as Connector);
+            this.updateEndPoint(connector as Connector, oldChanges);
         }
         this.diagram.refreshCanvasLayers();
         return boundaryConstraints;
@@ -2342,18 +2406,20 @@ export class CommandHandler {
         pivot = pivot || {};
         let matrix: Matrix = identityMatrix();
         rotateMatrix(matrix, angle, pivot.x, pivot.y);
+        let oldValues: Node;
         for (let obj of objects) {
             if (obj instanceof Node) {
                 if (canRotate(obj) && canPageEditable(this.diagram)) {
                     if (includeParent !== false || parent !== obj) {
+                        oldValues = { rotateAngle: obj.rotateAngle } as Node;
                         obj.rotateAngle += angle;
                         obj.rotateAngle = (obj.rotateAngle + 360) % 360;
                         let newOffset: PointModel = transformPointByMatrix(matrix, { x: obj.offsetX, y: obj.offsetY });
                         obj.offsetX = newOffset.x;
                         obj.offsetY = newOffset.y;
                         this.diagram.nodePropertyChange(
-                            obj as Node, {} as Node,
-                            { offsetX: obj.offsetX, offsetY: obj.offsetY, rotateAngle: obj.rotateAngle } as Node);
+                            obj as Node, oldValues,
+                            { rotateAngle: obj.rotateAngle } as Node);
                     }
                     if (obj.processId) {
                         let parent: NodeModel = this.diagram.nameTable[obj.processId];
@@ -2504,14 +2570,16 @@ export class CommandHandler {
     /** @private */
     public scaleObject(sw: number, sh: number, pivot: PointModel, obj: IElement, element: DiagramElement, refObject: IElement): void {
         sw = sw < 0 ? 1 : sw; sh = sh < 0 ? 1 : sh; let process: string[];
-        let oldValues: NodeModel = {
-            offsetX: obj.wrapper.offsetX, offsetY: obj.wrapper.offsetY,
-            width: obj.wrapper.actualSize.width, height: obj.wrapper.actualSize.height
-        };
+        let oldValues: NodeModel = {} as Node;
         if (sw !== 1 || sh !== 1) {
             let width: number; let height: number;
             if (obj instanceof Node) {
                 let node: Node = obj; let isResize: boolean; let bound: Rect;
+                oldValues = {
+                    width: obj.wrapper.actualSize.width, height: obj.wrapper.actualSize.height,
+                    offsetX: obj.wrapper.offsetX, offsetY: obj.wrapper.offsetY,
+                    margin: { top: node.margin.top, left: node.margin.left }
+                };
                 if (node.shape.type === 'Bpmn' && (node.shape as BpmnShape).activity.subProcess.processes
                     && (node.shape as BpmnShape).activity.subProcess.processes.length > 0) {
                     bound = this.diagram.bpmnModule.getChildrenBound(node, node.id, this.diagram);
@@ -2579,7 +2647,7 @@ export class CommandHandler {
                     if (checkParentAsContainer(this.diagram, obj, true)) {
                         checkChildNodeInContainer(this.diagram, obj);
                     } else {
-                        this.diagram.nodePropertyChange(obj as Node, {} as Node, {
+                        this.diagram.nodePropertyChange(obj as Node, oldValues as Node, {
                             width: node.width, height: node.height, offsetX: node.offsetX, offsetY: node.offsetY,
                             margin: { top: node.margin.top + (top - oldtop), left: node.margin.left + (left - oldleft) }
                         } as Node);
@@ -2587,11 +2655,9 @@ export class CommandHandler {
                 }
             } else {
                 let connector: Connector = obj as Connector;
+                let oldValues: Connector = { sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint } as Connector;
                 if (!connector.sourceWrapper || !connector.targetWrapper) {
-                    connector.sourcePoint = transformPointByMatrix(matrix, connector.sourcePoint);
-                    connector.targetPoint = transformPointByMatrix(matrix, connector.targetPoint);
-                    let newProp: Connector = { sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint } as Connector;
-                    this.diagram.connectorPropertyChange(connector, {} as Connector, newProp);
+                    this.scaleConnector(connector, matrix, oldValues);
                 }
             }
             let parentNode: NodeModel = this.diagram.nameTable[(obj as Node).processId];
@@ -2601,6 +2667,16 @@ export class CommandHandler {
                 this.diagram.bpmnModule.updateSubProcessess(bound, (obj as Node), this.diagram);
             }
         }
+    }
+
+    private scaleConnector(connector: Connector, matrix: Matrix, oldValues: Connector): void {
+        connector.sourcePoint = transformPointByMatrix(matrix, connector.sourcePoint);
+        connector.targetPoint = transformPointByMatrix(matrix, connector.targetPoint);
+        if (connector.shape.type === 'Bpmn' && (connector.shape as BpmnFlowModel).sequence === 'Default') {
+            this.updatePathElementOffset(connector);
+        }
+        let newProp: Connector = { sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint } as Connector;
+        this.diagram.connectorPropertyChange(connector, oldValues, newProp);
     }
 
     /** @private */

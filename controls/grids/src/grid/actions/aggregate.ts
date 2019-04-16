@@ -52,6 +52,10 @@ export class Aggregate implements IAction {
         summaryIterator(this.parent.aggregates, (column: AggregateColumn) => {
             let dataColumn: ColumnModel = this.parent.getColumnByField(column.field) || {};
             let type: string = dataColumn.type;
+            let cFormat: string = 'customFormat';
+            if (!isNullOrUndefined(column[cFormat])) {
+                column.setPropertiesSilent({format: column[cFormat]});
+            }
             column.setPropertiesSilent({format: this.getFormatFromType(column.format, type)});
             column.setFormatter(this.parent.locale);
             column.setPropertiesSilent({columnName: column.columnName || column.field });

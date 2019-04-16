@@ -864,6 +864,9 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     }
     protected keyActionHandler(e: KeyboardEventArgs): void {
+        if (!this.enabled) {
+            return;
+        }
         let preventAction: boolean = e.action === 'pageUp' || e.action === 'pageDown';
         let preventHomeEnd: boolean = this.getModuleName() !== 'dropdownlist' && (e.action === 'home' || e.action === 'end');
         this.isEscapeKey = e.action === 'escape';
@@ -1421,7 +1424,7 @@ export class DropDownList extends DropDownBase implements IInput {
         query?: Query, fields?: FieldSettingsModel): void {
         if (!isNullOrUndefined(this.filterInput)) {
             this.beforePopupOpen = true;
-            if (this.filterInput.value.trim() === '') {
+            if (this.filterInput.value.trim() === '' && !this.itemTemplate) {
                 this.actionCompleteData.isUpdated = false;
                 this.isTyped = false;
                 if (!isNullOrUndefined(this.actionCompleteData.ulElement) && !isNullOrUndefined(this.actionCompleteData.list)) {
@@ -1443,6 +1446,7 @@ export class DropDownList extends DropDownBase implements IInput {
                         dataSource = this.listData;
                     }
                 }
+                query = (this.filterInput.value.trim() === '') ? null : query;
                 this.resetList(dataSource, fields, query);
             }
         }
@@ -1749,6 +1753,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 if (!this.isDocumentClick) {
                     this.focusDropDown();
                 }
+                this.isNotSearchList = false;
                 this.isDocumentClick = false;
                 this.destroyPopup();
             },
@@ -2106,6 +2111,12 @@ export class DropDownList extends DropDownBase implements IInput {
             this.popupObj.refreshPosition(this.inputWrapper.container);
         }
     }
+    private checkDatasource(newProp?: DropDownListModel): void {
+        if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource)) && this.itemTemplate && this.allowFiltering) {
+            this.list = null;
+            this.actionCompleteData = { ulElement: null, list: null, isUpdated: false };
+        }
+    }
     protected updateDataSource(props?: DropDownListModel): void {
         this.clear(null, props);
         if (!(!isNullOrUndefined(props) && (isNullOrUndefined(props.dataSource)
@@ -2132,6 +2143,7 @@ export class DropDownList extends DropDownBase implements IInput {
      */
     public onPropertyChanged(newProp: DropDownListModel, oldProp: DropDownListModel): void {
         if (this.getModuleName() === 'dropdownlist') {
+            this.checkDatasource(newProp);
             this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp as { [key: string]: string; });
         }
         for (let prop of Object.keys(newProp)) {
@@ -2291,7 +2303,7 @@ export class DropDownList extends DropDownBase implements IInput {
             return;
         }
         this.beforePopupOpen = true;
-        if (this.isFiltering() && !this.isActive && this.actionCompleteData.list && this.actionCompleteData.list[0]) {
+        if (this.isFiltering() && !this.isActive && this.actionCompleteData.list && this.actionCompleteData.list[0] && !this.itemTemplate) {
             this.isActive = true;
             this.onActionComplete(this.actionCompleteData.ulElement, this.actionCompleteData.list, null, true);
         } else if (isNullOrUndefined(this.list) || !isUndefined(this.list) && this.list.classList.contains(dropDownBaseClasses.noData)) {

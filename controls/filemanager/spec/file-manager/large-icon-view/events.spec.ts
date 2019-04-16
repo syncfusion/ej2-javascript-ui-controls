@@ -5,7 +5,7 @@ import { FileManager } from '../../../src/file-manager/base/file-manager';
 import {NavigationPane} from '../../../src/file-manager/layout/navigation-pane';
 import {DetailsView} from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
-import { FileBeforeSendEventArgs, FileOpenEventArgs } from '../../../src/file-manager/base/interface';
+import { FileBeforeSendEventArgs, FileOpenEventArgs, FileBeforeLoadEventArgs } from '../../../src/file-manager/base/interface';
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import { toolbarItems, toolbarItems1, toolbarItems2, data1, data2, data3 } from '../data';
 
@@ -165,6 +165,33 @@ describe('FileManager control LargeIcons view', () => {
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
             setTimeout(function () {
                 expect(i).toEqual(1);
+                done();
+            }, 500);
+        });
+        it('for beforeFileLoad', (done: Function) => {
+            let icon:number=0;
+            let tree:number=0;
+            feObj = new FileManager({
+                view: 'LargeIcons',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false,
+                beforeFileLoad: (args: FileBeforeLoadEventArgs) => {
+                    if(args.module==="LargeIconsView"){icon++;}
+                    if(args.module==="NavigationPane"){tree++;}
+                }
+            }, '#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                expect(icon).toEqual(5);
+                expect(tree).toEqual(5);
                 done();
             }, 500);
         });

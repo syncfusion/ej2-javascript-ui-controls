@@ -187,7 +187,7 @@ export class LargeIconsView {
         let eventArgs: FileBeforeLoadEventArgs = {
             element: args.item,
             fileDetails: args.curData,
-            module: 'LargeIcon'
+            module: 'LargeIconsView'
         };
         this.parent.trigger('beforeFileLoad', eventArgs);
     }

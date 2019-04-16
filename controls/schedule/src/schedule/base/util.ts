@@ -54,6 +54,9 @@ export function resetTime(date: Date): Date {
 export function getDateInMs(date: Date): number {
     return date.getTime() - new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0).getTime();
 }
+export function getDateCount(startDate: Date, endDate: Date): number {
+    return (endDate.getTime() - startDate.getTime()) / MS_PER_DAY;
+}
 export function addDays(date: Date, i: number): Date {
     date = new Date('' + date);
     return new Date(date.setDate(date.getDate() + i));

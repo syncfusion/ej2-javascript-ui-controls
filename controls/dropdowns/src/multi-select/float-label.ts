@@ -38,9 +38,7 @@ export function createFloatLabel(
         floatLabelElement.innerHTML = inputElement.placeholder;
         inputElement.removeAttribute('placeholder');
     }
-    if (!isNullOrUndefined(placeholder) && placeholder !== '') {
-        floatLabelElement.innerHTML = placeholder;
-    }
+    floatLabelElement.innerHTML = placeholder;
     searchWrapper.appendChild(floatLinelement);
     searchWrapper.appendChild(floatLabelElement);
     overAllWrapper.classList.add('e-float-input');

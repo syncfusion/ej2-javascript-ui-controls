@@ -1208,7 +1208,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /* tslint:disable */
     public onPropertyChanged(newProp: DiagramModel, oldProp: DiagramModel): void {
         // Model Changed
-        let objectArray: (NodeModel | ConnectorModel)[] = []; let refreshLayout: boolean = false;
+        let newValue: NodeModel | ConnectorModel | DiagramModel;
+        let oldValue: NodeModel | ConnectorModel | DiagramModel;
+        let isPropertyChanged: boolean = true;
+        let refreshLayout: boolean = false;
         let refereshColelction: boolean = false;
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -1233,8 +1236,16 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             let index: number = Number(key);
                             let actualObject: Node = this.nodes[index] as Node; let changedProp: Node = newProp.nodes[index] as Node;
                             refreshLayout = refreshLayout || changedProp.excludeFromLayout !== undefined;
-                            this.nodePropertyChange(actualObject, oldProp.nodes[index] as Node, changedProp, undefined, true);
-                            objectArray.push(actualObject);
+                            this.nodePropertyChange(actualObject, oldProp.nodes[index] as Node, changedProp, undefined, true, true);
+                            let args: IPropertyChangeEventArgs = {
+                                element: actualObject, cause: this.diagramActions,
+                                oldValue: oldProp.nodes[index] as Node,
+                                newValue: newProp.nodes[index] as Node
+                            };
+                            this.triggerEvent(DiagramEvent.propertyChange, args);
+                            if (isPropertyChanged) {
+                                isPropertyChanged = false;
+                            }
                         }
                         if (this.mode === 'Canvas') {
                             this.refreshDiagramLayer();
@@ -1251,12 +1262,19 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             let index: number = Number(key);
                             let actualObject: Connector = this.connectors[index] as Connector;
                             let changedProp: Connector = newProp.connectors[index] as Connector;
-                            this.connectorPropertyChange(actualObject, oldProp.connectors[index] as Connector, changedProp, true);
-                            objectArray.push(actualObject);
+                            this.connectorPropertyChange(actualObject, oldProp.connectors[index] as Connector, changedProp, true, true);
+                            let args: IPropertyChangeEventArgs = {
+                                element: actualObject, cause: this.diagramActions,
+                                oldValue: oldProp.connectors[index] as Connector,
+                                newValue: newProp.connectors[index] as Connector
+                            };
+                            this.triggerEvent(DiagramEvent.propertyChange, args);
                             if (actualObject && actualObject.parentId && this.nameTable[actualObject.parentId].shape.type === 'UmlClassifier') {
                                 this.updateConnectorEdges(this.nameTable[actualObject.parentId] || actualObject);
                             }
-
+                            if (isPropertyChanged) {
+                                isPropertyChanged = false;
+                            }
                         }
                         this.updateBridging();
                         if (this.mode === 'Canvas') {
@@ -1339,8 +1357,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
         }
         if (refreshLayout) { this.doLayout(); }
-        let args: IPropertyChangeEventArgs = { element: objectArray, cause: this.diagramActions, oldValue: oldProp, newValue: newProp };
-        this.triggerEvent(DiagramEvent.propertyChange, args);
+        if (isPropertyChanged) {
+            let args: IPropertyChangeEventArgs = { element: this, cause: this.diagramActions, oldValue: oldProp, newValue: newProp };
+            this.triggerEvent(DiagramEvent.propertyChange, args);
+        }
         if (!refereshColelction && (this.canLogChange()) && (this.modelChanged(newProp, oldProp))) {
             let entry: HistoryEntry = { type: 'PropertyChanged', undoObject: oldProp, redoObject: newProp, category: 'Internal' };
             this.addHistoryEntry(entry);
@@ -4015,9 +4035,27 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     private initializeDiagramLayers(): void {
+        let tempLayers: LayerModel[] = this.layers;
+        for (let i: number = 0; i < this.layers.length; i++) {
+            if (this.layers[i].zIndex !== -1) {
+                let temp: LayerModel = this.layers[i];
+                this.layers[i] = this.layers[this.layers[i].zIndex];
+                this.layers[temp.zIndex] = temp;
+            }
+        }
+
         for (let layer of this.layers) {
-            layer.zIndex = this.layers.indexOf(layer);
+            layer.zIndex = layer.zIndex !== -1 ? layer.zIndex : this.layers.indexOf(layer);
             this.layerZIndexTable[layer.zIndex] = layer.id;
+        }
+        for (let i: number = 0; i < this.layers.length; i++) {
+            for (let j: number = i + 1; j < this.layers.length; j++) {
+                if (this.layers[i].zIndex > this.layers[j].zIndex) {
+                    let temp: LayerModel = this.layers[i];
+                    this.layers[i] = this.layers[j];
+                    this.layers[j] = temp;
+                }
+            }
         }
         if (this.layers.length === 0) {
             let defaultLayer: LayerModel = {
@@ -4080,20 +4118,22 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
                 let sourceNode: NodeModel = this.nameTable[obj.sourceID];
                 let targetNode: NodeModel = this.nameTable[obj.targetID];
-                if (sourceNode !== undefined && canOutConnect(sourceNode)) {
+                let port: PointPortModel = this.getConnectedPort(sourceNode, obj);
+                let targetPort: PointPortModel = this.getConnectedPort(targetNode, obj);
+                let outPort: PointPortModel  = this.findInOutConnectPorts(sourceNode, false);
+                let inPort: PointPortModel = this.findInOutConnectPorts(targetNode, true);
+                if ((sourceNode !== undefined && canOutConnect(sourceNode)) || (obj.sourcePortID !== '' && canPortOutConnect(outPort))) {
                     (obj as Connector).sourceWrapper = this.getEndNodeWrapper(sourceNode, obj, true);
                     if (obj.sourcePortID) {
-                        let port: PointPortModel = this.getConnectedPort(sourceNode, obj);
                         if (port && port.constraints && !(port.constraints & PortConstraints.None)) {
                             (obj as Connector).sourcePortWrapper = this.getWrapper(
                                 sourceNode.wrapper, obj.sourcePortID);
                         }
                     }
                 }
-                if (targetNode !== undefined && canInConnect(targetNode)) {
+                if ((targetNode !== undefined && canInConnect(targetNode)) || (obj.targetPortID !== '' && canPortInConnect(inPort))) {
                     (obj as Connector).targetWrapper = this.getEndNodeWrapper(targetNode, obj, false);
                     if (obj.targetPortID) {
-                        let targetPort: PointPortModel = this.getConnectedPort(targetNode, obj);
                         if (targetPort && targetPort.constraints && !(targetPort.constraints & PortConstraints.None)) {
                             (obj as Connector).targetPortWrapper = this.getWrapper(
                                 targetNode.wrapper, obj.targetPortID);
@@ -5817,7 +5857,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /* tslint:disable */
     /** @private */
-    public nodePropertyChange(actualObject: Node, oldObject: Node, node: Node, isLayout?: boolean, rotate?: boolean): void {
+    public nodePropertyChange(actualObject: Node, oldObject: Node, node: Node, isLayout?: boolean, rotate?: boolean, propertyChange?: boolean): void {
         let existingBounds: Rect = actualObject.wrapper.outerBounds; let existingInnerBounds: Rect = actualObject.wrapper.bounds;
         let updateConnector = false;
         let i: number; let j: number; let offsetX: number; let offsetY: number; let update: boolean;
@@ -6041,6 +6081,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 actualObject.status = 'Update';
             }
         }
+        if (!propertyChange) {
+            let element: NodeModel = actualObject;
+            let args: IPropertyChangeEventArgs = { element: element, cause: this.diagramActions, oldValue: oldObject, newValue: node };
+            this.triggerEvent(DiagramEvent.propertyChange, args);
+        }
     }
 
     private updatePorts(actualObject: Node, flip: FlipDirection): void {
@@ -6092,9 +6137,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 sourcePoint: connector.sourcePoint, targetPoint: connector.targetPoint, sourceID: connector.sourceID,
                 targetID: connector.targetID, sourcePortID: connector.sourcePortID, targetPortID: connector.targetPortID
             } as Connector;
-            this.connectorPropertyChange(connector as Connector, {} as Connector, conn);
+            this.connectorPropertyChange(connector as Connector, {} as Connector, conn, undefined, true);
         }
     }
+
     /** @private */
     public updateConnectorEdges(actualObject: Node): void {
         if (actualObject.inEdges.length > 0) {
@@ -6132,7 +6178,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /** @private */
-    public connectorPropertyChange(actualObject: Connector, oldProp: Connector, newProp: Connector, disableBridging?: boolean): void {
+    public connectorPropertyChange(
+        actualObject: Connector, oldProp: Connector, newProp: Connector, disableBridging?: boolean, propertyChange?: boolean):
+        void {
         let existingBounds: Rect = actualObject.wrapper.bounds; let updateSelector: boolean = false; let points: PointModel[] = [];
         updateSelector = this.connectorProprtyChangeExtend(actualObject, oldProp, newProp, updateSelector);
         let inPort: PointPortModel; let outPort: PointPortModel;
@@ -6144,7 +6192,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if ((newProp.sourceID !== undefined && newProp.sourceID !== oldProp.sourceID) || newProp.sourcePortID) {
                 let sourceNode: Node = this.nameTable[actualObject.sourceID];
                 outPort = this.findInOutConnectPorts(sourceNode, false);
-                if (!sourceNode || (canOutConnect(sourceNode) || canPortOutConnect(outPort))) {
+                if (!sourceNode || (canOutConnect(sourceNode) || (actualObject.sourcePortID !== '' && canPortOutConnect(outPort)))) {
                     actualObject.sourceWrapper = sourceNode ? this.getEndNodeWrapper(sourceNode, actualObject, true) : undefined;
                 }
                 if (newProp.sourceID !== undefined && oldProp.sourceID !== undefined && oldProp.sourceID !== '') {
@@ -6157,7 +6205,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             if (newProp.targetID !== undefined && newProp.targetID !== oldProp.targetID) {
                 let targetNode: Node = this.nameTable[newProp.targetID]; inPort = this.findInOutConnectPorts(targetNode, true);
-                if (!targetNode || (canInConnect(targetNode) || canPortInConnect(inPort))) {
+                if (!targetNode || (canInConnect(targetNode) || (actualObject.targetPortID !== '' && canPortInConnect(inPort)))) {
                     actualObject.targetWrapper = targetNode ? this.getEndNodeWrapper(targetNode, actualObject, false) : undefined;
                 }
                 if (oldProp !== undefined && oldProp.targetID !== undefined && oldProp.targetID !== '') {
@@ -6173,15 +6221,21 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (actualObject.sourceID && this.nameTable[actualObject.sourceID]) {
                     source = this.nameTable[actualObject.sourceID].wrapper;
                 }
-                actualObject.sourcePortWrapper = source ? this.getWrapper(source, newProp.sourcePortID) : undefined;
+                let sourceNode: Node =  this.nameTable[actualObject.sourceID];
+                if (!sourceNode || (canOutConnect(sourceNode) || (actualObject.sourcePortID !== '' && canPortOutConnect(outPort)))) {
+                    actualObject.sourcePortWrapper = source ? this.getWrapper(source, newProp.sourcePortID) : undefined;
+                }
             }
             if (newProp.targetPortID !== undefined && newProp.targetPortID !== oldProp.targetPortID) {
                 let target: Canvas;
                 if (actualObject.targetID && this.nameTable[actualObject.targetID]) {
                     target = this.nameTable[actualObject.targetID].wrapper;
                 }
-                actualObject.targetPortWrapper = target ?
-                    this.getWrapper(target, newProp.targetPortID) : undefined;
+                let targetNode: Node =  this.nameTable[actualObject.targetID];
+                if (!targetNode || (canInConnect(targetNode) || (actualObject.targetPortID !== '' && canPortInConnect(inPort)))) {
+                    actualObject.targetPortWrapper = target ?
+                        this.getWrapper(target, newProp.targetPortID) : undefined;
+                }
             }
             if (newProp.flip !== undefined) {
                 actualObject.flip = newProp.flip; flipConnector(actualObject);
@@ -6221,6 +6275,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
         if (!this.preventConnectorsUpdate) { this.updateDiagramObject(actualObject); }
         if (this.diagramActions && actualObject.status !== 'New') { actualObject.status = 'Update'; }
+        if (!propertyChange) {
+            let element: ConnectorModel = actualObject;
+            let args: IPropertyChangeEventArgs = { element: element, cause: this.diagramActions, oldValue: oldProp, newValue: newProp };
+            this.triggerEvent(DiagramEvent.propertyChange, args);
+        }
     }
 
     private findInOutConnectPorts(node: NodeModel, isInconnect: boolean): PointPortModel {
@@ -6927,6 +6986,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                     this.findChild((newObj as Node), entryTable);
                                 }
                                 this.preventUpdate = true;
+                                if(newObj.zIndex !== -1) {
+                                    newObj.zIndex = -1;
+                                }
                                 this.initObject(newObj as IElement, undefined, undefined, true);
                                 this.currentSymbol = newObj as Node | Connector;
                                 if (this.mode !== 'SVG') {

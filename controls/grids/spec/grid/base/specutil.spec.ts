@@ -1,6 +1,7 @@
 import { createElement, getUniqueID, EmitType, remove } from '@syncfusion/ej2-base';
 import { GridModel } from '../../../src/grid/base/grid-model';
 import { Grid } from '../../../src/grid/base/grid';
+import { DataUtil } from '@syncfusion/ej2-data';
 
 /**
  * Util functions for test cases.
@@ -15,8 +16,15 @@ export function createGrid(options: GridModel, done: Function): Grid {
         done();
     };
     options.dataBound = dataBound;
+    options.dataSource = options.dataSource instanceof Array ? DataUtil.parse.parseJson(JSON.stringify(options.dataSource)) :
+     options.dataSource;
     let grid: Grid = new Grid(options);
-    document.body.appendChild(createElement('div', { id: id }));
+    let placeholder: HTMLElement = document.body.querySelector('.testbed');
+    if (!placeholder) {
+        placeholder = createElement('div', { className: 'testbed' });
+        document.body.appendChild(placeholder);
+    }
+    placeholder.appendChild(createElement('div', { id: id }));
     grid.appendTo('#' + id);
     return grid;
 }
@@ -29,6 +37,10 @@ export function destroy(grid: Grid): void {
         //ensure once again, because sometimes element not removed from dom.
         if (document.getElementById(id)) {
             document.getElementById(id).remove();
+        }
+        let placeholder: HTMLElement = document.body.querySelector('.testbed');
+        if (placeholder) {
+            placeholder.innerHTML = '';
         }
     }
 }

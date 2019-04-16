@@ -257,7 +257,7 @@ export class EventWindow {
         } else {
             EventHandler.add(button, 'click', this.loadRecurrenceEditor, this);
         }
-        if (this.parent.resources.length > 0) {
+        if (this.parent.resourceCollection.length > 0) {
             let resourceParentDiv: HTMLElement = this.createDivElement(cls.EVENT_WINDOW_RESOURCES_DIV_CLASS);
             for (let i: number = 0; i < this.parent.resourceBase.resourceCollection.length; i++) {
                 resourceParentDiv.appendChild(this.renderResourceDetails(i));
@@ -419,7 +419,7 @@ export class EventWindow {
     }
 
     private onMultiselectResourceChange(args: MultiSelectChangeEventArgs): void {
-        if (!args.value || !this.parent.activeViewOptions.group.byGroupID || this.parent.resources.length <= 1) {
+        if (!args.value || !this.parent.activeViewOptions.group.byGroupID || this.parent.resourceCollection.length <= 1) {
             return;
         }
         let resourceCollection: ResourcesModel[] = this.parent.resourceBase.resourceCollection;
@@ -450,7 +450,7 @@ export class EventWindow {
     }
 
     private onDropdownResourceChange(args: ddlChangeEventArgs): void {
-        if (!args.value || this.parent.resources.length <= 1 || !this.parent.activeViewOptions.group.byGroupID) {
+        if (!args.value || this.parent.resourceCollection.length <= 1 || !this.parent.activeViewOptions.group.byGroupID) {
             return;
         }
         let fieldName: string = args.element.getAttribute('name') || this.getColumnName(args.element as HTMLInputElement);
@@ -738,7 +738,7 @@ export class EventWindow {
         eventObj[this.fields.startTime] = cellsData.startTime;
         eventObj[this.fields.endTime] = cellsData.endTime;
         eventObj[this.fields.isAllDay] = cellsData.isAllDay;
-        if (this.parent.resources.length > 0 || this.parent.activeViewOptions.group.resources.length > 0) {
+        if (this.parent.resourceCollection.length > 0 || this.parent.activeViewOptions.group.resources.length > 0) {
             this.parent.resourceBase.setResourceValues(eventObj, false);
         }
     }
@@ -1069,8 +1069,8 @@ export class EventWindow {
         }
         let ruleData: string = this.recurrenceEditor ? this.recurrenceEditor.getRecurrenceRule() : null;
         eventObj[this.fields.recurrenceRule] = ruleData ? ruleData : undefined;
-        let isResourceEventExpand: boolean = (this.parent.activeViewOptions.group.resources.length > 0 || this.parent.resources.length > 0)
-            && !this.parent.activeViewOptions.group.allowGroupEdit;
+        let isResourceEventExpand: boolean = (this.parent.activeViewOptions.group.resources.length > 0 ||
+            this.parent.resourceCollection.length > 0) && !this.parent.activeViewOptions.group.allowGroupEdit;
         if (!isNullOrUndefined(eventId)) {
             let eveId: number | string = this.parent.eventBase.getEventIDType() === 'string' ? eventId : parseInt(eventId, 10);
             let editedData: { [key: string]: Object } = new DataManager({ json: this.parent.eventsData }).executeLocal(new Query().

@@ -102,6 +102,7 @@ describe('Util module', () => {
         afterAll((done) => {
             destroy(gridObj);
             gridObj.aggregates = [];
+            gridObj = elem = actionComplete = actionBegin = datePickerObj = null;
         });
     });    
 

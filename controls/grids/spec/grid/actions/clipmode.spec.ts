@@ -1,8 +1,7 @@
 /**
  * Grid clipMode spec document
  */
-import { EmitType } from '@syncfusion/ej2-base';
-import { createElement, remove } from '@syncfusion/ej2-base';
+import { createElement } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { Filter } from '../../../src/grid/actions/filter';
 import { Edit } from '../../../src/grid/actions/edit';
@@ -24,10 +23,8 @@ describe('ClipMode module', () => {
 
     describe('clipMode testing', () => {
         let gridObj: Grid;
-        let elem: HTMLElement = createElement('div', { id: 'Grid' });
         let row: any;
         let td: any;
-        let all: any;
         beforeAll((done: Function) => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -72,12 +69,12 @@ describe('ClipMode module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = row = td = null;
         });
     });
 
     describe('clipmode with Resizing', () => {
         let gridObj: Grid;
-        let row: any;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -116,6 +113,7 @@ describe('ClipMode module', () => {
         });   
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 });

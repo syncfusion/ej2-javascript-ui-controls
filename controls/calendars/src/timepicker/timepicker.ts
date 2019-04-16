@@ -32,6 +32,7 @@ const HALFPOSITION: number = 2;
 const ANIMATIONDURATION: number = 50;
 const OVERFLOW: string = 'e-time-overflow';
 const OFFSETVAL: number = 4;
+const EDITABLE: string = 'e-non-edit';
 
 
 export interface ChangeEventArgs {
@@ -427,6 +428,18 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             }
         } else {
             attributes(this.inputElement, { 'readonly': '' });
+        }
+        this.clearIconState();
+    }
+    private clearIconState(): void {
+        if (!this.allowEdit && this.inputWrapper && !this.readonly) {
+            if (this.inputElement.value === '') {
+                removeClass([this.inputWrapper.container], [EDITABLE]);
+            } else {
+                addClass([this.inputWrapper.container], [EDITABLE]);
+            }
+        } else if (this.inputWrapper) {
+            removeClass([this.inputWrapper.container], [EDITABLE]);
         }
     }
     private validateDisable(): void {
@@ -1226,7 +1239,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
         EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
         EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
-        if (this.showClearButton) {
+        if (this.showClearButton && this.inputWrapper.clearButton) {
             EventHandler.add(this.inputWrapper.clearButton, 'mousedown', this.clearHandler, this);
         }
         if (this.formElement) {
@@ -1237,7 +1250,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 this.inputWrapper.container, {
                     keyAction: this.inputHandler.bind(this), keyConfigs: this.keyConfigure, eventName: 'keydown'
                 });
-            if (this.showClearButton) {
+            if (this.showClearButton && this.inputElement ) {
                 EventHandler.add(this.inputElement, 'mousedown', this.mouseDownHandler, this);
             }
         }
@@ -1643,6 +1656,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             this.checkErrorState(this.invalidValueString);
             Input.setValue(this.invalidValueString, this.inputElement, this.floatLabelType, this.showClearButton);
         }
+        this.clearIconState();
 
     }
     protected setActiveDescendant(): void {
@@ -1871,6 +1885,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         };
         if (!this.readonly && !Browser.isDevice) { this.selectInputText(); }
         this.trigger('focus', focusArguments);
+        this.clearIconState();
     }
     /**
      * Focused the TimePicker textbox element.
@@ -1890,6 +1905,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      */
     public hide(): void {
         this.closePopup(100, null);
+        this.clearIconState();
     }
 
     /**
@@ -2034,6 +2050,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 case 'readonly':
                     Input.setReadonly(this.readonly, this.inputElement, this.floatLabelType);
                     if (this.readonly) { this.hide(); }
+                    this.setTimeAllowEdit();
                     break;
                 case 'cssClass':
                     this.inputWrapper.container.className += ' ' + newProp.cssClass;

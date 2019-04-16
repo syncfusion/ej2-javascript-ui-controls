@@ -173,7 +173,10 @@ export class StyleDialog {
         this.target.appendChild(container);
     }
     private createFormatDropdown(parentDiv: HTMLElement, localValue: L10n, isRtl?: boolean): void {
-        let formatBtn: HTMLElement = createElement('button', { id: 'style_format_dropdown', innerHTML: localValue.getConstant('Format') });
+        let formatBtn: HTMLElement = createElement('button', {
+            id: 'style_format_dropdown', innerHTML: localValue.getConstant('Format'),
+            attrs: { type: 'button' }
+        });
         formatBtn.style.height = '31px';
         parentDiv.appendChild(formatBtn);
         let items: ItemModel[] = [{ text: localValue.getConstant('Font') + '..', id: 'style_font' },
@@ -399,7 +402,7 @@ export class StyleDialog {
         this.updateParagraphFormat();
     }
     private createButtonElement(parentDiv: HTMLElement, iconCss: string, className: string, id?: string): HTMLElement {
-        let buttonElement: HTMLElement = createElement('button');
+        let buttonElement: HTMLElement = createElement('button', { attrs: { type: 'button' } });
         if (!isNullOrUndefined(id)) {
             buttonElement.id = id;
         }

@@ -2,7 +2,8 @@ import { enableRipple, addClass, removeClass, Internationalization } from '@sync
 import { DatePicker, TimePicker, ChangeEventArgs } from '@syncfusion/ej2-calendars';
 import { DropDownList, ChangeEventArgs as DropDownChangeArgs } from '@syncfusion/ej2-dropdowns';
 import {
-    Schedule, ScheduleModel, View, TimelineViews, TimelineMonth, Agenda, HeaderRowsModel, HeaderRowType
+    Schedule, ScheduleModel, View, TimelineViews, TimelineMonth, Agenda, HeaderRowsModel, HeaderRowType,
+    DragAndDrop, Resize
 } from '../../src/schedule/index';
 import { timelineData } from '../../spec/schedule/base/datasource.spec';
 import '../../node_modules/es6-promise/dist/es6-promise';
@@ -11,7 +12,7 @@ import '../../node_modules/es6-promise/dist/es6-promise';
  * schedule timeline views sample
  */
 enableRipple(true);
-Schedule.Inject(TimelineViews, TimelineMonth, Agenda);
+Schedule.Inject(TimelineViews, TimelineMonth, Agenda, DragAndDrop, Resize);
 
 let scheduleOptions: ScheduleModel = {
     width: '100%',

@@ -97,7 +97,9 @@ function onMouseDown(e: MouseEvent): void {
     originalMouseY = e.pageY;
     (e.target as HTMLElement).classList.add(FOCUSED_HANDLER);
     if (!isNullOrUndefined(resizeStart)) {
-        resizeStart(e);
+        if (resizeStart(e) === true) {
+            return;
+        }
     }
     let target: Document | HTMLElement = (isNullOrUndefined(containerElement)) ? document : containerElement;
     EventHandler.add(target, 'mousemove', onMouseMove, this);
@@ -143,7 +145,9 @@ function onTouchStart(e: TouchEvent): void {
     originalMouseX = e.touches[0].pageX;
     originalMouseY = e.touches[0].pageY;
     if (!isNullOrUndefined(resizeStart)) {
-        resizeStart(e);
+        if (resizeStart(e) === true) {
+            return;
+        }
     }
     let touchMoveEvent: string = (Browser.info.name === 'msie') ? 'pointermove' : 'touchmove';
     let touchEndEvent: string = (Browser.info.name === 'msie') ? 'pointerup' : 'touchend';

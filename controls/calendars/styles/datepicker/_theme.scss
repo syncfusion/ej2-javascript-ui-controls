@@ -20,9 +20,7 @@
 
   .e-date-wrapper {
     & span.e-input-group-icon {
-      &.e-date-icon.e-icons:hover:not(:active) {
-        background: $datepicker-icon-hover-bg-color;
-      }&.e-date-icon.e-icons.e-active {
+      &.e-date-icon.e-icons.e-active {
         color: $datepicker-icon-color;
       }&.e-date-icon.e-icons.e-active {
         @if $skin-name == 'bootstrap4' {

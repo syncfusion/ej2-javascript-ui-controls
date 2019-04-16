@@ -85,7 +85,7 @@ export class ListBox extends DropDownBase {
     private tBListBox: ListBox;
     private initLoad: boolean;
     private spinner: HTMLElement;
-    private initialSelectedOptions: string[];
+    private initialSelectedOptions: string[] | number[] | boolean[];
     private showSelectAll: boolean;
     private selectAllText: string;
     private unSelectAllText: string;
@@ -105,7 +105,7 @@ export class ListBox extends DropDownBase {
      * @aspType object
      */
     @Property([])
-    public value: string[];
+    public value: string[] | number[] | boolean[];
 
     /**
      * Sets the height of the ListBox component.
@@ -444,7 +444,8 @@ export class ListBox extends DropDownBase {
 
     private dragEnd(args: DropEventArgs): void {
         let listData: { [key: string]: Object }[];
-        let dropValue: string = args.droppedElement.getAttribute('data-value');
+        let selectedOptions: (string | boolean | number)[];
+        let dropValue: string | number | boolean = this.getFormattedValue(args.droppedElement.getAttribute('data-value'));
         let droppedData: { [key: string]: Object } = this.getDataByValue(
             dropValue) as { [key: string]: Object };
         let listObj: ListBox = this.getComponent(args.droppedElement);
@@ -454,7 +455,7 @@ export class ListBox extends DropDownBase {
         }
         if (listObj === this) {
             let ul: Element = this.ulElement;
-            let selectedOptions: string[] = this.value.indexOf(dropValue) > -1 ? this.value : [dropValue];
+            selectedOptions = Array.prototype.indexOf.call(this.value, dropValue) > -1 ? this.value : [dropValue];
             listData = [].slice.call(this.listData);
             let fromIdx: number = args.previousIndex;
             let toIdx: number = args.currentIndex;
@@ -479,7 +480,7 @@ export class ListBox extends DropDownBase {
             let currIdx: number = args.currentIndex;
             let ul: Element = listObj.ulElement;
             listData = [].slice.call(listObj.listData);
-            let selectedOptions: string[] = this.value.indexOf(dropValue) > -1 ? this.value : [dropValue];
+            selectedOptions = Array.prototype.indexOf.call(this.value, dropValue) > -1 ? this.value : [dropValue];
             selectedOptions.forEach((value: string) => {
                 droppedData = this.getDataByValue(value) as { [key: string]: Object };
                 this.listData.splice(value === dropValue ? prevIdx : this.getIndexByValue(value), 1);
@@ -969,7 +970,7 @@ export class ListBox extends DropDownBase {
         let selectedOptions: string[] = [];
         this.getSelectedItems().forEach((ele: Element) => {
             if (!ele.classList.contains('e-grabbed')) {
-                selectedOptions.push(ele.getAttribute('data-value'));
+                selectedOptions.push(this.getFormattedValue(ele.getAttribute('data-value')) as string);
             }
         });
         this.setProperties({ value: selectedOptions }, true);
@@ -978,10 +979,9 @@ export class ListBox extends DropDownBase {
         if (this.tBListBox) {
             this.tBListBox.updateToolBarState();
         }
-
     }
 
-    private setSelection(values: string[] = this.value, isSelect: boolean = true, isText: boolean = false): void {
+    private setSelection(values: (string | boolean | number)[] = this.value, isSelect: boolean = true, isText: boolean = false): void {
         let li: Element;
         values.forEach((value: string) => {
             li = this.list.querySelector('[data-value="' + (isText ? this.getValueByText(value) : value) + '"]');
@@ -1000,7 +1000,7 @@ export class ListBox extends DropDownBase {
     private updateSelectTag(): void {
         let ele: Element = this.getSelectTag();
         ele.innerHTML = '';
-        this.value.forEach((value: string) => {
+        Array.prototype.forEach.call(this.value, (value: string) => {
             ele.innerHTML += '<option selected value="' + value + '"></option>';
         });
     }

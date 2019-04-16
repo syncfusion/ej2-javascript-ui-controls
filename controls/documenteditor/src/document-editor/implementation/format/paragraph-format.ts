@@ -79,7 +79,7 @@ export class WParagraphFormat {
                 baseStyle = baseStyle.basedOn;
             }
             for (let key of tabStops.keys) {
-                if (!this.hasTabStop(key)) {
+                if (!this.hasTabStop(parseFloat(key.toFixed(4)))) {
                     inTabs.push(tabStops.get(key));
                 }
             }
@@ -90,7 +90,8 @@ export class WParagraphFormat {
     }
     private hasTabStop(position: number): boolean {
         for (let i: number = 0; i < this.tabs.length; i++) {
-            if (this.tabs[i].position === position) {
+            if (parseFloat(this.tabs[i].position.toFixed(4)) === position ||
+                parseFloat(this.tabs[i].deletePosition.toFixed(4)) === position) {
                 return true;
             }
         }

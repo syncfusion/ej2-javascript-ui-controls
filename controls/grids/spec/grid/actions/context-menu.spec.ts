@@ -5,7 +5,7 @@ import { Page } from '../../../src/grid/actions/page';
 import { Selection } from '../../../src/grid/actions/selection';
 import { Reorder } from '../../../src/grid/actions/reorder';
 import { CommandColumn } from '../../../src/grid/actions/command-column';
-import { ActionEventArgs, ContextMenuOpenEventArgs, ContextMenuClickEventArgs } from '../../../src/grid/base/interface';
+import { ContextMenuOpenEventArgs, ContextMenuClickEventArgs } from '../../../src/grid/base/interface';
 import { Grid } from '../../../src/grid/base/grid';
 import { createElement, remove, EmitType } from '@syncfusion/ej2-base';
 import { data } from '../../../spec/grid/base/datasource.spec';
@@ -106,9 +106,6 @@ let targetAndIconCheck: Function = (menuItem: ContextMenuItemModel): void => {
 describe('context menu module', () => {
     describe('default items', () => {
         let gridObj: Grid;
-        let elem: HTMLElement = createElement('div', { id: 'Grid' });
-        let headers: any;
-        let columns: Column[];
         beforeAll((done: Function) => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -190,13 +187,11 @@ describe('context menu module', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = targetAndIconCheck = null;
         });
     });
     describe('default items functionality', () => {
         let gridObj: Grid;
-        let elem: HTMLElement = createElement('div', { id: 'Grid' });
-        let headers: any;
-        let columns: Column[];
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -468,13 +463,11 @@ describe('context menu module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
     describe('default items without required module', () => {
         let gridObj: Grid;
-        let elem: HTMLElement = createElement('div', { id: 'Grid' });
-        let headers: any;
-        let columns: Column[];
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -531,13 +524,11 @@ describe('context menu module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
     describe('custom items', () => {
         let gridObj: Grid;
-        let elem: HTMLElement = createElement('div', { id: 'Grid' });
-        let headers: any;
-        let columns: Column[];
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -582,13 +573,12 @@ describe('context menu module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
     describe('batch Edit', () => {
         let gridObj: Grid;
-        let elem: HTMLElement = createElement('div', { id: 'Grid' });
-        let columns: Column[];
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -629,12 +619,11 @@ describe('context menu module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
     describe('default items', () => {
         let gridObj: Grid;
-        let headers: any;
-        let columns: Column[];
         beforeAll((done: Function) => {
             let dataBound: EmitType<Object> = () => { done(); };
             gridObj = createGrid(
@@ -672,6 +661,7 @@ describe('context menu module', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
@@ -714,6 +704,7 @@ describe('context menu module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
@@ -791,6 +782,7 @@ describe('context menu module', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
@@ -813,6 +805,7 @@ describe('context menu module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
@@ -850,6 +843,7 @@ describe('context menu module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
@@ -892,6 +886,7 @@ describe('context menu module', () => {
     
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 

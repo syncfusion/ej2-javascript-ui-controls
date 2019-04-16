@@ -38,6 +38,7 @@ describe('Numericcontainer module testing', () => {
         afterAll(() => {
             pagerObj.destroy();
             elem.remove();
+            pagerObj = elem = null;
         });
 
     });
@@ -297,6 +298,7 @@ describe('Numericcontainer module testing', () => {
         afterAll(() => {
             pagerObj.destroy();
             elem.remove();
+            pagerObj = elem = first = last = prev = next = NP = PP = null;
         });
 
     });
@@ -325,6 +327,7 @@ describe('Numericcontainer module testing', () => {
         afterAll(() => {
             pagerObj.destroy();
             elem.remove();
+            pagerObj = elem = null;
         });
 
     });
@@ -363,6 +366,7 @@ describe('Numericcontainer module testing', () => {
         afterAll(() => {
             pagerObj.destroy();
             elem.remove();
+            pagerObj = elem = null;
         });
 
     });

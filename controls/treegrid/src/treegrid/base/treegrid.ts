@@ -42,7 +42,7 @@ import { ITreeData, RowExpandedEventArgs, RowExpandingEventArgs, RowCollapsedEve
 import { CellSaveEventArgs } from './interface';
 import { iterateArrayOrObject, GridLine } from '@syncfusion/ej2-grids';
 import { DataSourceChangedEventArgs, DataStateChangeEventArgs, RecordDoubleClickEventArgs, ResizeArgs } from '@syncfusion/ej2-grids';
-import { ToolbarItems, ToolbarItem, ContextMenuItem, ContextMenuItems } from '../enum';
+import { ToolbarItems, ToolbarItem, ContextMenuItem, ContextMenuItems, RowPosition } from '../enum';
 import { ItemModel, ClickEventArgs, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { PageSettings } from '../models/page-settings';
 import { PageSettingsModel } from '../models/page-settings-model';
@@ -219,8 +219,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
   * Defines the print modes. The available print modes are   
   * * `AllPages`: Prints all pages of the TreeGrid. 
   * * `CurrentPage`: Prints the current page of the TreeGrid.
-  * @default AllPages
-  * @aspDefaultValueIgnore
+  * @default Syncfusion.EJ2.Grids.PrintMode.AllPages
   * @isEnumeration true
   * @aspType Syncfusion.EJ2.Grids.PrintMode
   */
@@ -371,8 +370,7 @@ public pagerTemplate: string;
    * * `Horizontal`: Displays the horizontal TreeGrid lines only. 
    * * `Vertical`: Displays the vertical TreeGrid lines only.
    * * `Default`: Displays TreeGrid lines based on the theme.
-   * @default Default
-   * @aspDefaultValueIgnore
+   * @default Syncfusion.EJ2.Grids.GridLine.Default
    * @isEnumeration true
    * @aspType Syncfusion.EJ2.Grids.GridLine
    */
@@ -1254,6 +1252,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     if (data instanceof Array && data.length > 0 && (<Object>data[0]).hasOwnProperty('level')) {
         this.flatData = data;
         this.flatData.filter((e: ITreeData) => {
+          setValue('uniqueIDCollection.' + e.uniqueID, e, this);
           if (e.level === 0) {
             this.parentData.push(e);
           }
@@ -1421,7 +1420,6 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     //   this.notify(events.cellSaved, args);
     // };
     this.grid.cellEdit = (args: BatchAddArgs): void => {
-      this.trigger(events.cellEdit, args);
       this.notify(events.cellEdit, args);
     };
     // this.grid.batchAdd = (args: BatchAddArgs): void => {
@@ -1718,7 +1716,7 @@ private getGridEditSettings(): GridEditModel {
                            || this.dataSource.adaptor instanceof RemoteSaveAdaptor) ;
           this.convertTreeData(this.dataSource);
           if (this.isLocalData) {
-            this.grid.dataSource = this.flatData.slice();
+            this.grid.dataSource = this.flatData;
           } else {
             this.grid.dataSource = this.dataSource;
           }
@@ -1894,10 +1892,11 @@ private getGridEditSettings(): GridEditModel {
    * Adds a new record to the TreeGrid. Without passing parameters, it adds empty rows.
    * > `editSettings.allowEditing` should be true.
    * @param {Object} data - Defines the new add record data.
-   * @param {number} index - Defines the row index to be added
+   * @param {number} index - Defines the row index to be added.
+   * @param {RowPosition} position - Defines the new row position to be added.
    */
-    public addRecord(data?: Object, index?: number): void {
-      this.grid.editModule.addRecord(data, index);
+    public addRecord(data?: Object, index?: number,  position?: RowPosition): void {
+      this.editModule.addRecord(data, index, position);
   }
   /**
    * Cancels edited state.

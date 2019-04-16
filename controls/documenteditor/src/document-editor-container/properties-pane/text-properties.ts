@@ -128,7 +128,7 @@ export class Text {
         this.clearFormat = this.createButtonTemplate(element + '_clearFormat', 'e-de-ctnr-clearall e-icons', leftDiv2, 'e-de-prop-font-last-button', '40.5', this.localObj.getConstant('Clear all formatting'));
     }
     private createHighlightColorSplitButton = (id: string, width: number, divElement: HTMLElement, toolTipText: string): SplitButton => {
-        let buttonElement: HTMLButtonElement = createElement('button', { id: id }) as HTMLButtonElement;
+        let buttonElement: HTMLButtonElement = createElement('button', { id: id , attrs: { type: 'button' }}) as HTMLButtonElement;
         // buttonElement.style.width = width + 'px';
         // buttonElement.style.padding = '1px';
         // buttonElement.style.height = 30 + 'px';
@@ -317,7 +317,7 @@ export class Text {
     }
     // tslint:disable-next-line:max-line-length
     private createButtonTemplate(id: string, iconcss: string, div: HTMLElement, buttonClass: string, width: string, toolTipText: string): HTMLButtonElement {
-        let button: HTMLButtonElement = createElement('Button', { id: id }) as HTMLButtonElement;
+        let button: HTMLButtonElement = createElement('Button', { id: id, attrs: { type: 'button' } }) as HTMLButtonElement;
         // button.style.width = width + 'px';
         // buttonElement.style.height = 32 + 'px';
         div.appendChild(button);

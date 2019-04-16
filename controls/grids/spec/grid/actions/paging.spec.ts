@@ -11,6 +11,7 @@ import { data } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { rowsAdded } from '../../../src';
 
 Grid.Inject(Page, Sort);
 
@@ -151,6 +152,7 @@ describe('Paging module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
 
@@ -213,6 +215,7 @@ describe('Paging module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
     describe('paging without pageSettings', () => {
@@ -243,6 +246,7 @@ describe('Paging module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
@@ -280,6 +284,7 @@ describe('Paging module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = dropDownChanged = null;
         });
     });
 
@@ -304,15 +309,12 @@ describe('Paging module', () => {
         afterAll(() => {
             remove(document.getElementsByClassName('e-pagertemplate')[0]);
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
     describe('Paging & Scrolling - PageDown case', () => {
         let grid: Grid;
-        let actionBegin: Function;
-        let actionComplete: Function;
-        let preventDefault: Function = new Function();
-        let which: string = 'which';
         let content: HTMLElement;
         let raiseEvt: Function = (code: number) => {
             let p: Object = { '34': 'pageDown', '33': 'pageUp' };
@@ -384,6 +386,7 @@ describe('Paging module', () => {
 
             afterAll((done) => {
                 destroy(grid);
+                grid = content = raiseEvt = null;
             });
         });
 
@@ -425,7 +428,6 @@ describe('Paging module', () => {
  
     describe('EJ2-9910 dropDown All option', () => {
         let gridObj: Grid;
-        let actionComplete: () => void;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -461,6 +463,7 @@ describe('Paging module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 

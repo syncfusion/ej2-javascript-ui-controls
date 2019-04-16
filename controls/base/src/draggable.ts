@@ -356,6 +356,19 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         clearTimeout(this.tapHoldTimer);
         EventHandler.remove(document, Browser.touchMoveEvent, this.removeTapholdTimer);
     }
+    /* istanbul ignore next */
+    private getScrollableParent(element: HTMLElement, axis: string): HTMLElement {
+        let scroll: Object = { 'vertical': 'scrollHeight', 'horizontal': 'scrollWidth' };
+        let client: Object = { 'vertical': 'clientHeight', 'horizontal': 'clientWidth' };
+        if (isNullOrUndefined(element)) {
+            return null;
+        }
+        if (element[scroll[axis]] > element[client[axis]]) {
+            return element;
+        } else {
+            return this.getScrollableParent(element.parentNode as HTMLElement, axis);
+        }
+    }
     private initialize(evt: MouseEvent & TouchEvent, curTarget?: EventTarget): void {
         this.target = <HTMLElement>(evt.currentTarget || curTarget);
         this.dragProcessStarted = false;
@@ -372,8 +385,12 @@ export class Draggable extends Base<HTMLElement> implements INotifyPropertyChang
         this.initialPosition = { x: intCoord.pageX, y: intCoord.pageY };
         if (!this.clone) {
             let pos: PositionModel = this.element.getBoundingClientRect();
-            this.relativeXPosition = intCoord.pageX - pos.left;
-            this.relativeYPosition = intCoord.pageY - pos.top;
+            let verticalScrollParent: HTMLElement = this.getScrollableParent(this.element.parentNode as HTMLElement, 'vertical');
+            let horizontalScrollParent: HTMLElement = this.getScrollableParent(this.element.parentNode as HTMLElement, 'horizontal');
+            let parentScrollX: number = horizontalScrollParent ? horizontalScrollParent.scrollLeft : 0;
+            let parentScrollY: number = verticalScrollParent ? verticalScrollParent.scrollTop : 0;
+            this.relativeXPosition = intCoord.pageX - (pos.left + parentScrollX);
+            this.relativeYPosition = intCoord.pageY - (pos.top + parentScrollY);
         }
         if (this.externalInitialize) {
             this.intDragStart(evt);

@@ -366,6 +366,17 @@ describe('Datepicker', () => {
             (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
             expect(document.querySelector('.e-datepicker.e-popup-wrapper').classList.contains('e-popup-wrapper')).toBe(true);
         });
+        it('allowedit property with e-non-edit calss with readonly', () => {
+            datepicker = new DatePicker({value: new Date('3/3/2017')});
+            datepicker.appendTo('#date');
+            expect(datepicker.element.getAttribute('readonly')).toBe(null);
+            expect(datepicker.inputWrapper.container.classList.contains('e-non-edit')).toBe(false);
+            datepicker.allowEdit = false;
+            datepicker.readonly = true;
+            datepicker.dataBind();
+            expect(datepicker.element.getAttribute('readonly')).toBe('');
+            expect(datepicker.inputWrapper.container.classList.contains('e-non-edit')).toBe(false);
+        });
         it('allowedit property invalid value with e-non-edit calss  ', () => {
             datepicker = new DatePicker({});
             datepicker.appendTo('#date');

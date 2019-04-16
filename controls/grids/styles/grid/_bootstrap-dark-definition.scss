@@ -1,4 +1,3 @@
-
 $grid-content-padding: 8px !default;
 $grid-headecell-height: 38px !default;
 $grid-font-size: 13px !default;
@@ -163,7 +162,7 @@ $grid-rtl-headercelldiv-fltricon-padding: 0 1.6em 0 10px !default;
 $grid-sortnumber-filtericon-rightalign-margin: 8px 2px 0 5px !default;
 $grid-xl-match-margin-left: 6px !default;
 $grid-bigger-xl-match-margin-left: 8px !default;
-$grid-rows-bg-color: $content-bg-color !default;
+$grid-rows-bg-color: $grey-base !default;
 $grid-resize-border-width: 1px !default;
 $grid-xl-rtl-radio-padding-left: 0 !default;
 $grid-xl-rtl-radio-padding-right: 25px !default;
@@ -495,3 +494,4 @@ $grid-ungroup-rtl-padding-left: 0 !default;
 $grid-rtl-group-sorticon-margin-left: 0 !default;
 $grid-column-menu-padding: 6px !default;
 $grid-rtl-column-menu-left: 5px !default;
+$grid-checkboxfiltertext-width: 150px !default;

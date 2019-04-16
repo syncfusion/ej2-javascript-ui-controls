@@ -201,9 +201,10 @@ describe('FileManager control single selection Gid view', () => {
                 }, 500);
             }, 500);
         });
-        it('for navigationPaneSettings', () => {
+        it('for navigationPaneSettings', (done: Function) => {
             feObj = new FileManager({
                 view: 'Details',
+                allowMultiSelection: false,
                 ajaxSettings: {
                     url: '/FileOperations',
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
@@ -216,14 +217,26 @@ describe('FileManager control single selection Gid view', () => {
                 status: 200,
                 responseText: JSON.stringify(data1)
             });
-            expect(document.getElementById('file_tree').offsetWidth).toEqual(0);
-            feObj.navigationPaneSettings = { visible: true };
-            feObj.dataBind();
-            expect(document.getElementById('file_tree').offsetWidth).not.toEqual(0);
-            feObj.navigationPaneSettings = { visible: false };
-            feObj.dataBind();
-            expect(document.getElementById('file_tree').offsetWidth).toEqual(0);
-            feObj.destroy();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                expect(document.getElementById('file_tree').offsetWidth).toEqual(0);
+                feObj.navigationPaneSettings = { visible: true };
+                feObj.dataBind();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data1)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    expect(document.getElementById('file_tree').offsetWidth).not.toEqual(0);
+                    feObj.navigationPaneSettings = { visible: false };
+                    feObj.dataBind();
+                    expect(document.getElementById('file_tree').offsetWidth).toEqual(0);
+                    feObj.destroy();
+                    done();
+                }, 500);
+            }, 500);
         });
         it('for path', (done: Function) => {
             feObj = new FileManager({
@@ -322,6 +335,47 @@ describe('FileManager control single selection Gid view', () => {
                     expect(feObj.ajaxSettings.downloadUrl).toBe('http://localhost/downloadUrl');
                     done();
                 }, 500);
+            }, 500);
+        });
+        it('for ajaxSettings before ajax success', function (done: Function) {
+            feObj = new FileManager({
+                view: 'Details',
+                allowMultiSelection: false,
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                }
+            });
+            feObj.appendTo('#file');
+            feObj.ajaxSettings.url = "http://localhost/FileOperations";
+            feObj.ajaxSettings.uploadUrl = "http://localhost/uploadUrl";
+            feObj.ajaxSettings.getImageUrl = "http://localhost/getImageUrl";
+            feObj.ajaxSettings.downloadUrl = "http://localhost/downloadUrl";
+            feObj.dataBind();
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(function () {
+                let treeObj: any = (document.getElementById("file_tree") as any).ej2_instances[0];
+                let treeLi: any = treeObj.element.querySelectorAll('li');
+                let gridLi: any = document.getElementById('file_grid').querySelectorAll('.e-row');
+                expect(treeObj.selectedNodes[0]).toEqual("fe_tree");
+                expect(treeLi.length).toEqual(5);
+                expect(gridLi.length).toEqual(5);
+                expect(feObj.ajaxSettings.url).toBe('http://localhost/FileOperations');
+                expect(feObj.ajaxSettings.uploadUrl).toBe('http://localhost/uploadUrl');
+                expect(feObj.ajaxSettings.getImageUrl).toBe('http://localhost/getImageUrl');
+                expect(feObj.ajaxSettings.downloadUrl).toBe('http://localhost/downloadUrl');
+                done();
             }, 500);
         });
     });

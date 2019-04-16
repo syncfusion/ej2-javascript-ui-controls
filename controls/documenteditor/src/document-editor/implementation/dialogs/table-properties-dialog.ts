@@ -536,11 +536,12 @@ export class TablePropertiesDialog {
         }
         this.bordersAndShadingButton = createElement('button', {
             innerHTML: localValue.getConstant('Borders and Shading'),
-            id: element.id + '_borders_and_shadings', className: 'e-control e-btn e-flat e-de-ok-button'
+            id: element.id + '_borders_and_shadings', className: 'e-control e-btn e-flat e-de-ok-button',
+            attrs: { type: 'button' }
         }) as HTMLButtonElement;
         this.tableOptionButton = createElement('button', {
             className: 'e-control e-btn e-flat', innerHTML: localValue.getConstant('Options'),
-            id: element.id + '_table_cellmargin'
+            id: element.id + '_table_cellmargin', attrs: { type: 'button' }
         }) as HTMLButtonElement;
         this.tableOptionButton.addEventListener('click', this.showTableOptionsDialog);
         this.bordersAndShadingButton.addEventListener('click', this.showBordersShadingsPropertiesDialog);
@@ -1079,7 +1080,7 @@ export class TablePropertiesDialog {
         }) as HTMLLabelElement;
         this.cellOptionButton = createElement('button', {
             innerHTML: localValue.getConstant('Options'), id: element.id + '_table_cellmargin',
-            className: 'e-control e-btn e-flat',
+            className: 'e-control e-btn e-flat', attrs: { type: 'button' }
         }) as HTMLButtonElement;
         this.cellOptionButton.style.cssFloat = isRtl ? 'left' : 'right';
         divAlignment.appendChild(topAlignDiv); divAlignment.appendChild(centerAlignDiv);

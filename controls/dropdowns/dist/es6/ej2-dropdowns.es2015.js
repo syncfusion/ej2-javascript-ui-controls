@@ -932,6 +932,7 @@ let DropDownBase = class DropDownBase extends Component {
         }
         if (itemsCount === 0 && isNullOrUndefined(this.list.querySelector('ul'))) {
             this.list.innerHTML = '';
+            this.list.classList.remove(dropDownBaseClasses.noData);
             this.list.appendChild(this.ulElement);
             append(liCollections, this.ulElement);
         }
@@ -1647,6 +1648,9 @@ let DropDownList = class DropDownList extends DropDownBase {
         }
     }
     keyActionHandler(e) {
+        if (!this.enabled) {
+            return;
+        }
         let preventAction = e.action === 'pageUp' || e.action === 'pageDown';
         let preventHomeEnd = this.getModuleName() !== 'dropdownlist' && (e.action === 'home' || e.action === 'end');
         this.isEscapeKey = e.action === 'escape';
@@ -2212,7 +2216,7 @@ let DropDownList = class DropDownList extends DropDownBase {
     filteringAction(dataSource, query, fields) {
         if (!isNullOrUndefined(this.filterInput)) {
             this.beforePopupOpen = true;
-            if (this.filterInput.value.trim() === '') {
+            if (this.filterInput.value.trim() === '' && !this.itemTemplate) {
                 this.actionCompleteData.isUpdated = false;
                 this.isTyped = false;
                 if (!isNullOrUndefined(this.actionCompleteData.ulElement) && !isNullOrUndefined(this.actionCompleteData.list)) {
@@ -2235,6 +2239,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                         dataSource = this.listData;
                     }
                 }
+                query = (this.filterInput.value.trim() === '') ? null : query;
                 this.resetList(dataSource, fields, query);
             }
         }
@@ -2536,6 +2541,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                 if (!this.isDocumentClick) {
                     this.focusDropDown();
                 }
+                this.isNotSearchList = false;
                 this.isDocumentClick = false;
                 this.destroyPopup();
             },
@@ -2885,6 +2891,12 @@ let DropDownList = class DropDownList extends DropDownBase {
             this.popupObj.refreshPosition(this.inputWrapper.container);
         }
     }
+    checkDatasource(newProp) {
+        if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource)) && this.itemTemplate && this.allowFiltering) {
+            this.list = null;
+            this.actionCompleteData = { ulElement: null, list: null, isUpdated: false };
+        }
+    }
     updateDataSource(props) {
         this.clear(null, props);
         if (!(!isNullOrUndefined(props) && (isNullOrUndefined(props.dataSource)
@@ -2911,6 +2923,7 @@ let DropDownList = class DropDownList extends DropDownBase {
      */
     onPropertyChanged(newProp, oldProp) {
         if (this.getModuleName() === 'dropdownlist') {
+            this.checkDatasource(newProp);
             this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp);
         }
         for (let prop of Object.keys(newProp)) {
@@ -3111,7 +3124,7 @@ let DropDownList = class DropDownList extends DropDownBase {
             return;
         }
         this.beforePopupOpen = true;
-        if (this.isFiltering() && !this.isActive && this.actionCompleteData.list && this.actionCompleteData.list[0]) {
+        if (this.isFiltering() && !this.isActive && this.actionCompleteData.list && this.actionCompleteData.list[0] && !this.itemTemplate) {
             this.isActive = true;
             this.onActionComplete(this.actionCompleteData.ulElement, this.actionCompleteData.list, null, true);
         }
@@ -4348,9 +4361,7 @@ function createFloatLabel(overAllWrapper, searchWrapper, element, inputElement, 
         floatLabelElement.innerHTML = inputElement.placeholder;
         inputElement.removeAttribute('placeholder');
     }
-    if (!isNullOrUndefined(placeholder) && placeholder !== '') {
-        floatLabelElement.innerHTML = placeholder;
-    }
+    floatLabelElement.innerHTML = placeholder;
     searchWrapper.appendChild(floatLinelement);
     searchWrapper.appendChild(floatLabelElement);
     overAllWrapper.classList.add('e-float-input');
@@ -4564,7 +4575,11 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                         this.enable(false);
                         break;
                     case 'placeholder':
-                        this.inputElement.setAttribute(htmlAttr, this.htmlAttributes[htmlAttr]);
+                        if (!this.placeholder) {
+                            this.inputElement.setAttribute(htmlAttr, this.htmlAttributes[htmlAttr]);
+                            this.setProperties({ placeholder: this.inputElement.placeholder }, true);
+                            this.refreshPlaceHolder();
+                        }
                         break;
                     default:
                         let defaultAttr = ['id'];
@@ -4627,7 +4642,6 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         }
         let animModel = { name: 'FadeIn', duration: 100 };
         let eventArgs = { popup: this.popupObj, cancel: false, animation: animModel };
-        this.popupObj.wireScrollEvents();
         this.trigger('open', eventArgs);
         if (eventArgs.cancel) {
             return;
@@ -4739,6 +4753,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         if (this.mainList && this.listData) {
             this.refreshSelection();
         }
+        this.checkPlaceholderSize();
     }
     onActionFailure(e) {
         super.onActionFailure(e);
@@ -5211,15 +5226,18 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         this.checkPlaceholderSize();
     }
     checkPlaceholderSize() {
-        if ((!this.value || !this.value.length) && this.showDropDownIcon && this.inputElement &&
-            (this.componentWrapper.offsetWidth <= this.inputElement.offsetWidth) &&
-            this.inputElement.size > 1) {
+        if (this.showDropDownIcon) {
             let downIconWidth = this.dropIcon.offsetWidth +
                 parseInt(window.getComputedStyle(this.dropIcon).marginRight, 10);
-            do {
-                this.inputElement.size -= 1;
-            } while ((downIconWidth + this.inputElement.offsetWidth) >= this.componentWrapper.offsetWidth &&
-                this.inputElement.size > 1);
+            this.setPlaceholderSize(downIconWidth);
+        }
+    }
+    setPlaceholderSize(downIconWidth) {
+        if (isNullOrUndefined(this.value) || this.value.length === 0) {
+            this.searchWrapper.style.width = 'calc(100% - ' + downIconWidth + 'px)';
+        }
+        else if (!isNullOrUndefined(this.value)) {
+            this.searchWrapper.removeAttribute('style');
         }
     }
     refreshInputHight() {
@@ -5444,6 +5462,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                     if (this.mode !== 'CheckBox') {
                         this.selectByKey(e);
                     }
+                    this.checkPlaceholderSize();
                     return;
                 case 32:
                     this.spaceKeySelection(e);
@@ -5686,6 +5705,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         if (this.closePopupOnSelect) {
             this.hidePopup();
         }
+        this.checkPlaceholderSize();
     }
     moveByTop(state) {
         let elements = this.list.querySelectorAll('li.' + dropDownBaseClasses.li);
@@ -5799,6 +5819,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             this.updateDelimeter(this.delimiterChar);
             if (this.placeholder && this.floatLabelType === 'Never') {
                 this.makeTextBoxEmpty();
+                this.checkPlaceholderSize();
             }
             else {
                 this.inputElement.value = '';
@@ -5844,7 +5865,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             };
             this.trigger('removing', eventArgs);
             if (eventArgs.cancel) {
-                return;
+                return true;
             }
             this.value.splice(index, 1);
             this.setProperties({ value: [].concat([], this.value) }, true);
@@ -6197,6 +6218,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                 zIndex: this.zIndex,
                 close: () => {
                     if (this.popupObj.element.parentElement) {
+                        this.popupObj.unwireScrollEvents();
                         detach(this.popupObj.element);
                     }
                 },
@@ -6208,6 +6230,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                         }
                         this.isFirstClick = true;
                     }
+                    this.popupObj.wireScrollEvents();
                     this.loadTemplate();
                     this.setScrollPosition();
                     if (this.allowFiltering) {
@@ -6263,7 +6286,9 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             let tempValues = this.value ? this.value.slice() : [];
             if (this.value) {
                 for (temp = this.value[0]; this.value.length !== 0; temp = this.value[0]) {
-                    this.removeValue(temp, e);
+                    if (this.removeValue(temp, e)) {
+                        break;
+                    }
                 }
             }
             if (this.mainList && this.listData && this.allowFiltering) {
@@ -6405,6 +6430,10 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             this.setProperties({ value: null }, true);
         }
     }
+    renderList(isEmptyData) {
+        super.render(isEmptyData);
+        this.wireListEvents();
+    }
     initialValueUpdate() {
         if (this.list) {
             let text;
@@ -6430,7 +6459,13 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                         let newValue = {};
                         setValue(this.fields.text, value, newValue);
                         setValue(this.fields.value, value, newValue);
+                        let noDataEle = this.popupWrapper.querySelector('.' + dropDownBaseClasses.noData);
                         this.addItem(newValue, indexItem);
+                        if (this.popupWrapper.contains(noDataEle)) {
+                            this.list.setAttribute('style', noDataEle.getAttribute('style'));
+                            this.popupWrapper.replaceChild(this.list, noDataEle);
+                            this.wireListEvents();
+                        }
                         this.addChip(text, value);
                         this.addListSelection(element);
                     }
@@ -6456,6 +6491,12 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                     this.showDelimWrapper();
                 }
             }
+        }
+    }
+    updateActionCompleteData(li, item) {
+        if (this.value && this.value.indexOf(li.getAttribute('data-value')) > -1) {
+            this.mainList = this.ulElement;
+            addClass([li], HIDE_LIST);
         }
     }
     isValidLI(li) {
@@ -6637,6 +6678,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             this.refreshListItems(isNullOrUndefined(li) ? null : li.textContent);
         }
         this.refreshPlaceHolder();
+        this.checkPlaceholderSize();
     }
     onMouseOver(e) {
         let currentLi = closest(e.target, '.' + dropDownBaseClasses.li);
@@ -7011,6 +7053,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource))) {
             this.mainList = null;
             this.mainData = null;
+            this.isFirstClick = false;
         }
         if (this.getModuleName() === 'multiselect') {
             this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp);
@@ -7133,6 +7176,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             this.refreshInputHight();
             this.refreshPlaceHolder();
             this.updateValueState(null, newProp, oldProp);
+            this.checkPlaceholderSize();
         }
     }
     /**
@@ -7162,7 +7206,6 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             this.popupObj.hide();
             removeClass([document.body, this.popupObj.element], 'e-popup-full-page');
             EventHandler.remove(this.list, 'keydown', this.onKeyDown);
-            this.popupObj.unwireScrollEvents();
         }
     }
     /**
@@ -8255,7 +8298,8 @@ let ListBox = class ListBox extends DropDownBase {
     }
     dragEnd(args) {
         let listData;
-        let dropValue = args.droppedElement.getAttribute('data-value');
+        let selectedOptions;
+        let dropValue = this.getFormattedValue(args.droppedElement.getAttribute('data-value'));
         let droppedData = this.getDataByValue(dropValue);
         let listObj = this.getComponent(args.droppedElement);
         let dragArgs = extend({}, this.getDragArgs({ target: args.droppedElement }, true), { target: args.target });
@@ -8264,7 +8308,7 @@ let ListBox = class ListBox extends DropDownBase {
         }
         if (listObj === this) {
             let ul = this.ulElement;
-            let selectedOptions = this.value.indexOf(dropValue) > -1 ? this.value : [dropValue];
+            selectedOptions = Array.prototype.indexOf.call(this.value, dropValue) > -1 ? this.value : [dropValue];
             listData = [].slice.call(this.listData);
             let fromIdx = args.previousIndex;
             let toIdx = args.currentIndex;
@@ -8290,7 +8334,7 @@ let ListBox = class ListBox extends DropDownBase {
             let currIdx = args.currentIndex;
             let ul = listObj.ulElement;
             listData = [].slice.call(listObj.listData);
-            let selectedOptions = this.value.indexOf(dropValue) > -1 ? this.value : [dropValue];
+            selectedOptions = Array.prototype.indexOf.call(this.value, dropValue) > -1 ? this.value : [dropValue];
             selectedOptions.forEach((value) => {
                 droppedData = this.getDataByValue(value);
                 this.listData.splice(value === dropValue ? prevIdx : this.getIndexByValue(value), 1);
@@ -8755,7 +8799,7 @@ let ListBox = class ListBox extends DropDownBase {
         let selectedOptions = [];
         this.getSelectedItems().forEach((ele) => {
             if (!ele.classList.contains('e-grabbed')) {
-                selectedOptions.push(ele.getAttribute('data-value'));
+                selectedOptions.push(this.getFormattedValue(ele.getAttribute('data-value')));
             }
         });
         this.setProperties({ value: selectedOptions }, true);
@@ -8783,7 +8827,7 @@ let ListBox = class ListBox extends DropDownBase {
     updateSelectTag() {
         let ele = this.getSelectTag();
         ele.innerHTML = '';
-        this.value.forEach((value) => {
+        Array.prototype.forEach.call(this.value, (value) => {
             ele.innerHTML += '<option selected value="' + value + '"></option>';
         });
     }

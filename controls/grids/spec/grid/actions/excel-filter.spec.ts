@@ -31,12 +31,9 @@ let getString: Function = (obj: any) => {
 };
 
 describe('Excel Filter =>', () => {
-    let l10n: L10n;
     let gridObj: Grid;
     let actionBegin: () => void;
     let actionComplete: () => void;
-    let filterElement: HTMLInputElement;
-    let orderIDElement: HTMLInputElement;
 
     let numOptr: Object[] = [
         { value: 'equal', text: 'Equal' },
@@ -264,6 +261,7 @@ describe('Excel Filter =>', () => {
         afterAll(() => {
             destroy(gridObj);
         });
+    });
 
         describe('EJ2-6702 Script Error throws If we Check the match case and then click ok button', () => {
             let l10n: L10n;
@@ -370,13 +368,12 @@ describe('Excel Filter =>', () => {
                     handler: test.filterHandler.bind(test), localizedStrings: {},
                     column: column
                 });
-                excel.filterByColumn('OrderDate', 'notequal', '7/12/1996', 'and', false);
+                excel.filterByColumn('OrderDate', 'notequal', grid.dataSource[0].OrderDate, 'and', false);
             });
 
             afterAll(() => {
                 destroy(grid);
             });
-        });
     });
 
     describe('complex data filtering=> ', () => {
@@ -451,6 +448,7 @@ describe('Excel Filter =>', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = preventDefault = value = null;
         });
     });
 
@@ -492,6 +490,7 @@ describe('Excel Filter =>', () => {
        
         afterAll(() => {
             destroy(gridObj);
+            gridObj = drpdwn = getActualProperties = getString = null;
         });
     });
 });

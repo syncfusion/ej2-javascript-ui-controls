@@ -719,8 +719,8 @@ export class LayerPanel {
         y = (y - (position.y - (factorY / 2))) + padding;
         this.mapObject.scale = Math.pow(2, level - 1);
         this.mapObject.translatePoint = new Point(
-            ((x - (0.5 * this.mapObject.scale)) / this.mapObject.scale),
-            ((y - (0.5 * this.mapObject.scale)) / this.mapObject.scale)
+            (x - (0.01 * this.mapObject.scale)) / this.mapObject.scale,
+            (y - (0.01 * this.mapObject.scale)) / this.mapObject.scale
         );
         return new Point(x, y);
     }

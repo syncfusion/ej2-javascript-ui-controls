@@ -863,8 +863,7 @@ function doesImplementInterface(target, checkFor) {
  * @hidden
  */
 function valueAccessor(field, data, column) {
-    field = isNullOrUndefined(field) ? '' : field;
-    return DataUtil.getObject(field, data);
+    return (isNullOrUndefined(field) || field === '') ? '' : DataUtil.getObject(field, data);
 }
 /**
  * The function used to update Dom using requestAnimationFrame.
@@ -3264,7 +3263,7 @@ var RowRenderer = /** @__PURE__ @class */ (function () {
      */
     RowRenderer.prototype.refresh = function (row, columns, isChanged, attributes$$1, rowTemplate) {
         if (isChanged) {
-            row.data = extend({}, row.changes);
+            row.data = extendObjWithFn({}, row.changes);
             this.refreshMergeCells(row);
         }
         var node = this.parent.element.querySelector('[data-uid=' + row.uid + ']');
@@ -4156,6 +4155,8 @@ var ContentRender = /** @__PURE__ @class */ (function () {
                         tr = appendChildren(frag, elements);
                     }
                 }
+                var arg = { data: modelData[i].data, row: tr };
+                this.parent.trigger(rowDataBound, arg);
             }
             if (modelData[i].isDataRow) {
                 this.rowElements.push(tr);
@@ -5028,6 +5029,7 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
             var dummyData = extendObjWithFn({}, data, (_a = {}, _a[foreignKeyData] = fData, _a));
             result = cell.column.getColumnTemplate()(extend({ 'index': attributes$$1[literals[0]] }, dummyData), this.parent, 'template');
             appendChildren(node, result);
+            this.parent.notify('template-result', { template: result });
             result = null;
             node.setAttribute('aria-label', node.innerText + ' is template cell' + ' column header ' +
                 cell.column.headerText);
@@ -7789,6 +7791,9 @@ var Selection = /** @__PURE__ @class */ (function () {
             this.selectRowIndex(rowIndex);
             if (isUnSelected && ((checkboxColumn.length ? true : this.selectionSettings.enableToggle) || this.isMultiCtrlRequest)) {
                 this.rowDeselect(rowDeselecting, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target);
+                if (this.isCancelDeSelect) {
+                    return;
+                }
                 this.selectedRowIndexes.splice(this.selectedRowIndexes.indexOf(rowIndex), 1);
                 this.selectedRecords.splice(this.selectedRecords.indexOf(selectedRow), 1);
                 selectedRow.removeAttribute('aria-selected');
@@ -7850,7 +7855,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     };
     Selection.prototype.clearRow = function () {
         this.clearRowSelection();
-        if (this.isCancelDeSelect === true) {
+        if (this.isCancelDeSelect && this.parent.checkAllRows !== 'Check') {
             return;
         }
         this.selectedRowIndexes = [];
@@ -8000,8 +8005,22 @@ var Selection = /** @__PURE__ @class */ (function () {
                     mRow.push(gObj.getMovableRows()[this.selectedRowIndexes[i]]);
                 }
             }
+            if (this.selectionSettings.persistSelection) {
+                this.isInteracted = this.checkSelectAllClicked ? true : false;
+            }
             this.rowDeselect(rowDeselecting, rowIndex, data, row, foreignKeyData$$1, target, mRow);
-            if (this.isCancelDeSelect === true) {
+            if (this.isCancelDeSelect && (this.isInteracted || this.checkSelectAllClicked)) {
+                if (this.parent.isPersistSelection) {
+                    if (this.getCheckAllStatus(this.parent.element.querySelector('.e-checkselectall')) === 'Intermediate') {
+                        for (var i = 0; i < this.selectedRecords.length; i++) {
+                            this.updatePersistCollection(this.selectedRecords[i], true);
+                        }
+                    }
+                    else {
+                        this.parent.checkAllRows = 'Check';
+                        this.updatePersistSelectedData(true);
+                    }
+                }
                 return;
             }
             rows.filter(function (record) { return record.hasAttribute('aria-selected'); }).forEach(function (ele) {
@@ -8031,15 +8050,19 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
     };
     Selection.prototype.rowDeselect = function (type, rowIndex, data, row, foreignKeyData$$1, target, mRow) {
-        var cancl = 'cancel';
-        this.updatePersistCollection(row[0], false);
-        var rowDeselectObj = {
-            rowIndex: rowIndex, data: data, row: row, foreignKeyData: foreignKeyData$$1,
-            cancel: false, target: target, isInteracted: this.isInteracted
-        };
-        this.parent.trigger(type, this.parent.getFrozenColumns() ? __assign({}, rowDeselectObj, { mRow: mRow }) : rowDeselectObj);
-        this.isCancelDeSelect = rowDeselectObj[cancl];
-        this.updateCheckBoxes(row[0], undefined, rowIndex[0]);
+        if ((this.selectionSettings.persistSelection && this.isInteracted) || !this.selectionSettings.persistSelection) {
+            var cancl = 'cancel';
+            var rowDeselectObj = {
+                rowIndex: rowIndex, data: data, row: row, foreignKeyData: foreignKeyData$$1,
+                cancel: false, target: target, isInteracted: this.isInteracted
+            };
+            this.parent.trigger(type, this.parent.getFrozenColumns() ? __assign({}, rowDeselectObj, { mRow: mRow }) : rowDeselectObj);
+            this.isCancelDeSelect = rowDeselectObj[cancl];
+            if (!this.isCancelDeSelect || (!this.isInteracted && !this.checkSelectAllClicked)) {
+                this.updatePersistCollection(row[0], false);
+                this.updateCheckBoxes(row[0], undefined, rowIndex[0]);
+            }
+        }
     };
     Selection.prototype.getRowObj = function (row) {
         if (row === void 0) { row = this.currentIndex; }
@@ -9385,6 +9408,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.preventFocus = true;
         var checkBox;
         var checkWrap = parentsUntil(target, 'e-checkbox-wrapper');
+        this.checkSelectAllClicked = checkWrap && checkWrap.querySelectorAll('.e-checkselectall') ? true : false;
         if (checkWrap && checkWrap.querySelectorAll('.e-checkselect,.e-checkselectall').length > 0) {
             checkBox = checkWrap.querySelector('input[type="checkbox"]');
             chkSelect = true;
@@ -13284,7 +13308,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             if (this.prevElement !== element || e.type === 'mouseout') {
                 this.toolTipObj.close();
             }
-            if (element && e.type !== 'mouseout') {
+            var tagName = e.target.tagName;
+            var elemNames = ['A', 'BUTTON', 'INPUT'];
+            if (element && e.type !== 'mouseout' && !(Browser.isDevice && elemNames.indexOf(tagName) !== -1)) {
                 if (element.getAttribute('aria-describedby')) {
                     return;
                 }
@@ -20758,13 +20784,22 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             remove(this.element);
         }
     };
+    Toolbar$$1.prototype.bindSearchEvents = function () {
+        this.searchElement = this.element.querySelector('#' + this.gridID + '_searchbar');
+        this.wireEvent();
+        this.refreshToolbarItems();
+        if (this.parent.searchSettings) {
+            this.updateSearchBox();
+        }
+    };
     Toolbar$$1.prototype.createToolbar = function () {
         var items = this.getItems();
         this.toolbar = new Toolbar({
             items: items,
             clicked: this.toolbarClickHandler.bind(this),
             enablePersistence: this.parent.enablePersistence,
-            enableRtl: this.parent.enableRtl
+            enableRtl: this.parent.enableRtl,
+            created: this.bindSearchEvents.bind(this)
         });
         var viewStr = 'viewContainerRef';
         var registerTemp = 'registeredTemplate';
@@ -20786,12 +20821,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             this.toolbar.appendTo(this.element);
         }
         this.parent.element.insertBefore(this.element, this.parent.getHeaderContent());
-        this.searchElement = this.element.querySelector('#' + this.gridID + '_searchbar');
-        this.wireEvent();
-        this.refreshToolbarItems();
-        if (this.parent.searchSettings) {
-            this.updateSearchBox();
-        }
+        this.bindSearchEvents();
     };
     Toolbar$$1.prototype.refreshToolbarItems = function (args) {
         var gObj = this.parent;
@@ -21328,6 +21358,10 @@ var Aggregate = /** @__PURE__ @class */ (function () {
         summaryIterator(this.parent.aggregates, function (column) {
             var dataColumn = _this.parent.getColumnByField(column.field) || {};
             var type = dataColumn.type;
+            var cFormat = 'customFormat';
+            if (!isNullOrUndefined(column[cFormat])) {
+                column.setPropertiesSilent({ format: column[cFormat] });
+            }
             column.setPropertiesSilent({ format: _this.getFormatFromType(column.format, type) });
             column.setFormatter(_this.parent.locale);
             column.setPropertiesSilent({ columnName: column.columnName || column.field });

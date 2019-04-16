@@ -833,7 +833,7 @@ function measureText(text, font) {
         document.body.appendChild(htmlObject);
     }
     htmlObject.innerHTML = text;
-    htmlObject.style.position = 'absolute';
+    htmlObject.style.position = 'fixed';
     htmlObject.style.fontSize = font.size;
     htmlObject.style.fontWeight = font.fontWeight;
     htmlObject.style.fontStyle = font.fontStyle;

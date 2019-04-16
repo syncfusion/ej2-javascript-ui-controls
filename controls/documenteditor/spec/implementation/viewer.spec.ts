@@ -246,8 +246,10 @@ describe('Branch validation', () => {
         sections.push(section2);
         viewer.onDocumentChanged(sections);
 
-        expect(viewer.getHeaderFooterType(section, false)).not.toBe('FirstPageFooter');
-        expect(viewer.getHeaderFooterType(section, true)).not.toBe('FirstPageHeader');
+        expect(viewer.getHeaderFooterType(section, false)).toBe('FirstPageFooter');
+        expect(viewer.getHeaderFooterType(section, true)).toBe('FirstPageHeader');
+        expect(viewer.getHeaderFooterType(section2, false)).not.toBe('FirstPageFooter');
+        expect(viewer.getHeaderFooterType(section2, true)).not.toBe('FirstPageHeader');
 
     });
     it('Cursor over image testing', () => {

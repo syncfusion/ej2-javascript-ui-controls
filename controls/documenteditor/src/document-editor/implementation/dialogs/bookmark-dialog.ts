@@ -65,7 +65,7 @@ export class BookmarkDialog {
             dataSource: bookmarks,
             cssClass: 'e-bookmark-listview',
         });
-        let hasNoBookmark: boolean =  (bookmarks === undefined || bookmarks.length === 0);
+        let hasNoBookmark: boolean = (bookmarks === undefined || bookmarks.length === 0);
 
         this.listviewInstance.appendTo(listviewDiv);
         this.listviewInstance.addEventListener('select', this.selectHandler);
@@ -75,7 +75,10 @@ export class BookmarkDialog {
 
         let addbuttonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-addbutton' });
         buttonDiv.appendChild(addbuttonDiv);
-        let addButtonElement: HTMLElement = createElement('button', { innerHTML: localValue.getConstant('Add'), id: 'add' });
+        let addButtonElement: HTMLElement = createElement('button', {
+            innerHTML: localValue.getConstant('Add'), id: 'add',
+            attrs: { type: 'button' }
+        });
         addbuttonDiv.appendChild(addButtonElement);
         this.addButton = new Button({ cssClass: 'e-button-custom' });
         this.addButton.disabled = true;
@@ -86,7 +89,10 @@ export class BookmarkDialog {
 
         let deleteButtonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-deletebutton' });
         buttonDiv.appendChild(deleteButtonDiv);
-        let deleteButtonElement: HTMLElement = createElement('button', { innerHTML: localValue.getConstant('Delete'), id: 'delete' });
+        let deleteButtonElement: HTMLElement = createElement('button', {
+            innerHTML: localValue.getConstant('Delete'), id: 'delete',
+            attrs: { type: 'button' }
+        });
         deleteButtonDiv.appendChild(deleteButtonElement);
         this.deleteButton = new Button({ cssClass: 'e-button-custom' });
         this.deleteButton.disabled = hasNoBookmark;
@@ -96,7 +102,10 @@ export class BookmarkDialog {
 
         let gotoButtonDiv: HTMLElement = createElement('div', { className: 'e-bookmark-gotobutton' });
         buttonDiv.appendChild(gotoButtonDiv);
-        let gotoButtonElement: HTMLElement = createElement('button', { innerHTML: localValue.getConstant('Go To'), id: 'goto' });
+        let gotoButtonElement: HTMLElement = createElement('button', {
+            innerHTML: localValue.getConstant('Go To'), id: 'goto',
+            attrs: { type: 'button' }
+        });
         gotoButtonDiv.appendChild(gotoButtonElement);
         this.gotoButton = new Button({ cssClass: 'e-button-custom' });
         this.gotoButton.disabled = hasNoBookmark;
@@ -124,7 +133,7 @@ export class BookmarkDialog {
             buttonModel: { content: localObj.getConstant('Cancel'), cssClass: 'e-flat e-hyper-insert', isPrimary: true }
         }];
         this.owner.dialog.dataBind();
-        let hasNoBookmark: boolean =  (bookmarks === undefined || bookmarks.length === 0);
+        let hasNoBookmark: boolean = (bookmarks === undefined || bookmarks.length === 0);
         if (!hasNoBookmark) {
             /* tslint:disable:no-any */
             let firstItem: any = bookmarks[0];

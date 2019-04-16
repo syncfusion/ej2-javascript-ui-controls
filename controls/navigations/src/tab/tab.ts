@@ -1,7 +1,7 @@
 import { Component, Property, Event, EmitType, closest, Collection, Complex, attributes, detach, Instance } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, AnimationOptions, select, isVisible } from '@syncfusion/ej2-base';
 import { KeyboardEvents, KeyboardEventArgs, MouseEventArgs, Effect, Browser, formatUnit, DomElements, L10n } from '@syncfusion/ej2-base';
-import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll, addClass, removeClass } from '@syncfusion/ej2-base';
+import { setStyleAttribute as setStyle, isNullOrUndefined as isNOU, selectAll, addClass, removeClass, remove } from '@syncfusion/ej2-base';
 import { EventHandler, rippleEffect, Touch, SwipeEventArgs, compile, Animation, AnimationModel, BaseEventArgs } from '@syncfusion/ej2-base';
 import { Popup, PopupModel } from '@syncfusion/ej2-popups';
 import { Toolbar, OverflowMode, ClickEventArgs } from '../toolbar/toolbar';
@@ -89,6 +89,14 @@ export interface RemoveEventArgs extends BaseEventArgs {
     removedItem: HTMLElement;
     /** Defines the removed Tab item index. */
     removedIndex: number;
+    /** Defines the prevent action. */
+    cancel?: boolean;
+}
+export interface AddEventArgs extends BaseEventArgs {
+    /** Defines the added Tab item element */
+    addedItems: TabItemModel[];
+    /** Defines the prevent action. */
+    cancel?: boolean;
 }
 export class TabActionSettings extends ChildProperty<TabActionSettings> {
     /**
@@ -372,13 +380,13 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      * @event
      */
     @Event()
-    public adding: EmitType<Event>;
+    public adding: EmitType<AddEventArgs>;
     /**
      * The event will be fired after adding the item to the Tab.
      * @event
      */
     @Event()
-    public added: EmitType<Event>;
+    public added: EmitType<AddEventArgs>;
     /**
      * The event will be fired before the item gets selected.
      * @event
@@ -423,7 +431,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
         });
         this.expTemplateContent();
         if (!this.isTemplate) {
-            this.element.innerHTML = '';
+            while (this.element.firstChild) {
+                remove(this.element.firstChild);
+            }
         } else {
             let cntEle: Element = select('.' + CLS_TAB + ' > .' + CLS_CONTENT, this.element);
             this.element.classList.remove(CLS_TEMPLATE);
@@ -1356,8 +1366,11 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      */
     public addTab(items: TabItemModel[], index?: number): void {
         let lastEleIndex: number = 0;
+        let addArgs: AddEventArgs = { addedItems: items, cancel: false };
         if (!this.isReplace) {
-        this.trigger('adding', { addedItems: items }); }
+            this.trigger('adding', addArgs);
+        }
+        if (addArgs.cancel) { return; }
         this.hdrEle = <HTEle> select('.' + CLS_HEADER, this.element);
         if (isNOU(this.hdrEle)) {
             this.items = items;
@@ -1404,9 +1417,9 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
      */
     public removeTab(index: number): void {
         let trg: HTEle = selectAll('.' + CLS_TB_ITEM, this.element)[index];
-        let removeArgs: RemoveEventArgs = { removedItem: trg, removedIndex: index };
+        let removeArgs: RemoveEventArgs = { removedItem: trg, removedIndex: index, cancel: false };
         this.trigger('removing', removeArgs);
-        if (isNOU(trg)) { return; }
+        if (removeArgs.cancel || isNOU(trg)) { return; }
         this.tbObj.removeItems(index);
         this.items.splice(index, 1);
         this.itemIndexArray.splice(index, 1);

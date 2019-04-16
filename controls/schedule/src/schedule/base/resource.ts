@@ -40,9 +40,7 @@ export class ResourceBase {
 
     public renderResourceHeaderIndent(tr: Element): void {
         let resColTd: Element = createElement('td', { className: cls.RESOURCE_LEFT_TD_CLASS });
-        let resColDiv: Element = createElement('div', {
-            className: cls.RESOURCE_TEXT_CLASS
-        });
+        let resColDiv: Element = createElement('div', { className: cls.RESOURCE_TEXT_CLASS });
         resColTd.appendChild(resColDiv);
         let args: RenderCellEventArgs = { elementType: 'emptyCells', element: resColTd };
         this.parent.trigger(events.renderCell, args);
@@ -238,8 +236,7 @@ export class ResourceBase {
         let pNode: boolean;
         let clickedRes: { [key: string]: Object } = this.lastResourceLevel[index].resourceData as { [key: string]: Object };
         let resRows: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.RESOURCE_COLUMN_WRAP_CLASS + ' ' + 'tr'));
-        let contentRows: Element[] = [].slice.call(this.parent.element.querySelectorAll
-            ('.' + cls.CONTENT_WRAP_CLASS + ' ' + 'tbody tr'));
+        let contentRows: Element[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CONTENT_WRAP_CLASS + ' ' + 'tbody tr'));
         let eventRows: Element[] = [].slice.call(this.parent.element.querySelectorAll
             ('.' + cls.CONTENT_WRAP_CLASS + ' .' + cls.APPOINTMENT_CONTAINER_CLASS));
         for (let j: number = 0; j < clickedRes.Count; j++) {
@@ -491,10 +488,36 @@ export class ResourceBase {
 
     private dataManagerSuccess(e: ReturnType[], isSetModel: boolean): void {
         if (this.parent.isDestroyed) { return; }
+        this.parent.resourceCollection = [];
         for (let i: number = 0, length: number = e.length; i < length; i++) {
-            this.parent.resources[i].dataSource = e[i].result;
+            let resource: ResourcesModel = this.parent.resources[i];
+            let resourceObj: ResourcesModel = this.getResourceModel(resource, e[i].result);
+            this.parent.resourceCollection.push(resourceObj);
         }
-        this.parent.setProperties({ resources: this.parent.resources }, true);
+        this.refreshLayout(isSetModel);
+    }
+
+    private getResourceModel(resource: ResourcesModel, resourceData?: Object[]): ResourcesModel {
+        let resourceObj: ResourcesModel = {
+            field: resource.field,
+            title: resource.title,
+            name: resource.name,
+            allowMultiple: resource.allowMultiple,
+            dataSource: resourceData || resource.dataSource,
+            idField: resource.idField,
+            textField: resource.textField,
+            groupIDField: resource.groupIDField,
+            colorField: resource.colorField,
+            startHourField: resource.startHourField,
+            endHourField: resource.endHourField,
+            workDaysField: resource.workDaysField,
+            expandedField: resource.expandedField,
+            cssClassField: resource.cssClassField
+        };
+        return resourceObj;
+    }
+
+    private refreshLayout(isSetModel: boolean): void {
         this.parent.uiStateValues.groupIndex = 0;
         this.parent.renderElements(isSetModel);
         if (isSetModel) {
@@ -510,30 +533,15 @@ export class ResourceBase {
             for (let resource of this.parent.activeViewOptions.group.resources) {
                 let index: number = util.findIndexInData(<{ [key: string]: Object }[]>this.parent.resources, 'name', resource);
                 if (index >= 0) {
-                    requiredResources.push(this.parent.resources[index]);
+                    requiredResources.push(this.parent.resourceCollection[index]);
                 }
             }
-        } else if (this.parent.resources.length > 0) {
-            requiredResources = this.parent.resources;
+        } else if (this.parent.resourceCollection.length > 0) {
+            requiredResources = this.parent.resourceCollection;
         }
         let index: number = 0;
         for (let resource of requiredResources) {
-            let resources: ResourcesModel = {
-                field: resource.field,
-                title: resource.title,
-                name: resource.name,
-                allowMultiple: resource.allowMultiple,
-                dataSource: resource.dataSource,
-                idField: resource.idField,
-                textField: resource.textField,
-                groupIDField: resource.groupIDField,
-                colorField: resource.colorField,
-                startHourField: resource.startHourField,
-                endHourField: resource.endHourField,
-                workDaysField: resource.workDaysField,
-                expandedField: resource.expandedField,
-                cssClassField: resource.cssClassField
-            };
+            let resources: ResourcesModel = this.getResourceModel(resource);
             if (resource.name === this.parent.eventSettings.resourceColorField) {
                 this.colorIndex = index;
             }
@@ -714,7 +722,7 @@ export class ResourceBase {
             for (let index: number = 0; index < this.resourceCollection.length; index++) {
                 setValues(index, this.resourceCollection[index].field, groupOrder[index]);
             }
-        } else if (this.parent.resources.length > 0) {
+        } else if (this.parent.resourceCollection.length > 0) {
             for (let index: number = 0; index < this.resourceCollection.length; index++) {
                 let data: { [key: string]: Object } = (this.resourceCollection[index] as
                     { [key: string]: Object[] }).dataSource[0] as { [key: string]: Object };
@@ -781,30 +789,28 @@ export class ResourceBase {
         }
     }
 
-    public addResource(resources: Object, name: string, index: number): void {
-        for (let i: number = 0, length: number = this.parent.resources.length; i < length; i++) {
-            let resource: ResourcesModel = this.parent.resources[i];
+    public addResource(resources: Object | Object[], name: string, index: number): void {
+        let resourceCollection: Object[] = (resources instanceof Array) ? resources : [resources];
+        for (let resource of this.parent.resourceCollection) {
             if (resource.name === name) {
-                (<Object[]>resource.dataSource).splice(index, 0, resources);
+                resourceCollection.forEach((addObj: Object, i: number) =>
+                    new DataManager({ json: resource.dataSource as Object[] }).insert(addObj, null, null, index + i));
                 break;
             }
         }
-        this.bindResourcesData(true);
+        this.refreshLayout(true);
     }
 
-    public removeResource(resourceId: string | number, name: string): void {
-        for (let i: number = 0, length: number = this.parent.resources.length; i < length; i++) {
-            let resource: ResourcesModel = this.parent.resources[i];
+    public removeResource(resourceId: string | string[] | number | number[], name: string): void {
+        let resourceCollection: (string | number)[] = (resourceId instanceof Array) ? resourceId : [resourceId];
+        for (let resource of this.parent.resourceCollection) {
             if (resource.name === name) {
-                (<Object[]>resource.dataSource).forEach((data: { [key: string]: Object }, index: number) => {
-                    if (data[resource.idField] === resourceId) {
-                        (<Object[]>this.parent.resources[i].dataSource).splice(index, 1);
-                    }
-                });
+                resourceCollection.forEach((removeObj: string | number) =>
+                    new DataManager({ json: resource.dataSource as Object[] }).remove(resource.idField, removeObj));
                 break;
             }
         }
-        this.bindResourcesData(true);
+        this.refreshLayout(true);
     }
 
     public destroy(): void {

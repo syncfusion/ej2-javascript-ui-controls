@@ -106,14 +106,13 @@ describe('Grid base module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = actionComplete = null;
         });
 
     });
 
     describe('Allow resizing test cases', () => {
         let gridObj: Grid;
-        let colHeader: Element;
-        let content: Element;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -145,13 +144,12 @@ describe('Grid base module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
     describe('Allow resizing - columns', () => {
         let gridObj: Grid;
-        let colHeader: Element;
-        let content: Element;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -176,6 +174,7 @@ describe('Grid base module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
@@ -278,13 +277,12 @@ describe('Grid base module', () => {
         afterAll(() => {
             gridObj.getPersistData();
             destroy(gridObj);
+            gridObj = actionComplete = null;
         });
     });
 
     describe('Grid lines testing', () => {
         let gridObj: Grid;
-        let header: Element;
-        let content: Element;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -332,14 +330,13 @@ describe('Grid base module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
 
     describe('Grid lines testing', () => {
         let gridObj: Grid;
-        let colHeader: Element;
-        let content: Element;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -373,6 +370,7 @@ describe('Grid base module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
@@ -424,12 +422,12 @@ describe('Grid base module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
     describe('media columns testing', () => {
         let gridObj: Grid;
-        let targetEle: {};
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -460,6 +458,7 @@ describe('Grid base module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
@@ -531,6 +530,7 @@ describe('Grid base module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
@@ -596,6 +596,7 @@ describe('Grid base module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
 
     })
@@ -655,6 +656,8 @@ describe('Grid base module', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
+            document.getElementById('template').remove();
         });
     });
     // describe('media columns testing', () => {

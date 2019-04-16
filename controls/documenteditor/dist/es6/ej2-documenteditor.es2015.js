@@ -3017,7 +3017,7 @@ class WParagraphFormat {
                 baseStyle = baseStyle.basedOn;
             }
             for (let key of tabStops.keys) {
-                if (!this.hasTabStop(key)) {
+                if (!this.hasTabStop(parseFloat(key.toFixed(4)))) {
                     inTabs.push(tabStops.get(key));
                 }
             }
@@ -3028,7 +3028,8 @@ class WParagraphFormat {
     }
     hasTabStop(position) {
         for (let i = 0; i < this.tabs.length; i++) {
-            if (this.tabs[i].position === position) {
+            if (parseFloat(this.tabs[i].position.toFixed(4)) === position ||
+                parseFloat(this.tabs[i].deletePosition.toFixed(4)) === position) {
                 return true;
             }
         }
@@ -10774,9 +10775,9 @@ class ContextMenu$1 {
     }
     /**
      * To add and customize custom context menu
-     * @param {MenuItemModel[]} items -To add custom menu item
-     * @param {boolean} isEnable? -To hide existing menu item and show custom menu item alone
-     * @param {boolean} isBottom? -To show the custom menu item in bottom of the existing item
+     * @param {MenuItemModel[]} items - To add custom menu item
+     * @param {boolean} isEnable - To hide existing menu item and show custom menu item alone
+     * @param {boolean} isBottom - To show the custom menu item in bottom of the existing item
      */
     addCustomMenu(items, isEnable, isBottom) {
         let menuItems = JSON.parse(JSON.stringify(items));
@@ -10791,7 +10792,7 @@ class ContextMenu$1 {
     }
     /**
      * Context Menu Items.
-     * @param {MenuItemModel[]} menuItems -To add MenuItem to context menu
+     * @param {MenuItemModel[]} menuItems - To add MenuItem to context menu
      * @private
      */
     addMenuItems(menuItems) {
@@ -11618,7 +11619,7 @@ class Layout {
                 this.cutClientWidth(element.previousElement);
             }
         }
-        if (width < this.viewer.clientActiveArea.width || !this.viewer.textWrap) {
+        if (parseFloat(width.toFixed(4)) <= parseFloat(this.viewer.clientActiveArea.width.toFixed(4)) || !this.viewer.textWrap) {
             //Fits the text in current line.
             this.addElementToLine(paragraph, element);
             if (isNullOrUndefined(element.nextElement) && this.viewer.clientActiveArea.width > 0 && !element.line.isLastLine()) {
@@ -13017,7 +13018,9 @@ class Layout {
                 elementBox.width = 0;
             }
             else {
-                this.viewer.textHelper.getTextSize(elementBox, elementBox.characterFormat);
+                if (elementBox instanceof TextElementBox) {
+                    this.viewer.textHelper.getTextSize(elementBox, elementBox.characterFormat);
+                }
             }
             if (elementBox instanceof TextElementBox && elementBox.text === '\t') {
                 return width;
@@ -13338,7 +13341,7 @@ class Layout {
      * @param row
      */
     // tslint:disable-next-line:max-line-length
-    addWidgetToTable(viewer, tableCollection, rowCollection, row, endRowWidget) {
+    addWidgetToTable(viewer, tableCollection, rowCollection, row, endRowWidget, isInitialLayout) {
         //Adds table row widget to owner table widget.
         let tableWidget = tableCollection[0];
         let index = tableWidget.childWidgets.length;
@@ -13391,7 +13394,7 @@ class Layout {
             !(tableWidget.containerWidget instanceof HeaderFooterWidget)) {
             tableWidget.containerWidget.height += row.height;
         }
-        this.updateHeightForRowWidget(viewer, false, tableCollection, rowCollection, row, false, endRowWidget);
+        this.updateHeightForRowWidget(viewer, false, tableCollection, rowCollection, row, false, endRowWidget, isInitialLayout);
         viewer.cutFromTop(row.y + row.height);
     }
     /**
@@ -13608,18 +13611,21 @@ class Layout {
         if (row.ownerTable.continueHeader && !isHeader) {
             row.ownerTable.continueHeader = false;
         }
+        let isInitialLayout = row.ownerTable.isInsideTable;
         let isLastRow = false;
         cellSpacing = (!isNullOrUndefined(row.ownerTable) && !isNullOrUndefined(row.ownerTable.tableFormat)) ? HelperMethods.convertPointToPixel(row.ownerTable.tableFormat.cellSpacing) : 0;
         while (count < rowWidgets.length) {
             count = rowWidgets.length;
             if (row.ownerTable.isInsideTable || (viewer.splittedCellWidgets.length === 0 && tableRowWidget.y + tableRowWidget.height + cellSpacing <= viewer.clientArea.bottom)) {
-                this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget);
+                this.addWidgetToTable(viewer, tableWidgets, rowWidgets, tableRowWidget, undefined, isInitialLayout);
                 if (viewer.splittedCellWidgets.length > 0 && isNullOrUndefined(rowWidgets[rowWidgets.length - 1].nextRow)) {
                     count--;
                     isLastRow = true;
                 }
+                isInitialLayout = false;
             }
             else {
+                isInitialLayout = false;
                 //Split widget for next page
                 if (viewer.splittedCellWidgets.length > 0 && tableRowWidget.y + tableRowWidget.height <= viewer.clientArea.bottom) {
                     let isRowSpanEnd = this.isRowSpanEnd(row, viewer);
@@ -13906,7 +13912,7 @@ class Layout {
      * @param rowWidget
      */
     // tslint:disable-next-line:max-line-length
-    updateHeightForRowWidget(viewer, isUpdateVerticalPosition, tableCollection, rowCollection, rowWidget, isLayouted, endRowWidget) {
+    updateHeightForRowWidget(viewer, isUpdateVerticalPosition, tableCollection, rowCollection, rowWidget, isLayouted, endRowWidget, isInitialLayout) {
         for (let i = 0; i < rowWidget.childWidgets.length; i++) {
             let cellspacing = 0;
             let cellWidget = undefined;
@@ -13921,8 +13927,8 @@ class Layout {
                 let currentRowWidgetIndex = rowWidget.containerWidget.childWidgets.indexOf(rowWidget);
                 // tslint:disable-next-line:max-line-length
                 let rowSpanWidgetEndIndex = currentRowWidgetIndex + rowSpan - 1 - (rowWidget.index - cellWidget.rowIndex);
-                if (viewer.clientArea.bottom < cellWidget.y + cellWidget.height + cellWidget.margin.bottom
-                    || rowSpanWidgetEndIndex >= currentRowWidgetIndex + 1) {
+                if (!isInitialLayout && (viewer.clientArea.bottom < cellWidget.y + cellWidget.height + cellWidget.margin.bottom
+                    || rowSpanWidgetEndIndex >= currentRowWidgetIndex + 1)) {
                     this.splitSpannedCellWidget(cellWidget, tableCollection, rowCollection, viewer);
                 }
                 let spanEndRowWidget = rowWidget;
@@ -16267,7 +16273,8 @@ class Renderer {
     getHeaderFooterType(page, isHeader) {
         let type;
         type = isHeader ? 'Header' : 'Footer';
-        if (page.bodyWidgets[0].sectionFormat.differentFirstPage && this.viewer.pages.indexOf(page) === 0) {
+        if (page.bodyWidgets[0].sectionFormat.differentFirstPage &&
+            (isNullOrUndefined(page.previousPage) || page.sectionIndex !== page.previousPage.sectionIndex)) {
             type = isHeader ? 'First Page Header' : 'First Page Footer';
         }
         else if (page.bodyWidgets[0].sectionFormat.differentOddAndEvenPages) {
@@ -16902,7 +16909,7 @@ class Renderer {
             isLastCell = tableCell.cellIndex === 0;
         }
         if (tableCell.ownerTable.tableFormat.cellSpacing > 0 || isLastCell) {
-            border = isBidiTable ? TableCellWidget.getCellRightBorder(tableCell) : TableCellWidget.getCellLeftBorder(tableCell);
+            border = isBidiTable ? TableCellWidget.getCellLeftBorder(tableCell) : TableCellWidget.getCellRightBorder(tableCell);
             // if (!isNullOrUndefined(border )) { //Renders the cell right border.           
             lineWidth = HelperMethods.convertPointToPixel(border.getLineWidth());
             // tslint:disable-next-line:max-line-length
@@ -17618,7 +17625,8 @@ class LayoutViewer {
                 }
                 this.isComposingIME = false;
                 this.lastComposedText = '';
-                this.iframe.setAttribute('style', 'pointer-events:none;position:absolute;top:-10000px');
+                // tslint:disable-next-line:max-line-length
+                this.iframe.setAttribute('style', 'pointer-events:none;position:absolute;left:' + this.containerLeft + 'px;top:' + this.containerTop + 'px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden');
                 this.editableDiv.innerHTML = '';
                 if (this.owner.editorHistory) {
                     this.owner.editorHistory.updateComplexHistory();
@@ -17716,6 +17724,10 @@ class LayoutViewer {
          */
         this.scrollHandler = () => {
             this.clearContent();
+            if (!Browser.isDevice && !this.isComposingIME) {
+                this.iframe.style.top = this.containerTop + 'px';
+                this.iframe.style.left = this.containerLeft + 'px';
+            }
             this.updateScrollBars();
             let vtHeight = this.containerTop + this.visibleBounds.height;
             if (vtHeight > this.pageContainer.offsetHeight) {
@@ -18583,7 +18595,8 @@ class LayoutViewer {
         this.iframe = createElement('iframe', {
             attrs: {
                 'scrolling': 'no', 'src': 'javascript:false',
-                'style': 'pointer-events:none;position:absolute;top:-10000px'
+                // tslint:disable-next-line:max-line-length
+                'style': 'pointer-events:none;position:absolute;left:0px;top:0px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden'
             },
             className: 'e-de-text-target'
         });
@@ -19934,8 +19947,9 @@ class PageLayoutViewer extends LayoutViewer {
     getHeaderFooterType(section, isHeader) {
         let type;
         type = isHeader ? 'OddHeader' : 'OddFooter';
+        let page = section.page;
         // tslint:disable-next-line:max-line-length
-        if (section.sectionFormat.differentFirstPage && (this.pages.length === 1 || this.pages[this.pages.length - 1].bodyWidgets[0].index !== section.index)) {
+        if (section.sectionFormat.differentFirstPage && (isNullOrUndefined(page.previousPage) || page.sectionIndex !== page.previousPage.sectionIndex)) {
             type = isHeader ? 'FirstPageHeader' : 'FirstPageFooter';
         }
         else if (section.sectionFormat.differentOddAndEvenPages && this.pages.length % 2 === 0) {
@@ -34888,7 +34902,10 @@ class OptionsPane {
         });
         this.optionsPane.appendChild(this.searchDiv);
         // tslint:disable-next-line:max-line-length
-        this.closeButton = createElement('button', { className: 'e-de-op-close-button e-de-op-icon-btn e-btn e-flat e-icon-btn', id: 'close' });
+        this.closeButton = createElement('button', {
+            className: 'e-de-op-close-button e-de-op-icon-btn e-btn e-flat e-icon-btn', id: 'close',
+            attrs: { type: 'button' }
+        });
         this.optionsPane.appendChild(this.closeButton);
         let closeSpan = createElement('span', { className: 'e-de-op-close-icon e-btn-icon e-icons' });
         this.closeButton.appendChild(closeSpan);
@@ -35020,12 +35037,14 @@ class OptionsPane {
         this.replaceButton = createElement('button', {
             className: 'e-control e-btn e-flat e-replace',
             styles: replaceButtonMargin,
-            innerHTML: this.localeValue.getConstant(this.replaceButtonText)
+            innerHTML: this.localeValue.getConstant(this.replaceButtonText),
+            attrs: { type: 'button' }
         });
         replaceButtonDiv.appendChild(this.replaceButton);
         this.replaceAllButton = createElement('button', {
             className: 'e-control e-btn e-flat e-replaceall',
-            innerHTML: this.localeValue.getConstant(this.replaceAllButtonText)
+            innerHTML: this.localeValue.getConstant(this.replaceAllButtonText),
+            attrs: { type: 'button' }
         });
         replaceButtonDiv.appendChild(this.replaceAllButton);
         this.matchDiv = createElement('div', { styles: 'display:none;padding-top:10px;' });
@@ -38805,7 +38824,7 @@ class Editor {
         let startLine = this.selection.getFirstParagraphInFirstCell(table).childWidgets[0];
         startPos.setPosition(startLine, true);
         this.selection.end.setPositionInternal(startPos);
-        let lastParagraph = this.selection.getLastParagraphInLastCell(table);
+        let lastParagraph = this.selection.getLastParagraphInLastCell(table.getSplitWidgets().pop());
         let endOffset = lastParagraph.getLength() + 1;
         if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
             // tslint:disable-next-line:max-line-length
@@ -44707,7 +44726,9 @@ class Editor {
             let page = this.viewer.pages[j];
             if (page.bodyWidgets[0].index === sectionIndex) {
                 currentBlock = page.bodyWidgets[0].firstChild;
-                break;
+                if (!isNullOrUndefined(currentBlock)) {
+                    break;
+                }
             }
         }
         let isListUpdated = false;
@@ -45280,7 +45301,8 @@ class Editor {
         for (let i = 0; i < this.viewer.pages.length; i++) {
             let bodyWidget = this.viewer.pages[i].bodyWidgets[0];
             if (bodyWidget.index === sectionIndex) {
-                if (bodyWidget.firstChild.index <= blockIndex && bodyWidget.lastChild.index >= blockIndex) {
+                if (bodyWidget.childWidgets.length > 0 && bodyWidget.firstChild.index <= blockIndex &&
+                    bodyWidget.lastChild.index >= blockIndex) {
                     return bodyWidget;
                 }
             }
@@ -53149,6 +53171,7 @@ class SfdtExport {
         this.endLine = undefined;
         this.lists = undefined;
         this.document = undefined;
+        this.endCell = undefined;
     }
     /**
      * Serialize the data as Syncfusion document text.
@@ -53212,24 +53235,33 @@ class SfdtExport {
                     this.endCell = endCell;
                 }
             }
+            let nextBlock;
             if (startCell === endCell || isNullOrUndefined(startCell)) {
                 let paragraph = this.createParagraph(line.paragraph);
                 section.blocks.push(paragraph);
-                if (!this.writeParagraph(line.paragraph, paragraph, section.blocks, line.indexInOwner, startOffset)) {
-                    // Todo:continue in next section
+                nextBlock = this.writeParagraph(line.paragraph, paragraph, section.blocks, line.indexInOwner, startOffset);
+                while (nextBlock) {
+                    nextBlock = this.writeBlock(nextBlock, 0, section.blocks);
                 }
+                // Todo:continue in next section
             }
             else {
                 let table = this.createTable(startCell.ownerTable);
                 section.blocks.push(table);
-                this.writeTable(startCell.ownerTable, table, startCell.ownerRow.indexInOwner, section.blocks);
+                nextBlock = this.writeTable(startCell.ownerTable, table, startCell.ownerRow.indexInOwner, section.blocks);
+                while (nextBlock) {
+                    nextBlock = this.writeBlock(nextBlock, 0, section.blocks);
+                }
             }
         }
         else {
             if (this.viewer.pages.length > 0) {
                 let page = this.viewer.pages[0];
                 if (page.bodyWidgets.length > 0) {
-                    this.writeBodyWidget(page.bodyWidgets[0], 0);
+                    let nextBlock = page.bodyWidgets[0];
+                    do {
+                        nextBlock = this.writeBodyWidget(nextBlock, 0);
+                    } while (!isNullOrUndefined(nextBlock));
                 }
             }
         }
@@ -53241,20 +53273,21 @@ class SfdtExport {
     }
     writeBodyWidget(bodyWidget, index) {
         if (!(bodyWidget instanceof BodyWidget)) {
-            return true;
+            return undefined;
         }
         let section = this.createSection(bodyWidget);
         this.document.sections.push(section);
         this.writeHeaderFooters(this.viewer.headersFooters[bodyWidget.index], section);
-        if (this.writeBlock(bodyWidget.childWidgets[index], 0, section.blocks)) {
-            return true;
-        }
+        let firstBlock = bodyWidget.childWidgets[index];
+        do {
+            firstBlock = this.writeBlock(firstBlock, 0, section.blocks);
+        } while (firstBlock);
         let next = bodyWidget;
         do {
             bodyWidget = next;
             next = next.nextRenderedWidget;
         } while (next instanceof BodyWidget && next.index === bodyWidget.index);
-        return this.writeBodyWidget(next, index);
+        return next;
     }
     writeHeaderFooters(hfs, section) {
         if (isNullOrUndefined(hfs)) {
@@ -53274,7 +53307,10 @@ class SfdtExport {
         let headerFooter = {};
         if (widget && widget.childWidgets && widget.childWidgets.length > 0) {
             headerFooter.blocks = [];
-            this.writeBlock(widget.firstChild, 0, headerFooter.blocks);
+            let firstBlock = widget.firstChild;
+            do {
+                firstBlock = this.writeBlock(firstBlock, 0, headerFooter.blocks);
+            } while (firstBlock);
         }
         return headerFooter;
     }
@@ -53298,31 +53334,19 @@ class SfdtExport {
     }
     writeBlock(widget, index, blocks) {
         if (!(widget instanceof BlockWidget)) {
-            return true;
+            return undefined;
         }
         if (widget instanceof ParagraphWidget) {
             let paragraph = this.createParagraph(widget);
             blocks.push(paragraph);
-            if (this.writeParagraph(widget, paragraph, blocks)) {
-                return true;
-            }
+            return this.writeParagraph(widget, paragraph, blocks);
         }
         else {
             let tableWidget = widget;
             let table = this.createTable(tableWidget);
             blocks.push(table);
-            if (this.writeTable(tableWidget, table, 0, blocks)) {
-                return true;
-            }
+            return this.writeTable(tableWidget, table, 0, blocks);
         }
-        return false;
-    }
-    writeNextBlock(widget, blocks) {
-        let next = widget.nextRenderedWidget;
-        if (next instanceof BlockWidget && next.containerWidget.index === widget.containerWidget.index) {
-            return this.writeBlock(widget.nextRenderedWidget, 0, blocks);
-        }
-        return false;
     }
     writeParagraph(paragraphWidget, paragraph, blocks, lineIndex, start) {
         if (isNullOrUndefined(lineIndex)) {
@@ -53334,14 +53358,15 @@ class SfdtExport {
         let next = paragraphWidget;
         while (next instanceof ParagraphWidget) {
             if (this.writeLines(next, lineIndex, start, paragraph.inlines)) {
-                return true;
+                return undefined;
             }
             lineIndex = 0;
             start = 0;
             paragraphWidget = next;
             next = paragraphWidget.nextSplitWidget;
         }
-        return this.writeNextBlock(paragraphWidget, blocks);
+        next = paragraphWidget.nextRenderedWidget;
+        return (next instanceof BlockWidget && paragraphWidget.containerWidget.index === next.containerWidget.index) ? next : undefined;
     }
     writeInlines(paragraph, line, inlines) {
         let lineWidget = line.clone();
@@ -53504,7 +53529,7 @@ class SfdtExport {
         let widget = tableWidget.childWidgets[index];
         if (widget instanceof TableRowWidget) {
             if (this.writeRow(widget, table.rows)) {
-                return true;
+                return undefined;
             }
         }
         let next = tableWidget;
@@ -53512,7 +53537,8 @@ class SfdtExport {
             tableWidget = next;
             next = tableWidget.nextSplitWidget;
         } while (next instanceof BlockWidget);
-        return this.writeNextBlock(tableWidget, blocks);
+        next = tableWidget.nextRenderedWidget;
+        return (next instanceof BlockWidget && next.containerWidget.index === tableWidget.containerWidget.index) ? next : undefined;
     }
     writeRow(rowWidget, rows) {
         if (!(rowWidget instanceof TableRowWidget)) {
@@ -53542,9 +53568,10 @@ class SfdtExport {
     writeCell(cellWidget, cells) {
         let cell = this.createCell(cellWidget);
         cells.push(cell);
-        if (this.writeBlock(cellWidget.firstChild, 0, cell.blocks)) {
-            return true;
-        }
+        let firstBlock = cellWidget.firstChild;
+        do {
+            firstBlock = this.writeBlock(firstBlock, 0, cell.blocks);
+        } while (firstBlock);
         return this.endCell instanceof TableCellWidget ? this.endCell.cellFormat === cellWidget.cellFormat : false;
     }
     createTable(tableWidget) {
@@ -54258,7 +54285,10 @@ class BookmarkDialog {
         commonDiv.appendChild(buttonDiv);
         let addbuttonDiv = createElement('div', { className: 'e-bookmark-addbutton' });
         buttonDiv.appendChild(addbuttonDiv);
-        let addButtonElement = createElement('button', { innerHTML: localValue.getConstant('Add'), id: 'add' });
+        let addButtonElement = createElement('button', {
+            innerHTML: localValue.getConstant('Add'), id: 'add',
+            attrs: { type: 'button' }
+        });
         addbuttonDiv.appendChild(addButtonElement);
         this.addButton = new Button({ cssClass: 'e-button-custom' });
         this.addButton.disabled = true;
@@ -54268,7 +54298,10 @@ class BookmarkDialog {
         addButtonElement.addEventListener('click', this.addBookmark);
         let deleteButtonDiv = createElement('div', { className: 'e-bookmark-deletebutton' });
         buttonDiv.appendChild(deleteButtonDiv);
-        let deleteButtonElement = createElement('button', { innerHTML: localValue.getConstant('Delete'), id: 'delete' });
+        let deleteButtonElement = createElement('button', {
+            innerHTML: localValue.getConstant('Delete'), id: 'delete',
+            attrs: { type: 'button' }
+        });
         deleteButtonDiv.appendChild(deleteButtonElement);
         this.deleteButton = new Button({ cssClass: 'e-button-custom' });
         this.deleteButton.disabled = hasNoBookmark;
@@ -54276,7 +54309,10 @@ class BookmarkDialog {
         deleteButtonElement.addEventListener('click', this.deleteBookmark);
         let gotoButtonDiv = createElement('div', { className: 'e-bookmark-gotobutton' });
         buttonDiv.appendChild(gotoButtonDiv);
-        let gotoButtonElement = createElement('button', { innerHTML: localValue.getConstant('Go To'), id: 'goto' });
+        let gotoButtonElement = createElement('button', {
+            innerHTML: localValue.getConstant('Go To'), id: 'goto',
+            attrs: { type: 'button' }
+        });
         gotoButtonDiv.appendChild(gotoButtonElement);
         this.gotoButton = new Button({ cssClass: 'e-button-custom' });
         this.gotoButton.disabled = hasNoBookmark;
@@ -54893,7 +54929,10 @@ class TableOfContentsDialog {
         this.outline.appendTo(outline);
         let resetButtonDiv = createElement('div', { className: 'e-de-toc-reset-button' });
         fieldsDiv.appendChild(resetButtonDiv);
-        let resetElement = createElement('button', { innerHTML: locale.getConstant('Reset'), id: 'reset' });
+        let resetElement = createElement('button', {
+            innerHTML: locale.getConstant('Reset'), id: 'reset',
+            attrs: { type: 'button' }
+        });
         resetButtonDiv.appendChild(resetElement);
         let resetButton = new Button({ cssClass: 'e-btn e-flat' });
         resetButton.appendTo(resetElement);
@@ -54921,7 +54960,10 @@ class TableOfContentsDialog {
         rightBottomGeneralDiv.appendChild(listViewDiv);
         let modifyButtonDiv = createElement('div', { className: 'e-de-toc-modify-button' });
         rightBottomGeneralDiv.appendChild(modifyButtonDiv);
-        let modifyElement = createElement('button', { innerHTML: locale.getConstant('Modify'), id: 'modify' });
+        let modifyElement = createElement('button', {
+            innerHTML: locale.getConstant('Modify'), id: 'modify',
+            attrs: { type: 'button' }
+        });
         modifyButtonDiv.appendChild(modifyElement);
         let modifyButton = new Button({ cssClass: 'e-btn e-flat' });
         modifyButton.appendTo(modifyElement);
@@ -56682,7 +56724,7 @@ class ListDialog {
         let numberStyleDiv = createElement('div', { innerHTML: divStyle + '<label id="' + containerId + '_numberFormatLabel" style="display:block;" class=e-de-list-ddl-header>' + locale.getConstant('Number format') + '</label><label id="' + containerId + '_numberStyleLabel" style="display:block;" class=e-de-list-ddl-subheader>' + locale.getConstant('Number style for this level') + '</label><select style="height:20px;width:100%" id="' + containerId + '_numberStyle"><option>' + locale.getConstant('Arabic') + '</option><option>' + locale.getConstant('UpRoman') + '</option><option>' + locale.getConstant('LowRoman') + '</option><option>' + locale.getConstant('UpLetter') + '</option><option>' + locale.getConstant('LowLetter') + '</option><option>' + locale.getConstant('Number') + '</option><option>' + locale.getConstant('Leading zero') + '</option><option>' + locale.getConstant('Bullet') + '</option><option>' + locale.getConstant('Ordinal') + '</option><option>' + locale.getConstant('Ordinal Text') + '</option><option>' + locale.getConstant('Special') + '</option><option>' + locale.getConstant('For East') + '</option></select><label id="' + containerId + '_startAtLabel" style="display:block;" class=e-de-list-ddl-subheaderbottom>' + locale.getConstant('Start at') + '</label><input type="text" id="' + containerId + '_startAt">' });
         div.appendChild(numberStyleDiv);
         // tslint:disable-next-line:max-line-length
-        this.numberFormatDiv = createElement('div', { className: 'e-de-list-dlg-subdiv', innerHTML: '<div><div><label id="' + containerId + '_formatLabel" style="display:inline-block;width:86%" class=e-de-list-ddl-subheader>' + locale.getConstant('Enter formatting for number') + '</label><button id="' + containerId + '_list_info" class="e-control e-btn e-primary e-de-list-format-info">i</button></div><input style=width:180px; type="text" id="' + containerId + '_numberFormat" class=e-input></div><label id="' + containerId + '_restartLabel" style="display:block;" class=e-de-list-ddl-subheaderbottom>' + locale.getConstant('Restart list after') + '</label><select style="height:20px;width:100%" id="' + containerId + '_restartBy"><option>' + locale.getConstant('No Restart') + '</option></select></div>' });
+        this.numberFormatDiv = createElement('div', { className: 'e-de-list-dlg-subdiv', innerHTML: '<div><div><label id="' + containerId + '_formatLabel" style="display:inline-block;width:86%" class=e-de-list-ddl-subheader>' + locale.getConstant('Enter formatting for number') + '</label><button type="button" id="' + containerId + '_list_info" class="e-control e-btn e-primary e-de-list-format-info">i</button></div><input style=width:180px; type="text" id="' + containerId + '_numberFormat" class=e-input></div><label id="' + containerId + '_restartLabel" style="display:block;" class=e-de-list-ddl-subheaderbottom>' + locale.getConstant('Restart list after') + '</label><select style="height:20px;width:100%" id="' + containerId + '_restartBy"><option>' + locale.getConstant('No Restart') + '</option></select></div>' });
         div.appendChild(this.numberFormatDiv);
         this.target.appendChild(div);
         let indentsDivLabelStyle;
@@ -57326,7 +57368,10 @@ class StyleDialog {
         this.target.appendChild(container);
     }
     createFormatDropdown(parentDiv, localValue, isRtl) {
-        let formatBtn = createElement('button', { id: 'style_format_dropdown', innerHTML: localValue.getConstant('Format') });
+        let formatBtn = createElement('button', {
+            id: 'style_format_dropdown', innerHTML: localValue.getConstant('Format'),
+            attrs: { type: 'button' }
+        });
         formatBtn.style.height = '31px';
         parentDiv.appendChild(formatBtn);
         let items = [{ text: localValue.getConstant('Font') + '..', id: 'style_font' },
@@ -57450,7 +57495,7 @@ class StyleDialog {
         });
     }
     createButtonElement(parentDiv, iconCss, className, id) {
-        let buttonElement = createElement('button');
+        let buttonElement = createElement('button', { attrs: { type: 'button' } });
         if (!isNullOrUndefined(id)) {
             buttonElement.id = id;
         }
@@ -59306,11 +59351,12 @@ class TablePropertiesDialog {
         }
         this.bordersAndShadingButton = createElement('button', {
             innerHTML: localValue.getConstant('Borders and Shading'),
-            id: element.id + '_borders_and_shadings', className: 'e-control e-btn e-flat e-de-ok-button'
+            id: element.id + '_borders_and_shadings', className: 'e-control e-btn e-flat e-de-ok-button',
+            attrs: { type: 'button' }
         });
         this.tableOptionButton = createElement('button', {
             className: 'e-control e-btn e-flat', innerHTML: localValue.getConstant('Options'),
-            id: element.id + '_table_cellmargin'
+            id: element.id + '_table_cellmargin', attrs: { type: 'button' }
         });
         this.tableOptionButton.addEventListener('click', this.showTableOptionsDialog);
         this.bordersAndShadingButton.addEventListener('click', this.showBordersShadingsPropertiesDialog);
@@ -59800,7 +59846,7 @@ class TablePropertiesDialog {
         });
         this.cellOptionButton = createElement('button', {
             innerHTML: localValue.getConstant('Options'), id: element.id + '_table_cellmargin',
-            className: 'e-control e-btn e-flat',
+            className: 'e-control e-btn e-flat', attrs: { type: 'button' }
         });
         this.cellOptionButton.style.cssFloat = isRtl ? 'left' : 'right';
         divAlignment.appendChild(topAlignDiv);
@@ -61817,14 +61863,20 @@ class StylesDialog {
         commonDiv.appendChild(buttonDiv);
         let newButtonDiv = createElement('div', { className: 'e-styles-addbutton' });
         buttonDiv.appendChild(newButtonDiv);
-        let newButtonElement = createElement('button', { innerHTML: localValue.getConstant('New'), id: 'new' });
+        let newButtonElement = createElement('button', {
+            innerHTML: localValue.getConstant('New'), id: 'new',
+            attrs: { type: 'button' }
+        });
         newButtonDiv.appendChild(newButtonElement);
         let newbutton = new Button({ cssClass: 'e-button-custom' });
         newbutton.appendTo(newButtonElement);
         newButtonElement.addEventListener('click', this.addNewStyles);
         let modifybuttonDiv = createElement('div', { className: 'e-styles-addbutton' });
         buttonDiv.appendChild(modifybuttonDiv);
-        let modifyButtonElement = createElement('button', { innerHTML: localValue.getConstant('Modify'), id: 'modify' });
+        let modifyButtonElement = createElement('button', {
+            innerHTML: localValue.getConstant('Modify'), id: 'modify',
+            attrs: { type: 'button' }
+        });
         modifybuttonDiv.appendChild(modifyButtonElement);
         let addbutton = new Button({ cssClass: 'e-button-custom' });
         addbutton.appendTo(modifyButtonElement);
@@ -62008,7 +62060,7 @@ class Toolbar$1 {
         toolbarContainer.appendChild(toolbarWrapper);
         // Show hide pane button initialization 
         let propertiesPaneDiv = createElement('div', { className: 'e-de-ctnr-properties-pane-btn' });
-        let buttonElement = createElement('button');
+        let buttonElement = createElement('button', { attrs: { type: 'button' } });
         propertiesPaneDiv.appendChild(buttonElement);
         let cssClassName = 'e-tbar-btn e-tbtn-txt e-control e-btn e-de-showhide-btn';
         if (this.container.enableRtl) {
@@ -62412,7 +62464,7 @@ class Text {
         this.isRetrieving = false;
         this.appliedHighlightColor = 'rgb(255, 255, 0)';
         this.createHighlightColorSplitButton = (id, width, divElement, toolTipText) => {
-            let buttonElement = createElement('button', { id: id });
+            let buttonElement = createElement('button', { id: id, attrs: { type: 'button' } });
             // buttonElement.style.width = width + 'px';
             // buttonElement.style.padding = '1px';
             // buttonElement.style.height = 30 + 'px';
@@ -62797,7 +62849,7 @@ class Text {
     }
     // tslint:disable-next-line:max-line-length
     createButtonTemplate(id, iconcss, div, buttonClass, width, toolTipText) {
-        let button = createElement('Button', { id: id });
+        let button = createElement('Button', { id: id, attrs: { type: 'button' } });
         // button.style.width = width + 'px';
         // buttonElement.style.height = 32 + 'px';
         div.appendChild(button);
@@ -63382,14 +63434,14 @@ class Paragraph {
         if (isRtl) {
             classList(listDiv, ['e-de-ctnr-segment-rtl', 'e-de-ctnr-group-btn'], []);
         }
-        let lineHeight = createElement('button', { id: element + '_lineHeight' });
+        let lineHeight = createElement('button', { id: element + '_lineHeight', attrs: { type: 'button' } });
         listDiv.appendChild(lineHeight);
         this.lineSpacing = this.createLineSpacingDropdown(lineHeight);
         let listDropDown = this.createDivElement(element + '_listDropDiv', listDiv);
         listDropDown.className = 'de-split-button';
-        let bulletButton = createElement('button', { id: element + '_bullet' });
+        let bulletButton = createElement('button', { id: element + '_bullet', attrs: { type: 'button' } });
         listDropDown.appendChild(bulletButton);
-        let numberingList = createElement('button', { id: element + '_numberingList' });
+        let numberingList = createElement('button', { id: element + '_numberingList', attrs: { type: 'button' } });
         listDropDown.appendChild(numberingList);
         this.createBulletListDropButton('e-de-ctnr-bullets e-icons', bulletButton);
         this.createNumberListDropButton('e-de-ctnr-numbering e-icons', numberingList);
@@ -63411,7 +63463,7 @@ class Paragraph {
     }
     // tslint:disable-next-line:max-line-length
     createButtonTemplate(id, iconcss, div, buttonClass, width, toolTipText) {
-        let buttonElement = createElement('Button', { id: id });
+        let buttonElement = createElement('Button', { id: id, attrs: { type: 'button' } });
         // buttonElement.style.width = width + 'px';
         // buttonElement.style.height = 32 + 'px';
         div.appendChild(buttonElement);
@@ -64450,13 +64502,19 @@ class TocProperties {
             }
             let footerElement = createElement('div', { id: 'footerDiv', styles: footerElementFloat });
             container.appendChild(footerElement);
-            let updatebuttoncontentStyleElement = createElement('button', { id: 'footerupdatebuttonDiv' });
+            let updatebuttoncontentStyleElement = createElement('button', {
+                id: 'footerupdatebuttonDiv',
+                attrs: { type: 'button' }
+            });
             footerElement.appendChild(updatebuttoncontentStyleElement);
             this.updateBtn = new Button({
                 content: this.localObj.getConstant('Update'), cssClass: 'btn-update', isPrimary: true
             });
             this.updateBtn.appendTo(updatebuttoncontentStyleElement);
-            let cancelbuttoncontentStyleElement = createElement('button', { id: 'footercancelbuttonDiv' });
+            let cancelbuttoncontentStyleElement = createElement('button', {
+                id: 'footercancelbuttonDiv',
+                attrs: { type: 'button' }
+            });
             footerElement.appendChild(cancelbuttoncontentStyleElement);
             this.cancelBtn = new Button({
                 content: this.localObj.getConstant('Cancel'), cssClass: this.isRtl ? 'e-de-btn-cancel-rtl' : 'e-de-btn-cancel'
@@ -64845,7 +64903,7 @@ class TableProperties {
             styleTypeDiv.firstElementChild.lastElementChild.firstElementChild.firstElementChild.style.width = '100%';
             // tslint:disable-next-line:max-line-length
             classList(styleTypeDiv.lastElementChild.lastElementChild.lastElementChild.firstChild, ['e-de-ctnr-highlightcolor'], ['e-caret']);
-            let borderSizeButton = createElement('button', { id: this.elementId + '_tableBorderSize', className: 'e-de-border-size-button', styles: 'font-size:10px;padding:0px;' });
+            let borderSizeButton = createElement('button', { id: this.elementId + '_tableBorderSize', className: 'e-de-border-size-button', styles: 'font-size:10px;padding:0px;', attrs: { type: 'button' } });
             styleTypeDiv.appendChild(borderSizeButton);
             this.borderSize = this.createBorderSizeDropDown('e-de-ctnr-strokesize e-icons', borderSizeButton);
             parentDiv.appendChild(styleTypeDiv);
@@ -65042,7 +65100,7 @@ class TableProperties {
         };
         // tslint:disable-next-line:max-line-length
         this.createDropDownButton = (id, styles, parentDiv, iconCss, content, items, target) => {
-            let buttonElement = createElement('button', { id: id, styles: styles });
+            let buttonElement = createElement('button', { id: id, styles: styles, attrs: { type: 'button' } });
             parentDiv.appendChild(buttonElement);
             let splitButtonClass = 'e-de-prop-splitbutton';
             if (this.isRtl) {
@@ -65108,7 +65166,7 @@ class TableProperties {
     }
     // tslint:disable-next-line:max-line-length
     createButtonTemplate(id, iconcss, div, buttonClass, styles, toolTipText, content, iconPos) {
-        let buttonElement = createElement('Button', { id: id, styles: styles });
+        let buttonElement = createElement('Button', { id: id, styles: styles, attrs: { type: 'button' } });
         div.appendChild(buttonElement);
         let btn = new Button({
             cssClass: buttonClass, iconCss: iconcss, enableRtl: this.isRtl, iconPosition: (iconPos ? iconPos : 'Left'),
@@ -65200,7 +65258,7 @@ class StatusBar {
             div.appendChild(this.pageCount);
             this.updatePageCount();
             let zoomBtn = createElement('button', {
-                className: 'e-de-statusbar-zoom'
+                className: 'e-de-statusbar-zoom', attrs: { type: 'button' }
             });
             this.statusBarDiv.appendChild(zoomBtn);
             zoomBtn.setAttribute('title', 'Zoom level. Click or tap to open the Zoom options.');
@@ -65609,6 +65667,7 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
             viewChange: this.onViewChange.bind(this),
             locale: this.locale
         });
+        this.documentEditor.acceptTab = true;
         this.documentEditor.enableLocalPaste = this.enableLocalPaste;
         this.documentEditor.enableAllModules();
         this.documentEditor.pageOutline = '#E0E0E0';

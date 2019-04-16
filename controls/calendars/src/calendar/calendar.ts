@@ -264,6 +264,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * @private
      */
     protected render(): void {
+        this.rangeValidation(this.min, this.max);
         this.calendarEleCopy = <HTMLElement>this.element.cloneNode(true);
         if (this.calendarMode === 'Islamic') {
             if (+(this.min.setSeconds(0)) === +new Date(1900, 0, 1, 0, 0, 0)) {
@@ -306,6 +307,15 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         this.createHeader();
         this.createContent();
         this.wireEvents();
+    }
+
+    protected rangeValidation(min: Date, max: Date): void {
+        if (isNullOrUndefined(min)) {
+            this.setProperties({ min: new Date(1900, 0, 1) }, true);
+        }
+        if (isNullOrUndefined(max)) {
+            this.setProperties({ max: new Date(2099, 11, 31) }, true);
+        }
     }
 
     protected validateDate(value?: Date): void {
@@ -1209,6 +1219,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                     break;
                 case 'min':
                 case 'max':
+                    this.rangeValidation(this.min, this.max);
                     prop === 'min' ? this.setProperties({ min: this.checkDateValue(new Date(this.checkValue(newProp.min))) }, true) :
                         this.setProperties({ max: this.checkDateValue(new Date(this.checkValue(newProp.max))) }, true);
                     this.setProperties({ start: this.currentView() }, true);
@@ -1224,7 +1235,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                         this.todayElement = this.footer = null;
                         this.createContentFooter();
                     } else {
-                        if (this.todayElement.classList.contains('e-disabled') && (this.footer) && (this.todayElement)) {
+                        if ((this.footer) && (this.todayElement) && this.todayElement.classList.contains('e-disabled')) {
                             removeClass([this.todayElement], DISABLED);
                             detach(this.todayElement);
                             detach(this.footer);

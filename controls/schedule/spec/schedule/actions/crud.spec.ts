@@ -1,7 +1,7 @@
 import { createElement, remove, EmitType, extend, closest } from '@syncfusion/ej2-base';
 import { Schedule, Day, Week, WorkWeek, Month, Agenda, ReturnType, ActionEventArgs, ScheduleModel } from '../../../src/schedule/index';
 import { defaultData, stringData, cloneDataSource } from '../base/datasource.spec';
-import { createSchedule, destroy } from '../util.spec';
+import { createSchedule, destroy, disableScheduleAnimation } from '../util.spec';
 import * as util from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
@@ -847,6 +847,61 @@ describe('Schedule CRUD', () => {
             };
             schObj.deleteEvent(datas, 'DeleteSeries');
             schObj.dataBound = dataBound;
+        });
+    });
+
+    describe('EJ2-24382 - isSlotAvaliable method is not working properly, while using saveEvent public method', () => {
+        let schObj: Schedule;
+        let scheduleData: Object[] = [{
+            Id: 1,
+            Subject: 'Conference',
+            StartTime: new Date(2018, 6, 4, 10, 0),
+            EndTime: new Date(2018, 6, 4, 11, 30),
+            IsAllDay: false
+        }, {
+            Id: 2,
+            Subject: 'Meeting',
+            StartTime: new Date(2018, 6, 4, 12, 0),
+            EndTime: new Date(2018, 6, 4, 14, 30),
+            IsAllDay: false
+        }];
+        beforeAll((done: Function) => {
+            let scheduleOptions: ScheduleModel = {
+                width: '500px', height: '500px',
+                selectedDate: new Date(2018, 6, 1),
+                actionBegin: (args: ActionEventArgs) => {
+                    if (args.data) {
+                        let eventData: Object = args.data instanceof Array ? args.data[0] : args.data;
+                        args.cancel = !schObj.isSlotAvailable(eventData);
+                    }
+                }
+            };
+            schObj = util.createSchedule(scheduleOptions, scheduleData, done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Start time and End time value null or undefined testing', () => {
+            expect(schObj.isSlotAvailable(new Date(), null)).toEqual(true);
+            expect(schObj.isSlotAvailable(new Date(), new Date())).toEqual(true);
+        });
+
+        it('slot checking using public save event method', () => {
+            let appointment: HTMLElement = schObj.element.querySelector('[data-id="Appointment_2"]') as HTMLElement;
+            expect(appointment.querySelector('.e-subject').textContent).toEqual('Meeting');
+            schObj.dataBound = () => {
+                let appointment: HTMLElement = schObj.element.querySelector('[data-id="Appointment_2"]') as HTMLElement;
+                expect(appointment.querySelector('.e-subject').textContent).toEqual('Meeting - Edited');
+            };
+            let eventData: { [key: string]: Object } = {
+                Id: 2,
+                Subject: 'Meeting - Edited',
+                StartTime: new Date(2018, 6, 4, 12),
+                EndTime: new Date(2018, 6, 4, 14, 30),
+                IsAllDay: false
+            };
+            schObj.saveEvent(eventData);
         });
     });
 

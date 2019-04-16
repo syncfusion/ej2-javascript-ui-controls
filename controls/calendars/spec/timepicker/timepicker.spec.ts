@@ -1271,6 +1271,39 @@ describe('TimePicker', () => {
             (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-time-icon e-icons')[0]).dispatchEvent(clickEvent);
             expect(document.querySelector('.e-timepicker.e-popup').classList.contains('e-popup')).toBe(true);
         });
+        it('allowedit property with e-non-edit calss ', () => {
+            timeObj = new TimePicker({value: new Date('3/3/2017 10:00 AM')});
+            timeObj.appendTo('#timepicker6');
+            expect(timeObj.element.getAttribute('readonly')).toBe(null);
+            expect(timeObj.inputWrapper.container.classList.contains('e-non-edit')).toBe(false);
+            timeObj.allowEdit = false;
+            timeObj.dataBind();
+            expect(timeObj.element.getAttribute('readonly')).toBe('');
+            expect(timeObj.inputWrapper.container.classList.contains('e-non-edit')).toBe(true);
+        });
+        it('allowedit property with e-non-edit calss with readonly ', () => {
+            timeObj = new TimePicker({value: new Date('3/3/2017 10:00 AM')});
+            timeObj.appendTo('#timepicker6');
+            expect(timeObj.element.getAttribute('readonly')).toBe(null);
+            expect(timeObj.inputWrapper.container.classList.contains('e-non-edit')).toBe(false);
+            timeObj.allowEdit = false;
+            timeObj.readonly = true;
+            timeObj.dataBind();
+            expect(timeObj.element.getAttribute('readonly')).toBe('');
+            expect(timeObj.inputWrapper.container.classList.contains('e-non-edit')).toBe(false);
+        });
+        it('allowedit property invalid value with e-non-edit calss  ', () => {
+            timeObj = new TimePicker({});
+            timeObj.appendTo('#timepicker6');
+            timeObj.value = 'invalid';
+            timeObj.dataBind();
+            expect(timeObj.element.getAttribute('readonly')).toBe(null);
+            expect(timeObj.inputWrapper.container.classList.contains('e-non-edit')).toBe(false);
+            timeObj.allowEdit = false;
+            timeObj.dataBind();
+            expect(timeObj.element.getAttribute('readonly')).toBe('');
+            expect(timeObj.inputWrapper.container.classList.contains('e-non-edit')).toBe(true);
+        });
         it('step attibute testing', () => {
             ele.setAttribute('step', '10');
             timeObj = new TimePicker({ value: new Date("12/12/2016 14:00") });

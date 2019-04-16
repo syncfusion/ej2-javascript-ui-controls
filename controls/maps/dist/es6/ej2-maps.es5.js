@@ -3998,7 +3998,7 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
         x -= position.x - (factorX / 2);
         y = (y - (position.y - (factorY / 2))) + padding;
         this.mapObject.scale = Math.pow(2, level - 1);
-        this.mapObject.translatePoint = new Point(((x - (0.5 * this.mapObject.scale)) / this.mapObject.scale), ((y - (0.5 * this.mapObject.scale)) / this.mapObject.scale));
+        this.mapObject.translatePoint = new Point((x - (0.01 * this.mapObject.scale)) / this.mapObject.scale, (y - (0.01 * this.mapObject.scale)) / this.mapObject.scale);
         return new Point(x, y);
     };
     return LayerPanel;
@@ -4408,19 +4408,6 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         }
         this.mapLayerPanel.measureLayerPanel();
         this.element.appendChild(this.svgObject);
-        if (!isNullOrUndefined(document.getElementById(this.element.id + '_tile_parent'))) {
-            var svg = this.svgObject.getBoundingClientRect();
-            var element = document.getElementById(this.element.id);
-            var tile = document.getElementById(this.element.id + '_tile_parent').getBoundingClientRect();
-            var bottom = svg.bottom - tile.bottom - element.offsetTop;
-            var left = parseFloat(document.getElementById(this.element.id + '_tile_parent').style.left) + element.offsetTop;
-            document.getElementById(this.element.id + '_tile_parent').style.left = (tile.left < this.element.getBoundingClientRect().left ?
-                left + this.margin.right + Math.abs(tile.left - this.element.getBoundingClientRect().left) : left) + 'px';
-            var top_1 = parseFloat(document.getElementById(this.element.id + '_tile_parent').style.top) + element.offsetTop;
-            var value = (bottom <= 10) ? top_1 : (top_1 * 2);
-            document.getElementById(this.element.id + '_tile_parent').style.top = value + 'px';
-        }
-        //this.setSecondaryElementPosition();
         this.arrangeTemplate();
         if (this.annotationsModule) {
             this.annotationsModule.renderAnnotationElements();
@@ -4547,10 +4534,10 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
             var elementRect = this.element.getBoundingClientRect();
             var parentRect = this.element.parentElement.getBoundingClientRect();
             var left = Math.abs(elementRect.left - parentRect.left);
-            var top_2 = Math.abs(elementRect.top - parentRect.top);
+            var top_1 = Math.abs(elementRect.top - parentRect.top);
             var ele = createElement('div', {
                 id: this.element.id + '_tile_parent', styles: 'position: absolute; left: ' +
-                    (this.mapAreaRect.x + left) + 'px; top: ' + (this.mapAreaRect.y + top_2 + padding) + 'px; height: ' +
+                    (this.mapAreaRect.x + left) + 'px; top: ' + (this.mapAreaRect.y + top_1 + padding) + 'px; height: ' +
                     (this.mapAreaRect.height) + 'px; width: '
                     + (this.mapAreaRect.width) + 'px; overflow: hidden;'
             });

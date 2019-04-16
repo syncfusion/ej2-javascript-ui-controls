@@ -3,6 +3,9 @@
   .e-input-group-icon.e-range-icon,
   &.e-control-wrapper .e-input-group-icon.e-range-icon {
     border-bottom-right-radius: $range-icon-bottom-right-radius;
+    @if $skin-name == 'bootstrap4' {
+      border-right: $range-control-border-right;
+    }
     border-top-right-radius: $range-icon-top-right-radius;
     font-size: $range-icon-font-size;
     margin: $range-icon-margin;

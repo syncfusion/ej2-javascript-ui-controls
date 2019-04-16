@@ -878,6 +878,8 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         if (!(this.inputWrapper.clearButton.classList.contains('e-clear-icon-hide'))) {
             this.clear(e);
         }
+        this.isInteract = true;
+        this.raiseChangeEvent(e);
     };
     NumericTextBox.prototype.clear = function (event) {
         this.setProperties({ value: null }, true);
@@ -9920,7 +9922,7 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     ColorPicker.prototype.toggle = function () {
-        this.splitBtn.toggle();
+        this.container.parentElement.classList.contains('e-popup-close') ? this.splitBtn.toggle() : this.closePopup(null);
     };
     /**
      * Get component name.
@@ -9990,7 +9992,7 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
         var beforeCloseArgs = { element: this.container, event: e, cancel: false };
         this.trigger('beforeClose', beforeCloseArgs);
         if (!beforeCloseArgs.cancel) {
-            this.toggle();
+            this.splitBtn.toggle();
             this.onPopupClose();
         }
     };
@@ -10706,7 +10708,6 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
                 this.addTileSelection(ele);
             }
         }
-        this.element.value = newProp.slice(0, 7);
     };
     ColorPicker.prototype.setInputEleProps = function (prop) {
         remove(select('.' + INPUTWRAPPER, this.container));
@@ -10778,14 +10779,23 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
      */
     ColorPicker.prototype.onPropertyChanged = function (newProp, oldProp) {
         var _this = this;
-        var wrapper = this.getWrapper();
+        if (!isNullOrUndefined(newProp.value)) {
+            var value = this.roundValue(newProp.value);
+            if (value.length === 9) {
+                this.element.value = this.roundValue(value).slice(0, 7);
+                var preview = this.splitBtn && select('.' + SPLITPREVIEW, this.splitBtn.element);
+                if (preview) {
+                    preview.style.backgroundColor = newProp.value;
+                }
+            }
+            else {
+                this.value = oldProp.value;
+            }
+        }
         if (!this.inline && isNullOrUndefined(newProp.inline)) {
             var otherCompModel = ['disabled', 'enableRtl'];
             this.splitBtn.setProperties(getModel(newProp, otherCompModel));
             if (!this.isPopupOpen()) {
-                if (newProp.value) {
-                    select('.' + SPLITPREVIEW, this.splitBtn.element).style.backgroundColor = newProp.value;
-                }
                 this.changeCssClassProps(newProp.cssClass, oldProp.cssClass);
                 this.changeRtlProps(newProp.enableRtl);
                 return;
@@ -10842,7 +10852,9 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
                     this_1.changeDisabledProp(newProp.disabled);
                     break;
                 case 'value':
-                    this_1.changeValueProp(newProp.value);
+                    if (this_1.value !== oldProp.value) {
+                        this_1.changeValueProp(newProp.value);
+                    }
                     break;
                 case 'showButtons':
                     this_1.changeShowBtnProps(newProp.showButtons);
@@ -11293,7 +11305,7 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
             if (this.isHiddenInput) {
                 this.element.value = this.respectiveElement.value;
             }
-            this.value = '';
+            this.setProperties({ value: this.respectiveElement.value }, true);
             var eventArgs = {
                 event: event,
                 value: this.respectiveElement.value,
@@ -11301,6 +11313,7 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
                 container: this.textboxWrapper.container
             };
             this.trigger('input', eventArgs);
+            this.raiseChangeEvent(event, true);
         }
     };
     TextBox.prototype.unWireEvents = function () {

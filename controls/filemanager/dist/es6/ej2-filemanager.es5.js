@@ -1854,7 +1854,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         var eventArgs = {
             element: args.item,
             fileDetails: args.curData,
-            module: 'LargeIcon'
+            module: 'LargeIconsView'
         };
         this.parent.trigger('beforeFileLoad', eventArgs);
     };
@@ -2840,7 +2840,7 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
                 if (!isNullOrUndefined(this.subMenuObj)) {
                     this.subMenuObj.destroy();
                 }
-                ulElement.remove();
+                remove(ulElement);
             }
             var searchWrap = this.parent.breadCrumbBarNavigation.querySelector('.e-search-wrap');
             if (!searchWrap) {
@@ -2994,7 +2994,7 @@ var BreadCrumbBar = /** @__PURE__ @class */ (function () {
                 Search(this.parent, search, this.parent.path, searchWord, hiddenItems, !caseSensitive);
             }
             else {
-                read(this.parent, pathChanged, this.parent.path);
+                read(this.parent, search, this.parent.path);
             }
         }
     };
@@ -3217,7 +3217,7 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
         else if (!target.classList.contains(MENU_ITEM) && !target.classList.contains(MENU_ICON) && !target.classList.contains(SUBMENU_ICON)) {
             /* istanbul ignore next */
             // tslint:disable-next-line
-            if (this.parent.view === 'LargeIcons' && !isNullOrUndefined(closest(target, 'li')) && !target.closest('#' + this.parent.element.id + TREE_ID)) {
+            if (this.parent.view === 'LargeIcons' && !isNullOrUndefined(closest(target, 'li')) && !closest(target, '#' + this.parent.element.id + TREE_ID)) {
                 var eveArgs = { ctrlKey: true, shiftKey: true };
                 data = this.parent.visitedData;
                 if (!closest(target, 'li').classList.contains('e-active')) {
@@ -3242,25 +3242,8 @@ var ContextMenu$2 = /** @__PURE__ @class */ (function () {
             }
             /* istanbul ignore next */
             if (select$$1) {
-                if (this.parent.view === 'LargeIcons') {
-                    if (data.isFile === true) {
-                        this.setFileItem(target);
-                        if (closest(target, 'li') &&
-                            (closest(target, 'li')).getElementsByClassName('e-list-img').length === 0) {
-                            this.contextMenu.enableItems([this.getMenuId('Open')], false, true);
-                        }
-                    }
-                    else {
-                        this.setFolderItem(false);
-                    }
-                    // tslint:disable-next-line
-                }
-                else if (data['isFile'] === true) {
+                if (getValue('isFile', data) === true) {
                     this.setFileItem(target);
-                    if (closest(target, 'tr') &&
-                        (closest(target, 'tr')).getElementsByClassName(ICON_IMAGE).length === 0) {
-                        this.contextMenu.enableItems([this.getMenuId('Open')], false, true);
-                    }
                 }
                 else {
                     this.setFolderItem(false);
@@ -3792,6 +3775,7 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
         _this.persistData = false;
         _this.isOpened = false;
         _this.searchedItems = [];
+        FileManager_1.Inject(BreadCrumbBar, LargeIconsView, ContextMenu$2);
         return _this;
     }
     FileManager_1 = FileManager;
@@ -3807,7 +3791,6 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
      * Initialize the event handler
      */
     FileManager.prototype.preRender = function () {
-        FileManager_1.Inject(BreadCrumbBar, LargeIconsView, ContextMenu$2);
         this.ensurePath();
         this.feParent = [];
         this.feFiles = [];
@@ -5075,7 +5058,7 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
         var eventArgs = {
             element: args.node,
             fileDetails: args.nodeData,
-            module: 'navigationpane'
+            module: 'NavigationPane'
         };
         this.parent.trigger('beforeFileLoad', eventArgs);
     };
@@ -5096,7 +5079,9 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
      * @private
      */
     NavigationPane.prototype.onNodeSelected = function (args) {
-        this.parent.breadcrumbbarModule.searchObj.element.value = '';
+        if (this.parent.breadcrumbbarModule && this.parent.breadcrumbbarModule.searchObj) {
+            this.parent.breadcrumbbarModule.searchObj.element.value = '';
+        }
         this.parent.searchedItems = [];
         this.parent.activeElements = this.treeObj.element.querySelectorAll('.' + ACTIVE);
         if (!args.isInteracted) {
@@ -5191,7 +5176,9 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
     };
     NavigationPane.prototype.onFinalizeEnd = function (args) {
         this.onInit(args);
-        this.addChild(args.files, getValue('nodeId', args.cwd), false);
+        var id = getValue('nodeId', args.cwd);
+        this.removeChildNodes(id);
+        this.addChild(args.files, id, false);
         this.treeObj.selectedNodes = [this.parent.pathId[this.parent.pathId.length - 1]];
     };
     NavigationPane.prototype.onCreateEnd = function (args) {
@@ -5239,8 +5226,7 @@ var NavigationPane = /** @__PURE__ @class */ (function () {
                     }
                     break;
                 case 'navigationPaneSettings':
-                    var args = { files: getValue('/', this.parent.feFiles) };
-                    this.onFinalizeEnd(args);
+                    read(this.parent, finalizeEnd, '/');
                     break;
             }
         }
@@ -5586,7 +5572,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
         var eventArgs = {
             element: args.row,
             fileDetails: args.data,
-            module: 'Grid'
+            module: 'DetailsView'
         };
         this.parent.trigger('beforeFileLoad', eventArgs);
     };

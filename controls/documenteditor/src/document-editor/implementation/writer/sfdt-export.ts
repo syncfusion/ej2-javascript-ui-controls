@@ -6,8 +6,8 @@ import { WCellFormat, WTableFormat, WRowFormat, WStyle, WListFormat, WCharacterF
 import { WBorder, WBorders, WShading } from '../format/index';
 import { LayoutViewer } from '../index';
 import {
-    IWidget, LineWidget, ParagraphWidget, BlockContainer, BodyWidget, TextElementBox, Page, ElementBox, FieldElementBox,
-    TableWidget, TableRowWidget, TableCellWidget, ImageElementBox, HeaderFooterWidget, HeaderFooters, ListTextElementBox, BookmarkElementBox
+    IWidget, LineWidget, ParagraphWidget, BlockContainer, BodyWidget, TextElementBox, Page, ElementBox, FieldElementBox, TableWidget,
+    TableRowWidget, TableCellWidget, ImageElementBox, HeaderFooterWidget, HeaderFooters, ListTextElementBox, BookmarkElementBox
 } from '../viewer/page';
 import { BlockWidget } from '../viewer/page';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -41,6 +41,7 @@ export class SfdtExport {
         this.endLine = undefined;
         this.lists = undefined;
         this.document = undefined;
+        this.endCell = undefined;
     }
     /**
      * Serialize the data as Syncfusion document text.
@@ -105,22 +106,31 @@ export class SfdtExport {
                     this.endCell = endCell;
                 }
             }
+            let nextBlock: BlockWidget;
             if (startCell === endCell || isNullOrUndefined(startCell)) {
                 let paragraph: any = this.createParagraph(line.paragraph);
                 section.blocks.push(paragraph);
-                if (!this.writeParagraph(line.paragraph, paragraph, section.blocks, line.indexInOwner, startOffset)) {
-                    // Todo:continue in next section
+                nextBlock = this.writeParagraph(line.paragraph, paragraph, section.blocks, line.indexInOwner, startOffset);
+                while (nextBlock) {
+                    nextBlock = this.writeBlock(nextBlock, 0, section.blocks);
                 }
+                // Todo:continue in next section
             } else {
                 let table: any = this.createTable(startCell.ownerTable);
                 section.blocks.push(table);
-                this.writeTable(startCell.ownerTable, table, startCell.ownerRow.indexInOwner, section.blocks);
+                nextBlock = this.writeTable(startCell.ownerTable, table, startCell.ownerRow.indexInOwner, section.blocks);
+                while (nextBlock) {
+                    nextBlock = this.writeBlock(nextBlock, 0, section.blocks);
+                }
             }
         } else {
             if (this.viewer.pages.length > 0) {
                 let page: Page = this.viewer.pages[0];
                 if (page.bodyWidgets.length > 0) {
-                    this.writeBodyWidget(page.bodyWidgets[0], 0);
+                    let nextBlock: BodyWidget = page.bodyWidgets[0];
+                    do {
+                        nextBlock = this.writeBodyWidget(nextBlock, 0);
+                    } while (!isNullOrUndefined(nextBlock));
                 }
             }
         }
@@ -130,22 +140,23 @@ export class SfdtExport {
         this.clear();
         return doc;
     }
-    private writeBodyWidget(bodyWidget: BodyWidget, index: number): boolean {
+    private writeBodyWidget(bodyWidget: BodyWidget, index: number): BodyWidget {
         if (!(bodyWidget instanceof BodyWidget)) {
-            return true;
+            return undefined;
         }
         let section: any = this.createSection(bodyWidget);
         this.document.sections.push(section);
         this.writeHeaderFooters(this.viewer.headersFooters[bodyWidget.index], section);
-        if (this.writeBlock(bodyWidget.childWidgets[index] as BlockWidget, 0, section.blocks)) {
-            return true;
-        }
+        let firstBlock: BlockWidget = bodyWidget.childWidgets[index] as BlockWidget;
+        do {
+            firstBlock = this.writeBlock(firstBlock as BlockWidget, 0, section.blocks);
+        } while (firstBlock);
         let next: BodyWidget = bodyWidget;
         do {
             bodyWidget = next;
             next = next.nextRenderedWidget as BodyWidget;
         } while (next instanceof BodyWidget && next.index === bodyWidget.index);
-        return this.writeBodyWidget(next, index);
+        return next;
     }
     private writeHeaderFooters(hfs: HeaderFooters, section: any): void {
         if (isNullOrUndefined(hfs)) {
@@ -165,7 +176,10 @@ export class SfdtExport {
         let headerFooter: any = {};
         if (widget && widget.childWidgets && widget.childWidgets.length > 0) {
             headerFooter.blocks = [];
-            this.writeBlock(widget.firstChild as BlockWidget, 0, headerFooter.blocks);
+            let firstBlock: BlockWidget = widget.firstChild as BlockWidget;
+            do {
+                firstBlock = this.writeBlock(firstBlock, 0, headerFooter.blocks);
+            } while (firstBlock);
         }
         return headerFooter;
     }
@@ -187,51 +201,40 @@ export class SfdtExport {
         section.headersFooters = {};
         return section;
     }
-    private writeBlock(widget: BlockWidget, index: number, blocks: any): boolean {
+    private writeBlock(widget: BlockWidget, index: number, blocks: any): BlockWidget {
         if (!(widget instanceof BlockWidget)) {
-            return true;
+            return undefined;
         }
         if (widget instanceof ParagraphWidget) {
             let paragraph: any = this.createParagraph(widget);
             blocks.push(paragraph);
-            if (this.writeParagraph(widget, paragraph, blocks)) {
-                return true;
-            }
+            return this.writeParagraph(widget, paragraph, blocks);
         } else {
             let tableWidget: TableWidget = widget as TableWidget;
             let table: any = this.createTable(tableWidget);
             blocks.push(table);
-            if (this.writeTable(tableWidget, table, 0, blocks)) {
-                return true;
-            }
+            return this.writeTable(tableWidget, table, 0, blocks);
         }
-        return false;
     }
-    private writeNextBlock(widget: BlockWidget, blocks: any): boolean {
-        let next: BlockWidget = widget.nextRenderedWidget as BlockWidget;
-        if (next instanceof BlockWidget && next.containerWidget.index === widget.containerWidget.index) {
-            return this.writeBlock(widget.nextRenderedWidget as BlockWidget, 0, blocks);
-        }
-        return false;
-    }
-    private writeParagraph(paragraphWidget: ParagraphWidget, paragraph: any, blocks: any, lineIndex?: number, start?: number): boolean {
+    private writeParagraph(paragraphWidget: ParagraphWidget, paragraph: any, blocks: any, lineIndex?: number, start?: number): BlockWidget {
         if (isNullOrUndefined(lineIndex)) {
             lineIndex = 0;
         }
         if (isNullOrUndefined(start)) {
             start = 0;
         }
-        let next: ParagraphWidget = paragraphWidget;
+        let next: BlockWidget = paragraphWidget;
         while (next instanceof ParagraphWidget) {
             if (this.writeLines(next, lineIndex, start, paragraph.inlines)) {
-                return true;
+                return undefined;
             }
             lineIndex = 0;
             start = 0;
             paragraphWidget = next;
             next = paragraphWidget.nextSplitWidget as ParagraphWidget;
         }
-        return this.writeNextBlock(paragraphWidget, blocks);
+        next = paragraphWidget.nextRenderedWidget as BlockWidget;
+        return (next instanceof BlockWidget && paragraphWidget.containerWidget.index === next.containerWidget.index) ? next : undefined;
     }
     private writeInlines(paragraph: ParagraphWidget, line: LineWidget, inlines: any): void {
         let lineWidget: LineWidget = line.clone();
@@ -385,19 +388,21 @@ export class SfdtExport {
         }
         return listFormat;
     }
-    private writeTable(tableWidget: TableWidget, table: any, index: number, blocks: any): boolean {
+    private writeTable(tableWidget: TableWidget, table: any, index: number, blocks: any): BlockWidget {
         let widget: IWidget = tableWidget.childWidgets[index];
         if (widget instanceof TableRowWidget) {
             if (this.writeRow(widget, table.rows)) {
-                return true;
+                return undefined;
             }
         }
-        let next: TableWidget = tableWidget;
+        let next: BlockWidget = tableWidget;
         do {
             tableWidget = next as TableWidget;
             next = tableWidget.nextSplitWidget as TableWidget;
         } while (next instanceof BlockWidget);
-        return this.writeNextBlock(tableWidget, blocks);
+
+        next = tableWidget.nextRenderedWidget as BlockWidget;
+        return (next instanceof BlockWidget && next.containerWidget.index === tableWidget.containerWidget.index) ? next : undefined;
     }
     private writeRow(rowWidget: TableRowWidget, rows: any): boolean {
         if (!(rowWidget instanceof TableRowWidget)) {
@@ -427,9 +432,10 @@ export class SfdtExport {
     private writeCell(cellWidget: TableCellWidget, cells: any): boolean {
         let cell: any = this.createCell(cellWidget);
         cells.push(cell);
-        if (this.writeBlock(cellWidget.firstChild as BlockWidget, 0, cell.blocks)) {
-            return true;
-        }
+        let firstBlock: BlockWidget = cellWidget.firstChild as BlockWidget;
+        do {
+            firstBlock = this.writeBlock(firstBlock as BlockWidget, 0, cell.blocks);
+        } while (firstBlock);
         return this.endCell instanceof TableCellWidget ? this.endCell.cellFormat === cellWidget.cellFormat : false;
     }
     private createTable(tableWidget: TableWidget): any {

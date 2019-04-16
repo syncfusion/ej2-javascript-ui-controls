@@ -5,11 +5,12 @@ import { Edit } from '../../src/treegrid/actions/edit';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
 import { SaveEventArgs, CellEditArgs } from '@syncfusion/ej2-grids';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
+import { Sort } from '../../src/treegrid/actions/sort';
 
 /**
  * Grid Cell Edit spec 
  */
-TreeGrid.Inject(Edit, Toolbar);
+TreeGrid.Inject(Edit, Toolbar, Sort);
 describe('Cell Edit module', () => {
   beforeAll(() => {
     const isDef = (o: any) => o !== undefined && o !== null;
@@ -172,6 +173,115 @@ describe('Cell Edit module', () => {
       destroy(gridObj);
     });
   });
+   describe('Sorting and update cell', () => {
+      let gridObj: TreeGrid;
+      let rows: Element[];
+      let actionBegin: () => void;
+      let actionComplete: () => void;
+  
+      beforeAll((done: Function) => {
+        gridObj = createGrid(
+          {
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            allowSorting: true,
+            treeColumnIndex: 1,
+              editSettings: {
+                  allowAdding: true,
+                  allowEditing: true,
+                  allowDeleting: true,
+                  mode: 'Cell',
+                  newRowPosition: 'Below'
+  
+              },
+              toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+              columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+              { field: 'taskName', headerText: 'Task Name' },
+              { field: 'startDate', headerText: 'Start Date'},
+              { field: 'duration', headerText: 'duration' },
+              ]
+          },
+          done
+        );
+      });
+      it('double click parent cell edit and update',(done: Function) => {
+        let event: MouseEvent = new MouseEvent('dblclick', {
+          'view': window,
+          'bubbles': true,
+          'cancelable': true
+        });
+        actionComplete = (args?: any): void => {
+          if(args.type=='save'){
+          expect((gridObj.getRows()[0].getElementsByClassName('e-treecell')[0] as HTMLElement).innerText=="Planned").toBe(true);
+          
+          done();
+          }
+       }
+       gridObj.actionComplete = actionComplete;
+        gridObj.getCellFromIndex(0, 1).dispatchEvent(event);
+        gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'Planned';
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+        gridObj.getCellFromIndex(1, 1).dispatchEvent(event);
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_cancel' } });
+        
+      });
+      it('double click on child cell edit and update',(done: Function) => {
+        let event: MouseEvent = new MouseEvent('dblclick', {
+          'view': window,
+          'bubbles': true,
+          'cancelable': true
+        });
+        actionComplete = (args?: any): void => {
+        if(args.type=='save'){
+          expect((gridObj.getRows()[1].getElementsByClassName('e-treecell')[0] as HTMLElement).innerText=="Planning completed").toBe(true);
+          done();
+        }
+        
+       }
+       gridObj.actionComplete = actionComplete;
+        gridObj.getCellFromIndex(1, 1).dispatchEvent(event);
+        gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'Planning completed';
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+        gridObj.getCellFromIndex(2, 1).dispatchEvent(event);
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_cancel' } });
+      });
+      it('Sorting the column,edit and update the parent cell', (done: Function) => {
+        actionComplete = (args?: Object): void => {
+           expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Design").toBe(true);
+           expect(gridObj.getRows()[1].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Design complete").toBe(true);
+           expect(gridObj.getRows()[2].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Design Documentation").toBe(true);
+           expect(gridObj.getRows()[3].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Develop prototype").toBe(true);
+           expect(gridObj.getRows()[4].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Get approval from customer").toBe(true);
+           expect(gridObj.getRows()[5].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Software Specification").toBe(true);
+           done();
+        }
+        gridObj.sortByColumn("taskName", "Ascending", true);
+        gridObj.grid.actionComplete = actionComplete;
+      });
+      it('double click on sorted parent cell edit and update',(done: Function) => {
+        let event: MouseEvent = new MouseEvent('dblclick', {
+          'view': window,
+          'bubbles': true,
+          'cancelable': true
+        });
+        actionComplete = (args?: any): void => {
+          if(args.type=='save'){
+          expect((gridObj.getRows()[0].getElementsByClassName('e-treecell')[0] as HTMLElement).innerText=="Designs").toBe(true);
+          done();
+          }
+          
+       }
+       gridObj.actionComplete = actionComplete;
+        gridObj.getCellFromIndex(0, 1).dispatchEvent(event);
+        gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'Designs';
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+        gridObj.getCellFromIndex(1, 1).dispatchEvent(event);
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_cancel' } });
+      });
+      afterAll(() => {
+        destroy(gridObj);
+      });
+    });
     describe('Check the expanding state of record after delete operation', () => {
     let gridObj: TreeGrid;
     let rows: Element[];

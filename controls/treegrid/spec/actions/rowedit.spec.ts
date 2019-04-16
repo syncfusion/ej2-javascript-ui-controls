@@ -1732,6 +1732,59 @@ describe('Edit module', () => {
     });
   });
  
+  describe('Editing - Addrecord through method', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true,},
+        treeColumnIndex: 1,
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        columns: [{field: 'taskID', headerText: 'Task ID', isPrimaryKey: true},
+                  {field: 'taskName', headerText: 'Task Name'},
+                  {field: 'startDate', headerText: 'Start Date'},
+                  {field: 'progress', headerText: 'Progress'}]
+        },
+        done
+      );
+    });
+    it('Addrecordmethod - add as child', (done: Function) => {
+      actionComplete = (args?: any): void => {
+          expect(gridObj.dataSource[0][gridObj.childMapping][2][gridObj.childMapping][0].taskID).toBe(111);
+          expect(gridObj.grid.dataSource[4].taskID).toBe(111);
+          done();
+      }
+      gridObj.actionComplete = actionComplete;
+      gridObj.addRecord({taskID:111,taskName: 'test'}, 3, 'Child');
+    });
+    it('Addrecordmethod - add To Below', (done: Function) => {
+      actionComplete = (args?: any): void => {
+          expect(gridObj.dataSource[0][gridObj.childMapping].length).toBe(5);
+          expect(gridObj.grid.dataSource[2].taskID).toBe(123);
+          expect(gridObj.dataSource[0]["subtasks"][1].taskID).toBe(123);
+          done();
+      }
+      gridObj.actionComplete = actionComplete;
+      gridObj.addRecord({taskID:123,taskName: 'Below record'}, 1, 'Below');
+    });
+    it('Addrecordmethod - add as Above', (done: Function) => {
+      actionComplete = (args?: any): void => {
+        expect(gridObj.dataSource[0]["subtasks"][0].taskID).toBe(124);
+        expect(gridObj.grid.dataSource[1].taskID).toBe(124);
+          expect(gridObj.dataSource[0][gridObj.childMapping].length).toBe(6);
+          done();
+      }
+      gridObj.actionComplete = actionComplete;
+      gridObj.addRecord({taskID:124, taskName: 'Above record'}, 1, 'Above');
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

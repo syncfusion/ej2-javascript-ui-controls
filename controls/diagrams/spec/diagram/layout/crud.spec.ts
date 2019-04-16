@@ -393,11 +393,11 @@ describe('Crud read Node datasource', () => {
                     read:
                         'http://js.syncfusion.com/demos/ejservices/api/Diagram/GetNodes',
                     create:
-                        'https://ej2services.syncfusion.com/development/web-services/api/Crud/AddNodes',
+                        'http://js.syncfusion.com/demos/ejservices/api/Diagram/AddNodes',
                     update:
-                        'https://ej2services.syncfusion.com/development/web-services/api/Crud/UpdateNodes',
+                        'http://js.syncfusion.com/demos/ejservices/api/Diagram/UpdateNodes',
                     destroy:
-                        'https://ej2services.syncfusion.com/development/web-services/api/Crud/DeleteNodes',
+                        'http://js.syncfusion.com/demos/ejservices/api/Diagram/DeleteNodes',
                     customFields: ['Id', 'Description', 'Color']
                 },
                 connectionDataSource: {
@@ -408,11 +408,11 @@ describe('Crud read Node datasource', () => {
                         read:
                             'http://js.syncfusion.com/demos/ejservices/api/Diagram/GetConnectors',
                         create:
-                            'https://ej2services.syncfusion.com/development/web-services/api/Crud/AddConnectors',
+                            'http://js.syncfusion.com/demos/ejservices/api/Diagram/AddConnectors',
                         update:
-                            'https://ej2services.syncfusion.com/development/web-services/api/Crud/UpdateConnectors',
+                            'http://js.syncfusion.com/demos/ejservices/api/Diagram/UpdateConnectors',
                         destroy:
-                            'https://ej2services.syncfusion.com/development/web-services/api/Crud/DeleteConnectors',
+                            'http://js.syncfusion.com/demos/ejservices/api/Diagram/DeleteConnectors',
                         customFields: ['Id']
                     }
                 }
@@ -467,11 +467,11 @@ describe('Crud read Connector datasource', () => {
                         read:
                             'http://js.syncfusion.com/demos/ejservices/api/Diagram/GetConnectors',
                         create:
-                            'https://ej2services.syncfusion.com/development/web-services/api/Crud/AddConnectors',
+                            'http://js.syncfusion.com/demos/ejservices/api/Diagram/AddConnectors',
                         update:
-                            'https://ej2services.syncfusion.com/development/web-services/api/Crud/UpdateConnectors',
+                            'http://js.syncfusion.com/demos/ejservices/api/Diagram/UpdateConnectors',
                         destroy:
-                            'https://ej2services.syncfusion.com/development/web-services/api/Crud/DeleteConnectors',
+                            'http://js.syncfusion.com/demos/ejservices/api/Diagram/DeleteConnectors',
                         customFields: ['Id']
                     }
                 }

@@ -59,7 +59,7 @@ export class ExcelExport {
         excelExportProperties?: ExcelExportProperties,
         /* tslint:disable-next-line:no-any */
         isMultipleExport?: boolean, workbook?: any, isBlob?: boolean, isCsv?: boolean) : Promise<Object> {
-        let dataSource: Object[] = this.parent.flatData;
+        let dataSource: Object = this.parent.dataSource;
         let property: Object = Object();
         setValue('isCsv', isCsv, property);
         setValue('cancel', false, property);
@@ -75,9 +75,9 @@ export class ExcelExport {
               return null;
           }
           dm.executeQuery(query).then((e: Object) => {
-            this.manipulateExportProperties(excelExportProperties, dataSource, this.isLocal() ? null : <Ajax>e);
-            return this.parent.grid.excelExportModule.Map(
-              this.parent.grid, excelExportProperties, isMultipleExport, workbook, isCsv, isBlob);
+          excelExportProperties = this.manipulateExportProperties(excelExportProperties, dataSource, <Ajax>e);
+          return this.parent.grid.excelExportModule.Map(
+          this.parent.grid, excelExportProperties, isMultipleExport, workbook, isCsv, isBlob);
           });
         });
     }
@@ -91,28 +91,30 @@ export class ExcelExport {
         }
         return query;
     }
-    protected manipulateExportProperties(property?: ExcelExportProperties, dtSrc?: Object[], queryResult?: Ajax) : Object {
-        if (isNullOrUndefined(queryResult)) {
-          if (this.parent.grid.sortSettings.columns.length === 0 &&
-                (this.parent.grid.filterSettings.columns.length > 0 || this.parent.grid.searchSettings.key)) {
-            dtSrc = this.parent.filterModule.filteredResult;
-          }
-        } else {
+    protected manipulateExportProperties(property?: ExcelExportProperties, dtSrc?: Object, queryResult?: Ajax) : Object {
+        //count not required for this query
+        let args: BeforeDataBoundArgs = Object();
+        setValue('query',  this.parent.grid.getDataModule().generateQuery(true), args);
+        setValue('isExport',  true, args);
+        if (!isNullOrUndefined(property) && !isNullOrUndefined(property.exportType)) {
+          setValue('exportType',  property.exportType, args);
+        }
+        if (!this.isLocal() || !isNullOrUndefined(this.parent.parentIdMapping)) {
           this.parent.parentData = [];
-          //count not required for this query
           this.parent.dataModule.convertToFlatData(getObject('result', queryResult));
-          let args: BeforeDataBoundArgs = Object();
-          setValue('query',  this.parent.grid.getDataModule().generateQuery(true), args);
-          this.parent.notify('dataProcessor', args);
-          //args = this.parent.dataModule.dataProcessor(args);
-          args = <BeforeDataBoundArgs>this.dataResults;
-          dtSrc = isNullOrUndefined(args.result) ? this.parent.flatData.slice(0) : args.result;
+          setValue('expresults',  this.parent.flatData, args);
+        }
+        this.parent.notify('dataProcessor', args);
+        //args = this.parent.dataModule.dataProcessor(args);
+        args = <BeforeDataBoundArgs>this.dataResults;
+        dtSrc = isNullOrUndefined(args.result) ? this.parent.flatData.slice(0) : args.result;
+        if (!this.isLocal()) {
           this.parent.flatData = [];
         }
         property = isNullOrUndefined(property) ? Object() : property;
-        property.dataSource = new DataManager({json: dtSrc});
+        property.dataSource = new DataManager({json: <Object[]>dtSrc});
         return property;
-      }
+    }
       /**
        * TreeGrid Excel Export cell modifier
        * @hidden

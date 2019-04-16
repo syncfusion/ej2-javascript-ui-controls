@@ -519,6 +519,8 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         if (!(this.inputWrapper.clearButton.classList.contains('e-clear-icon-hide'))) {
             this.clear(e);
         }
+        this.isInteract = true;
+        this.raiseChangeEvent(e);
     }
     private clear(event: MouseEvent): void {
         this.setProperties({ value: null }, true);

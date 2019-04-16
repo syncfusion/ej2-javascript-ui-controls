@@ -2396,7 +2396,7 @@ export class Editor {
         let startLine: LineWidget = this.selection.getFirstParagraphInFirstCell(table).childWidgets[0] as LineWidget;
         startPos.setPosition(startLine, true);
         this.selection.end.setPositionInternal(startPos);
-        let lastParagraph: ParagraphWidget = this.selection.getLastParagraphInLastCell(table);
+        let lastParagraph: ParagraphWidget = this.selection.getLastParagraphInLastCell(table.getSplitWidgets().pop() as TableWidget);
         let endOffset: number = lastParagraph.getLength() + 1;
         if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
             // tslint:disable-next-line:max-line-length
@@ -8095,7 +8095,9 @@ export class Editor {
             let page: Page = this.viewer.pages[j];
             if (page.bodyWidgets[0].index === sectionIndex) {
                 currentBlock = page.bodyWidgets[0].firstChild as BlockWidget;
-                break;
+                if (!isNullOrUndefined(currentBlock)) {
+                    break;
+                }
             }
         }
         let isListUpdated: boolean = false;
@@ -8665,7 +8667,8 @@ export class Editor {
         for (let i: number = 0; i < this.viewer.pages.length; i++) {
             let bodyWidget: BodyWidget = this.viewer.pages[i].bodyWidgets[0];
             if (bodyWidget.index === sectionIndex) {
-                if ((bodyWidget.firstChild as Widget).index <= blockIndex && (bodyWidget.lastChild as Widget).index >= blockIndex) {
+                if (bodyWidget.childWidgets.length > 0 && (bodyWidget.firstChild as Widget).index <= blockIndex &&
+                    (bodyWidget.lastChild as Widget).index >= blockIndex) {
                     return bodyWidget;
                 }
             }

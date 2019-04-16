@@ -1,10 +1,9 @@
 /**
  * Grid Inline edit spec document
  */
-import { EventHandler, ChildProperty, EmitType, debounce } from '@syncfusion/ej2-base';
-import { extend, getValue } from '@syncfusion/ej2-base';
-import { DataManager } from '@syncfusion/ej2-data';
-import { createElement, remove } from '@syncfusion/ej2-base';
+import { EmitType } from '@syncfusion/ej2-base';
+import { extend } from '@syncfusion/ej2-base';
+import { createElement } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { Filter } from '../../../src/grid/actions/filter';
 import { Edit } from '../../../src/grid/actions/edit';
@@ -15,15 +14,10 @@ import { Reorder } from '../../../src/grid/actions/reorder';
 import { Page } from '../../../src/grid/actions/page';
 import { Freeze } from '../../../src/grid/actions/freeze';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
-import { CellType } from '../../../src/grid/base/enum';
-import { ValueFormatter } from '../../../src/grid/services/value-formatter';
-import { Column } from '../../../src/grid/models/column';
 import { Selection } from '../../../src/grid/actions/selection';
-import { NumericEditCell } from '../../../src/grid/renderer/numeric-edit-cell';
-import { DropDownEditCell } from '../../../src/grid/renderer/dropdown-edit-cell';
-import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
-import { createGrid, destroy, getKeyUpObj, getClickObj, getKeyActionObj } from '../base/specutil.spec';
-import { data, employeeData, filterData, customerData } from '../base/datasource.spec';
+import { DatePicker } from '@syncfusion/ej2-calendars';
+import { createGrid, destroy } from '../base/specutil.spec';
+import { data, employeeData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import * as events from '../../../src/grid/base/constant';
@@ -488,6 +482,7 @@ describe('Inline Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
 
@@ -625,12 +620,12 @@ describe('Inline Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = preventDefault = null;
         });
     });
 
     describe('Disable editing, edit mode change and delete alert => ', () => {
         let gridObj: Grid;
-        let preventDefault: Function = new Function();
         let actionBegin: () => void;
         let actionComplete: (args: any) => void;
         beforeAll((done: Function) => {
@@ -737,6 +732,7 @@ describe('Inline Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
 
@@ -847,6 +843,7 @@ describe('Inline Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = preventDefault = actionComplete = null;
         });
     });
 
@@ -911,6 +908,7 @@ describe('Inline Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = preventDefault = actionComplete = null;
         });
     });
 
@@ -1016,13 +1014,13 @@ describe('Inline Editing module', () => {
             if (document.getElementById('Grid55abc')) {
                 document.getElementById('Grid55abc').remove();
             }
+            gridObj = actionBegin = elem = preventDefault = actionComplete = null;
         });
     });
 
 
     describe('validation testing => ', () => {
         let gridObj: Grid;
-        let preventDefault: Function = new Function();
         let actionBegin: () => void;
         let actionComplete: (args: any) => void;
         beforeAll((done: Function) => {
@@ -1124,6 +1122,7 @@ describe('Inline Editing module', () => {
             setTimeout(function () {
                 done();
             }, 1000);
+            gridObj = actionBegin = actionComplete = null;
 
         });
     });
@@ -1197,6 +1196,7 @@ describe('Inline Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
 
     });
@@ -1247,6 +1247,7 @@ describe('Inline Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
 
     });
@@ -1476,6 +1477,7 @@ describe('Inline Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
 
@@ -1605,10 +1607,12 @@ describe('Inline Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
 
     describe('EJ2-6484 hierarchy testing => ', () => {
+        let childData: Object[] = dataSource();
         let gridObj: Grid;
         let childGridObj: Grid;
         let actionBegin: () => void;
@@ -1629,7 +1633,7 @@ describe('Inline Editing module', () => {
                     ],
                     detailDataBound: detailDataBound,
                     childGrid: {
-                        dataSource: dataSource(), queryString: 'EmployeeID',
+                        dataSource: childData, queryString: 'EmployeeID',
                         allowPaging: false,
                         actionBegin: actionBegin,
                         actionComplete: actionComplete,
@@ -1762,16 +1766,12 @@ describe('Inline Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = childData = childGridObj = detailDataBound = actionComplete = null;
         });
     });
 
     describe('Editing with empty grid => ', () => {
         let gridObj: Grid;
-        let childGridObj: Grid;
-        let actionBegin: () => void;
-        let actionComplete: () => void;
-        let detailDataBound: () => void;
-        let preventDefault: Function = new Function();
 
         beforeAll((done: Function) => {
             gridObj = createGrid(
@@ -1802,6 +1802,7 @@ describe('Inline Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
@@ -1904,6 +1905,7 @@ describe('Inline Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
     describe('EJ2-22823 Add and Delete operations current view check in virtualization => ', () => {
@@ -1967,6 +1969,7 @@ describe('Inline Editing module', () => {
         afterAll(() => {
             gridObj.notify('tooltip-destroy', {});
             destroy(gridObj);
+            gridObj = actionComplete = null;
         });
     });
 

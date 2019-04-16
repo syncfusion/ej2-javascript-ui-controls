@@ -98,7 +98,7 @@ export class BreadCrumbBar {
                 if (!isNullOrUndefined(this.subMenuObj)) {
                     this.subMenuObj.destroy();
                 }
-                ulElement.remove();
+                remove(ulElement);
             }
             let searchWrap: Element = this.parent.breadCrumbBarNavigation.querySelector('.e-search-wrap');
             if (!searchWrap) {
@@ -245,7 +245,7 @@ export class BreadCrumbBar {
                 let hiddenItems: boolean = this.parent.showHiddenItems;
                 Search(this.parent, events.search, this.parent.path, searchWord, hiddenItems, !caseSensitive);
             } else {
-                read(this.parent, events.pathChanged, this.parent.path);
+                read(this.parent, events.search, this.parent.path);
             }
         }
     }

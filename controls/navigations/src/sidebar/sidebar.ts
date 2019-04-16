@@ -58,7 +58,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Specifies the size of the Sidebar in dock state.
      * > For more details about dockSize refer to 
-     * [`Dock`](https://ej2.syncfusion.com/documentation/sidebar/docking-sidebar/) documentation.
+     * [`Dock`](../../sidebar/docking-sidebar#dock) documentation.
      * @default 'auto'
      */
     @Property('auto')
@@ -71,7 +71,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      *   });
      * ```
      * > For more details about mediaQuery refer to 
-     * [`Auto Close`](https://ej2.syncfusion.com/documentation/sidebar/auto-close/) documentation.
+     * [`Auto Close`](../../sidebar/auto-close#auto-close) documentation.
      * @default null
      * @aspType string
      */
@@ -80,7 +80,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Specifies the docking state of the component.
      * > For more details about enableDock refer to 
-     * [`Dock`](https://ej2.syncfusion.com/documentation/sidebar/docking-sidebar/) documentation.
+     * [`Dock`](../../sidebar/docking-sidebar/#dock) documentation.
      * @default false
      */
     @Property(false)
@@ -108,7 +108,9 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     @Property(true)
     public enableGestures: boolean;
     /**
-     * Gets or sets the Sidebar component is open or close.
+     * Gets or sets the Sidebar component is open or close. 
+     * > When the Sidebar type is set to `Auto`,
+     * the component will be expanded in the desktop and collapsed in the mobile mode regardless of the isOpen property.
      * @default false
      */
     @Property(false)
@@ -141,7 +143,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Specifies the position of the Sidebar (Left/Right) corresponding to the main content.
      * > For more details about SidebarPosition refer to 
-     * [`position`](https://ej2.syncfusion.com/documentation/sidebar/getting-started/#position) documentation.
+     * [`position`](../../sidebar/getting-started#position) documentation.
      * @default 'Left'
      */
     @Property('Left')
@@ -149,7 +151,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Allows to place the sidebar inside the target element.
      * > For more details about target refer to 
-     * [`Custom Context`](https://ej2.syncfusion.com/documentation/sidebar/custom-context/) documentation.
+     * [`Custom Context`](../../sidebar/custom-context#target) documentation.
      * @default null
      */
     @Property(null)
@@ -157,7 +159,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Specifies the whether to apply overlay options to main content when the Sidebar is in an open state.
      * > For more details about showBackdrop refer to 
-     * [`Backdrop`](https://ej2.syncfusion.com/documentation/sidebar/getting-started/#enable-backdrop) documentation.
+     * [`Backdrop`](../../sidebar/getting-started/#enable-backdrop) documentation.
      * @default false
      */
     @Property(false)
@@ -170,7 +172,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      * The main content area will not be adjusted within the screen width.
      * * `Auto` - Sidebar with `Over` type in mobile resolution and `Push` type in other higher resolutions.
      * > For more details about SidebarType refer to 
-     * [`SidebarType`](./variations.html#types) documentation.
+     * [`SidebarType`](../../sidebar/variations/#types) documentation.
      * @default 'Auto'
      */
     @Property('Auto')
@@ -179,7 +181,6 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      * Specifies the width of the Sidebar. By default, the width of the Sidebar sets based on the size of its content.
      * Width can also be set in pixel values.
      * @default 'auto'
-     * @aspType string
      */
     @Property('auto')
     public width: string | number;
@@ -244,6 +245,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         } else {
             this.setMediaQuery();
         }
+        this.checkType(true);
         this.setType(this.type);
         this.setCloseOnDocumentClick();
         this.setEnableRTL();
@@ -311,13 +313,22 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
         removeClass([this.element], [OPEN, CLOSE, RIGHT, LEFT, SLIDE, PUSH, OVER]);
         this.element.classList.add(ROOT);
         addClass([this.element], (this.position === 'Right') ? RIGHT : LEFT);
-        if (this.type === 'Auto' && !Browser.isDevice && !this.enableDock) {
-            addClass([this.element], OPEN);
-        } else {
+        if (this.type === 'Auto' && !Browser.isDevice) {
+            this.show();
+        } else if (!this.isOpen) {
             addClass([this.element], CLOSE);
         }
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
         this.element.setAttribute('tabindex', this.tabIndex);
+    }
+    private checkType(val: boolean): void {
+        if (!(this.type === 'Push' || this.type === 'Over' || this.type === 'Slide')) {
+            this.type = 'Auto';
+        } else {
+            if (!this.element.classList.contains(CLOSE) && !val) {
+                this.hide();
+            }
+        }
     }
     private destroyBackDrop(): void {
         let sibling: HTMLElement = (<HTMLElement>document.querySelector('.e-main-content')) ||
@@ -550,9 +561,11 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
                     this.setAnimation();
                     break;
                 case 'type':
+                    this.checkType(false);
                     removeClass([this.element], [VISIBILITY]);
                     this.addClass();
-                    this.setType(this.type);
+                    addClass([this.element], this.type === 'Auto' ? (Browser.isDevice ? ['e-over'] :
+                    ['e-push']) : ['e-' + this.type.toLowerCase()]);
                     break;
                 case 'position':
                     this.element.style.transform = '';
@@ -666,7 +679,6 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
                     if (sibling && (this.enableDock || this.element.classList.contains(OPEN))) {
                         this.position === 'Left' ? sibling.style.marginLeft = margin : sibling.style.marginRight = margin;
                     }
-                    this.setProperties({ isOpen: true }, true);
                 }
                 this.createBackDrop();
         }

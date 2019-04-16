@@ -824,6 +824,7 @@ export class DateTimePicker extends DatePicker {
             this.previousElementValue = this.inputElement.value;
             this.setProperties({ value: new Date(this.timeCollections[this.activeIndex]) }, true);
         }
+        this.updateIconState();
     }
     private getFullDateTime(): Date {
         let value: Date = null;
@@ -1013,6 +1014,7 @@ export class DateTimePicker extends DatePicker {
         if (Browser.isDevice && this.allowEdit && !this.readonly) {
             this.element.removeAttribute('readonly');
         }
+        this.setAllowEdit();
     }
     private closePopup(e?: KeyboardEvent | MouseEvent | Event): void {
         if (this.isTimePopupOpen() && this.popupObject) {

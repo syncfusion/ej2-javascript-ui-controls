@@ -281,6 +281,46 @@ describe('Sorting with Sort comparer property functionality checking', () => {
   afterAll(() => {
     destroy(gridObj);
   });
+
+
+  describe('EJ2-25219: Updating datasource dynamically after performing sorting is not working', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    let actionComplete: ()=> void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          allowSorting: true,
+          sortSettings: {columns: [{field: 'taskName', direction: 'Ascending'}]},
+          toolbar: ['Search'],
+          columns: [
+              { field: 'taskId', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 80 },
+              { field: 'taskName', headerText: 'Task Name', width: 200 },
+              { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 100, format: { skeleton: 'yMd', type: 'date' } },
+              { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 90 },
+              { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 90 }
+          ]
+        },
+        done
+      );
+    });
+    it('Datasource update with Sorting', (done: Function)  => {
+      actionComplete = (args?: Object): void => {
+        expect(gridObj.getRows()[0].getElementsByClassName('e-rowcell')[1].querySelector("div>.e-treecell").innerHTML == "Implementation Phase").toBe(true);
+        done();
+    }
+    gridObj.grid.dataBound = actionComplete;
+    gridObj.dataSource = sampleData.slice(2);
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+
   
   it('memory leak', () => {
     profile.sample();

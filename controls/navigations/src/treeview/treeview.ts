@@ -1,4 +1,4 @@
-﻿import { Component, EmitType, isUndefined, Browser, compile } from '@syncfusion/ej2-base';
+﻿import { Component, EmitType, isUndefined, Browser, compile, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Property, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Complex } from '@syncfusion/ej2-base';
 import { Event, EventHandler, KeyboardEvents, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { rippleEffect, Effect, Animation, AnimationOptions, RippleOptions } from '@syncfusion/ej2-base';
@@ -57,6 +57,7 @@ const IMAGE: string = 'e-list-img';
 const BIGGER: string = 'e-bigger';
 const SMALL: string = 'e-small';
 const CHILD: string = 'e-has-child';
+const ITEM_ANIMATION_ACTIVE: string = 'e-animation-active';
 
 const treeAriaAttr: TreeAriaAttr = {
     treeRole: 'tree',
@@ -364,10 +365,10 @@ export class FieldsSettings extends ChildProperty<FieldsSettings> {
     @Property('parentID')
     public parentID: string;
 
-    /**    
-     * Defines the external [`Query`](http://ej2.syncfusion.com/documentation/data/api-query.html) 
-     * that will execute along with data processing.    
-     * @default null    
+    /**
+     * Defines the external [`Query`](http://ej2.syncfusion.com/documentation/data/api-query.html)
+     * that will execute along with data processing.
+     * @default null
      */
     @Property(null)
     public query: Query;
@@ -521,7 +522,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * Indicates whether the TreeView allows drag and drop of nodes. To drag and drop a node in
      * desktop, hold the mouse on the node, drag it to the target node and drop the node by releasing
      * the mouse. For touch devices, drag and drop operation is performed by touch, touch move
-     * and touch end. For more information on drag and drop nodes concept, refer to 
+     * and touch end. For more information on drag and drop nodes concept, refer to
      * [Drag and Drop](../treeview/drag-and-drop/).
      * @default false
      */
@@ -529,7 +530,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public allowDragAndDrop: boolean;
 
     /**
-     * Enables or disables editing of the text in the TreeView node. When `allowEditing` property is set 
+     * Enables or disables editing of the text in the TreeView node. When `allowEditing` property is set
      * to true, the TreeView allows you to edit the node by double clicking the node or by navigating to
      * the node and pressing **F2** key. For more information on node editing, refer
      * to [Node Editing](../treeview/node-editing/).
@@ -543,8 +544,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * * Select the nodes by holding down the CTRL key while clicking on the nodes.
      * * Select consecutive nodes by clicking the first node to select and hold down the **SHIFT** key
      * and click the last node to select.
-     * 
-     * For more information on multi-selection, refer to 
+     *
+     * For more information on multi-selection, refer to
      * [Multi-Selection](../treeview/multiple-selection/).
      * @default false
      */
@@ -595,7 +596,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public enableRtl: boolean;
 
     /**
-     * Represents the expanded nodes in the TreeView component. We can set the nodes that need to be 
+     * Represents the expanded nodes in the TreeView component. We can set the nodes that need to be
      * expanded or get the ID of the nodes that are currently expanded by using this property.
      * @default []
      */
@@ -625,7 +626,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public fields: FieldsSettingsModel;
 
     /**
-     * On enabling this property, the entire row of the TreeView node gets selected by clicking a node. 
+     * On enabling this property, the entire row of the TreeView node gets selected by clicking a node.
      * When disabled only the corresponding node's text gets selected.
      * For more information on Fields concept, refer to
      * [Fields](../treeview/data-binding#local-data).
@@ -643,9 +644,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public loadOnDemand: boolean;
 
     /**
-     * Specifies a template to render customized content for all the nodes. If the `nodeTemplate` property 
+     * Specifies a template to render customized content for all the nodes. If the `nodeTemplate` property
      * is set, the template content overrides the displayed node text. The property accepts template string
-     * [template string](http://ej2.syncfusion.com/documentation/base/template-engine.html) 
+     * [template string](http://ej2.syncfusion.com/documentation/base/template-engine.html)
      * or HTML element ID holding the content. For more information on template concept, refer to
      * [Template](../treeview/template/).
      * @default null
@@ -654,11 +655,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     public nodeTemplate: string;
 
     /**
-     * Represents the selected nodes in the TreeView component. We can set the nodes that need to be 
-     * selected or get the ID of the nodes that are currently selected by using this property. 
-     * On enabling `allowMultiSelection` property we can select multiple nodes and on disabling 
+     * Represents the selected nodes in the TreeView component. We can set the nodes that need to be
+     * selected or get the ID of the nodes that are currently selected by using this property.
+     * On enabling `allowMultiSelection` property we can select multiple nodes and on disabling
      * it we can select only a single node.
-     * For more information on selectedNodes, refer to 
+     * For more information on selectedNodes, refer to
      * [selectedNodes](../treeview/multiple-selection#selected-nodes).
      * @default []
      */
@@ -699,17 +700,17 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     @Event()
     public created: EmitType<Object>;
 
-    /** 
+    /**
      * Triggers when data source is populated in the TreeView.
-     * @event 
+     * @event
      */
     @Event()
     public dataBound: EmitType<DataBoundEventArgs>;
 
-    /** 
+    /**
      * Triggers when data source is changed in the TreeView. The data source will be changed after performing some operation like
      * drag and drop, node editing, adding and removing node.
-     * @event 
+     * @event
      */
     @Event()
     public dataSourceChanged: EmitType<DataSourceChangedEventArgs>;
@@ -735,16 +736,16 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     @Event()
     public keyPress: EmitType<NodeKeyPressEventArgs>;
 
-    /** 
+    /**
      * Triggers when the TreeView node is checked/unchecked successfully.
-     * @event 
+     * @event
      */
     @Event()
     public nodeChecked: EmitType<NodeCheckEventArgs>;
 
-    /** 
+    /**
      * Triggers before the TreeView node is to be checked/unchecked.
-     * @event 
+     * @event
      */
     @Event()
     public nodeChecking: EmitType<NodeCheckEventArgs>;
@@ -756,83 +757,83 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     @Event()
     public nodeClicked: EmitType<NodeClickEventArgs>;
 
-    /** 
+    /**
      * Triggers when the TreeView node collapses successfully.
-     * @event 
+     * @event
      */
     @Event()
     public nodeCollapsed: EmitType<NodeExpandEventArgs>;
 
-    /** 
+    /**
      * Triggers before the TreeView node collapses.
-     * @event 
+     * @event
      */
     @Event()
     public nodeCollapsing: EmitType<NodeExpandEventArgs>;
 
-    /** 
+    /**
      * Triggers when the TreeView node is dragged (moved) continuously.
-     * @event 
+     * @event
      */
     @Event()
     public nodeDragging: EmitType<DragAndDropEventArgs>;
-    /** 
+    /**
      * Triggers when the TreeView node drag (move) starts.
-     * @event 
+     * @event
      */
     @Event()
     public nodeDragStart: EmitType<DragAndDropEventArgs>;
-    /** 
+    /**
      * Triggers when the TreeView node drag (move) is stopped.
-     * @event 
+     * @event
      */
     @Event()
     public nodeDragStop: EmitType<DragAndDropEventArgs>;
-    /** 
+    /**
      * Triggers when the TreeView node is dropped on target element successfully.
-     * @event 
+     * @event
      */
     @Event()
     public nodeDropped: EmitType<DragAndDropEventArgs>;
 
-    /** 
+    /**
      * Triggers when the TreeView node is renamed successfully.
-     * @event 
+     * @event
      */
     @Event()
     public nodeEdited: EmitType<NodeEditEventArgs>;
 
-    /** 
+    /**
      * Triggers before the TreeView node is renamed.
-     * @event 
+     * @event
      */
     @Event()
     public nodeEditing: EmitType<NodeEditEventArgs>;
 
-    /** 
+    /**
      * Triggers when the TreeView node expands successfully.
-     * @event 
+     * @event
      */
     @Event()
     public nodeExpanded: EmitType<NodeExpandEventArgs>;
 
-    /** 
+    /**
      * Triggers before the TreeView node is to be expanded.
-     * @event 
+     * @event
      */
     @Event()
     public nodeExpanding: EmitType<NodeExpandEventArgs>;
 
-    /** 
+    /**
      * Triggers when the TreeView node is selected/unselected successfully.
-     * @event 
+     * @event
      */
     @Event()
     public nodeSelected: EmitType<NodeSelectEventArgs>;
 
-    /** 
+    /**
      * Triggers before the TreeView node is selected/unselected.
-     * @event 
+     * @event
      */
     @Event()
     public nodeSelecting: EmitType<NodeSelectEventArgs>;
@@ -1326,7 +1327,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (!isNOU(this.nodeTemplateFn)) {
             let textEle: Element = e.item.querySelector('.' + LISTTEXT);
             textEle.innerHTML = '';
-            append(this.nodeTemplateFn(e.curData), textEle);
+            let tempArr: Element[]  = this.nodeTemplateFn(e.curData);
+            tempArr = Array.prototype.slice.call(tempArr);
+            append(tempArr, textEle);
         }
         let eventArgs: DrawNodeEventArgs = {
             node: e.item as HTMLLIElement,
@@ -1994,6 +1997,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 let ul: HTMLElement = <HTMLElement>select('.' + PARENTITEM, currLi);
                 let liEle: HTMLElement = <HTMLElement>currLi;
                 this.setHeight(liEle, ul);
+                let activeElement: HTMLElement = <HTMLElement>select('.' + LISTITEM + '.' + ACTIVE, currLi);
                 if (this.isAnimate) {
                     this.aniObj.animate(ul, {
                         name: this.animation.expand.effect,
@@ -2001,6 +2005,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                         timingFunction: this.animation.expand.easing,
                         begin: (args: AnimationOptions): void => {
                             liEle.style.overflow = 'hidden';
+                            if (!isNullOrUndefined(activeElement) && activeElement instanceof HTMLElement) {
+                                activeElement.classList.add(ITEM_ANIMATION_ACTIVE);
+                            }
                             start = liEle.offsetHeight;
                             end = (<HTMLElement>select('.' + TEXTWRAP, currLi)).offsetHeight;
                         },
@@ -2010,6 +2017,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                         },
                         end: (args: AnimationOptions): void => {
                             args.element.style.display = 'block';
+                            if (!isNullOrUndefined(activeElement) && activeElement instanceof HTMLElement) {
+                                activeElement.classList.remove(ITEM_ANIMATION_ACTIVE);
+                            }
                             this.expandedNode(liEle, ul, icon);
                         }
                     });
@@ -2073,6 +2083,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let proxy: TreeView = this;
         let ul: HTMLElement = <HTMLElement>select('.' + PARENTITEM, currLi);
         let liEle: HTMLElement = <HTMLElement>currLi;
+        let activeElement: HTMLElement = <HTMLElement>select('.' + LISTITEM + '.' + ACTIVE, currLi);
         if (this.isAnimate) {
             this.aniObj.animate(ul, {
                 name: this.animation.collapse.effect,
@@ -2080,6 +2091,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 timingFunction: this.animation.collapse.easing,
                 begin: (args: AnimationOptions): void => {
                     liEle.style.overflow = 'hidden';
+                    if (!isNullOrUndefined(activeElement) && activeElement instanceof HTMLElement) {
+                        activeElement.classList.add(ITEM_ANIMATION_ACTIVE);
+                    }
                     start = (<HTMLElement>select('.' + TEXTWRAP, currLi)).offsetHeight;
                     end = liEle.offsetHeight;
                 },
@@ -2088,6 +2102,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 },
                 end: (args: AnimationOptions): void => {
                     args.element.style.display = 'none';
+                    if (!isNullOrUndefined(activeElement) && activeElement instanceof HTMLElement) {
+                        activeElement.classList.remove(ITEM_ANIMATION_ACTIVE);
+                    }
                     this.collapsedNode(liEle, ul, icon, colArgs);
                 }
             });
@@ -3138,7 +3155,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let newData: { [key: string]: Object } = setValue(this.editFields.text, newText, this.editData);
         if (!isNOU(this.nodeTemplateFn)) {
             txtEle.innerHTML = '';
-            append(this.nodeTemplateFn(newData), txtEle);
+            let tempArr: Element[]  = this.nodeTemplateFn(newData);
+            tempArr = Array.prototype.slice.call(tempArr);
+            append(tempArr, txtEle);
         } else {
             txtEle.innerHTML = newText;
         }
@@ -4527,7 +4546,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      * then the nodes are added as children of the given parentID or in the root level of TreeView.
      * @param  { { [key: string]: Object }[] } nodes - Specifies the array of JSON data that has to be added.
      * @param  { string | Element } target - Specifies ID of TreeView node/TreeView node as target element.
-     * @param  { number } index - Specifies the index to place the newly added nodes in the target element. 
+     * @param  { number } index - Specifies the index to place the newly added nodes in the target element.
      * @param { boolean } preventTargetExpand - If set to true, the target parent node will be prevented from auto expanding.
      */
     public addNodes(nodes: { [key: string]: Object }[], target ? : string | Element, index ? : number,

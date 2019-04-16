@@ -10,10 +10,15 @@ import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { Rect } from '../../../src/diagram/primitives/rect';
 import { Matrix, transformPointByMatrix, identityMatrix, rotateMatrix } from '../../../src/diagram/primitives/matrix';
 import { MouseEvents } from './mouseevents.spec';
-import { DiagramTools } from '../../../src/diagram/enum/enum';
+import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
+import { ConnectorEditing } from '../../../src/diagram/interaction/connector-editing';
+import { DiagramTools, ConnectorConstraints } from '../../../src/diagram/enum/enum';
 import { ISelectionChangeEventArgs, IClickEventArgs, IDoubleClickEventArgs, ITextEditEventArgs, ICollectionChangeEventArgs, IHistoryChangeArgs, IDraggingEventArgs, IEndChangeEventArgs, ISizeChangeEventArgs, IRotationEventArgs, IPropertyChangeEventArgs, IConnectionChangeEventArgs } from '../../../src/diagram/objects/interface/IElement'
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
+import { DiagramModel } from '../../../src';
 Diagram.Inject(BpmnDiagrams);
+Diagram.Inject(UndoRedo);
+Diagram.Inject(ConnectorEditing);
 /**
  * Interaction Specification Document
  */
@@ -232,7 +237,7 @@ describe('Diagram Control', () => {
             };
             diagram.propertyChange = (args: IPropertyChangeEventArgs) => {
                 if (args.newValue) {
-                    expect(args.newValue.selectedItems.width === 100).toBe(true);
+                    expect((args.newValue as DiagramModel).selectedItems.width === 100).toBe(true);
                 }
             }
             mouseEvents.dragAndDropEvent(diagramCanvas, 300, 300, 320, 320);
@@ -274,6 +279,11 @@ describe('Diagram Control', () => {
             diagram.sourcePointChange = (args: IEndChangeEventArgs) => {
                 args.cancel = true;
                 if (args.state) {
+                    done();
+                }
+            };
+            diagram.propertyChange = (args: IPropertyChangeEventArgs) => {
+                if (args.newValue) {
                     done();
                 }
             };
@@ -534,6 +544,180 @@ describe('Diagram Control', () => {
         })
     });
 
+    describe('Testing events', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram2' });
+            document.body.appendChild(ele);
+            let node: NodeModel = { id: 'node1', width: 100, height: 100, offsetX: 200, offsetY: 200 };
 
+            diagram = new Diagram({
+                width: 800, height: 500, nodes: [node],
+            });
+            diagram.appendTo('#diagram2');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Checking Selection change event ', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 220, 220);
+            diagram.selectionChange = (args: ISelectionChangeEventArgs) => {
+                expect(args.type === 'Removal').toBe(true);
+                done();
+            };
+            mouseEvents.dragAndDropEvent(diagramCanvas, 320, 100, 410, 140);
+            done();
+        });
+    });
+
+    describe('Position Change- Property Change', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagrambac' });
+            document.body.appendChild(ele);
+            let node: NodeModel = {
+                id: 'node1', width: 100, height: 100, offsetX: 100, offsetY: 100, annotations: [{ content: 'Node1' }],
+            };
+            let connector: ConnectorModel = {
+                id: 'connector1', sourcePoint: { x: 300, y: 100 }, targetPoint: { x: 500, y: 200 }, annotations: [{ content: 'Connector' }],
+            };
+            let connector2: ConnectorModel = {
+                id: 'connector2', sourcePoint: { x: 550, y: 100 }, targetPoint: { x: 700, y: 200 }, type: 'Bezier', annotations: [{ content: 'Connector' }],
+            };
+            let connector3: ConnectorModel = {
+                id: 'connector3', sourcePoint: { x: 300, y: 250 }, targetPoint: { x: 500, y: 350 }, type: 'Orthogonal', annotations: [{ content: 'Connector' }],
+                constraints: ConnectorConstraints.Default | ConnectorConstraints.DragSegmentThumb
+            };
+            diagram = new Diagram({
+                width: 1000, height: 1000,
+                nodes: [node], connectors: [connector, connector2, connector3],
+                pageSettings: { height: 300, width: 300, showPageBreaks: true },
+            });
+            diagram.appendTo('#diagrambac');
+
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking node Position Change', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.propertyChange = (args: IPropertyChangeEventArgs) => {
+                if (args.newValue) {
+                    expect((args.newValue as NodeModel).offsetX === 430).toBe(true);
+                    done();
+                }
+            }
+            mouseEvents.clickEvent(diagramCanvas, 120, 120);
+            mouseEvents.dragAndDropEvent(diagramCanvas, 120, 120, 450, 150);
+            done();
+        });
+        it('Checking node Position Change-undo', (done: Function) => {
+            diagram.propertyChange = (args: IPropertyChangeEventArgs) => {
+                if (args.newValue) {
+                    expect((args.newValue as NodeModel).offsetX === 100).toBe(true);
+                    done();
+                }
+            }
+            diagram.undo();
+            done();
+        });
+        it('Checking fill color', (done: Function) => {
+            diagram.propertyChange = (args: IPropertyChangeEventArgs) => {
+                if (args.newValue) {
+                    expect((args.newValue as NodeModel).style.fill === 'blue').toBe(true);
+                    done();
+                }
+            }
+            diagram.nodes[0].style.fill = 'blue';
+            done();
+        });
+        it('Change node width', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.propertyChange = (args: IPropertyChangeEventArgs) => {
+                if (args.newValue) {
+                    expect((args.newValue as NodeModel).width !== 100).toBe(true);
+                    done();
+                }
+            }
+            mouseEvents.clickEvent(diagramCanvas, 120, 120);
+            mouseEvents.dragAndDropEvent(diagramCanvas, 148, 100, 160, 100);
+            done();
+        });
+        it('Change node rotate angle', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.propertyChange = (args: IPropertyChangeEventArgs) => {
+                if (args.newValue) {
+                    expect((args.newValue as NodeModel).rotateAngle === 50).toBe(true);
+                    done();
+                }
+            }
+            diagram.nodes[0].rotateAngle = 50;
+            done();
+        });
+
+        it('Change pageSettings', (done: Function) => {
+            diagram.propertyChange = (args: IPropertyChangeEventArgs) => {
+                if (args.newValue) {
+                    expect((args.newValue as DiagramModel).pageSettings.height === 500).toBe(true);
+                    expect((args.newValue as DiagramModel).pageSettings.width === 500).toBe(true);
+                    done();
+                }
+            }
+            diagram.pageSettings.width = 500;
+            diagram.pageSettings.height = 500;
+            diagram.dataBind();
+            done();
+        });
+        it('Target Point Change-Straight Connector', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.propertyChange = (args: IPropertyChangeEventArgs) => {
+                if (args.newValue) {
+                    expect((args.newValue as ConnectorModel).targetPoint.x !== 500).toBe(true);
+                    expect((args.newValue as ConnectorModel).targetPoint.y === 200).toBe(true);
+                    done();
+                }
+            };
+            mouseEvents.clickEvent(diagramCanvas, 320, 110);
+            mouseEvents.dragAndDropEvent(diagramCanvas, 501, 200, 530, 200);
+            done();
+        });
+        it('Target Point Change-Besizer Connector', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            diagram.propertyChange = (args: IPropertyChangeEventArgs) => {
+                if (args.newValue) {
+                    expect((args.newValue as ConnectorModel).targetPoint.x === 700).toBe(true);
+                    expect((args.newValue as ConnectorModel).targetPoint.y === 200).toBe(true);
+                    done();
+                }
+            }
+            mouseEvents.clickEvent(diagramCanvas, 580, 110);
+            mouseEvents.dragAndDropEvent(diagramCanvas, 640, 200, 620, 220);
+            done();
+        });
+    });
 
 });

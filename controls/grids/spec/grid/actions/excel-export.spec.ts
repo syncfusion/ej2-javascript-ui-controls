@@ -13,7 +13,6 @@ import { data, employeeData, customerData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { ExcelExport } from '../../../src/grid/actions/excel-export';
 import { createGrid, destroy} from '../base/specutil.spec';
-import { HierarchyGridPrintMode } from '../../../src/grid/base/enum';
 import { DataManager } from '@syncfusion/ej2-data';
 import { Workbook } from '@syncfusion/ej2-excel-export';
 import { ExcelRow, ExcelExportProperties } from '../../../src';
@@ -129,6 +128,7 @@ describe('excel Export =>', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
@@ -195,6 +195,7 @@ describe('excel Export =>', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
@@ -247,12 +248,12 @@ describe('excel Export =>', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
     describe('Hierarchy Excel export => ', () => {
         let gridObj: Grid;
-        let exportedMode: HierarchyGridPrintMode = 'Expanded';
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -339,6 +340,7 @@ describe('excel Export =>', () => {
     
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 });

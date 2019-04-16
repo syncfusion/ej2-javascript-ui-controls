@@ -17,7 +17,6 @@ Grid.Inject(Search, Page, Toolbar, Edit);
 describe('Search module=>', () => {
     describe('Search methods testing=>', () => {
         let gridObj: Grid;
-        let beforePrint: Function;
         let actionComplete: (args?: Object) => void;
 
         beforeAll((done: Function) => {
@@ -39,8 +38,11 @@ describe('Search module=>', () => {
 
         it('Search method testing', (done: Function) => {
             actionComplete = (args: any): void => {
-                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(1);
-                done();
+                if (args.requestType == 'searching') {
+                    expect(gridObj.element.querySelectorAll('.e-row').length).toBe(1);
+                    gridObj.actionComplete = null;
+                    done();
+                }
             };
             gridObj.actionComplete = actionComplete;
             gridObj.searchModule.search('10249');
@@ -52,36 +54,48 @@ describe('Search module=>', () => {
         });
 
         it('Search method empty string testing', (done: Function) => {
-            actionComplete = (): void => {
-                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(12);
-                done();
+            actionComplete = (args: any): void => {
+                if (args.requestType == 'searching') {
+                    expect(gridObj.element.querySelectorAll('.e-row').length).toBe(12);
+                    gridObj.actionComplete = null;
+                    done();
+                }
             };
             gridObj.actionComplete = actionComplete;
             gridObj.search('');
         });
 
         it('Search method ignorecase testing', (done: Function) => {
-            actionComplete = (): void => {
-                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(1);
-                done();
+            actionComplete = (args: any): void => {
+                if (args.requestType == 'searching') {
+                    expect(gridObj.element.querySelectorAll('.e-row').length).toBe(1);
+                    gridObj.actionComplete = null;
+                    done();
+                }
             };
             gridObj.actionComplete = actionComplete;
             gridObj.searchModule.search('ViNet');
         });
 
         it('Search clear testing', (done: Function) => {
-            actionComplete = (): void => {
-                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(12);
-                done();
+            actionComplete = (args: any): void => {
+                if (args.requestType == 'searching') {
+                    expect(gridObj.element.querySelectorAll('.e-row').length).toBe(12);
+                    gridObj.actionComplete = null;
+                    done();
+                }
             };
             gridObj.actionComplete = actionComplete;
             gridObj.search('');
         });
 
         it('goToPage testing for search', (done: Function) => {
-            actionComplete = (): void => {
-                expect(gridObj.getPager().getElementsByClassName('e-active')[0].getAttribute('index')).toBe('2');
-                done();
+            actionComplete = (args: any): void => {
+                if (args.requestType == 'paging') {
+                    expect(gridObj.getPager().getElementsByClassName('e-active')[0].getAttribute('index')).toBe('2');
+                    gridObj.actionComplete = null;
+                    done();
+                }
             };
             gridObj.actionComplete = actionComplete;
             gridObj.pageSettings.currentPage = 2;
@@ -89,19 +103,24 @@ describe('Search module=>', () => {
         });
 
         it('Search method from last page testing testing', (done: Function) => {
-            actionComplete = (): void => {
-                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(1);
-                done();
+            actionComplete = (args: any): void => {
+                if (args.requestType == 'paging') {
+                    expect(gridObj.element.querySelectorAll('.e-row').length).toBe(1);
+                    gridObj.actionComplete = null;
+                    done();
+                }
             };
             gridObj.actionComplete = actionComplete;
             gridObj.searchModule.search('TOMSP');
         });
 
         it('EJ2-7184- Script error resolved when empty search through method', (done: Function) => {
-            actionComplete = (): void => {
-                gridObj.actionComplete = null;
-                expect(gridObj.element.querySelectorAll('.e-row').length).toBe(12);
-                done();
+            actionComplete = (args: any): void => {
+                if (args.requestType == 'searching') {
+                    expect(gridObj.element.querySelectorAll('.e-row').length).toBe(12);
+                    gridObj.actionComplete = null;
+                    done();
+                }
             };
             gridObj.actionComplete = actionComplete;
             gridObj.searchModule.search('');
@@ -109,6 +128,7 @@ describe('Search module=>', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = actionComplete = null;
         });
     });
 
@@ -161,6 +181,7 @@ describe('Search module=>', () => {
             setTimeout(function () {
                 done();
             }, 1000);
+            gridObj = actionComplete = null;
         });
     });
 
@@ -268,6 +289,7 @@ describe('Search module=>', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = actionComplete = null;
         });
     });
 

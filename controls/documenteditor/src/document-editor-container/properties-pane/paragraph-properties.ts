@@ -103,15 +103,15 @@ export class Paragraph {
         if (isRtl) {
             classList(listDiv, ['e-de-ctnr-segment-rtl', 'e-de-ctnr-group-btn'], []);
         }
-        let lineHeight: HTMLElement = createElement('button', { id: element + '_lineHeight' });
+        let lineHeight: HTMLElement = createElement('button', { id: element + '_lineHeight', attrs: { type: 'button' } });
         listDiv.appendChild(lineHeight);
         this.lineSpacing = this.createLineSpacingDropdown(lineHeight);
 
         let listDropDown: HTMLElement = this.createDivElement(element + '_listDropDiv', listDiv);
         listDropDown.className = 'de-split-button';
-        let bulletButton: HTMLElement = createElement('button', { id: element + '_bullet' });
+        let bulletButton: HTMLElement = createElement('button', { id: element + '_bullet', attrs: { type: 'button' } });
         listDropDown.appendChild(bulletButton);
-        let numberingList: HTMLElement = createElement('button', { id: element + '_numberingList' });
+        let numberingList: HTMLElement = createElement('button', { id: element + '_numberingList', attrs: { type: 'button' } });
         listDropDown.appendChild(numberingList);
         this.createBulletListDropButton('e-de-ctnr-bullets e-icons', bulletButton);
         this.createNumberListDropButton('e-de-ctnr-numbering e-icons', numberingList);
@@ -133,7 +133,7 @@ export class Paragraph {
     }
     // tslint:disable-next-line:max-line-length
     private createButtonTemplate(id: string, iconcss: string, div: HTMLElement, buttonClass: string, width: string, toolTipText: string): HTMLButtonElement {
-        let buttonElement: HTMLButtonElement = createElement('Button', { id: id }) as HTMLButtonElement;
+        let buttonElement: HTMLButtonElement = createElement('Button', { id: id, attrs: { type: 'button' } }) as HTMLButtonElement;
         // buttonElement.style.width = width + 'px';
         // buttonElement.style.height = 32 + 'px';
         div.appendChild(buttonElement);

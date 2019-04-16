@@ -1,5 +1,10 @@
 @include export-module('datetimepicker-layout') {
-  //   datetimepicker layout
+  // datetimepicker layout
+  .e-input-group.e-control-wrapper.e-datetime-wrapper.e-non-edit.e-input-focus .e-input:focus ~ .e-clear-icon,
+  .e-float-input.e-control-wrapper.e-input-group.e-datetime-wrapper.e-non-edit.e-input-focus input:focus ~ .e-clear-icon {
+    display: flex;
+  }
+
   .e-datetime-wrapper {
     // sass-lint:disable no-vendor-prefixes
     -webkit-tap-highlight-color: transparent;
@@ -29,8 +34,11 @@
     & .e-input-group-icon.e-time-icon {
       font-size: 16px;
       margin: $datetime-date-icon-margin;
-      min-height: $datetime-normal-min-height;
-      min-width: $datetime-normal-min-width;
+      @if $skin-name == 'material' or $skin-name == 'material-dark' {
+        min-height: $datetime-normal-min-height;
+        min-width: $datetime-normal-min-width;
+      }
+
       outline: none;
     }
 
@@ -107,8 +115,10 @@
 
     & .e-input-group-icon.e-time-icon {
       margin: $datetime-time-bigger-icon-margin;
-      min-height: $datetime-bigger-min-height;
-      min-width: $datetime-bigger-min-width;
+      @if $skin-name == 'material' or $skin-name == 'material-dark' {
+        min-height: $datetime-bigger-min-height;
+        min-width: $datetime-bigger-min-width;
+      }
     }
 
     &.e-rtl .e-input-group-icon.e-time-icon {

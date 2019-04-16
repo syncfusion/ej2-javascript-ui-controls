@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.40 (2019-04-09)
+
+### Dialog
+
+#### Bug Fixes
+
+- The issue with preventing the dialog resize using `args.cancel` has been resolved.
+
 ## 17.1.38 (2019-03-29)
 
 ### Dialog

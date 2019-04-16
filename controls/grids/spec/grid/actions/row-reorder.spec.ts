@@ -1,11 +1,8 @@
 /**
  * Grid Row Reordering spec document
  */
-import { EventHandler, EmitType } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { createElement, remove } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
-import { Column } from '../../../src/grid/models/column';
 import { Sort } from '../../../src/grid/actions/sort';
 import { Page } from '../../../src/grid/actions/page';
 import { Selection } from '../../../src/grid/actions/selection';
@@ -16,9 +13,6 @@ import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
 Grid.Inject(Page, Sort, Selection, RowDD);
-
-let helperElement: any;
-let dragTarget: any;
 
 function copyObject(source: Object, destiation: Object): Object {
     for (let prop in source) {
@@ -132,6 +126,7 @@ describe('Reorder row functionalities', () => {
     afterAll(() => {
         destroy(gridObj);
         destroy(gridObj1);
+        gridObj = gridObj1 = actionComplete = actionComplete1 = null;
     });
 });
 
@@ -143,8 +138,6 @@ describe('Row Drag and Drop module', () => {
         let gridObj1: Grid;
         let actionComplete: (e?: Object) => void;
         let actionComplete1: (e?: Object) => void;
-        let rows: any;
-        let rows1: any;
         window['browserDetails'].isIE = false;
 
         beforeAll((done: Function) => {
@@ -366,6 +359,7 @@ describe('Row Drag and Drop module', () => {
         afterAll(() => {
             destroy(gridObj);
             destroy(gridObj1);
+            gridObj = gridObj1 = actionComplete = actionComplete1 = null;
         });
     });
 
@@ -537,14 +531,8 @@ describe('Row Drag and Drop module', () => {
     describe('Reorder row functionalities with mouse and touch', () => {
         let gridObj: Grid;
         let gridObj1: Grid;
-        let preventDefault: Function = new Function();
         let actionComplete: (e?: Object) => void;
         let actionComplete1: (e?: Object) => void;
-        let rows: any;
-        let rows1: any;
-        let firstData: Object;
-        let firstData1: Object;
-        let bool: boolean = false;
         window['browserDetails'].isIE = false;
 
         beforeAll((done: Function) => {
@@ -983,12 +971,12 @@ describe('Row Drag and Drop module', () => {
         afterAll(() => {
             destroy(gridObj);
             destroy(gridObj1);
+            gridObj = gridObj1 = actionComplete = actionComplete1 = null;
         });
     });
 
     describe('Reorder row functionalities within grid', () => {
         let gridObj: Grid;
-        let rows: any;
         window['browserDetails'].isIE = false;
         beforeAll((done: Function) => {
             gridObj = createGrid(
@@ -1038,6 +1026,7 @@ describe('Row Drag and Drop module', () => {
     
     afterAll(() => {
         destroy(gridObj);
+        gridObj = null;
     });
     })
     

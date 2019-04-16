@@ -13,8 +13,7 @@ import { DetailRow } from '../../../src/grid/actions/detail-row';
 import { filterData, employeeData, customerData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { Edit } from '../../../src/grid/actions/edit';
-import { Toolbar } from '../../../src/grid/actions/toolbar';
-import { createGrid, destroy, getKeyUpObj, getClickObj, getKeyActionObj } from '../base/specutil.spec';
+import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
 Grid.Inject(Sort, Page, Filter, DetailRow, Group, Selection, Edit);
@@ -51,7 +50,6 @@ describe('Detail template module', () => {
 
     describe('Render with invalid id testing', () => {
         let gridObj: Grid;
-        let actionComplete: Function;
 
         beforeAll((done: Function) => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -100,6 +98,7 @@ describe('Detail template module', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
@@ -308,6 +307,7 @@ describe('Detail template module', () => {
         afterAll(() => {
             remove(document.getElementById('detailtemplate'));
             destroy(gridObj);
+            gridObj = template = actionComplete = null;
         });
     });
 
@@ -560,13 +560,13 @@ describe('Detail template module', () => {
         afterAll(() => {
             (gridObj.detailRowModule as any).destroy();
             destroy(gridObj);
+            gridObj = actionComplete = null;
         });
     });
 
     describe('Keyboard operation', () => {
         let gridObj: Grid;
         let elem: HTMLElement = createElement('div', { id: 'Grid' });
-        let actionComplete: Function;
 
         beforeAll((done: Function) => {
             let dataBound: EmitType<Object> = () => {
@@ -613,11 +613,11 @@ describe('Detail template module', () => {
 
         afterAll(() => {
             elem.remove();
+            gridObj = elem = null;
         });
     });
     describe('Action Complete event for expandAll and collapseAll=> ', () => {
         let gridObj: Grid;
-        let preventDefault: Function = new Function();
         let actionComplete: () => void;
         beforeAll((done: Function) => {
             gridObj = createGrid(
@@ -650,6 +650,7 @@ describe('Detail template module', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = actionComplete = null;
         });
     });   
 

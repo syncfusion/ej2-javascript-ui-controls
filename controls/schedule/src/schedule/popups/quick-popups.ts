@@ -64,8 +64,9 @@ export class QuickPopups {
             close: this.quickPopupClose.bind(this),
             hideAnimation: (this.parent.isAdaptive ? { name: 'ZoomOut' } : { name: 'FadeOut', duration: 150 }),
             showAnimation: (this.parent.isAdaptive ? { name: 'ZoomIn' } : { name: 'FadeIn', duration: 150 }),
-            collision: (this.parent.isAdaptive ? { X: 'fit', Y: 'fit' } : { X: 'none', Y: 'fit' }),
-            position: (this.parent.isAdaptive ? { X: 'left', Y: 'top' } : { X: 'right', Y: 'top' }),
+            collision: (this.parent.isAdaptive ? { X: 'fit', Y: 'fit' } :
+                (this.parent.enableRtl ? { X: 'flip', Y: 'fit' } : { X: 'none', Y: 'fit' })),
+            position: (this.parent.isAdaptive || this.parent.enableRtl ? { X: 'left', Y: 'top' } : { X: 'right', Y: 'top' }),
             viewPortElement: (this.parent.isAdaptive ? document.body : this.parent.element),
             zIndex: (this.parent.isAdaptive ? 1000 : 3)
         });
@@ -248,7 +249,7 @@ export class QuickPopups {
         this.showQuickDialog('DeleteAlert');
     }
 
-    public openValidationError(type: string): void {
+    public openValidationError(type: string, eventData?: Object | Object[]): void {
         this.quickDialog.header = this.l10n.getConstant('alert');
         this.quickDialog.content = this.l10n.getConstant(type);
         let okButton: Element = this.quickDialog.element.querySelector('.' + cls.QUICK_DIALOG_ALERT_OK);
@@ -260,13 +261,13 @@ export class QuickPopups {
             cancelButton.innerHTML = this.l10n.getConstant('cancel');
         }
         this.quickDialogClass('Alert');
-        this.showQuickDialog('ValidationAlert');
+        this.showQuickDialog('ValidationAlert', eventData);
     }
 
-    private showQuickDialog(popupType: PopupType): void {
+    private showQuickDialog(popupType: PopupType, eventData?: Object | Object[]): void {
         this.quickDialog.dataBind();
         let eventProp: PopupOpenEventArgs = {
-            type: popupType, cancel: false, data: this.parent.activeEventData, element: this.quickDialog.element
+            type: popupType, cancel: false, data: eventData || this.parent.activeEventData, element: this.quickDialog.element
         };
         this.parent.trigger(event.popupOpen, eventProp);
         if (eventProp.cancel) {
@@ -524,7 +525,7 @@ export class QuickPopups {
                     `${eventData[this.parent.eventFields.description] ? `<div class="${cls.DESCRIPTION_CLASS}"><div class="` +
                         `${cls.DESCRIPTION_ICON_CLASS} ${cls.ICON}"></div><div class="${cls.DESCRIPTION_DETAILS_CLASS} ` +
                         `${cls.TEXT_ELLIPSIS}">${eventData[this.parent.eventFields.description]}</div></div>` : ''}` +
-                    `${this.parent.resources.length > 0 ? `<div class="${cls.RESOURCE_CLASS}"><div class="` +
+                    `${this.parent.resourceCollection.length > 0 ? `<div class="${cls.RESOURCE_CLASS}"><div class="` +
                         `${cls.RESOURCE_ICON_CLASS} ${cls.ICON}"></div><div class="${cls.RESOURCE_DETAILS_CLASS} ${cls.TEXT_ELLIPSIS}">` +
                         `${this.getResourceText(events, 'event')}</div></div>` : ''}`;
                 let contentTemplate: HTMLElement = createElement('div', {
@@ -893,8 +894,8 @@ export class QuickPopups {
             this.quickPopup.element.style.height = formatUnit((popupType === 'EditEventInfo') ? 65 : window.innerHeight);
         } else {
             this.quickPopup.offsetX = 10;
-            this.quickPopup.collision = { X: 'none', Y: 'fit' };
-            this.quickPopup.position = { X: 'right', Y: 'top' };
+            this.quickPopup.collision = { X: this.parent.enableRtl ? 'flip' : 'none', Y: 'fit' };
+            this.quickPopup.position = { X: this.parent.enableRtl ? 'left' : 'right', Y: 'top' };
             this.quickPopup.dataBind();
             this.quickPopup.refreshPosition(null, true);
             let collide: string[] = isCollide(this.quickPopup.element, this.parent.element);

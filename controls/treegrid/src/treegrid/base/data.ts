@@ -86,6 +86,7 @@ public isRemote(): boolean {
  */
   public convertToFlatData(data: Object): void {
     this.parent.flatData = <Object[]>(Object.keys(data).length === 0 ? this.parent.dataSource : []);
+    this.parent.parentData = [];
     if ((isRemoteData(this.parent) && !isOffline(this.parent)) && data instanceof DataManager) {
       let dm: DataManager = <DataManager>this.parent.dataSource;
       if (this.parent.parentIdMapping) {
@@ -297,7 +298,15 @@ public isRemote(): boolean {
    * @hidden
    */
   public dataProcessor(args?: BeforeDataBoundArgs) : void {
-    let dataObj: Object = this.parent.grid.dataSource;
+    let isExport: boolean = getObject('isExport', args);
+    let expresults: Object = getObject('expresults', args);
+    let exportType: string = getObject('exportType', args);
+    let dataObj: Object;
+    if (isExport && !isNullOrUndefined(expresults)) {
+      dataObj = expresults;
+    } else {
+      dataObj = this.parent.grid.dataSource;
+    }
     let results: ITreeData[] = dataObj instanceof DataManager ? (<DataManager>dataObj).dataSource.json : <ITreeData[]>dataObj;
     let count: number = results.length;
     if ((this.parent.grid.allowFiltering && this.parent.grid.filterSettings.columns.length) ||
@@ -366,7 +375,7 @@ public isRemote(): boolean {
       }
     }
     count = results.length;
-    if (this.parent.allowPaging) {
+    if (this.parent.allowPaging && (!isExport || exportType === 'CurrentPage')) {
       this.parent.notify(events.pagingActions, {result: results, count: count});
       results = <ITreeData[]>this.dataResults.result;
       count = this.dataResults.count;

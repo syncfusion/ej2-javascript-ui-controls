@@ -1,6 +1,6 @@
 import { TreeGrid } from '../base/treegrid';
 import { ITreeData } from '../base/interface';
-import { getObject, PdfExport as GridPdf, Grid, BeforeDataBoundArgs, PdfExportProperties } from '@syncfusion/ej2-grids';
+import { getObject, PdfExport as GridPdf, Grid, BeforeDataBoundArgs, PdfExportProperties} from '@syncfusion/ej2-grids';
 import { PdfQueryCellInfoEventArgs, PdfStyle } from '@syncfusion/ej2-grids';
 import { isRemoteData, isOffline } from '../utils';
 import { isNullOrUndefined, setValue, Ajax, extend, getValue } from '@syncfusion/ej2-base';
@@ -59,10 +59,10 @@ export class PdfExport {
         pdfExportProperties?: PdfExportProperties,
         /* tslint:disable-next-line:no-any */
         isMultipleExport?: boolean, pdfDoc?: Object, isBlob?: boolean) : Promise<Object> {
-        let dtSrc: Object[] = this.parent.flatData;
+        let dtSrc: Object = this.parent.dataSource;
         let prop: Object = Object();
-        setValue('cancel', false, prop);
         let isLocal: Boolean = !isRemoteData(this.parent) && isOffline(this.parent);
+        setValue('cancel', false, prop);
         return new Promise((resolve: Function, reject: Function) => {
           let dm: DataManager = isLocal ? new DataManager(dtSrc) : <DataManager>this.parent.dataSource;
           let query: Query = new Query();
@@ -75,8 +75,8 @@ export class PdfExport {
               return null;
           }
           dm.executeQuery(query).then((e: Object) => {
-            this.manipulatePdfProperties(pdfExportProperties, dtSrc, isLocal ? null : <Ajax>e);
-            return this.parent.grid.pdfExportModule.Map(this.parent.grid, pdfExportProperties, isMultipleExport, pdfDoc, isBlob);
+           pdfExportProperties = this.manipulatePdfProperties(pdfExportProperties, dtSrc, <Ajax>e);
+           return this.parent.grid.pdfExportModule.Map(this.parent.grid, pdfExportProperties, isMultipleExport, pdfDoc, isBlob);
           });
         });
     }
@@ -90,27 +90,29 @@ export class PdfExport {
         }
         return query;
     }
-    protected manipulatePdfProperties(prop?: PdfExportProperties, dtSrc?: Object[], queryResult?: Ajax) : Object {
-        if (isNullOrUndefined(queryResult)) {
-          if ((this.parent.grid.filterSettings.columns.length > 0 || this.parent.grid.searchSettings.key)
-                && this.parent.grid.sortSettings.columns.length === 0) {
-            dtSrc = this.parent.filterModule.filteredResult;
-          }
-        } else {
+    protected manipulatePdfProperties(prop?: PdfExportProperties, dtSrc?: Object, queryResult?: Ajax) : Object {
+        let args: Object = {};
+        //count not required for this query  
+        let isLocal: Boolean = !isRemoteData(this.parent) && isOffline(this.parent);
+        setValue('query',  this.parent.grid.getDataModule().generateQuery(true), args);
+        setValue('isExport',  true, args);
+        if (!isNullOrUndefined(prop) && !isNullOrUndefined(prop.exportType)) {
+          setValue('exportType',  prop.exportType, args);
+        }
+        if (!isLocal || !isNullOrUndefined(this.parent.parentIdMapping)) {
           this.parent.parentData = [];
-          //count not required for this query
-          let args: Object = {};
           this.parent.dataModule.convertToFlatData(getValue('result', queryResult));
-          setValue('query',  this.parent.grid.getDataModule().generateQuery(true), args);
-          this.parent.notify('dataProcessor', args);
-          //args = this.parent.dataModule.dataProcessor(args);
-          args = <BeforeDataBoundArgs>this.dataResults;
-          dtSrc = isNullOrUndefined((<BeforeDataBoundArgs>args).result)
-            ? this.parent.flatData.slice(0) : (<BeforeDataBoundArgs>args).result;
+          setValue('expresults',  this.parent.flatData, args);
+        }
+        this.parent.notify('dataProcessor', args);
+        //args = this.parent.dataModule.dataProcessor(args);
+        args = <BeforeDataBoundArgs>this.dataResults;
+        dtSrc = isNullOrUndefined((<BeforeDataBoundArgs>args).result) ? this.parent.flatData.slice(0) : (<BeforeDataBoundArgs>args).result;
+        if (!isLocal) {
           this.parent.flatData = [];
         }
         prop = isNullOrUndefined(prop) ? {} : prop;
-        prop.dataSource = new DataManager({json: dtSrc});
+        prop.dataSource = new DataManager({json: <Object[]>dtSrc});
         return prop;
       }
       /**

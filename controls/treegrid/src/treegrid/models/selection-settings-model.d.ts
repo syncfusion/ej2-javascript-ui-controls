@@ -7,8 +7,7 @@ export interface SelectionSettingsModel {
 
     /**
      * TreeGrid supports row, cell, and both (row and cell) selection mode. 
-     * @default Row
-     * @aspDefaultValueIgnore
+     * @default Syncfusion.EJ2.Grids.SelectionMode.Row
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.SelectionMode
      */
@@ -19,8 +18,7 @@ export interface SelectionSettingsModel {
      * [`mode`](./api-selectionSettings.html#mode-selectionmode) to be either cell or both.
      * * `Flow`: Selects the range of cells between start index and end index that also includes the other cells of the selected rows.
      * * `Box`: Selects the range of cells within the start and end column indexes that includes in between cells of rows within the range.
-     * @default Flow
-     * @aspDefaultValueIgnore
+     * @default Syncfusion.EJ2.Grids.CellSelectionMode.Flow
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.CellSelectionMode
      */
@@ -30,8 +28,7 @@ export interface SelectionSettingsModel {
      * Defines options for selection type. They are
      * * `Single`: Allows selection of only a row or a cell.
      * * `Multiple`: Allows selection of multiple rows or cells.
-     * @default Single
-     * @aspDefaultValueIgnore
+     * @default Syncfusion.EJ2.Grids.SelectionType.Single
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.SelectionType
      */

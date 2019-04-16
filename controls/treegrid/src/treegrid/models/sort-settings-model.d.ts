@@ -14,7 +14,6 @@ export interface SortDescriptorModel {
     /**
      * Defines the direction of sort column. 
      * @default ''
-     * @aspDefaultValueIgnore
      * @isEnumeration true
      * @aspType Syncfusion.EJ2.Grids.SortDirection
      */

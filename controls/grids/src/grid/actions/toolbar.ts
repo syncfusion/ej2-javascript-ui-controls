@@ -91,13 +91,24 @@ export class Toolbar {
         }
     }
 
+    private bindSearchEvents(): void {
+        this.searchElement = (<HTMLInputElement>this.element.querySelector('#' + this.gridID + '_searchbar'));
+        this.wireEvent();
+        this.refreshToolbarItems();
+        if (this.parent.searchSettings) {
+            this.updateSearchBox();
+        }
+    }
+
+
     private createToolbar(): void {
         let items: ItemModel[] = this.getItems();
         this.toolbar = new tool({
             items: items,
             clicked: this.toolbarClickHandler.bind(this),
             enablePersistence: this.parent.enablePersistence,
-            enableRtl: this.parent.enableRtl
+            enableRtl: this.parent.enableRtl,
+            created: this.bindSearchEvents.bind(this)
         });
         let viewStr: string = 'viewContainerRef';
         let registerTemp: string = 'registeredTemplate';
@@ -117,12 +128,7 @@ export class Toolbar {
             this.toolbar.appendTo(this.element);
         }
         this.parent.element.insertBefore(this.element, this.parent.getHeaderContent());
-        this.searchElement = (<HTMLInputElement>this.element.querySelector('#' + this.gridID + '_searchbar'));
-        this.wireEvent();
-        this.refreshToolbarItems();
-        if (this.parent.searchSettings) {
-            this.updateSearchBox();
-        }
+        this.bindSearchEvents();
     }
 
     private refreshToolbarItems(args?: { editSettings: EditSettingsModel, name: string }): void {

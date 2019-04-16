@@ -1,6 +1,7 @@
 import { ContextMenu as Menu, BeforeOpenCloseMenuEventArgs, TreeView, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { IFileManager, FileMenuClickEventArgs, FileMenuOpenEventArgs, NotifyArgs, viewType } from '../base/interface';
 import { isNullOrUndefined, KeyboardEventArgs, createElement, closest, remove, KeyboardEvents } from '@syncfusion/ej2-base';
+import { getValue } from '@syncfusion/ej2-base';
 import { MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { Download, read } from './../common/operations';
 import { createDialog } from './dialog';
@@ -94,7 +95,7 @@ export class ContextMenu {
         } else if (!target.classList.contains(CLS.MENU_ITEM) && !target.classList.contains(CLS.MENU_ICON) && !target.classList.contains(CLS.SUBMENU_ICON)) {
             /* istanbul ignore next */
             // tslint:disable-next-line
-            if (this.parent.view === 'LargeIcons' && !isNullOrUndefined(closest(target, 'li')) && !target.closest('#' + this.parent.element.id + CLS.TREE_ID)) {
+            if (this.parent.view === 'LargeIcons' && !isNullOrUndefined(closest(target, 'li')) && !closest(target, '#' + this.parent.element.id + CLS.TREE_ID)) {
                 let eveArgs: KeyboardEventArgs = { ctrlKey: true, shiftKey: true } as KeyboardEventArgs;
                 data = this.parent.visitedData as { [key: string]: Object };
                 if (!closest(target, 'li').classList.contains('e-active')) {
@@ -117,23 +118,8 @@ export class ContextMenu {
             }
             /* istanbul ignore next */
             if (select) {
-                if (this.parent.view === 'LargeIcons') {
-                    if (data.isFile === true) {
-                        this.setFileItem(target);
-                        if (closest(target, 'li') &&
-                            (closest(target, 'li')).getElementsByClassName('e-list-img').length === 0) {
-                            this.contextMenu.enableItems([this.getMenuId('Open')], false, true);
-                        }
-                    } else {
-                        this.setFolderItem(false);
-                    }
-                    // tslint:disable-next-line
-                } else if (data['isFile'] === true) {
+                if (getValue('isFile', data) === true) {
                     this.setFileItem(target);
-                    if (closest(target, 'tr') &&
-                        (closest(target, 'tr')).getElementsByClassName(CLS.ICON_IMAGE).length === 0) {
-                        this.contextMenu.enableItems([this.getMenuId('Open')], false, true);
-                    }
                 } else {
                     this.setFolderItem(false);
                 }

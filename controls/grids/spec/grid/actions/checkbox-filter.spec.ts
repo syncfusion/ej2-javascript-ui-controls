@@ -1,18 +1,13 @@
 /**
  * Grid Filtering spec document
  */
-import { createElement } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { PredicateModel } from '../../../src/grid/base/grid-model';
-import { BatchEdit } from '../../../src/grid/actions/batch-edit';
 import { Filter } from '../../../src/grid/actions/filter';
 import { Group } from '../../../src/grid/actions/group';
 import { Page } from '../../../src/grid/actions/page';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { Freeze } from '../../../src/grid/actions/freeze';
-import { CellType } from '../../../src/grid/base/enum';
-import { ValueFormatter } from '../../../src/grid/services/value-formatter';
-import { Column } from '../../../src/grid/models/column';
 import { Selection } from '../../../src/grid/actions/selection';
 import { filterData } from '../base/datasource.spec';
 import { createGrid, destroy, getKeyUpObj, getClickObj, getKeyActionObj } from '../base/specutil.spec';
@@ -40,24 +35,6 @@ describe('Checkbox Filter module => ', () => {
             isEqual = isEqual && obj.matchCase === matchCase;
         }
         return isEqual;
-    };
-
-    let filterColumn: Function = (gridObj: Grid, colName: string, value: string, keyCode?: number) => {
-        let filterElement: any = gridObj.element.querySelector('#' + colName + '_filterBarcell');
-        filterElement.value = value;
-        filterElement.focus();
-        (gridObj.filterModule as any).keyUpHandler(getKeyUpObj(keyCode ? keyCode : 13, filterElement));
-    };
-
-    let clearFilter: Function = (gridObj: Grid, done: Function) => {
-        let actionComplete: any = (args?: Object): void => {
-            if (gridObj.element.querySelectorAll('.e-row').length === filterData.length &&
-                gridObj.filterSettings.columns.length === 0) {
-                done();
-            }
-        };
-        gridObj.actionComplete = actionComplete;
-        gridObj.clearFiltering();
     };
 
     describe('Checkbox dialog functionalities => ', () => {
@@ -1719,6 +1696,7 @@ describe('Checkbox Filter module => ', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = checkBoxFilter = actionBegin = actionComplete = null;
         });
      });    
 
@@ -1770,6 +1748,7 @@ describe('Checkbox Filter module => ', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = checkBoxFilter = actionBegin = actionComplete = null;
         });
     });  
 
@@ -1777,7 +1756,6 @@ describe('Checkbox Filter module => ', () => {
         let gridObj: Grid;
         let actionBegin: () => void;
         let checkBoxFilter: Element;
-        let preventDefault: Function = new Function();
         let actionComplete: () => void;
         let cellEdit: () => void;
         beforeAll((done: Function) => {
@@ -1852,6 +1830,7 @@ describe('Checkbox Filter module => ', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = checkBoxFilter = actionBegin = actionComplete = null;
         });
     });  
 
@@ -1900,6 +1879,7 @@ describe('Checkbox Filter module => ', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = checkFilterObj = actionBegin = actionComplete = null;
         });
     });
 

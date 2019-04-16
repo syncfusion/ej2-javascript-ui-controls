@@ -89,6 +89,7 @@ let CalendarBase = class CalendarBase extends Component {
      * @private
      */
     render() {
+        this.rangeValidation(this.min, this.max);
         this.calendarEleCopy = this.element.cloneNode(true);
         if (this.calendarMode === 'Islamic') {
             if (+(this.min.setSeconds(0)) === +new Date(1900, 0, 1, 0, 0, 0)) {
@@ -134,6 +135,14 @@ let CalendarBase = class CalendarBase extends Component {
         this.createHeader();
         this.createContent();
         this.wireEvents();
+    }
+    rangeValidation(min, max) {
+        if (isNullOrUndefined(min)) {
+            this.setProperties({ min: new Date(1900, 0, 1) }, true);
+        }
+        if (isNullOrUndefined(max)) {
+            this.setProperties({ max: new Date(2099, 11, 31) }, true);
+        }
     }
     validateDate(value) {
         this.setProperties({ min: this.checkDateValue(new Date(this.checkValue(this.min))) }, true);
@@ -1062,6 +1071,7 @@ let CalendarBase = class CalendarBase extends Component {
                     break;
                 case 'min':
                 case 'max':
+                    this.rangeValidation(this.min, this.max);
                     prop === 'min' ? this.setProperties({ min: this.checkDateValue(new Date(this.checkValue(newProp.min))) }, true) :
                         this.setProperties({ max: this.checkDateValue(new Date(this.checkValue(newProp.max))) }, true);
                     this.setProperties({ start: this.currentView() }, true);
@@ -1078,7 +1088,7 @@ let CalendarBase = class CalendarBase extends Component {
                         this.createContentFooter();
                     }
                     else {
-                        if (this.todayElement.classList.contains('e-disabled') && (this.footer) && (this.todayElement)) {
+                        if ((this.footer) && (this.todayElement) && this.todayElement.classList.contains('e-disabled')) {
                             removeClass([this.todayElement], DISABLED);
                             detach(this.todayElement);
                             detach(this.footer);
@@ -2781,15 +2791,19 @@ let DatePicker = class DatePicker extends Calendar {
         else {
             attributes(this.inputElement, { 'readonly': '' });
         }
+        this.updateIconState();
     }
     updateIconState() {
-        if (!this.allowEdit) {
+        if (!this.allowEdit && this.inputWrapper && !this.readonly) {
             if (this.inputElement.value === '') {
                 removeClass([this.inputWrapper.container], [NONEDIT]);
             }
             else {
                 addClass([this.inputWrapper.container], [NONEDIT]);
             }
+        }
+        else if (this.inputWrapper) {
+            removeClass([this.inputWrapper.container], [NONEDIT]);
         }
     }
     initialize() {
@@ -3021,7 +3035,7 @@ let DatePicker = class DatePicker extends Calendar {
             EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
             // To prevent the twice triggering.
             EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
-            if (this.showClearButton) {
+            if (this.showClearButton && this.inputWrapper.clearButton) {
                 EventHandler.add(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler, this);
             }
             if (this.formElement) {
@@ -3033,7 +3047,7 @@ let DatePicker = class DatePicker extends Calendar {
             EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
             EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
             EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
-            if (this.showClearButton) {
+            if (this.showClearButton && this.inputWrapper.clearButton) {
                 EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
             }
             if (this.formElement) {
@@ -3089,7 +3103,12 @@ let DatePicker = class DatePicker extends Calendar {
     }
     dateIconHandler(e) {
         if (Browser.isDevice) {
-            this.element.setAttribute('readonly', '');
+            if (this.element.tagName === 'EJS-DATEPICKER') {
+                this.inputElement.setAttribute('readonly', '');
+            }
+            else {
+                this.element.setAttribute('readonly', '');
+            }
             this.inputElement.blur();
         }
         e.preventDefault();
@@ -3604,9 +3623,14 @@ let DatePicker = class DatePicker extends Calendar {
             EventHandler.remove(document, 'mousedown touchstart', this.documentHandler);
         }
         if (Browser.isDevice && this.allowEdit && !this.readonly) {
-            this.element.removeAttribute('readonly');
+            if (this.element.tagName === 'EJS-DATEPICKER') {
+                this.inputElement.removeAttribute('readonly');
+            }
+            else {
+                this.element.removeAttribute('readonly');
+            }
         }
-        this.updateIconState();
+        this.setAllowEdit();
     }
     /**
      * Sets the focus to widget for interaction.
@@ -4217,6 +4241,7 @@ const PRIMARY$1 = 'e-primary';
 const FLAT$1 = 'e-flat';
 const CSS$1 = 'e-css';
 const ZOOMIN$1 = 'e-zoomin';
+const NONEDITABLE = 'e-non-edit';
 class Presets extends ChildProperty {
 }
 __decorate$2([
@@ -4477,6 +4502,20 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         else {
             attributes(this.inputElement, { 'readonly': '' });
         }
+        this.updateClearIconState();
+    }
+    updateClearIconState() {
+        if (!this.allowEdit && this.inputWrapper && !this.readonly) {
+            if (this.inputElement.value === '') {
+                removeClass([this.inputWrapper.container], [NONEDITABLE]);
+            }
+            else {
+                addClass([this.inputWrapper.container], [NONEDITABLE]);
+            }
+        }
+        else if (this.inputWrapper) {
+            removeClass([this.inputWrapper.container], [NONEDITABLE]);
+        }
     }
     validationAttribute(element, input) {
         let name = element.getAttribute('name') ? element.getAttribute('name') : element.getAttribute('id');
@@ -4522,7 +4561,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
             EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
             EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
             EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
-            if (this.showClearButton) {
+            if (this.showClearButton && this.inputWrapper.clearButton) {
                 EventHandler.add(this.inputWrapper.clearButton, 'mousedown', this.resetHandler, this);
             }
             if (!this.isMobile) {
@@ -4540,7 +4579,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
             EventHandler.remove(this.inputElement, 'blur', this.inputBlurHandler);
             EventHandler.remove(this.inputElement, 'focus', this.inputFocusHandler);
             EventHandler.remove(this.inputElement, 'change', this.inputChangeHandler);
-            if (this.showClearButton) {
+            if (this.showClearButton && this.inputWrapper.clearButton) {
                 EventHandler.remove(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler);
             }
             if (!this.isMobile) {
@@ -4939,6 +4978,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
             this.preventFocus = true;
             this.trigger('focus', focusArguments);
         }
+        this.updateClearIconState();
         this.updateHiddenInput();
     }
     inputBlurHandler(e) {
@@ -7858,6 +7898,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                 }
             }
         }
+        this.updateClearIconState();
         this.updateHiddenInput();
         if (this.isMobile && this.allowEdit && !this.readonly) {
             this.element.removeAttribute('readonly');
@@ -7954,6 +7995,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                 case 'readonly':
                     Input.setReadonly(this.readonly, this.inputElement);
                     this.inputElement.setAttribute('aria-readonly', '' + this.readonly);
+                    this.setRangeAllowEdit();
                     break;
                 case 'cssClass':
                     if (this.popupWrapper) {
@@ -8264,6 +8306,7 @@ const HALFPOSITION = 2;
 const ANIMATIONDURATION = 50;
 const OVERFLOW$2 = 'e-time-overflow';
 const OFFSETVAL = 4;
+const EDITABLE = 'e-non-edit';
 var TimePickerBase;
 (function (TimePickerBase) {
     // tslint:disable-next-line
@@ -8369,6 +8412,20 @@ let TimePicker = class TimePicker extends Component {
         }
         else {
             attributes(this.inputElement, { 'readonly': '' });
+        }
+        this.clearIconState();
+    }
+    clearIconState() {
+        if (!this.allowEdit && this.inputWrapper && !this.readonly) {
+            if (this.inputElement.value === '') {
+                removeClass([this.inputWrapper.container], [EDITABLE]);
+            }
+            else {
+                addClass([this.inputWrapper.container], [EDITABLE]);
+            }
+        }
+        else if (this.inputWrapper) {
+            removeClass([this.inputWrapper.container], [EDITABLE]);
         }
     }
     validateDisable() {
@@ -9226,7 +9283,7 @@ let TimePicker = class TimePicker extends Component {
         EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
         EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
         EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
-        if (this.showClearButton) {
+        if (this.showClearButton && this.inputWrapper.clearButton) {
             EventHandler.add(this.inputWrapper.clearButton, 'mousedown', this.clearHandler, this);
         }
         if (this.formElement) {
@@ -9236,7 +9293,7 @@ let TimePicker = class TimePicker extends Component {
             this.inputEvent = new KeyboardEvents(this.inputWrapper.container, {
                 keyAction: this.inputHandler.bind(this), keyConfigs: this.keyConfigure, eventName: 'keydown'
             });
-            if (this.showClearButton) {
+            if (this.showClearButton && this.inputElement) {
                 EventHandler.add(this.inputElement, 'mousedown', this.mouseDownHandler, this);
             }
         }
@@ -9668,6 +9725,7 @@ let TimePicker = class TimePicker extends Component {
             this.checkErrorState(this.invalidValueString);
             Input.setValue(this.invalidValueString, this.inputElement, this.floatLabelType, this.showClearButton);
         }
+        this.clearIconState();
     }
     setActiveDescendant() {
         if (!isNullOrUndefined(this.selectedElement)) {
@@ -9902,6 +9960,7 @@ let TimePicker = class TimePicker extends Component {
             this.selectInputText();
         }
         this.trigger('focus', focusArguments);
+        this.clearIconState();
     }
     /**
      * Focused the TimePicker textbox element.
@@ -9919,6 +9978,7 @@ let TimePicker = class TimePicker extends Component {
      */
     hide() {
         this.closePopup(100, null);
+        this.clearIconState();
     }
     /**
      * Opens the popup to show the list items.
@@ -10066,6 +10126,7 @@ let TimePicker = class TimePicker extends Component {
                     if (this.readonly) {
                         this.hide();
                     }
+                    this.setTimeAllowEdit();
                     break;
                 case 'cssClass':
                     this.inputWrapper.container.className += ' ' + newProp.cssClass;
@@ -10952,6 +11013,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
             this.previousElementValue = this.inputElement.value;
             this.setProperties({ value: new Date(this.timeCollections[this.activeIndex]) }, true);
         }
+        this.updateIconState();
     }
     getFullDateTime() {
         let value = null;
@@ -11152,6 +11214,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         if (Browser.isDevice && this.allowEdit && !this.readonly) {
             this.element.removeAttribute('readonly');
         }
+        this.setAllowEdit();
     }
     closePopup(e) {
         if (this.isTimePopupOpen() && this.popupObject) {

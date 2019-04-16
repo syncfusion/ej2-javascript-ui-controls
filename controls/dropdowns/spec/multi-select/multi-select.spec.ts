@@ -5,7 +5,7 @@ import { MultiSelect, TaggingEventArgs, MultiSelectChangeEventArgs } from '../..
 import { Browser, isNullOrUndefined, EmitType } from '@syncfusion/ej2-base';
 import { createElement, L10n } from '@syncfusion/ej2-base';
 import { dropDownBaseClasses, FilteringEventArgs, PopupEventArgs, FocusEventArgs } from '../../src/drop-down-base/drop-down-base';
-import { DataManager, ODataV4Adaptor, Query, ODataAdaptor } from '@syncfusion/ej2-data';
+import { DataManager, ODataV4Adaptor, Query, ODataAdaptor, WebApiAdaptor } from '@syncfusion/ej2-data';
 import { MultiSelectModel, ISelectAllEventArgs } from '../../src/index';
 import  {profile , inMB, getMemoryProfile} from '../common/common.spec';
 
@@ -15,6 +15,10 @@ let datasource: { [key: string]: Object }[] = [{ id: 'list1', text: 'JAVA', icon
 let dataSource44: string[] = ['java', 'php', 'html', 'oracle', '.net', 'c++'];
 let datasource2: { [key: string]: Object }[] = [{ id: 'id2', text: 'PHP' }, { id: 'id1', text: 'HTML' }, { id: 'id3', text: 'PERL' },
 { id: 'list1', text: 'JAVA' }, { id: 'list2', text: 'Python' }, { id: 'list5', text: 'Oracle' }];
+let css: string = ".e-searcher { width: calc(100% - 20px) !important;} ";
+let style: HTMLStyleElement = document.createElement('style'); style.type = 'text/css';
+let styleNode: Node = style.appendChild(document.createTextNode(css));
+document.getElementsByTagName('head')[0].appendChild(style);
 //e-searcher  
 //e-chips-close e-icon e-close-hooker
 //e-multi-select-wrapper
@@ -447,6 +451,172 @@ describe('MultiSelect', () => {
             expect(elem.parentElement).not.toBe(null);
             listObj.destroy();
             Browser.userAgent = temp;
+        });
+    });
+    describe('Placeholder testing through inline', () => {
+        let listObj: any;
+        let element: HTMLElement
+        let datasource1: { [key: string]: Object }[] = [{ 'text': 'Audi A6', 'id': 'e807', 'category': 'Audi' }, { 'text': 'Audi A7', 'id': 'a0cc', 'category': 'Audi' },
+        { 'text': 'BMW 501', 'id': 'f8435', 'category': 'BMW' }, { 'text': 'BMW 3', 'id': 'b2b1', 'category': 'BMW' }];
+        beforeAll(() => {
+            element = createElement('input', { id: 'msd' });
+            element.setAttribute('placeholder','Select a game');
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            listObj.destroy();
+            element.remove();
+        });
+        /**
+         * Inline placeholder
+         */
+        it('Adding placeholder attribute through inline with float type auto', (done) => {
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, floatLabelType: 'Auto'});
+            listObj.appendTo(element);
+            setTimeout(()=>{
+                let floatElement = (listObj as any).componentWrapper.querySelector('.e-float-text');
+                expect(floatElement.textContent === 'Select a game').toBe(true);
+                done();
+            }, 200);
+        });
+        it('Adding placeholder attribute through inline with float type always', (done) => {
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, floatLabelType: 'Always'});
+            listObj.appendTo(element);
+            setTimeout(()=>{
+                let floatElement = (listObj as any).componentWrapper.querySelector('.e-float-text');
+                expect(floatElement.textContent === 'Select a game').toBe(true);
+                done();
+            }, 200);
+        });
+        it('Adding placeholder attribute through inline with float type never', () =>{
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, floatLabelType: 'Never'});
+            listObj.appendTo(element);
+            expect((<any>listObj).inputElement.getAttribute('placeholder')).toBe('Select a game');
+        });
+    });  
+    describe('Placeholder testing through inline and API', () => {
+        let listObj: any;
+        let element: HTMLElement
+        let datasource1: { [key: string]: Object }[] = [{ 'text': 'Audi A6', 'id': 'e807', 'category': 'Audi' }, { 'text': 'Audi A7', 'id': 'a0cc', 'category': 'Audi' },
+        { 'text': 'BMW 501', 'id': 'f8435', 'category': 'BMW' }, { 'text': 'BMW 3', 'id': 'b2b1', 'category': 'BMW' }];
+        beforeAll(() => {
+            element = createElement('input', { id: 'msd' });
+            element.setAttribute('placeholder','Select a game');
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            listObj.destroy();
+            element.remove();
+        });
+        /**
+         * placeholder API at initial rendering
+         */
+        it('Adding placeholder attribute through API at initial rendering with float type auto', () =>{
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, placeholder: 'Select an employee', floatLabelType: 'Auto'});
+            listObj.appendTo(element);
+            expect((<any>listObj).inputElement.hasAttribute('placeholder')).toBe(false);
+            let floatElement = (listObj as any).componentWrapper.querySelector('.e-float-text');
+            expect(floatElement.textContent === 'Select an employee').toBe(true);
+        });
+        it('Adding placeholder attribute through API at initial rendering with float type always', () =>{
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, placeholder: 'Select an employee', floatLabelType: 'Always'});
+            listObj.appendTo(element);
+            expect((<any>listObj).inputElement.hasAttribute('placeholder')).toBe(false);
+            let floatElement = (listObj as any).componentWrapper.querySelector('.e-float-text');
+            expect(floatElement.textContent === 'Select an employee').toBe(true);
+        });
+        it('Adding placeholder attribute through API at initial rendering with float type never', () =>{
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, placeholder: 'Select an employee', floatLabelType: 'Never'});
+            listObj.appendTo(element);
+            expect((<any>listObj).inputElement.getAttribute('placeholder')).toBe('Select an employee');
+        });
+        /**
+         * placeholder API dynamically
+         */
+        it('Adding placeholder attribute through API dynamically with float type auto', () =>{
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, floatLabelType:'Auto'});
+            listObj.appendTo(element);
+            listObj.placeholder = 'Select an employee';
+            listObj.dataBind();
+            expect((<any>listObj).inputElement.hasAttribute('placeholder')).toBe(false);
+            let floatElement = (listObj as any).componentWrapper.querySelector('.e-float-text');
+            expect(floatElement.textContent === 'Select an employee').toBe(true);
+        });
+        it('Adding placeholder attribute through API dynamically with float type always', () =>{
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, floatLabelType:'Always'});
+            listObj.appendTo(element);
+            listObj.placeholder = 'Select an employee';
+            listObj.dataBind();
+            expect((<any>listObj).inputElement.hasAttribute('placeholder')).toBe(false);
+            let floatElement = (listObj as any).componentWrapper.querySelector('.e-float-text');
+            expect(floatElement.textContent === 'Select an employee').toBe(true);
+        });
+        it('Adding placeholder attribute through API dynamically with float type never', () =>{
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, floatLabelType:'Never'});
+            listObj.appendTo(element);
+            listObj.placeholder = 'Select an employee';
+            listObj.dataBind();
+            expect((<any>listObj).inputElement.getAttribute('placeholder')).toBe('Select an employee');
+        });
+    });
+    describe('Placeholder testing through API', () => {
+        let listObj: any;
+        let element: HTMLElement
+        let datasource1: { [key: string]: Object }[] = [{ 'text': 'Audi A6', 'id': 'e807', 'category': 'Audi' }, { 'text': 'Audi A7', 'id': 'a0cc', 'category': 'Audi' },
+        { 'text': 'BMW 501', 'id': 'f8435', 'category': 'BMW' }, { 'text': 'BMW 3', 'id': 'b2b1', 'category': 'BMW' }];
+        beforeAll(() => {
+            element = createElement('input', { id: 'msd' });
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            listObj.destroy();
+            element.remove();
+        });
+        /**
+         * placeholder API at initial rendering
+         */
+        it('Adding placeholder attribute through API at initial rendering with float type auto', () =>{
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, placeholder: 'Select an employee', floatLabelType: 'Auto'});
+            listObj.appendTo(element);
+            let floatElement = (listObj as any).componentWrapper.querySelector('.e-float-text');
+            expect(floatElement.textContent === 'Select an employee').toBe(true);
+        });
+        it('Adding placeholder attribute through API at initial rendering with float type always', () =>{
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, placeholder: 'Select an employee', floatLabelType: 'Always'});
+            listObj.appendTo(element);
+            let floatElement = (listObj as any).componentWrapper.querySelector('.e-float-text');
+            expect(floatElement.textContent === 'Select an employee').toBe(true);
+        });
+        it('Adding placeholder attribute through API at initial rendering with float type never', () =>{
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, placeholder: 'Select an employee', floatLabelType: 'Never'});
+            listObj.appendTo(element);
+            expect((<any>listObj).inputElement.getAttribute('placeholder')).toBe('Select an employee');
+        });
+        /**
+         * placeholder API dynamically
+         */
+        it('Adding placeholder attribute through API dynamically with float type auto', () =>{
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, floatLabelType:'Auto'});
+            listObj.appendTo(element);
+            listObj.placeholder = 'Select an employee';
+            listObj.dataBind();
+            let floatElement = (listObj as any).componentWrapper.querySelector('.e-float-text');
+            expect(floatElement.textContent === 'Select an employee').toBe(true);
+        });
+        it('Adding placeholder attribute through API dynamically with float type always', () =>{
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, floatLabelType:'Always'});
+            listObj.appendTo(element);
+            listObj.placeholder = 'Select an employee';
+            listObj.dataBind();
+            let floatElement = (listObj as any).componentWrapper.querySelector('.e-float-text');
+            expect(floatElement.textContent === 'Select an employee').toBe(true);
+        });
+        it('Adding placeholder attribute through API dynamically with float type never', () =>{
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, floatLabelType:'Never'});
+            listObj.appendTo(element);
+            listObj.placeholder = 'Select an employee';
+            listObj.dataBind();
+            expect((<any>listObj).inputElement.getAttribute('placeholder')).toBe('Select an employee');
         });
     });
     describe('Angular tag testing ', () => {
@@ -4635,8 +4805,8 @@ describe('MultiSelect', () => {
         let listObj: MultiSelect;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
         let datamanager: DataManager = new DataManager({
-            url: 'https://js.syncfusion.com/demos/ejServices/Wcf/Northwind.svc/Customers',
-            adaptor: new ODataAdaptor,
+            url: 'https://ej2services.syncfusion.com/production/web-services/api/Employees',
+            adaptor: new WebApiAdaptor,
             crossDomain: true
         });
         let originalTimeout: number;
@@ -4656,12 +4826,12 @@ describe('MultiSelect', () => {
         it('ensure change event', (done) => {
             listObj = new MultiSelect({
             dataSource: datamanager,
-            query: new Query().select(['ContactName', 'CustomerID']).take(25),
-            fields: { text: 'ContactName', value: 'CustomerID' },
+            query: new Query().select(['FirstName', 'EmployeeID']).take(10).requiresCount(),
+            fields: { text: 'FirstName', value: 'EmployeeID' },
             placeholder: 'Select customer',
             sortOrder: 'Ascending',
             allowFiltering: true,
-            value: ['ANATR'],
+            value: [2],
             open: () => {
                 if ( (<any>listObj).inputElement.value === 'c') {
                    let len: number = (<any>listObj).ulElement.querySelectorAll('li').length;
@@ -4968,8 +5138,132 @@ describe('MultiSelect', () => {
                 element.remove();
             }
         });
-        it('Check Element length', () => {
-            expect((<any>listObj).inputElement.offsetWidth < (<any>listObj).componentWrapper.offsetWidth).toBe(true);
+        it('Lengthy placeholder when input is empty and focusout', () => {
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, 
+                placeholder: "select counties Select or search maximum 8 playersssssssssssssssss" , showDropDownIcon: true , width: 300 });
+            listObj.appendTo(element);
+            let wrapper: HTMLElement = (<any>listObj).inputElement.parentElement.parentElement;
+            if (wrapper && wrapper.firstElementChild && wrapper.firstChild.nextSibling) {
+                expect(getComputedStyle((<any>listObj).searchWrapper).width).toBe('calc(100% + -20px)');
+            }
+            else
+                expect(true).toBe(false);            
+            listObj.destroy();
+        });
+        it('Lengthy placeholder when input is empty and focusin', () => {
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, 
+                placeholder: "select counties Select or search maximum 8 playersssssssssssssssss" , showDropDownIcon: true , width: 300 });
+            listObj.appendTo(element);
+            let wrapper: HTMLElement = (<any>listObj).inputElement.parentElement.parentElement;
+            (<any>listObj).focusIn();
+            if (wrapper && wrapper.firstElementChild && wrapper.firstChild.nextSibling) {
+                expect(getComputedStyle((<any>listObj).searchWrapper).width).toBe('calc(100% + -20px)');
+            }
+            else
+                expect(true).toBe(false);            
+            listObj.destroy();
+        });
+        it('Lengthy placeholder when input given & focusout', () => {
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, 
+                placeholder: "select counties Select or search maximum 8 playersssssssssssssssss" , value: ['PHP','HTML'],showDropDownIcon: true , width: 300 });
+            listObj.appendTo(element);
+            let wrapper: HTMLElement = (<any>listObj).inputElement.parentElement.parentElement;
+            if (wrapper && wrapper.firstElementChild && wrapper.firstChild.nextSibling) {
+                expect((<any>listObj).searchWrapper.classList.contains('e-zero-size')).toBe(true);
+            }
+            else
+                expect(true).toBe(false);            
+            listObj.destroy();
+        });
+        it('Lengthy placeholder when input given & focusin', () => {
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, 
+                placeholder: "select counties Select or search maximum 8 playersssssssssssssssss" , value: ['PHP','HTML'],showDropDownIcon: true , width: 300 });
+            listObj.appendTo(element);
+            (<any>listObj).focusIn();
+            let wrapper: HTMLElement = (<any>listObj).inputElement.parentElement.parentElement;
+            if (wrapper && wrapper.firstElementChild && wrapper.firstChild.nextSibling) {
+                expect((<any>listObj).searchWrapper.classList.contains('e-zero-size')).toBe(false);
+            }
+            else
+                expect(true).toBe(false);            
+            listObj.destroy();
+        });
+        it('Dynamically changing the value through setmodel', () => {
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, 
+                placeholder: "select counties Select or search maximum 8 playersssssssssssssssss" ,showDropDownIcon: true , width: 300 });
+            listObj.appendTo(element);
+            listObj.value = ['PHP','HTML'];
+            listObj.dataBind();
+            let wrapper: HTMLElement = (<any>listObj).inputElement.parentElement.parentElement;
+            if (wrapper && wrapper.firstElementChild && wrapper.firstChild.nextSibling) {
+                expect((<any>listObj).searchWrapper.classList.contains('e-zero-size')).toBe(true);
+            }
+            else
+                expect(true).toBe(false);            
+            listObj.destroy();
+        });
+        it('Selecting value using enter key', () => {
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, 
+                placeholder: "select counties Select or search maximum 8 playersssssssssssssssss" ,showDropDownIcon: true , width: 300 });
+            listObj.appendTo(element);
+            listObj.showPopup();
+           (<any>listObj).focusAtFirstListItem();
+           keyboardEventArgs.keyCode = 13;
+           (<any>listObj).onKeyDown(keyboardEventArgs);
+            let wrapper: HTMLElement = (<any>listObj).inputElement.parentElement.parentElement;
+            if (wrapper && wrapper.firstElementChild && wrapper.firstChild.nextSibling) {
+                expect((<any>listObj).searchWrapper.classList.contains('e-zero-size')).toBe(false);
+            }
+            else
+                expect(true).toBe(false);            
+            listObj.destroy();
+        });
+        it('Removing chip using backspace key', () => {
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, 
+                placeholder: "select counties Select or search maximum 8 playersssssssssssssssss" ,showDropDownIcon: true ,value: ['PHP'], width: 300 });
+            listObj.appendTo(element);
+            listObj.showPopup();
+           (<any>listObj).focusAtFirstListItem();
+           keyboardEventArgs.keyCode = 8;
+           (<any>listObj).removelastSelection(keyboardEventArgs);
+            let wrapper: HTMLElement = (<any>listObj).inputElement.parentElement.parentElement;
+            if (wrapper && wrapper.firstElementChild && wrapper.firstChild.nextSibling) {
+                expect(getComputedStyle((<any>listObj).searchWrapper).width).toBe('calc(100% + -20px)');
+            }
+            else
+                expect(true).toBe(false);            
+            listObj.destroy();
+        });
+        it('Removing individual chip', () => {
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, 
+                placeholder: "select counties Select or search maximum 8 playersssssssssssssssss" ,showDropDownIcon: true ,value: ['PHP'], width: 300 });
+            listObj.appendTo(element);
+           (<any>listObj).onChipRemove({
+                preventDefault: function () { },
+                which: 1,
+                target: document.querySelector('.e-chips-collection .e-chips .e-chips-close')
+           });
+            let wrapper: HTMLElement = (<any>listObj).inputElement.parentElement.parentElement;
+            if (wrapper && wrapper.firstElementChild && wrapper.firstChild.nextSibling) {
+                expect(getComputedStyle((<any>listObj).searchWrapper).width).toBe('calc(100% + -20px)');
+            }
+            else
+                expect(true).toBe(false);            
+            listObj.destroy();
+        });
+        it('Overall chip remove', () => {
+            listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, 
+                placeholder: "select counties Select or search maximum 8 playersssssssssssssssss" ,showDropDownIcon: true ,value: ['PHP'], width: 300 });
+            listObj.appendTo(element);
+           keyboardEventArgs.which = 1;
+           (<any>listObj).ClearAll(keyboardEventArgs);
+            let wrapper: HTMLElement = (<any>listObj).inputElement.parentElement.parentElement;
+            if (wrapper && wrapper.firstElementChild && wrapper.firstChild.nextSibling) {
+                expect(getComputedStyle((<any>listObj).searchWrapper).width).toBe('calc(100% + -20px)');
+            }
+            else
+                expect(true).toBe(false);            
+            listObj.destroy();
         });
     });
     describe('EJ2-22723 - Multiselect selected value not updated', () => {

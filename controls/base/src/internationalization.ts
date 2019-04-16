@@ -160,7 +160,6 @@ export class Internationalization {
      * Returns the parser function for given options.
      * @param {DateFormatOptions} options - Specifies the format options in which the parser function will return.
      * @returns {Function}
-     * @private
      */
     public getDateParser(options?: DateFormatOptions): Function {
         return DateParser.dateParser(this.getCulture(), options || { skeleton: 'short', type: 'date' }, cldrData);

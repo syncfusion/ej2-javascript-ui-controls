@@ -2,7 +2,35 @@
 
 ## [Unreleased]
 
+## 17.1.41 (2019-04-16)
+
+### Accordion
+
+#### Bug Fixes
+
+- Content value getting changed while updating header dynamically issue has been fixed.
+
+### TreeView
+
+#### Bug Fixes
+
+- #231497 - Now the selected node background color is removed before collapsing the parent node with out removing 'e-active' class.
+
 ## 17.1.40 (2019-04-09)
+
+### TreeView
+
+#### Bug Fixes
+
+- Now the selected node background color is removed before collapsing the parent node.
+
+### Tab
+
+#### Bug Fixes
+
+- Support to restrict add and remove functionalities of Tab has been provided.
+
+## 17.1.38 (2019-03-29)
 
 ### Menu
 

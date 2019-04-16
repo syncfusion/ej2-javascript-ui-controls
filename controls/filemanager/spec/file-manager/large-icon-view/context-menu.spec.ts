@@ -6,8 +6,9 @@ import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane
 import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement, Browser, EventHandler, isNullOrUndefined, select } from '@syncfusion/ej2-base';
-import { toolbarItems, toolbarItems1, data1, data2, folderRename, dataSortbySize, singleSelectionDetails, rename, data3, data4, data5, dataDelete, data6, data7, data8, data9, data12, data14, UploadData } from '../data';
+import { toolbarItems, toolbarItems1, data1, data2, folderRename, dataSortbySize, singleSelectionDetails, rename, data3, data4, data5, dataDelete, data6, data7, data8, data9, data12, data14, UploadData, data15, data11 } from '../data';
 import { extend } from '@syncfusion/ej2-grids';
+import { FileOpenEventArgs } from '../../../src/file-manager/base/interface';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -21,6 +22,7 @@ function eventObject(eventType: string, eventName: string): Object {
 
 describe('FileManager control LargeIcons view', () => {
     describe('context menu testing', () => {
+        let i:number=0;
         let mouseEventArgs: any, tapEvent: any;
         let feObj: any;
         let ele: HTMLElement;
@@ -36,6 +38,7 @@ describe('FileManager control LargeIcons view', () => {
                     url: '/FileOperations',
                     uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
                 },
+                beforeFileOpen: (args: FileOpenEventArgs) => { i++ },
                 showThumbnail: false
             }, '#file');
             this.request = jasmine.Ajax.requests.mostRecent();
@@ -63,6 +66,7 @@ describe('FileManager control LargeIcons view', () => {
             }, 500);
         });
         afterEach((): void => {
+            i=0;
             jasmine.Ajax.uninstall();
             if (feObj) feObj.destroy();
             ele.remove();
@@ -180,6 +184,67 @@ describe('FileManager control LargeIcons view', () => {
         //         }, 500);
         //     }, 100);
         // });
+                
+        it('non-image file context menu open process testing', (done) => {
+            let el: any = document.getElementById(feObj.element.id + '_contextmenu');
+            let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
+            expect(li.length).toBe(5);
+            mouseEventArgs.target = li[0];
+            tapEvent.tapCount = 1;
+            feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+            expect(li[0].textContent).toBe('Documents');
+            let sourceElement: any = el.ej2_instances[0];
+            let evt = document.createEvent('MouseEvents')
+            evt.initEvent('contextmenu', true, true);
+            li[0].dispatchEvent(evt);
+            setTimeout(function () {
+                expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Open');
+                expect(sourceElement.element.querySelectorAll('li')[0].classList.contains('e-disabled')).toBe(false);
+                sourceElement.element.querySelectorAll('li')[0].click();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data11)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
+                setTimeout(function () {
+                    li = document.getElementById('file_largeicons').querySelectorAll('li');
+                    mouseEventArgs.target = li[1];
+                    tapEvent.tapCount = 1;
+                    feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                    expect(li[1].textContent).toBe('music.mp3');
+                    let evt = document.createEvent('MouseEvents')
+                    evt.initEvent('contextmenu', true, true);
+                    li[1].dispatchEvent(evt);
+                    setTimeout(function () {
+                        expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Open');
+                        expect(sourceElement.element.querySelectorAll('li')[0].classList.contains('e-disabled')).toBe(false);
+                        sourceElement.element.querySelectorAll('li')[0].click();
+                        setTimeout(function () {
+                            expect(i >1).toBe(true);
+                            done();
+                        }, 100);
+                    }, 100);
+                }, 500);
+            }, 500);
+        });
+        
+        it('folder context menu in tree view open item testing', (done) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
+            setTimeout(function () {
+                let el: any = document.getElementById(feObj.element.id + '_contextmenu');
+                let Li: Element = feObj.navigationpaneModule.treeObj.element.querySelectorAll("li")[2];
+                let sourceElement: any = el.ej2_instances[0];
+                let evt = document.createEvent('MouseEvents')
+                evt.initEvent('contextmenu', true, true);
+                Li.dispatchEvent(evt);
+                setTimeout(function () {
+                    expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Open');
+                    expect(sourceElement.element.querySelectorAll('li')[0].classList.contains('e-disabled')).toBe(true);
+                    done();
+                }, 100);
+            }, 500);
+        });
     });
     describe('for LargeIcons View context menu', () => {
         let mouseEventArgs: any, tapEvent: any;
@@ -275,6 +340,8 @@ describe('FileManager control LargeIcons view', () => {
             evt.initEvent('contextmenu', true, true);
             li[0].dispatchEvent(evt);
             setTimeout(function () {
+                expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Open');
+                expect(sourceElement.element.querySelectorAll('li')[0].classList.contains('e-disabled')).toBe(false);
                 sourceElement.element.querySelectorAll('li')[0].click();
                 this.request = jasmine.Ajax.requests.mostRecent();
                 this.request.respondWith({
@@ -418,6 +485,48 @@ describe('FileManager control LargeIcons view', () => {
                 }, 500);
             }, 500);
         });
+
+        it('file context menu open process testing', (done) => {
+            let el: any = document.getElementById(feObj.element.id + '_contextmenu');
+            let li: any = document.getElementById('file_largeicons').querySelectorAll('li');
+            expect(li.length).toBe(3);
+            mouseEventArgs.target = li[2];
+            tapEvent.tapCount = 1;
+            feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+            expect(li[2].textContent).toBe('Food');
+            let sourceElement: any = el.ej2_instances[0];
+            let evt = document.createEvent('MouseEvents')
+            evt.initEvent('contextmenu', true, true);
+            li[2].dispatchEvent(evt);
+            setTimeout(function () {
+                expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Open');
+                expect(sourceElement.element.querySelectorAll('li')[0].classList.contains('e-disabled')).toBe(false);
+                sourceElement.element.querySelectorAll('li')[0].click();
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: JSON.stringify(data15)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 1000;
+                setTimeout(function () {
+                    li = document.getElementById('file_largeicons').querySelectorAll('li');
+                    mouseEventArgs.target = li[0];
+                    tapEvent.tapCount = 1;
+                    feObj.largeiconsviewModule.clickObj.tap(tapEvent);
+                    expect(li[0].textContent).toBe('Bread.png');
+                    let evt = document.createEvent('MouseEvents')
+                    evt.initEvent('contextmenu', true, true);
+                    li[0].dispatchEvent(evt);
+                    setTimeout(function () {
+                        expect(sourceElement.element.querySelectorAll('li')[0].innerText).toBe('Open');
+                        expect(sourceElement.element.querySelectorAll('li')[0].classList.contains('e-disabled')).toBe(false);
+                        sourceElement.element.querySelectorAll('li')[0].click();
+                        done();
+                    }, 500);
+                }, 500);
+            }, 500);
+        });
+
         it('layout context menu with details', (done: Function) => {
             let el: any = document.getElementById(feObj.element.id + '_contextmenu');
             let li: any = document.getElementById('file_largeicons');

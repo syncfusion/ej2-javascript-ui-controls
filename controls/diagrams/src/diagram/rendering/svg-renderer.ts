@@ -307,6 +307,10 @@ export class SvgRenderer implements IRenderer {
             let pivotX: number = options.x + options.width * options.pivotX;
             let pivotY: number = options.y + options.height * options.pivotY;
             if (options.doWrap || options.textOverflow !== 'Wrap') {
+                let innerHtmlTextElement: HTMLElement = document.getElementById(options.id + '_text');
+                if (innerHtmlTextElement) {
+                    innerHtmlTextElement.innerHTML = '';
+                }
                 this.setSvgStyle(text, options as StyleAttributes, diagramId);
                 this.setSvgFontStyle(text, options);
                 textNode = document.createTextNode(options.content);

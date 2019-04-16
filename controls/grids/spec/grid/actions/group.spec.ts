@@ -1,7 +1,6 @@
 /**
  * Grid Grouping spec document
  */
-import { EventHandler } from '@syncfusion/ej2-base';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
 import { Grid } from '../../../src/grid/base/grid';
@@ -56,7 +55,6 @@ describe('Grouping module => ', () => {
         let gridObj: Grid;
         let actionBegin: () => void;
         let actionComplete: () => void;
-        let columns: any;
         beforeAll((done: Function) => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -420,6 +418,7 @@ describe('Grouping module => ', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
 
@@ -427,7 +426,6 @@ describe('Grouping module => ', () => {
         let gridObj: Grid;
         let actionBegin: () => void;
         let actionComplete: () => void;
-        let columns: any;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -471,6 +469,7 @@ describe('Grouping module => ', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
 
@@ -478,7 +477,6 @@ describe('Grouping module => ', () => {
         let gridObj: Grid;
         let actionBegin: () => void;
         let actionComplete: () => void;
-        let columns: any;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -547,6 +545,7 @@ describe('Grouping module => ', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
 
     });
@@ -556,7 +555,6 @@ describe('Grouping module => ', () => {
         let gridObj: Grid;
         let actionBegin: () => void;
         let actionComplete: () => void;
-        let columns: any;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -645,6 +643,7 @@ describe('Grouping module => ', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
 
@@ -720,6 +719,7 @@ describe('Grouping module => ', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
@@ -727,7 +727,6 @@ describe('Grouping module => ', () => {
         let gridObj: Grid;
         let actionBegin: () => void;
         let actionComplete: () => void;
-        let columns: any;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -796,6 +795,7 @@ describe('Grouping module => ', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
 
     });
@@ -804,7 +804,6 @@ describe('Grouping module => ', () => {
         let gridObj: Grid;
         let actionBegin: () => void;
         let actionComplete: () => void;
-        let columns: any;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -837,6 +836,7 @@ describe('Grouping module => ', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
     });
     //initial render with two columns grouped. 
@@ -844,7 +844,6 @@ describe('Grouping module => ', () => {
         let gridObj: Grid;
         let actionBegin: () => void;
         let actionComplete: () => void;
-        let columns: any;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -874,6 +873,7 @@ describe('Grouping module => ', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
 
     });
@@ -883,7 +883,6 @@ describe('Grouping module => ', () => {
         let gridObj: Grid;
         let actionBegin: () => void;
         let actionComplete: () => void;
-        let columns: any;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -940,15 +939,13 @@ describe('Grouping module => ', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
         });
 
     });
 
     describe('Grouping remote data => ', () => {
         let gridObj: Grid;
-        let actionBegin: () => void;
-        let actionComplete: () => void;
-        let columns: any;
         let old: (e: ReturnType) => Promise<Object> = Render.prototype.validateGroupRecords;
         beforeAll((done: Function) => {
             jasmine.Ajax.install();
@@ -990,14 +987,13 @@ describe('Grouping module => ', () => {
             Render.prototype.validateGroupRecords = old;
             destroy(gridObj);
             jasmine.Ajax.uninstall();
+            gridObj = old = null;
         });
     });
 
     describe('Grouping column by format using setmodel => ', () => {
         let gridObj: Grid;
-        let actionBegin: () => void;
         let actionComplete: () => void;
-        let columns: any;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -1085,14 +1081,12 @@ describe('Grouping module => ', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = actionComplete = null;
         });
     });
 
     describe('Grouping remote data for group by format => ', () => {
         let gridObj: Grid;
-        let actionBegin: () => void;
-        let actionComplete: () => void;
-        let columns: any;
         let old: (e: ReturnType) => Promise<Object> = Render.prototype.validateGroupRecords;
         beforeAll((done: Function) => {
             jasmine.Ajax.install();
@@ -1134,13 +1128,11 @@ describe('Grouping module => ', () => {
             Render.prototype.validateGroupRecords = old;
             destroy(gridObj);
             jasmine.Ajax.uninstall();
+            gridObj = old = null;
         });
     });
     describe('Grouping column by format at initial settings => ', () => {
         let gridObj: Grid;
-        let actionBegin: () => void;
-        let actionComplete: () => void;
-        let columns: any;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -1200,13 +1192,11 @@ describe('Grouping module => ', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
     describe('Grouping column by format at initial settings without column type declaration => ', () => {
         let gridObj: Grid;
-        let actionBegin: () => void;
-        let actionComplete: () => void;
-        let columns: any;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -1236,14 +1226,12 @@ describe('Grouping module => ', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
     describe('Grouping disablePageWiseAggregates with empty datasource => ', () => {
         let gridObj: Grid;
-        let actionBegin: () => void;
-        let actionComplete: () => void;
-        let columns: any;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -1267,12 +1255,12 @@ describe('Grouping module => ', () => {
         });
         afterAll((done) => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
     describe('EJ2-6791-Groped content not renders properly , when grouping enabled throw set model => ', () => {
         let gridObj: Grid;
         let actionComplete: () => void;
-        let columns: any;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -1298,6 +1286,7 @@ describe('Grouping module => ', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = actionComplete = null;
         });
     });
 
@@ -1365,6 +1354,7 @@ describe('Grouping module => ', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
@@ -1390,6 +1380,7 @@ describe('Grouping module => ', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
     //focus strategy script error

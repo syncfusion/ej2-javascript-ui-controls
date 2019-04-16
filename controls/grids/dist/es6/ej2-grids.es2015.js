@@ -856,8 +856,7 @@ function doesImplementInterface(target, checkFor) {
  * @hidden
  */
 function valueAccessor(field, data, column) {
-    field = isNullOrUndefined(field) ? '' : field;
-    return DataUtil.getObject(field, data);
+    return (isNullOrUndefined(field) || field === '') ? '' : DataUtil.getObject(field, data);
 }
 /**
  * The function used to update Dom using requestAnimationFrame.
@@ -3218,7 +3217,7 @@ class RowRenderer {
      */
     refresh(row, columns, isChanged, attributes$$1, rowTemplate) {
         if (isChanged) {
-            row.data = extend({}, row.changes);
+            row.data = extendObjWithFn({}, row.changes);
             this.refreshMergeCells(row);
         }
         let node = this.parent.element.querySelector('[data-uid=' + row.uid + ']');
@@ -4044,6 +4043,8 @@ class ContentRender {
                         tr = appendChildren(frag, elements);
                     }
                 }
+                let arg = { data: modelData[i].data, row: tr };
+                this.parent.trigger(rowDataBound, arg);
             }
             if (modelData[i].isDataRow) {
                 this.rowElements.push(tr);
@@ -4911,6 +4912,7 @@ class CellRenderer {
             let dummyData = extendObjWithFn({}, data, { [foreignKeyData]: fData });
             result = cell.column.getColumnTemplate()(extend({ 'index': attributes$$1[literals[0]] }, dummyData), this.parent, 'template');
             appendChildren(node, result);
+            this.parent.notify('template-result', { template: result });
             result = null;
             node.setAttribute('aria-label', node.innerText + ' is template cell' + ' column header ' +
                 cell.column.headerText);
@@ -7403,6 +7405,9 @@ class Selection {
             this.selectRowIndex(rowIndex);
             if (isUnSelected && ((checkboxColumn.length ? true : this.selectionSettings.enableToggle) || this.isMultiCtrlRequest)) {
                 this.rowDeselect(rowDeselecting, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target);
+                if (this.isCancelDeSelect) {
+                    return;
+                }
                 this.selectedRowIndexes.splice(this.selectedRowIndexes.indexOf(rowIndex), 1);
                 this.selectedRecords.splice(this.selectedRecords.indexOf(selectedRow), 1);
                 selectedRow.removeAttribute('aria-selected');
@@ -7464,7 +7469,7 @@ class Selection {
     }
     clearRow() {
         this.clearRowSelection();
-        if (this.isCancelDeSelect === true) {
+        if (this.isCancelDeSelect && this.parent.checkAllRows !== 'Check') {
             return;
         }
         this.selectedRowIndexes = [];
@@ -7611,8 +7616,22 @@ class Selection {
                     mRow.push(gObj.getMovableRows()[this.selectedRowIndexes[i]]);
                 }
             }
+            if (this.selectionSettings.persistSelection) {
+                this.isInteracted = this.checkSelectAllClicked ? true : false;
+            }
             this.rowDeselect(rowDeselecting, rowIndex, data, row, foreignKeyData$$1, target, mRow);
-            if (this.isCancelDeSelect === true) {
+            if (this.isCancelDeSelect && (this.isInteracted || this.checkSelectAllClicked)) {
+                if (this.parent.isPersistSelection) {
+                    if (this.getCheckAllStatus(this.parent.element.querySelector('.e-checkselectall')) === 'Intermediate') {
+                        for (let i = 0; i < this.selectedRecords.length; i++) {
+                            this.updatePersistCollection(this.selectedRecords[i], true);
+                        }
+                    }
+                    else {
+                        this.parent.checkAllRows = 'Check';
+                        this.updatePersistSelectedData(true);
+                    }
+                }
                 return;
             }
             rows.filter((record) => record.hasAttribute('aria-selected')).forEach((ele) => {
@@ -7642,15 +7661,19 @@ class Selection {
         }
     }
     rowDeselect(type, rowIndex, data, row, foreignKeyData$$1, target, mRow) {
-        let cancl = 'cancel';
-        this.updatePersistCollection(row[0], false);
-        let rowDeselectObj = {
-            rowIndex: rowIndex, data: data, row: row, foreignKeyData: foreignKeyData$$1,
-            cancel: false, target: target, isInteracted: this.isInteracted
-        };
-        this.parent.trigger(type, this.parent.getFrozenColumns() ? Object.assign({}, rowDeselectObj, { mRow: mRow }) : rowDeselectObj);
-        this.isCancelDeSelect = rowDeselectObj[cancl];
-        this.updateCheckBoxes(row[0], undefined, rowIndex[0]);
+        if ((this.selectionSettings.persistSelection && this.isInteracted) || !this.selectionSettings.persistSelection) {
+            let cancl = 'cancel';
+            let rowDeselectObj = {
+                rowIndex: rowIndex, data: data, row: row, foreignKeyData: foreignKeyData$$1,
+                cancel: false, target: target, isInteracted: this.isInteracted
+            };
+            this.parent.trigger(type, this.parent.getFrozenColumns() ? Object.assign({}, rowDeselectObj, { mRow: mRow }) : rowDeselectObj);
+            this.isCancelDeSelect = rowDeselectObj[cancl];
+            if (!this.isCancelDeSelect || (!this.isInteracted && !this.checkSelectAllClicked)) {
+                this.updatePersistCollection(row[0], false);
+                this.updateCheckBoxes(row[0], undefined, rowIndex[0]);
+            }
+        }
     }
     getRowObj(row = this.currentIndex) {
         if (isNullOrUndefined(row)) {
@@ -8989,6 +9012,7 @@ class Selection {
         this.preventFocus = true;
         let checkBox;
         let checkWrap = parentsUntil(target, 'e-checkbox-wrapper');
+        this.checkSelectAllClicked = checkWrap && checkWrap.querySelectorAll('.e-checkselectall') ? true : false;
         if (checkWrap && checkWrap.querySelectorAll('.e-checkselect,.e-checkselectall').length > 0) {
             checkBox = checkWrap.querySelector('input[type="checkbox"]');
             chkSelect = true;
@@ -12762,7 +12786,9 @@ let Grid = Grid_1 = class Grid extends Component {
             if (this.prevElement !== element || e.type === 'mouseout') {
                 this.toolTipObj.close();
             }
-            if (element && e.type !== 'mouseout') {
+            let tagName = e.target.tagName;
+            let elemNames = ['A', 'BUTTON', 'INPUT'];
+            if (element && e.type !== 'mouseout' && !(Browser.isDevice && elemNames.indexOf(tagName) !== -1)) {
                 if (element.getAttribute('aria-describedby')) {
                     return;
                 }
@@ -20114,13 +20140,22 @@ class Toolbar$1 {
             remove(this.element);
         }
     }
+    bindSearchEvents() {
+        this.searchElement = this.element.querySelector('#' + this.gridID + '_searchbar');
+        this.wireEvent();
+        this.refreshToolbarItems();
+        if (this.parent.searchSettings) {
+            this.updateSearchBox();
+        }
+    }
     createToolbar() {
         let items = this.getItems();
         this.toolbar = new Toolbar({
             items: items,
             clicked: this.toolbarClickHandler.bind(this),
             enablePersistence: this.parent.enablePersistence,
-            enableRtl: this.parent.enableRtl
+            enableRtl: this.parent.enableRtl,
+            created: this.bindSearchEvents.bind(this)
         });
         let viewStr = 'viewContainerRef';
         let registerTemp = 'registeredTemplate';
@@ -20142,12 +20177,7 @@ class Toolbar$1 {
             this.toolbar.appendTo(this.element);
         }
         this.parent.element.insertBefore(this.element, this.parent.getHeaderContent());
-        this.searchElement = this.element.querySelector('#' + this.gridID + '_searchbar');
-        this.wireEvent();
-        this.refreshToolbarItems();
-        if (this.parent.searchSettings) {
-            this.updateSearchBox();
-        }
+        this.bindSearchEvents();
     }
     refreshToolbarItems(args) {
         let gObj = this.parent;
@@ -20640,6 +20670,10 @@ class Aggregate {
         summaryIterator(this.parent.aggregates, (column) => {
             let dataColumn = this.parent.getColumnByField(column.field) || {};
             let type = dataColumn.type;
+            let cFormat = 'customFormat';
+            if (!isNullOrUndefined(column[cFormat])) {
+                column.setPropertiesSilent({ format: column[cFormat] });
+            }
             column.setPropertiesSilent({ format: this.getFormatFromType(column.format, type) });
             column.setFormatter(this.parent.locale);
             column.setPropertiesSilent({ columnName: column.columnName || column.field });

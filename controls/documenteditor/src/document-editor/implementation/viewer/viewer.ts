@@ -695,7 +695,8 @@ export abstract class LayoutViewer {
         this.iframe = createElement('iframe', {
             attrs: {
                 'scrolling': 'no', 'src': 'javascript:false',
-                'style': 'pointer-events:none;position:absolute;top:-10000px'
+                // tslint:disable-next-line:max-line-length
+                'style': 'pointer-events:none;position:absolute;left:0px;top:0px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden'
             },
             className: 'e-de-text-target'
         }) as HTMLIFrameElement;
@@ -802,7 +803,8 @@ export abstract class LayoutViewer {
             }
             this.isComposingIME = false;
             this.lastComposedText = '';
-            this.iframe.setAttribute('style', 'pointer-events:none;position:absolute;top:-10000px');
+            // tslint:disable-next-line:max-line-length
+            this.iframe.setAttribute('style', 'pointer-events:none;position:absolute;left:' + this.containerLeft + 'px;top:' + this.containerTop + 'px;outline:none;background-color:transparent;width:0px;height:0px;overflow:hidden');
             this.editableDiv.innerHTML = '';
             if (this.owner.editorHistory) {
                 this.owner.editorHistory.updateComplexHistory();
@@ -1007,6 +1009,10 @@ export abstract class LayoutViewer {
      */
     private scrollHandler = (): void => {
         this.clearContent();
+        if (!Browser.isDevice && !this.isComposingIME) {
+            this.iframe.style.top = this.containerTop + 'px';
+            this.iframe.style.left = this.containerLeft + 'px';
+        }
         this.updateScrollBars();
         let vtHeight: number = this.containerTop + this.visibleBounds.height;
         if (vtHeight > this.pageContainer.offsetHeight) {
@@ -2699,8 +2705,9 @@ export class PageLayoutViewer extends LayoutViewer {
     public getHeaderFooterType(section: BodyWidget, isHeader: boolean): HeaderFooterType {
         let type: HeaderFooterType;
         type = isHeader ? 'OddHeader' : 'OddFooter';
+        let page: Page = section.page;
         // tslint:disable-next-line:max-line-length
-        if (section.sectionFormat.differentFirstPage && (this.pages.length === 1 || this.pages[this.pages.length - 1].bodyWidgets[0].index !== section.index)) {
+        if (section.sectionFormat.differentFirstPage && (isNullOrUndefined(page.previousPage) || page.sectionIndex !== page.previousPage.sectionIndex)) {
             type = isHeader ? 'FirstPageHeader' : 'FirstPageFooter';
         } else if (section.sectionFormat.differentOddAndEvenPages && this.pages.length % 2 === 0) {
             type = isHeader ? 'EvenHeader' : 'EvenFooter';

@@ -2295,7 +2295,38 @@ describe('Testing resize Events', () => {
         done()
     });
 });
+describe('Testing args.cancel', () => {
+    let dialog: any; 
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'dialog1' });
+        document.body.appendChild(ele);
+        let resizeTarget = createElement('div', { id: 'resizeTarget' });
+        document.body.appendChild(resizeTarget);
+        resizeTarget.style.width = '500px';
+        resizeTarget.style.height = '500px';
+        resizeTarget.style.position = 'relative';
+        dialog = new Dialog({
+            header:'Demo',
+            target: document.body,
+            content:'First demo content',
+            enableResize: true,
+            resizeStart: function (args : any) {
+                args.cancel = true;
+            }, 
+         });
+        dialog.appendTo('#dialog1');
+    });
 
+    afterAll(() => {
+        document.body.innerHTML = '';
+    });
+    it('Check args.cancel', (done) => {
+        let mouseEvent = document.createEvent ('MouseEvents');
+        mouseEvent.initEvent ('mousedown', true, true);
+        expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(false);
+        done()
+    });
+});
 describe('Testing resizing option', () => {
     let dialog: any;
     let computedHeaderHeight: string;

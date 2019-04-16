@@ -409,6 +409,16 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                     this.accordionElement.expandMode = this.expandMode;
                     refresh = true;
                     break;
+                case 'allowDrag':
+                    this.allowDrag = newProp.allowDrag;
+                    if (!this.allowDrag) {
+                        this.draggable.helper = (): Function => {
+                            return null;
+                        };
+                    } else {
+                        this.draggable.helper = this.helper;
+                    }
+                    break;
             }
         }
         if (refresh) {

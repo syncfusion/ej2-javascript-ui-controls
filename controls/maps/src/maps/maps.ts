@@ -629,19 +629,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         this.mapLayerPanel.measureLayerPanel();
 
         this.element.appendChild(this.svgObject);
-        if (!isNullOrUndefined(document.getElementById(this.element.id + '_tile_parent'))) {
-            let svg: ClientRect = this.svgObject.getBoundingClientRect();
-            let element: HTMLElement = document.getElementById(this.element.id);
-            let tile: ClientRect = document.getElementById(this.element.id + '_tile_parent').getBoundingClientRect();
-            let bottom: number = svg.bottom - tile.bottom - element.offsetTop;
-            let left: number = parseFloat(document.getElementById(this.element.id + '_tile_parent').style.left) + element.offsetTop;
-            document.getElementById(this.element.id + '_tile_parent').style.left = (tile.left < this.element.getBoundingClientRect().left ?
-                left + this.margin.right + Math.abs(tile.left - this.element.getBoundingClientRect().left) : left) + 'px';
-            let top: number = parseFloat(document.getElementById(this.element.id + '_tile_parent').style.top) + element.offsetTop;
-            let value: number = (bottom <= 10) ? top : (top * 2);
-            document.getElementById(this.element.id + '_tile_parent').style.top = value + 'px';
-        }
-        //this.setSecondaryElementPosition();
 
         this.arrangeTemplate();
 

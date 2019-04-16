@@ -155,6 +155,50 @@ describe('Event Base Module', () => {
         });
     });
 
+    describe('checking recurrence appointment', () => {
+        let schObj: Schedule;
+        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        beforeAll((done: Function) => {
+            let dataBound: EmitType<Object> = () => { done(); };
+            document.body.appendChild(elem);
+            schObj = new Schedule({
+                height: '550px', selectedDate: new Date(2018, 9, 1),
+                views: [
+                    { displayName: '3 Days', option: 'Day', interval: 3 },
+                    { displayName: '2 Weeks', option: 'Week', interval: 2 },
+                    { displayName: '4 Months', option: 'Month', isSelected: true, interval: 4 }
+                ],
+                eventSettings: {
+                    dataSource: [{
+                        Id: 1,
+                        StartTime: new Date(2018, 9, 11, 0),
+                        EndTime: new Date(2018, 9, 12, 0),
+                        RecurrenceRule: 'FREQ=DAILY;BYDAY=SU,MO,TU,WE,TH,FR,SA;INTERVAL=1;'
+                    }]
+                },
+                dataBound: dataBound
+            });
+            schObj.appendTo('#Schedule');
+        });
+        afterAll(() => {
+            if (schObj) {
+                schObj.destroy();
+            }
+            remove(elem);
+        });
+        it('spanned recurrence appointments with offsetTop', (done: Function) => {
+            schObj.dataBound = () => {
+                let app2: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-content-wrap .e-appointment'));
+                expect(app2.length).toEqual(126);
+                done();
+            };
+            let app1: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-content-wrap .e-appointment'));
+            expect(app1.length).toEqual(115);
+            (schObj.element.querySelector('.e-schedule-toolbar .e-next') as HTMLElement).click();
+            expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('February - May 2019');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         // tslint:disable:no-any

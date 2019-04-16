@@ -56,6 +56,7 @@ describe('ExternalMessage module testing', () => {
         afterAll(() => {
             pagerObj.destroy();
             elem.remove();
+            pagerObj = elem = null;
         });
 
     });
@@ -97,6 +98,7 @@ describe('ExternalMessage module testing', () => {
         afterAll(() => {
             pagerObj.destroy();
             elem.remove();
+            pagerObj = elem = null;
         });
 
     });

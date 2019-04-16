@@ -6,7 +6,7 @@ import { NavigationPane } from '../../../src/file-manager/layout/navigation-pane
 import { DetailsView } from '../../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../../src/file-manager/actions/toolbar';
 import { createElement, Browser, EventHandler, isNullOrUndefined, select } from '@syncfusion/ej2-base';
-import { toolbarItems, toolbarItems1, data1, data2, data3, data4, data5, data6, data7, data8, data9, data12, data14, UploadData } from '../data';
+import { toolbarItems, toolbarItems1, data1, data2, data3, data4, data5, data6, data7, data8, data9, data12, data14, UploadData, data15 } from '../data';
 import { extend } from '@syncfusion/ej2-grids';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);

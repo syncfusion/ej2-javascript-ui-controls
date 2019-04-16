@@ -282,6 +282,7 @@ export class SelectTool extends ToolBase {
         //draw selected region
         if (this.inAction && Point.equals(this.currentPosition, this.prevPosition) === false) {
             let rect: Rect = Rect.toBounds([this.prevPosition, this.currentPosition]);
+            this.commandHandler.clearSelectedItems();
             this.commandHandler.drawSelectionRectangle(rect.x, rect.y, rect.width, rect.height);
         }
         return !this.blocked;
@@ -1214,7 +1215,7 @@ export class ConnectorDrawingTool extends ConnectTool {
                 this.drawingObject = this.commandHandler.drawObject(connector as Connector);
             }
             args.source = this.drawingObject;
-            if (args.target) {
+            if (args.target && (this.endPoint !== 'ConnectorTargetEnd' || (canInConnect(args.target as NodeModel)))) {
                 this.commandHandler.connect(this.endPoint, args);
             }
             this.endPoint = 'ConnectorTargetEnd';

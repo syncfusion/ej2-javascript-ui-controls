@@ -1727,7 +1727,7 @@ class LargeIconsView {
         let eventArgs = {
             element: args.item,
             fileDetails: args.curData,
-            module: 'LargeIcon'
+            module: 'LargeIconsView'
         };
         this.parent.trigger('beforeFileLoad', eventArgs);
     }
@@ -2710,7 +2710,7 @@ class BreadCrumbBar {
                 if (!isNullOrUndefined(this.subMenuObj)) {
                     this.subMenuObj.destroy();
                 }
-                ulElement.remove();
+                remove(ulElement);
             }
             let searchWrap = this.parent.breadCrumbBarNavigation.querySelector('.e-search-wrap');
             if (!searchWrap) {
@@ -2864,7 +2864,7 @@ class BreadCrumbBar {
                 Search(this.parent, search, this.parent.path, searchWord, hiddenItems, !caseSensitive);
             }
             else {
-                read(this.parent, pathChanged, this.parent.path);
+                read(this.parent, search, this.parent.path);
             }
         }
     }
@@ -3086,7 +3086,7 @@ class ContextMenu$2 {
         else if (!target.classList.contains(MENU_ITEM) && !target.classList.contains(MENU_ICON) && !target.classList.contains(SUBMENU_ICON)) {
             /* istanbul ignore next */
             // tslint:disable-next-line
-            if (this.parent.view === 'LargeIcons' && !isNullOrUndefined(closest(target, 'li')) && !target.closest('#' + this.parent.element.id + TREE_ID)) {
+            if (this.parent.view === 'LargeIcons' && !isNullOrUndefined(closest(target, 'li')) && !closest(target, '#' + this.parent.element.id + TREE_ID)) {
                 let eveArgs = { ctrlKey: true, shiftKey: true };
                 data = this.parent.visitedData;
                 if (!closest(target, 'li').classList.contains('e-active')) {
@@ -3111,25 +3111,8 @@ class ContextMenu$2 {
             }
             /* istanbul ignore next */
             if (select$$1) {
-                if (this.parent.view === 'LargeIcons') {
-                    if (data.isFile === true) {
-                        this.setFileItem(target);
-                        if (closest(target, 'li') &&
-                            (closest(target, 'li')).getElementsByClassName('e-list-img').length === 0) {
-                            this.contextMenu.enableItems([this.getMenuId('Open')], false, true);
-                        }
-                    }
-                    else {
-                        this.setFolderItem(false);
-                    }
-                    // tslint:disable-next-line
-                }
-                else if (data['isFile'] === true) {
+                if (getValue('isFile', data) === true) {
                     this.setFileItem(target);
-                    if (closest(target, 'tr') &&
-                        (closest(target, 'tr')).getElementsByClassName(ICON_IMAGE).length === 0) {
-                        this.contextMenu.enableItems([this.getMenuId('Open')], false, true);
-                    }
                 }
                 else {
                     this.setFolderItem(false);
@@ -3646,6 +3629,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         this.persistData = false;
         this.isOpened = false;
         this.searchedItems = [];
+        FileManager_1.Inject(BreadCrumbBar, LargeIconsView, ContextMenu$2);
     }
     /**
      * Get component name.
@@ -3659,7 +3643,6 @@ let FileManager = FileManager_1 = class FileManager extends Component {
      * Initialize the event handler
      */
     preRender() {
-        FileManager_1.Inject(BreadCrumbBar, LargeIconsView, ContextMenu$2);
         this.ensurePath();
         this.feParent = [];
         this.feFiles = [];
@@ -4922,7 +4905,7 @@ class NavigationPane {
         let eventArgs = {
             element: args.node,
             fileDetails: args.nodeData,
-            module: 'navigationpane'
+            module: 'NavigationPane'
         };
         this.parent.trigger('beforeFileLoad', eventArgs);
     }
@@ -4943,7 +4926,9 @@ class NavigationPane {
      * @private
      */
     onNodeSelected(args) {
-        this.parent.breadcrumbbarModule.searchObj.element.value = '';
+        if (this.parent.breadcrumbbarModule && this.parent.breadcrumbbarModule.searchObj) {
+            this.parent.breadcrumbbarModule.searchObj.element.value = '';
+        }
         this.parent.searchedItems = [];
         this.parent.activeElements = this.treeObj.element.querySelectorAll('.' + ACTIVE);
         if (!args.isInteracted) {
@@ -5038,7 +5023,9 @@ class NavigationPane {
     }
     onFinalizeEnd(args) {
         this.onInit(args);
-        this.addChild(args.files, getValue('nodeId', args.cwd), false);
+        let id = getValue('nodeId', args.cwd);
+        this.removeChildNodes(id);
+        this.addChild(args.files, id, false);
         this.treeObj.selectedNodes = [this.parent.pathId[this.parent.pathId.length - 1]];
     }
     onCreateEnd(args) {
@@ -5085,8 +5072,7 @@ class NavigationPane {
                     }
                     break;
                 case 'navigationPaneSettings':
-                    let args = { files: getValue('/', this.parent.feFiles) };
-                    this.onFinalizeEnd(args);
+                    read(this.parent, finalizeEnd, '/');
                     break;
             }
         }
@@ -5431,7 +5417,7 @@ class DetailsView {
         let eventArgs = {
             element: args.row,
             fileDetails: args.data,
-            module: 'Grid'
+            module: 'DetailsView'
         };
         this.parent.trigger('beforeFileLoad', eventArgs);
     }

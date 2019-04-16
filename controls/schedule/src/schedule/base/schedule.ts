@@ -118,6 +118,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public eventsProcessed: Object[];
     public blockData: Object[];
     public blockProcessed: Object[];
+    public resourceCollection: ResourcesModel[];
     public currentAction: CurrentAction;
     public quickPopup: QuickPopups;
     public selectedElements: Element[];
@@ -937,15 +938,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.isAdaptive = Browser.isDevice;
         this.globalize = new Internationalization(this.locale);
         this.uiStateValues = {
-            expand: false,
-            isInitial: true,
-            left: 0,
-            top: 0,
-            isGroupAdaptive: false,
-            isIgnoreOccurrence: false,
-            groupIndex: 0,
-            action: false,
-            isBlock: false
+            expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false,
+            isIgnoreOccurrence: false, groupIndex: 0, action: false, isBlock: false
         };
         this.activeCellsData = { startTime: new Date(), endTime: new Date(), isAllDay: false };
         this.activeEventData = { event: undefined, element: undefined };
@@ -1030,6 +1024,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.eventsProcessed = [];
         this.blockData = [];
         this.blockProcessed = [];
+        this.resourceCollection = [];
         this.currentAction = null;
         this.selectedElements = [];
         this.setViewOptions();
@@ -1784,19 +1779,40 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /**
      * To check whether the given time range slots are available for event creation or already occupied by other events.
      * @method isSlotAvailable
-     * @param {Date} startTime Denotes the start time of the slot.
+     * @param {Date | Object} startTime Denotes the start time of the slot.
      * @param {Date} endTime Denotes the end time of the slot.
      * @param {number} groupIndex Defines the resource index from last level.
      * @returns {boolean} Returns true, if the slot that lies in the provided time range does not contain any other events.
      */
-    public isSlotAvailable(startTime: Date, endTime: Date, groupIndex?: number): boolean {
-        let eventCollection: Object[] = this.eventBase.filterEvents(startTime, endTime);
-        if (this.currentAction !== 'Add' && this.activeEventData.event) {
-            eventCollection = eventCollection.filter((event: { [key: string]: Object }) => event.Guid !==
-                (<{ [key: string]: Object }>this.activeEventData.event).Guid);
+    public isSlotAvailable(startTime: Date | Object, endTime?: Date, groupIndex?: number): boolean {
+        let eventStart: Date;
+        let eventEnd: Date;
+        let eventObj: { [key: string]: Object } = this.activeEventData.event as { [key: string]: Object };
+        if (startTime instanceof Date) {
+            eventStart = startTime;
+            eventEnd = endTime;
+        } else {
+            eventObj = startTime as { [key: string]: Object };
+            eventStart = (<{ [key: string]: Object }>startTime)[this.eventFields.startTime] as Date;
+            eventEnd = (<{ [key: string]: Object }>startTime)[this.eventFields.endTime] as Date;
+            if (this.resourceBase) {
+                groupIndex = this.eventBase.getGroupIndexFromEvent(startTime as { [key: string]: Object });
+            }
         }
+        if (isNullOrUndefined(eventStart) || isNullOrUndefined(eventEnd)) {
+            return true;
+        }
+        let eventCollection: Object[] = this.eventBase.filterEvents(eventStart, eventEnd);
         if (!isNullOrUndefined(groupIndex) && this.resourceBase && this.resourceBase.lastResourceLevel.length > 0) {
             eventCollection = this.eventBase.filterEventsByResource(this.resourceBase.lastResourceLevel[groupIndex], eventCollection);
+        }
+        if (eventObj) {
+            if (eventObj.Guid) {
+                eventCollection = eventCollection.filter((event: { [key: string]: Object }) => event.Guid !== eventObj.Guid);
+            } else {
+                eventCollection = eventCollection.filter((event: { [key: string]: Object }) =>
+                    event[this.eventFields.id] !== eventObj[this.eventFields.id]);
+            }
         }
         return (eventCollection.length > 0) ? false : true;
     }
@@ -1827,7 +1843,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @param {string} name Name of the resource defined in resources collection.
      * @param {number} index Index or position where the resource should be added.
      */
-    public addResource(resources: Object, name: string, index: number): void {
+    public addResource(resources: Object | Object[], name: string, index: number): void {
         this.resourceBase.addResource(resources, name, index);
     }
 
@@ -1836,7 +1852,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @param resourceId Specifies the resource id to be removed.
      * @param name Specifies the resource name from which the id should be referred.
      */
-    public removeResource(resourceId: string | number, name: string): void {
+    public removeResource(resourceId: string | string[] | number | number[], name: string): void {
         this.resourceBase.removeResource(resourceId, name);
     }
 

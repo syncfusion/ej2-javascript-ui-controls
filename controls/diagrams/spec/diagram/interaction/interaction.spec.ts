@@ -221,6 +221,63 @@ describe('Diagram Control', () => {
         });
     });
 
+    describe('Annotation-overflow', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramannotation' });
+            document.body.appendChild(ele);
+            let node: NodeModel = {
+                id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 200,
+                annotations: [
+                    {
+                        content: 'Node1',
+                        style: {
+                            textOverflow: 'Clip'
+                        }
+                    }],
+            };
+            let node2: NodeModel = {
+                id: 'text', width: 100, height: 100, offsetX: 500, offsetY: 200,
+                shape: { type: 'Text', content: 'Text Element' },
+            };
+            diagram = new Diagram({
+                width: '1000px', height: '1000px', nodes: [node, node2]
+
+            });
+            diagram.appendTo('#diagramannotation');
+        });
+
+        it('Double click on Node', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 350, 250);
+            mouseEvents.dblclickEvent(diagramCanvas, 350, 200);
+            mouseEvents.clickEvent(diagramCanvas, 420, 300);
+            let innerHtmlTextElement = document.getElementById('node1_0annotation_text');
+            expect(innerHtmlTextElement.innerHTML === '<tspan x="0" y="10.8">Node1</tspan>').toBe(true);
+            done();
+        });
+
+        it('Double click on Text Node', (done: Function) => {
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 550, 250);
+            mouseEvents.dblclickEvent(diagramCanvas, 550, 200);
+            mouseEvents.clickEvent(diagramCanvas, 420, 300);
+            let innerHtmlTextElement = document.getElementById('text_content_text');
+            expect(innerHtmlTextElement.innerHTML === '<tspan x="12.765625" y="53.6">Text Element</tspan>' ||
+                innerHtmlTextElement.innerHTML === '<tspan x="14.9921875" y="53.6">Text Element</tspan>').toBe(true);
+            done();
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+    });
+
     describe('Diagram Control', () => {
         describe('Testing z-order based Selection', () => {
             let diagram: Diagram;
@@ -3555,4 +3612,5 @@ describe('Diagram constraints TestCases', () => {
             ele.remove();
         });
     });
+
 });

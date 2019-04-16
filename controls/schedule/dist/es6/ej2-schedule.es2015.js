@@ -126,6 +126,9 @@ function resetTime(date) {
 function getDateInMs(date) {
     return date.getTime() - new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0).getTime();
 }
+function getDateCount(startDate, endDate) {
+    return (endDate.getTime() - startDate.getTime()) / MS_PER_DAY;
+}
 function addDays(date, i) {
     date = new Date('' + date);
     return new Date(date.setDate(date.getDate() + i));
@@ -2684,7 +2687,7 @@ function generate(startDate, rule, excludeDate, startDayOfWeek, maximumCount = M
     }
     if (!ruleObject.until && tempViewDate) {
         cacheDate = new Date(tempViewDate.getTime());
-        cacheDate.setDate(tempViewDate.getDate() + 42 * (ruleObject.interval));
+        cacheDate.setDate(tempViewDate.getDate() + maximumCount * (ruleObject.interval));
         ruleObject.until = cacheDate;
     }
     if (ruleObject.until && startDate > ruleObject.until) {
@@ -3801,7 +3804,7 @@ class EventBase {
                 eventObj[fields.endTime] = addDays(resetTime(eventObj[fields.endTime]), 1);
             }
         });
-        this.parent.blockProcessed = this.filterEvents(start, end, blockData);
+        this.parent.blockProcessed = blockData;
         return eventData;
     }
     getProcessedEvents(eventCollection = this.parent.eventsData) {
@@ -4385,8 +4388,11 @@ class EventBase {
         let duration = endDate.getTime() - startDate.getTime();
         viewDate = new Date((viewDate || this.parent.activeView.startDate()).getTime() - duration);
         let exception = event[this.parent.eventFields.recurrenceException];
-        let maxCount = ((+this.parent.activeView.endDate()) - (+resetTime(new Date(+viewDate)))) / MS_PER_DAY;
-        let dates = generate(startDate, eventRule, exception, this.parent.firstDayOfWeek, undefined, viewDate, this.parent.calendarMode);
+        let maxCount;
+        if (this.parent.currentView !== 'Agenda') {
+            maxCount = getDateCount(this.parent.activeView.startDate(), this.parent.activeView.endDate()) + 1;
+        }
+        let dates = generate(startDate, eventRule, exception, this.parent.firstDayOfWeek, maxCount, viewDate, this.parent.calendarMode);
         if (this.parent.currentView === 'Agenda' && eventRule.indexOf('COUNT') === -1 && eventRule.indexOf('UNTIL') === -1) {
             if (isNullOrUndefined(event.generatedDates)) {
                 event.generatedDates = { start: new Date(dates[0]), end: new Date(dates[dates.length - 1]) };
@@ -4499,7 +4505,8 @@ class EventBase {
         let fields = this.parent.eventFields;
         eventCollection.forEach((event) => {
             let dataCol = [];
-            if (!isNullOrUndefined(event[fields.recurrenceRule]) && isNullOrUndefined(event[fields.recurrenceID])) {
+            if (!isNullOrUndefined(event[fields.recurrenceRule]) && (isNullOrUndefined(event[fields.recurrenceID])
+                || event[fields.id] !== event[fields.recurrenceID])) {
                 dataCol = this.parent.eventBase.generateOccurrence(event);
             }
             else {
@@ -4565,7 +4572,8 @@ class Crud {
     }
     addEvent(eventData) {
         if (this.parent.eventBase.isBlockRange(eventData)) {
-            this.parent.quickPopup.openValidationError('blockAlert');
+            let data = (eventData instanceof Array) ? [eventData] : eventData;
+            this.parent.quickPopup.openValidationError('blockAlert', data);
             return;
         }
         let fields = this.parent.eventFields;
@@ -4597,7 +4605,8 @@ class Crud {
     }
     saveEvent(event, action) {
         if (this.parent.eventBase.isBlockRange(event)) {
-            this.parent.quickPopup.openValidationError('blockAlert');
+            let data = (event instanceof Array) ? [event] : event;
+            this.parent.quickPopup.openValidationError('blockAlert', data);
             return;
         }
         let fields = this.parent.eventFields;
@@ -4915,8 +4924,9 @@ class QuickPopups {
             close: this.quickPopupClose.bind(this),
             hideAnimation: (this.parent.isAdaptive ? { name: 'ZoomOut' } : { name: 'FadeOut', duration: 150 }),
             showAnimation: (this.parent.isAdaptive ? { name: 'ZoomIn' } : { name: 'FadeIn', duration: 150 }),
-            collision: (this.parent.isAdaptive ? { X: 'fit', Y: 'fit' } : { X: 'none', Y: 'fit' }),
-            position: (this.parent.isAdaptive ? { X: 'left', Y: 'top' } : { X: 'right', Y: 'top' }),
+            collision: (this.parent.isAdaptive ? { X: 'fit', Y: 'fit' } :
+                (this.parent.enableRtl ? { X: 'flip', Y: 'fit' } : { X: 'none', Y: 'fit' })),
+            position: (this.parent.isAdaptive || this.parent.enableRtl ? { X: 'left', Y: 'top' } : { X: 'right', Y: 'top' }),
             viewPortElement: (this.parent.isAdaptive ? document.body : this.parent.element),
             zIndex: (this.parent.isAdaptive ? 1000 : 3)
         });
@@ -5090,7 +5100,7 @@ class QuickPopups {
         this.quickDialogClass('Delete');
         this.showQuickDialog('DeleteAlert');
     }
-    openValidationError(type) {
+    openValidationError(type, eventData) {
         this.quickDialog.header = this.l10n.getConstant('alert');
         this.quickDialog.content = this.l10n.getConstant(type);
         let okButton = this.quickDialog.element.querySelector('.' + QUICK_DIALOG_ALERT_OK);
@@ -5102,12 +5112,12 @@ class QuickPopups {
             cancelButton.innerHTML = this.l10n.getConstant('cancel');
         }
         this.quickDialogClass('Alert');
-        this.showQuickDialog('ValidationAlert');
+        this.showQuickDialog('ValidationAlert', eventData);
     }
-    showQuickDialog(popupType) {
+    showQuickDialog(popupType, eventData) {
         this.quickDialog.dataBind();
         let eventProp = {
-            type: popupType, cancel: false, data: this.parent.activeEventData, element: this.quickDialog.element
+            type: popupType, cancel: false, data: eventData || this.parent.activeEventData, element: this.quickDialog.element
         };
         this.parent.trigger(popupOpen, eventProp);
         if (eventProp.cancel) {
@@ -5370,7 +5380,7 @@ class QuickPopups {
                     `${eventData[this.parent.eventFields.description] ? `<div class="${DESCRIPTION_CLASS}"><div class="` +
                         `${DESCRIPTION_ICON_CLASS} ${ICON}"></div><div class="${DESCRIPTION_DETAILS_CLASS} ` +
                         `${TEXT_ELLIPSIS}">${eventData[this.parent.eventFields.description]}</div></div>` : ''}` +
-                    `${this.parent.resources.length > 0 ? `<div class="${RESOURCE_CLASS}"><div class="` +
+                    `${this.parent.resourceCollection.length > 0 ? `<div class="${RESOURCE_CLASS}"><div class="` +
                         `${RESOURCE_ICON_CLASS} ${ICON}"></div><div class="${RESOURCE_DETAILS_CLASS} ${TEXT_ELLIPSIS}">` +
                         `${this.getResourceText(events, 'event')}</div></div>` : ''}`;
                 let contentTemplate = createElement('div', {
@@ -5740,8 +5750,8 @@ class QuickPopups {
         }
         else {
             this.quickPopup.offsetX = 10;
-            this.quickPopup.collision = { X: 'none', Y: 'fit' };
-            this.quickPopup.position = { X: 'right', Y: 'top' };
+            this.quickPopup.collision = { X: this.parent.enableRtl ? 'flip' : 'none', Y: 'fit' };
+            this.quickPopup.position = { X: this.parent.enableRtl ? 'left' : 'right', Y: 'top' };
             this.quickPopup.dataBind();
             this.quickPopup.refreshPosition(null, true);
             let collide = isCollide(this.quickPopup.element, this.parent.element);
@@ -7269,7 +7279,7 @@ class EventWindow {
         else {
             EventHandler.add(button, 'click', this.loadRecurrenceEditor, this);
         }
-        if (this.parent.resources.length > 0) {
+        if (this.parent.resourceCollection.length > 0) {
             let resourceParentDiv = this.createDivElement(EVENT_WINDOW_RESOURCES_DIV_CLASS);
             for (let i = 0; i < this.parent.resourceBase.resourceCollection.length; i++) {
                 resourceParentDiv.appendChild(this.renderResourceDetails(i));
@@ -7423,7 +7433,7 @@ class EventWindow {
         return timezoneDiv;
     }
     onMultiselectResourceChange(args) {
-        if (!args.value || !this.parent.activeViewOptions.group.byGroupID || this.parent.resources.length <= 1) {
+        if (!args.value || !this.parent.activeViewOptions.group.byGroupID || this.parent.resourceCollection.length <= 1) {
             return;
         }
         let resourceCollection = this.parent.resourceBase.resourceCollection;
@@ -7452,7 +7462,7 @@ class EventWindow {
         return resObject;
     }
     onDropdownResourceChange(args) {
-        if (!args.value || this.parent.resources.length <= 1 || !this.parent.activeViewOptions.group.byGroupID) {
+        if (!args.value || this.parent.resourceCollection.length <= 1 || !this.parent.activeViewOptions.group.byGroupID) {
             return;
         }
         let fieldName = args.element.getAttribute('name') || this.getColumnName(args.element);
@@ -7730,7 +7740,7 @@ class EventWindow {
         eventObj[this.fields.startTime] = cellsData.startTime;
         eventObj[this.fields.endTime] = cellsData.endTime;
         eventObj[this.fields.isAllDay] = cellsData.isAllDay;
-        if (this.parent.resources.length > 0 || this.parent.activeViewOptions.group.resources.length > 0) {
+        if (this.parent.resourceCollection.length > 0 || this.parent.activeViewOptions.group.resources.length > 0) {
             this.parent.resourceBase.setResourceValues(eventObj, false);
         }
     }
@@ -8061,8 +8071,8 @@ class EventWindow {
         }
         let ruleData = this.recurrenceEditor ? this.recurrenceEditor.getRecurrenceRule() : null;
         eventObj[this.fields.recurrenceRule] = ruleData ? ruleData : undefined;
-        let isResourceEventExpand = (this.parent.activeViewOptions.group.resources.length > 0 || this.parent.resources.length > 0)
-            && !this.parent.activeViewOptions.group.allowGroupEdit;
+        let isResourceEventExpand = (this.parent.activeViewOptions.group.resources.length > 0 ||
+            this.parent.resourceCollection.length > 0) && !this.parent.activeViewOptions.group.allowGroupEdit;
         if (!isNullOrUndefined(eventId)) {
             let eveId = this.parent.eventBase.getEventIDType() === 'string' ? eventId : parseInt(eventId, 10);
             let editedData = new DataManager({ json: this.parent.eventsData }).executeLocal(new Query().
@@ -9137,9 +9147,7 @@ class ResourceBase {
     }
     renderResourceHeaderIndent(tr) {
         let resColTd = createElement('td', { className: RESOURCE_LEFT_TD_CLASS });
-        let resColDiv = createElement('div', {
-            className: RESOURCE_TEXT_CLASS
-        });
+        let resColDiv = createElement('div', { className: RESOURCE_TEXT_CLASS });
         resColTd.appendChild(resColDiv);
         let args = { elementType: 'emptyCells', element: resColTd };
         this.parent.trigger(renderCell, args);
@@ -9578,10 +9586,34 @@ class ResourceBase {
         if (this.parent.isDestroyed) {
             return;
         }
+        this.parent.resourceCollection = [];
         for (let i = 0, length = e.length; i < length; i++) {
-            this.parent.resources[i].dataSource = e[i].result;
+            let resource = this.parent.resources[i];
+            let resourceObj = this.getResourceModel(resource, e[i].result);
+            this.parent.resourceCollection.push(resourceObj);
         }
-        this.parent.setProperties({ resources: this.parent.resources }, true);
+        this.refreshLayout(isSetModel);
+    }
+    getResourceModel(resource, resourceData) {
+        let resourceObj = {
+            field: resource.field,
+            title: resource.title,
+            name: resource.name,
+            allowMultiple: resource.allowMultiple,
+            dataSource: resourceData || resource.dataSource,
+            idField: resource.idField,
+            textField: resource.textField,
+            groupIDField: resource.groupIDField,
+            colorField: resource.colorField,
+            startHourField: resource.startHourField,
+            endHourField: resource.endHourField,
+            workDaysField: resource.workDaysField,
+            expandedField: resource.expandedField,
+            cssClassField: resource.cssClassField
+        };
+        return resourceObj;
+    }
+    refreshLayout(isSetModel) {
         this.parent.uiStateValues.groupIndex = 0;
         this.parent.renderElements(isSetModel);
         if (isSetModel) {
@@ -9596,31 +9628,16 @@ class ResourceBase {
             for (let resource of this.parent.activeViewOptions.group.resources) {
                 let index = findIndexInData(this.parent.resources, 'name', resource);
                 if (index >= 0) {
-                    requiredResources.push(this.parent.resources[index]);
+                    requiredResources.push(this.parent.resourceCollection[index]);
                 }
             }
         }
-        else if (this.parent.resources.length > 0) {
-            requiredResources = this.parent.resources;
+        else if (this.parent.resourceCollection.length > 0) {
+            requiredResources = this.parent.resourceCollection;
         }
         let index = 0;
         for (let resource of requiredResources) {
-            let resources = {
-                field: resource.field,
-                title: resource.title,
-                name: resource.name,
-                allowMultiple: resource.allowMultiple,
-                dataSource: resource.dataSource,
-                idField: resource.idField,
-                textField: resource.textField,
-                groupIDField: resource.groupIDField,
-                colorField: resource.colorField,
-                startHourField: resource.startHourField,
-                endHourField: resource.endHourField,
-                workDaysField: resource.workDaysField,
-                expandedField: resource.expandedField,
-                cssClassField: resource.cssClassField
-            };
+            let resources = this.getResourceModel(resource);
             if (resource.name === this.parent.eventSettings.resourceColorField) {
                 this.colorIndex = index;
             }
@@ -9800,7 +9817,7 @@ class ResourceBase {
                 setValues(index, this.resourceCollection[index].field, groupOrder[index]);
             }
         }
-        else if (this.parent.resources.length > 0) {
+        else if (this.parent.resourceCollection.length > 0) {
             for (let index = 0; index < this.resourceCollection.length; index++) {
                 let data = this.resourceCollection[index].dataSource[0];
                 if (data) {
@@ -9866,28 +9883,24 @@ class ResourceBase {
         }
     }
     addResource(resources, name, index) {
-        for (let i = 0, length = this.parent.resources.length; i < length; i++) {
-            let resource = this.parent.resources[i];
+        let resourceCollection = (resources instanceof Array) ? resources : [resources];
+        for (let resource of this.parent.resourceCollection) {
             if (resource.name === name) {
-                resource.dataSource.splice(index, 0, resources);
+                resourceCollection.forEach((addObj, i) => new DataManager({ json: resource.dataSource }).insert(addObj, null, null, index + i));
                 break;
             }
         }
-        this.bindResourcesData(true);
+        this.refreshLayout(true);
     }
     removeResource(resourceId, name) {
-        for (let i = 0, length = this.parent.resources.length; i < length; i++) {
-            let resource = this.parent.resources[i];
+        let resourceCollection = (resourceId instanceof Array) ? resourceId : [resourceId];
+        for (let resource of this.parent.resourceCollection) {
             if (resource.name === name) {
-                resource.dataSource.forEach((data, index) => {
-                    if (data[resource.idField] === resourceId) {
-                        this.parent.resources[i].dataSource.splice(index, 1);
-                    }
-                });
+                resourceCollection.forEach((removeObj) => new DataManager({ json: resource.dataSource }).remove(resource.idField, removeObj));
                 break;
             }
         }
-        this.bindResourcesData(true);
+        this.refreshLayout(true);
     }
     destroy() {
         this.parent.off(documentClick, this.documentClick);
@@ -10303,15 +10316,8 @@ let Schedule = class Schedule extends Component {
         this.isAdaptive = Browser.isDevice;
         this.globalize = new Internationalization(this.locale);
         this.uiStateValues = {
-            expand: false,
-            isInitial: true,
-            left: 0,
-            top: 0,
-            isGroupAdaptive: false,
-            isIgnoreOccurrence: false,
-            groupIndex: 0,
-            action: false,
-            isBlock: false
+            expand: false, isInitial: true, left: 0, top: 0, isGroupAdaptive: false,
+            isIgnoreOccurrence: false, groupIndex: 0, action: false, isBlock: false
         };
         this.activeCellsData = { startTime: new Date(), endTime: new Date(), isAllDay: false };
         this.activeEventData = { event: undefined, element: undefined };
@@ -10396,6 +10402,7 @@ let Schedule = class Schedule extends Component {
         this.eventsProcessed = [];
         this.blockData = [];
         this.blockProcessed = [];
+        this.resourceCollection = [];
         this.currentAction = null;
         this.selectedElements = [];
         this.setViewOptions();
@@ -11146,19 +11153,41 @@ let Schedule = class Schedule extends Component {
     /**
      * To check whether the given time range slots are available for event creation or already occupied by other events.
      * @method isSlotAvailable
-     * @param {Date} startTime Denotes the start time of the slot.
+     * @param {Date | Object} startTime Denotes the start time of the slot.
      * @param {Date} endTime Denotes the end time of the slot.
      * @param {number} groupIndex Defines the resource index from last level.
      * @returns {boolean} Returns true, if the slot that lies in the provided time range does not contain any other events.
      */
     isSlotAvailable(startTime, endTime, groupIndex) {
-        let eventCollection = this.eventBase.filterEvents(startTime, endTime);
-        if (this.currentAction !== 'Add' && this.activeEventData.event) {
-            eventCollection = eventCollection.filter((event) => event.Guid !==
-                this.activeEventData.event.Guid);
+        let eventStart;
+        let eventEnd;
+        let eventObj = this.activeEventData.event;
+        if (startTime instanceof Date) {
+            eventStart = startTime;
+            eventEnd = endTime;
         }
+        else {
+            eventObj = startTime;
+            eventStart = startTime[this.eventFields.startTime];
+            eventEnd = startTime[this.eventFields.endTime];
+            if (this.resourceBase) {
+                groupIndex = this.eventBase.getGroupIndexFromEvent(startTime);
+            }
+        }
+        if (isNullOrUndefined(eventStart) || isNullOrUndefined(eventEnd)) {
+            return true;
+        }
+        let eventCollection = this.eventBase.filterEvents(eventStart, eventEnd);
         if (!isNullOrUndefined(groupIndex) && this.resourceBase && this.resourceBase.lastResourceLevel.length > 0) {
             eventCollection = this.eventBase.filterEventsByResource(this.resourceBase.lastResourceLevel[groupIndex], eventCollection);
+        }
+        if (eventObj) {
+            if (eventObj.Guid) {
+                eventCollection = eventCollection.filter((event) => event.Guid !== eventObj.Guid);
+            }
+            else {
+                eventCollection = eventCollection.filter((event) => event[this.eventFields.id] !== eventObj[this.eventFields.id]);
+            }
         }
         return (eventCollection.length > 0) ? false : true;
     }
@@ -11867,21 +11896,25 @@ class Resize extends ActionBase {
             }
             resizeTime = isLeft ? eventStart : eventEnd;
             let cellIndex = 0;
+            let tdCollections = [].slice.call(tr.childNodes);
+            let isLastCell = false;
             if (['Year', 'Month', 'Week', 'Date'].indexOf(headerName) !== -1) {
                 let noOfDays = 0;
-                let tdCollections = [].slice.call(tr.childNodes);
                 tdCollections.forEach((td) => noOfDays += parseInt(td.getAttribute('colspan'), 10));
                 let offsetValue = this.parent.enableRtl ? parseInt(this.actionObj.clone.style.right, 10) :
                     parseInt(this.actionObj.clone.style.left, 10);
                 if (!isLeft) {
                     offsetValue += (this.actionObj.clone.offsetWidth - this.actionObj.cellWidth);
                 }
-                cellIndex = Math.floor(offsetValue / (tr.offsetWidth / noOfDays));
+                cellIndex = Math.floor(offsetValue / Math.floor(tr.offsetWidth / noOfDays));
+                cellIndex = isLeft ? cellIndex : cellIndex + 1;
+                isLastCell = cellIndex === tdCollections.length;
                 cellIndex = (cellIndex < 0) ? 0 : (cellIndex >= noOfDays) ? noOfDays - 1 : cellIndex;
             }
             else {
                 let cellWidth = this.parent.currentView === 'TimelineMonth' || !this.parent.activeViewOptions.timeScale.enable ?
-                    this.actionObj.cellWidth : this.actionObj.cellWidth - this.actionObj.interval;
+                    this.actionObj.cellWidth : this.actionObj.cellWidth - (this.actionObj.interval *
+                    (this.actionObj.cellWidth / this.actionObj.slotInterval));
                 cellIndex = isLeft ? Math.floor(this.actionObj.clone.offsetLeft / this.actionObj.cellWidth) :
                     Math.ceil((this.actionObj.clone.offsetLeft + (this.actionObj.clone.offsetWidth - cellWidth)) /
                         this.actionObj.cellWidth);
@@ -11895,6 +11928,7 @@ class Resize extends ActionBase {
                         this.actionObj.cellWidth) + (isLeft ? 0 : this.actionObj.clone.offsetWidth - cellOffsetWidth);
                     cellIndex = Math.ceil(offsetWidth / this.actionObj.cellWidth);
                 }
+                isLastCell = cellIndex === tdCollections.length;
                 cellIndex = this.getIndex(cellIndex);
             }
             let resizeDate;
@@ -11916,6 +11950,7 @@ class Resize extends ActionBase {
                 }
                 let spanMinutes = Math.ceil((this.actionObj.slotInterval / this.actionObj.cellWidth) *
                     (offsetValue - Math.floor(offsetValue / this.actionObj.cellWidth) * this.actionObj.cellWidth));
+                spanMinutes = isLastCell ? this.actionObj.slotInterval : spanMinutes;
                 resizeTime = new Date(resizeDate.getTime());
                 resizeTime.setMinutes(resizeTime.getMinutes() + spanMinutes);
                 this.updateTimePosition(resizeTime);
@@ -11941,7 +11976,9 @@ class Resize extends ActionBase {
             this.actionObj.start = this.parent.activeViewOptions.timeScale.enable ? this.calculateIntervalTime(resizeTime) : resizeTime;
         }
         else {
-            let resizeEnd = (resizeTime.getHours() === 0 && resizeTime.getMinutes() === 0) ?
+            let isTimeViews = ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'].indexOf(this.parent.currentView) > -1 &&
+                this.parent.activeViewOptions.timeScale.enable;
+            let resizeEnd = (!isTimeViews && resizeTime.getHours() === 0 && resizeTime.getMinutes() === 0) ?
                 addDays(resizeTime, 1) : resizeTime;
             this.actionObj.end = this.parent.activeViewOptions.timeScale.enable && this.parent.currentView !== 'Month' ?
                 this.calculateIntervalTime(resizeEnd) : resizeEnd;
@@ -11984,7 +12021,8 @@ class Resize extends ActionBase {
             offsetWidth = targetWidth + (Math.ceil(pageWidth / slotInterval) * slotInterval);
             this.actionObj.event[this.parent.eventFields.isAllDay] = false;
         }
-        styles.width = formatUnit((offsetWidth < this.actionObj.cellWidth) ? this.actionObj.cellWidth : offsetWidth);
+        let width = !isLeft && ((offsetWidth + this.actionObj.clone.offsetLeft > this.scrollArgs.width)) ?
+            this.actionObj.clone.offsetWidth : (offsetWidth < this.actionObj.cellWidth) ? this.actionObj.cellWidth : offsetWidth;
         if (this.parent.enableRtl) {
             let rightValue = isTimelineView ?
                 Math.floor(parseInt(this.actionObj.element.style.right, 10) / this.actionObj.cellWidth) * this.actionObj.cellWidth :
@@ -11995,7 +12033,9 @@ class Resize extends ActionBase {
                     (this.actionObj.pageX - this.actionObj.X))) / this.actionObj.cellWidth) * this.actionObj.cellWidth;
                 rightValue = rightValue < 0 ? Math.abs(rightValue) : -rightValue;
             }
+            rightValue = rightValue >= this.scrollArgs.width ? this.scrollArgs.width - this.actionObj.cellWidth : rightValue;
             styles.right = formatUnit(rightValue);
+            width = width + rightValue > this.scrollArgs.width ? this.actionObj.clone.offsetWidth : width;
         }
         else {
             let offsetLeft = isLeft ? this.actionObj.element.offsetLeft - (this.actionObj.X - this.actionObj.pageX) :
@@ -12016,12 +12056,17 @@ class Resize extends ActionBase {
             offsetLeft = isTimelineView ? isTimeViews ? isLeft ? Math.floor(offsetLeft / slotInterval) * slotInterval : offsetLeft :
                 Math.floor(offsetLeft / this.actionObj.cellWidth) * this.actionObj.cellWidth :
                 Math.ceil(Math.abs(offsetLeft) / this.actionObj.cellWidth) * this.actionObj.cellWidth;
+            if (offsetLeft < 0) {
+                offsetLeft = 0;
+                width = this.actionObj.clone.offsetWidth;
+            }
             let cloneWidth = Math.ceil(this.actionObj.clone.offsetWidth / this.actionObj.cellWidth) * this.actionObj.cellWidth;
             if (isLeft) {
                 styles.left = formatUnit(isTimelineView ? offsetLeft : isLeft ? leftValue < 0 ? -offsetLeft :
                     (Math.ceil((targetWidth - cloneWidth) / this.actionObj.cellWidth) * this.actionObj.cellWidth) : offsetLeft);
             }
         }
+        styles.width = formatUnit(width);
         return styles;
     }
     resizeValidation(e) {
@@ -17620,5 +17665,5 @@ class ICalendarImport {
  * Export Schedule components
  */
 
-export { Schedule, cellClick, cellDoubleClick, select, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, Resize, DragAndDrop, HeaderRenderer, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, Timezone, timezoneData, ExcelExport, ICalendarExport, ICalendarImport, RecurrenceEditor, Gregorian, Islamic };
+export { Schedule, cellClick, cellDoubleClick, select, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, getDateCount, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, Resize, DragAndDrop, HeaderRenderer, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, Timezone, timezoneData, ExcelExport, ICalendarExport, ICalendarImport, RecurrenceEditor, Gregorian, Islamic };
 //# sourceMappingURL=ej2-schedule.es2015.js.map

@@ -212,7 +212,7 @@ export class DetailsView {
         let eventArgs: FileBeforeLoadEventArgs = {
             element: args.row as HTMLElement,
             fileDetails: args.data,
-            module: 'Grid'
+            module: 'DetailsView'
         };
         this.parent.trigger('beforeFileLoad', eventArgs);
     }

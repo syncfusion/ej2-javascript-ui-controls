@@ -203,7 +203,8 @@ export class Magnification {
                     this.zoomLevel = 2;
                 }
             }
-            return scaleX * 100;
+             // tslint:disable-next-line:radix
+            return parseInt((scaleX * 100).toString());
         } else {
             let pageHeight: number = 0;
             for (let i: number = 0; i < this.pdfViewerBase.pageSize.length; i++) {
@@ -212,11 +213,8 @@ export class Magnification {
                     highestHeight = pageHeight;
                 }
             }
-            if (this.pdfViewerBase.pageCount === 1) {
-                return ((viewerHeight - this.pdfViewerBase.pageSize[0].top) / highestHeight) * 100;
-            } else {
-                return (viewerHeight / highestHeight) * 100;
-            }
+             // tslint:disable-next-line:radix
+            return parseInt(((viewerHeight / highestHeight) * 100).toString());
         }
     }
 

@@ -860,6 +860,8 @@ let NumericTextBox = class NumericTextBox extends Component {
         if (!(this.inputWrapper.clearButton.classList.contains('e-clear-icon-hide'))) {
             this.clear(e);
         }
+        this.isInteract = true;
+        this.raiseChangeEvent(e);
     }
     clear(event) {
         this.setProperties({ value: null }, true);
@@ -9713,7 +9715,7 @@ let ColorPicker = class ColorPicker extends Component {
      * @return {void}
      */
     toggle() {
-        this.splitBtn.toggle();
+        this.container.parentElement.classList.contains('e-popup-close') ? this.splitBtn.toggle() : this.closePopup(null);
     }
     /**
      * Get component name.
@@ -9783,7 +9785,7 @@ let ColorPicker = class ColorPicker extends Component {
         let beforeCloseArgs = { element: this.container, event: e, cancel: false };
         this.trigger('beforeClose', beforeCloseArgs);
         if (!beforeCloseArgs.cancel) {
-            this.toggle();
+            this.splitBtn.toggle();
             this.onPopupClose();
         }
     }
@@ -10496,7 +10498,6 @@ let ColorPicker = class ColorPicker extends Component {
                 this.addTileSelection(ele);
             }
         }
-        this.element.value = newProp.slice(0, 7);
     }
     setInputEleProps(prop) {
         remove(select('.' + INPUTWRAPPER, this.container));
@@ -10567,14 +10568,23 @@ let ColorPicker = class ColorPicker extends Component {
      * @private
      */
     onPropertyChanged(newProp, oldProp) {
-        let wrapper = this.getWrapper();
+        if (!isNullOrUndefined(newProp.value)) {
+            let value = this.roundValue(newProp.value);
+            if (value.length === 9) {
+                this.element.value = this.roundValue(value).slice(0, 7);
+                let preview = this.splitBtn && select('.' + SPLITPREVIEW, this.splitBtn.element);
+                if (preview) {
+                    preview.style.backgroundColor = newProp.value;
+                }
+            }
+            else {
+                this.value = oldProp.value;
+            }
+        }
         if (!this.inline && isNullOrUndefined(newProp.inline)) {
             let otherCompModel = ['disabled', 'enableRtl'];
             this.splitBtn.setProperties(getModel(newProp, otherCompModel));
             if (!this.isPopupOpen()) {
-                if (newProp.value) {
-                    select('.' + SPLITPREVIEW, this.splitBtn.element).style.backgroundColor = newProp.value;
-                }
                 this.changeCssClassProps(newProp.cssClass, oldProp.cssClass);
                 this.changeRtlProps(newProp.enableRtl);
                 return;
@@ -10631,7 +10641,9 @@ let ColorPicker = class ColorPicker extends Component {
                     this.changeDisabledProp(newProp.disabled);
                     break;
                 case 'value':
-                    this.changeValueProp(newProp.value);
+                    if (this.value !== oldProp.value) {
+                        this.changeValueProp(newProp.value);
+                    }
                     break;
                 case 'showButtons':
                     this.changeShowBtnProps(newProp.showButtons);
@@ -11060,7 +11072,7 @@ let TextBox = class TextBox extends Component {
             if (this.isHiddenInput) {
                 this.element.value = this.respectiveElement.value;
             }
-            this.value = '';
+            this.setProperties({ value: this.respectiveElement.value }, true);
             let eventArgs = {
                 event: event,
                 value: this.respectiveElement.value,
@@ -11068,6 +11080,7 @@ let TextBox = class TextBox extends Component {
                 container: this.textboxWrapper.container
             };
             this.trigger('input', eventArgs);
+            this.raiseChangeEvent(event, true);
         }
     }
     unWireEvents() {

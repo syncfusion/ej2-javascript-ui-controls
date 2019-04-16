@@ -1,9 +1,7 @@
 /**
  * Grid Sorting spec document
  */
-import { Browser, ChildProperty } from '@syncfusion/ej2-base';
-import { getValue } from '@syncfusion/ej2-base';
-import { remove } from '@syncfusion/ej2-base';
+import { Browser } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { SortSettingsModel } from '../../../src/grid/base/grid-model';
 import { Sort } from '../../../src/grid/actions/sort';
@@ -251,6 +249,7 @@ describe('Sorting module => ', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = cols = sortSettings = null;
         });
     });
 
@@ -286,6 +285,7 @@ describe('Sorting module => ', () => {
         //set model and default properties model check
         afterAll(() => {
             destroy(gridObj);
+            gridObj = cols = sortSettings = null;
         });
     });
 
@@ -428,6 +428,7 @@ describe('Sorting module => ', () => {
         //set model and default properties model check
         afterAll(() => {
             destroy(gridObj);
+            gridObj = actionComplete = cols = sortSettings = null;
         });
     });
 
@@ -495,6 +496,7 @@ describe('Sorting module => ', () => {
         afterAll(() => {
             Browser.userAgent = defaultBrowserAgent;
             destroy(gridObj)
+            gridObj = gridPopUp = actionComplete = cols = spanElement = null;
         });
     });
 
@@ -526,7 +528,8 @@ describe('Sorting module => ', () => {
         });
 
         afterAll(() => {
-            destroy(gridObj)
+            destroy(gridObj);
+            gridObj = null;
         })
     });
 
@@ -567,6 +570,7 @@ describe('Sorting module => ', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = sortComparer = null;
         })
     });
 
@@ -675,6 +679,7 @@ describe('Sorting module => ', () => {
             setTimeout(function () {
                 done();
             }, 1000);
+            gridObj = actionBegin = actionComplete = sortSettings = col1 = col2 = null;
         });
     });
 

@@ -1,25 +1,18 @@
 /**
  * Grid Selection spec document
  */
-import { Browser, EmitType } from '@syncfusion/ej2-base';
-import { EventHandler, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
-import { createElement, remove } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
-import { Freeze } from '../../../src/grid/actions/freeze';
 import { Selection } from '../../../src/grid/actions/selection';
 import { Page } from '../../../src/grid/actions/page';
 import { data } from '../base/datasource.spec';
 import { Group } from '../../../src/grid/actions/group';
 import { Sort } from '../../../src/grid/actions/sort';
 import { Edit } from '../../../src/grid/actions/edit';
-import { FocusStrategy } from '../../../src/grid/services/focus-strategy';
-import { CheckBox } from '@syncfusion/ej2-buttons';
 import { employeeSelectData } from '../base/datasource.spec';
 import { employeeData } from '../base/datasource.spec';
 import { BeforeCopyEventArgs } from '../../../src/grid/base/interface';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import '../../../node_modules/es6-promise/dist/es6-promise';
-import { QueryCellInfoEventArgs } from '../../../src/grid/base/interface';
 import { createGrid, destroy } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
@@ -32,8 +25,6 @@ describe('Grid checkbox selection functionality', () => {
         let selectionModule: Selection;
         let rows: Element[];
         let preventDefault: Function = new Function();
-        let chkBox: any;
-        let args: any;
         let chkAll: HTMLElement;
         beforeAll((done: Function) => {
             const isDef = (o: any) => o !== undefined && o !== null;
@@ -167,13 +158,20 @@ describe('Grid checkbox selection functionality', () => {
             expect(rows[3].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
         });
 
-        it('checkbox selection through space key for checkall', () => {
+        it('checkbox selection through space key for checkall', (done: Function) => {
+            let checkStateAll = (args: any) => {
+                expect(args.checked).toBeTruthy();
+                let checkStateAll2 = (args: any) => {
+                    expect(gridObj.getSelectedRecords().length).toBe(0);
+                    expect(chkAll.classList.contains('e-uncheck')).toBeTruthy();
+                    done();
+                }
+                gridObj.checkBoxChange = checkStateAll2;
+                (gridObj.selectionModule as any).applySpaceSelection((gridObj.element.querySelector('.e-checkselectall') as HTMLElement));
+            }
             gridObj.selectionModule.clearSelection();
+            gridObj.checkBoxChange = checkStateAll;
             (gridObj.selectionModule as any).applySpaceSelection((gridObj.element.querySelector('.e-checkselectall') as HTMLElement));
-            expect(chkAll.classList.contains('e-stop')).toBeFalsy();
-            (gridObj.selectionModule as any).applySpaceSelection((gridObj.element.querySelector('.e-checkselectall') as HTMLElement));
-            expect(gridObj.getSelectedRecords().length).toBe(0);
-            expect(chkAll.classList.contains('e-uncheck')).toBeTruthy();
         });
 
         it('checkbox selection with reordering', () => {
@@ -185,6 +183,7 @@ describe('Grid checkbox selection functionality', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = selectionModule = rows = preventDefault = chkAll = null;
         });
     });
 
@@ -192,10 +191,6 @@ describe('Grid checkbox selection functionality', () => {
         let gridObj: Grid;
         let selectionModule: Selection;
         let rows: Element[];
-        let preventDefault: Function = new Function();
-        let chkBox: any;
-        let args: any;
-        let chkAll: HTMLElement;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -259,6 +254,7 @@ describe('Grid checkbox selection functionality', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = selectionModule = rows = null;
         });
     });
 
@@ -268,8 +264,6 @@ describe('Grid checkbox selection functionality', () => {
         let selectionModule: Selection;
         let rows: Element[];
         let preventDefault: Function = new Function();
-        let chkBox: any;
-        let args: any;
         let chkAll: HTMLElement;
         beforeAll((done: Function) => {
             gridObj = createGrid(
@@ -403,6 +397,7 @@ describe('Grid checkbox selection functionality', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = selectionModule = rows = preventDefault = chkAll = null;
         });
     });
 
@@ -490,6 +485,7 @@ describe('Grid checkbox selection functionality', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = rows = chkAll = selectionModule = null;
         });
     });
 
@@ -497,7 +493,6 @@ describe('Grid checkbox selection functionality', () => {
         let gridObj: Grid;
         let selectionModule: Selection;
         let rows: Element[];
-        let chkAll: HTMLElement;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -534,15 +529,13 @@ describe('Grid checkbox selection functionality', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = selectionModule = rows = null;
         });
     });
 
     describe('Grid clipboard box copy for cell selection => ', () => {
         let gridObj: Grid;
-        let preventDefault: Function = new Function();
-        let selectionModule: Selection;
         let gridBeforeCopy: (e: BeforeCopyEventArgs) => void;
-        let rows: Element[];
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -611,6 +604,7 @@ describe('Grid checkbox selection functionality', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = gridBeforeCopy = null;
         });
 
     });
@@ -647,6 +641,112 @@ describe('Grid checkbox selection functionality', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    });
+
+    describe('Testcase fix for EJ2-23913 and EJ2-25078', () => {
+        let gridObj: Grid;
+        let selectionModule: Selection;
+        let rows: Element[];
+        let rowDeselecting: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    columns: [
+                        { type: 'checkbox', width: 50 },
+                        { headerText: 'OrderID', isPrimaryKey: true, field: 'OrderID' },
+                        { headerText: 'CustomerID', field: 'CustomerID' },
+                        { headerText: 'EmployeeID', field: 'EmployeeID' },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                        { headerText: 'ShipCity', field: 'ShipCity' },
+                    ],
+                    allowSelection: true,
+                    pageSettings: { pageSize: 5 },
+                    allowPaging: true,
+                    rowDeselecting: rowDeselecting
+                }, done);
+        });
+
+        it('EJ2-25078-Selecting first row in first page', function () {
+            selectionModule = gridObj.selectionModule;
+            rows = gridObj.getRows();
+            selectionModule.selectRow(0, true);
+            expect(rows[0].hasAttribute('aria-selected')).toBeTruthy();
+        });
+
+        it('EJ2-25078-goto page 2-row deselecting should be triggered', (done: Function) => {
+            let isrowDeselectingTriggered: boolean = false;
+            rowDeselecting = (args?: any): void => {
+                isrowDeselectingTriggered = true;
+            }
+            gridObj.rowDeselecting = rowDeselecting;
+            let dataBound = (args: Object): void => {
+                expect(isrowDeselectingTriggered).toBeTruthy();
+                expect(gridObj.getSelectedRecords().length).toBe(0);
+                done();
+            };
+            gridObj.dataBound = dataBound;
+            gridObj.goToPage(2);
+        });
+
+
+        it('EJ2-25078-Selecting second row in page 2', function () {
+            gridObj.selectionSettings.persistSelection = true;
+            rows = gridObj.getRows();
+            selectionModule.selectRow(1, true);
+            expect(rows[1].hasAttribute('aria-selected')).toBeTruthy();
+        });
+
+        it('EJ2-25078-goto page 3-row deselecting should not be triggered', (done: Function) => {
+            let isrowDeselectingTriggered: boolean = false;
+            rowDeselecting = (args?: any): void => {
+                isrowDeselectingTriggered = true;
+            }
+            gridObj.rowDeselecting = rowDeselecting;
+            let dataBound = (args: Object): void => {
+                expect(isrowDeselectingTriggered).toBeFalsy();
+                done();
+            };
+            gridObj.dataBound = dataBound;
+            gridObj.goToPage(3);
+        });
+
+        it('EJ2-23913-args.cancel in deselecting with persisitselection as false', function () {
+            gridObj.selectionSettings.persistSelection = false;
+            rows = gridObj.getRows();
+            rowDeselecting = (args?: any): void => {
+                args.cancel = true;
+            }
+            gridObj.rowDeselecting = rowDeselecting;
+            (gridObj.element.querySelector('.e-checkselect') as any).click();
+            expect(rows[0].hasAttribute('aria-selected')).toBeTruthy();
+            (gridObj.element.querySelector('.e-checkselect') as any).click();
+            expect(rows[0].hasAttribute('aria-selected')).toBeTruthy();
+        });
+
+        it('EJ2-23913-clear selection', function () {
+            gridObj.selectionSettings.persistSelection = true;
+            gridObj.clearSelection();
+        });
+
+        it('EJ2-23913-args.cancel in deselecting with persisitselection as false', function () {
+            rows = gridObj.getRows();
+            rowDeselecting = (args?: any): void => {
+                args.cancel = true;
+            }
+            gridObj.rowDeselecting = rowDeselecting;
+            (gridObj.element.querySelector('.e-checkselect') as any).click();
+            expect(rows[0].hasAttribute('aria-selected')).toBeTruthy();
+            (gridObj.element.querySelector('.e-checkselect') as any).click();
+            expect(rows[0].hasAttribute('aria-selected')).toBeTruthy();
+        });
+
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = selectionModule = rows = null;
         });
     });
 });

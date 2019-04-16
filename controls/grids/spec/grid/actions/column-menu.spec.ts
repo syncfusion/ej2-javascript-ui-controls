@@ -19,9 +19,8 @@ import { Resize } from '../../../src/grid/actions/resize';
 import { Edit } from '../../../src/grid/actions/edit';
 import { PdfExport } from '../../../src/grid/actions/pdf-export';
 import { ExcelExport } from '../../../src/grid/actions/excel-export';
-import { Column } from '../../../src/grid/models/column';
 import { ContextMenuItemModel } from '../../../src/grid/base/interface';
-import { OffsetPosition, calculatePosition } from '@syncfusion/ej2-popups';
+import { calculatePosition } from '@syncfusion/ej2-popups';
 import { ContextMenuModel } from '@syncfusion/ej2-navigations';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
@@ -33,8 +32,6 @@ describe('column menu module', () => {
     describe('default items', () => {
         let gridObj: Grid;
         let elem: HTMLElement = createElement('div', { id: 'Grid' });
-        let headers: any;
-        let columns: Column[];
         beforeAll((done: Function) => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -365,14 +362,12 @@ describe('column menu module', () => {
         afterAll(() => {
             gridObj.destroy();
             remove(elem);
+            gridObj = elem = null;
         });
     });
 
     describe('columnMenuItem', () => {
         let gridObj: Grid;
-        let elem: HTMLElement = createElement('div', { id: 'Grid' });
-        let headers: any;
-        let columns: Column[];
         beforeAll((done: Function) => {
             let desktop: string = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36';
             Browser.userAgent = desktop;
@@ -424,13 +419,11 @@ describe('column menu module', () => {
          });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
     describe('custom item', () => {
         let gridObj: Grid;
-        let elem: HTMLElement = createElement('div', { id: 'Grid' });
-        let headers: any;
-        let columns: Column[];
         beforeAll((done: Function) => {
             let iphoneUa: string = 'Mozilla/5.0 (iPhone; CPU iPhone OS 10_2_1 like Mac OS X) AppleWebKit/602.4.6' +
             ' (KHTML, like Gecko) Version/10.0 Mobile/14D27 Safari/602.1';
@@ -482,14 +475,12 @@ describe('column menu module', () => {
             destroy(gridObj);
             let desktop: string = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36';
             Browser.userAgent = desktop;
+            gridObj = null;
         });
     });
 
     describe('check box filter test case', () => {
         let gridObj: Grid;
-        let elem: HTMLElement = createElement('div', { id: 'Grid' });
-        let headers: any;
-        let columns: Column[];
         beforeAll((done: Function) => {
             let desktop: string = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36';
             Browser.userAgent = desktop;
@@ -518,15 +509,15 @@ describe('column menu module', () => {
         });
         afterAll(() => {
             destroy(gridObj);
+            gridObj = null;
         });
     });
     describe('EJ2-6801-Column menu set model ', () => {
          let grid: Grid;
-        let headers: any;
-        let columns: Column[];
         let actionComplete: () => void;
         let template: Element = createElement('div', { id: 'template' });
         template.innerHTML = '<span>$ShipCity$</span>';
+        document.body.appendChild(template);
         beforeAll((done: Function) => {
             let desktop: string = 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36';
             Browser.userAgent = desktop;
@@ -569,6 +560,8 @@ describe('column menu module', () => {
         });
          afterAll(() => {
             destroy(grid);
+            grid = template = null;
+            document.getElementById('template').remove();
         });
     });
 
@@ -637,6 +630,7 @@ describe('column menu module', () => {
         });   
         afterAll(() => {
            destroy(gridObj);
+           gridObj = null;
         });
     });
 

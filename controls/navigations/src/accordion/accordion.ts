@@ -309,10 +309,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       super.destroy();
       this.unwireEvents();
       this.isDestroy = true;
-      this.templateEle.forEach((eleStr: Str): void => {
-        if (!isNOU(this.element.querySelector(eleStr))) {
-          (<HTEle>document.body.appendChild(this.element.querySelector(eleStr))).style.display = 'none'; }
-      });
+      this.restoreContent(null);
       while (ele.firstChild) {
         ele.removeChild(ele.firstChild); }
       if (this.trgtEle) {
@@ -696,7 +693,9 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
           ele.innerHTML = value;
       }
       if (!isNOU(temString)) {
-        this.templateEle.push(value);
+        if (this.templateEle.indexOf(value) === -1) {
+          this.templateEle.push(value);
+        }
       }
       return ele;
     }
@@ -935,8 +934,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
      */
     public removeItem(index: number): void {
       let ele: HTEle = <HTEle>this.element.children[index];
-      if (isNOU(ele)) {
-           return; }
+      if (isNOU(ele)) { return; }
+      this.restoreContent(index);
       detach(ele);
       this.items.splice(index, 1);
       this.itemAttribUpdate();
@@ -1041,12 +1040,26 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       isExpand ? this.expand(ctn) : this.collapse(ctn);
     }
     private destroyItems(): void {
-      [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM)).forEach ((el: HTEle) => { detach(el); });
+      this.restoreContent(null);
+      [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM)).forEach ((el: HTEle) => {
+        detach(el); });
+    }
+    private restoreContent(index: number): void {
+      let ctnElePos: HTMLElement;
+      if (isNOU(index)) { ctnElePos = this.element;
+      } else {
+          ctnElePos = <HTMLElement> this.element.querySelectorAll('.' + CLS_ITEM)[index];
+      }
+      this.templateEle.forEach((eleStr: Str): void => {
+        if (!isNOU(ctnElePos.querySelector(eleStr))) {
+          (<HTEle>document.body.appendChild(ctnElePos.querySelector(eleStr))).style.display = 'none'; }
+      });
     }
     private updateItem(item: HTEle, index: number): void {
       if (!isNOU(item)) {
         let itemObj: Object = this.items[index];
         this.items.splice(index, 1);
+        this.restoreContent(index);
         detach(item);
         this.addItem(itemObj, index);
       }

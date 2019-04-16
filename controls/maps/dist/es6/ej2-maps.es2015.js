@@ -3796,7 +3796,7 @@ class LayerPanel {
         x -= position.x - (factorX / 2);
         y = (y - (position.y - (factorY / 2))) + padding;
         this.mapObject.scale = Math.pow(2, level - 1);
-        this.mapObject.translatePoint = new Point(((x - (0.5 * this.mapObject.scale)) / this.mapObject.scale), ((y - (0.5 * this.mapObject.scale)) / this.mapObject.scale));
+        this.mapObject.translatePoint = new Point((x - (0.01 * this.mapObject.scale)) / this.mapObject.scale, (y - (0.01 * this.mapObject.scale)) / this.mapObject.scale);
         return new Point(x, y);
     }
 }
@@ -4184,19 +4184,6 @@ let Maps = class Maps extends Component {
         }
         this.mapLayerPanel.measureLayerPanel();
         this.element.appendChild(this.svgObject);
-        if (!isNullOrUndefined(document.getElementById(this.element.id + '_tile_parent'))) {
-            let svg = this.svgObject.getBoundingClientRect();
-            let element = document.getElementById(this.element.id);
-            let tile = document.getElementById(this.element.id + '_tile_parent').getBoundingClientRect();
-            let bottom = svg.bottom - tile.bottom - element.offsetTop;
-            let left = parseFloat(document.getElementById(this.element.id + '_tile_parent').style.left) + element.offsetTop;
-            document.getElementById(this.element.id + '_tile_parent').style.left = (tile.left < this.element.getBoundingClientRect().left ?
-                left + this.margin.right + Math.abs(tile.left - this.element.getBoundingClientRect().left) : left) + 'px';
-            let top = parseFloat(document.getElementById(this.element.id + '_tile_parent').style.top) + element.offsetTop;
-            let value = (bottom <= 10) ? top : (top * 2);
-            document.getElementById(this.element.id + '_tile_parent').style.top = value + 'px';
-        }
-        //this.setSecondaryElementPosition();
         this.arrangeTemplate();
         if (this.annotationsModule) {
             this.annotationsModule.renderAnnotationElements();

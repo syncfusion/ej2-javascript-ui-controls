@@ -20,7 +20,7 @@ export function measureText(text: string, font: TextStyleModel): Size {
     }
 
     htmlObject.innerHTML = text;
-    htmlObject.style.position = 'absolute';
+    htmlObject.style.position = 'fixed';
     htmlObject.style.fontSize = font.size;
     htmlObject.style.fontWeight = font.fontWeight;
     htmlObject.style.fontStyle = font.fontStyle;

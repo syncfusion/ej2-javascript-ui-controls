@@ -271,6 +271,39 @@ describe('DateTimepicker', () => {
             (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-date-icon e-icons')[0]).dispatchEvent(clickEvent);
             expect(document.querySelector('.e-datepicker.e-popup-wrapper').classList.contains('e-popup-wrapper')).toBe(true);
         });
+        it('allowedit property with e-non-edit calss ', () => {
+            datetimepicker = new DateTimePicker({value: new Date('3/3/2017 10:00 AM')});
+            datetimepicker.appendTo('#dateTime');
+            expect(datetimepicker.element.getAttribute('readonly')).toBe(null);
+            expect(datetimepicker.inputWrapper.container.classList.contains('e-non-edit')).toBe(false);
+            datetimepicker.allowEdit = false;
+            datetimepicker.dataBind();
+            expect(datetimepicker.element.getAttribute('readonly')).toBe('');
+            expect(datetimepicker.inputWrapper.container.classList.contains('e-non-edit')).toBe(true);
+        });
+        it('allowedit property with e-non-edit calss ', () => {
+            datetimepicker = new DateTimePicker({value: new Date('3/3/2017 10:00 AM')});
+            datetimepicker.appendTo('#dateTime');
+            expect(datetimepicker.element.getAttribute('readonly')).toBe(null);
+            expect(datetimepicker.inputWrapper.container.classList.contains('e-non-edit')).toBe(false);
+            datetimepicker.allowEdit = false;
+            datetimepicker.readonly = true;
+            datetimepicker.dataBind();
+            expect(datetimepicker.element.getAttribute('readonly')).toBe('');
+            expect(datetimepicker.inputWrapper.container.classList.contains('e-non-edit')).toBe(false);
+        });
+        it('allowedit property invalid value with e-non-edit calss  ', () => {
+            datetimepicker = new DateTimePicker({});
+            datetimepicker.appendTo('#dateTime');
+            datetimepicker.value = 'invalid';
+            datetimepicker.dataBind();
+            expect(datetimepicker.element.getAttribute('readonly')).toBe(null);
+            expect(datetimepicker.inputWrapper.container.classList.contains('e-non-edit')).toBe(false);
+            datetimepicker.allowEdit = false;
+            datetimepicker.dataBind();
+            expect(datetimepicker.element.getAttribute('readonly')).toBe('');
+            expect(datetimepicker.inputWrapper.container.classList.contains('e-non-edit')).toBe(true);
+        });
         it('Error Class for start value before 1905-Chrome testing',()=>{
             datetimepicker = new DateTimePicker();
             datetimepicker.appendTo('#dateTime');

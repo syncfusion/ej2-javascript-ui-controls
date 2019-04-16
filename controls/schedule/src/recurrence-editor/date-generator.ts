@@ -86,7 +86,7 @@ export function generate(
     }
     if (!ruleObject.until && tempViewDate) {
         cacheDate = new Date(tempViewDate.getTime());
-        cacheDate.setDate(tempViewDate.getDate() + 42 * (ruleObject.interval));
+        cacheDate.setDate(tempViewDate.getDate() + maximumCount * (ruleObject.interval));
         ruleObject.until = cacheDate;
     }
     if (ruleObject.until && startDate > ruleObject.until) {

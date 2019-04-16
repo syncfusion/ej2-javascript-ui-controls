@@ -154,6 +154,7 @@ describe('Pager base module', () => {
         afterAll(() => {
             pagerObj.destroy();
             elem.remove();
+            pagerObj = elem = null;
         });
 
     });
@@ -218,6 +219,7 @@ describe('Pager base module', () => {
             pagerObj.getPersistData();
             pagerObj.destroy();
             elem.remove();
+            pagerObj = elem = null;
         });
 
     });
@@ -339,6 +341,7 @@ describe('Pager base module', () => {
         afterAll(() => {
             pagerObj.destroy();
             elem.remove();
+            pagerObj = elem = null;
         });
 
     });
@@ -364,6 +367,7 @@ describe('Pager base module', () => {
         afterAll(() => {
             pagerObj.destroy();
             elem.remove();
+            document.getElementById('Pager').remove();
         });
 
     });
@@ -387,6 +391,7 @@ describe('Pager base module', () => {
         afterAll(() => {
             pagerObj.destroy();
             elem.remove();
+            pagerObj = elem = null;
         });
 
     });
@@ -423,6 +428,7 @@ describe('Pager base module', () => {
         afterAll(() => {
             pagerObj.destroy();
             elem.remove();
+            pagerObj = elem = element = null;
         });
 
     });

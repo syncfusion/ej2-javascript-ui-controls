@@ -1,7 +1,15 @@
 @include export-module('datepicker-layout') {
+
+  .e-input-group.e-control-wrapper.e-date-wrapper.e-non-edit.e-input-focus .e-input:focus ~ .e-clear-icon,
+  .e-float-input.e-control-wrapper.e-input-group.e-date-wrapper.e-non-edit.e-input-focus input:focus ~ .e-clear-icon {
+    display: flex;
+  }
+
   .e-date-wrapper {
     & .e-date-icon.e-icons {
-      box-sizing: $datepicker-box-sizing;
+      @if $skin-name == 'material' or $skin-name == 'material-dark' {
+        box-sizing: $datepicker-box-sizing;
+      }
     }
   }
 

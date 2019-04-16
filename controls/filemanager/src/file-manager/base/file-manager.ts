@@ -173,6 +173,8 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     /**
      * Enables or disables persisting component's state between page reloads. If enabled, following APIs will persist.
      * 1. `view` - Represents the previous view of the file manager.
+     * 2. `path` - Represents the previous path of the file manager.
+     * 3. `selectedItems` - Represents the previous selected items in the file manager.
      * @default false
      */
     @Property(false)
@@ -360,6 +362,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
 
     constructor(options?: FileManagerModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
+        FileManager.Inject(BreadCrumbBar, LargeIconsView, ContextMenu);
     }
 
     /**
@@ -375,7 +378,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
      * Initialize the event handler
      */
     protected preRender(): void {
-        FileManager.Inject(BreadCrumbBar, LargeIconsView, ContextMenu);
         this.ensurePath();
         this.feParent = [];
         this.feFiles = [];
@@ -811,7 +813,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
                     break;
                 case 'locale':
                     if (!isNOU(newProp.enableRtl)) {
-                        this.setProperties({ enableRtl: newProp.enableRtl } , true);
+                        this.setProperties({ enableRtl: newProp.enableRtl }, true);
                     }
                     this.localeSetModelOption(newProp);
                     break;

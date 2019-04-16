@@ -57,7 +57,8 @@ export class Crud {
 
     public addEvent(eventData: Object | Object[]): void {
         if (this.parent.eventBase.isBlockRange(eventData)) {
-            this.parent.quickPopup.openValidationError('blockAlert');
+            let data: Object | Object[] = (eventData instanceof Array) ? [eventData] : eventData;
+            this.parent.quickPopup.openValidationError('blockAlert', data);
             return;
         }
         let fields: EventFieldsMapping = this.parent.eventFields;
@@ -89,7 +90,8 @@ export class Crud {
 
     public saveEvent(event: Object | Object[], action?: CurrentAction): void {
         if (this.parent.eventBase.isBlockRange(event)) {
-            this.parent.quickPopup.openValidationError('blockAlert');
+            let data: Object | Object[] = (event instanceof Array) ? [event] : event;
+            this.parent.quickPopup.openValidationError('blockAlert', data);
             return;
         }
         let fields: EventFieldsMapping = this.parent.eventFields;

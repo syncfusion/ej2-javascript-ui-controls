@@ -57,6 +57,8 @@ export interface FileManagerModel extends ComponentModel{
     /**
      * Enables or disables persisting component's state between page reloads. If enabled, following APIs will persist.
      * 1. `view` - Represents the previous view of the file manager.
+     * 2. `path` - Represents the previous path of the file manager.
+     * 3. `selectedItems` - Represents the previous selected items in the file manager.
      * @default false
      */
     enablePersistence?: boolean;

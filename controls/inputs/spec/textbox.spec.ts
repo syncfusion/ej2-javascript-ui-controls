@@ -1971,4 +1971,29 @@ describe('TextBox ', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(inMB(profile.samples[profile.samples.length - 1]) + 0.25);
     }); 
+    describe('Click on Clear button  - ', () => {
+        let inputObj: any;
+        let onChange: EmitType<Object> = jasmine.createSpy('change');
+        let originalTimeout: number;
+        beforeAll((): void => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
+            let element: HTMLElement = createElement('input', {id: 'textbox'});
+            document.body.appendChild(element);
+            inputObj = new TextBox({change: function onChange(args){
+                expect(args.event != null).toBe(true);
+            }, showClearButton: true});
+            inputObj.appendTo(document.getElementById('textbox'));
+        })
+        afterAll((): void => {
+            inputObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it('Change event testing', () => {
+            let mouseEvent = document.createEvent('MouseEvents');
+            inputObj.textboxWrapper.clearButton.classList.add('e-clear-icon-hide');
+            inputObj.resetInputHandler(mouseEvent);
+            expect(inputObj.element.value).toBe('');
+        });
+    });
 })

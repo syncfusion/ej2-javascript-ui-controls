@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 17.1.41 (2019-04-16)
+
+### Maps
+
+#### Bug Fixes
+
+- #F143717 - The issue "When setting high zoom factor to OpenStreetMap, sub layer is not placed properly" has been fixed".
+
 ## 17.1.32-beta (2019-03-13)
 
 ### Maps

@@ -9,7 +9,7 @@ import { TextStyleModel, GradientModel, LinearGradientModel, RadialGradientModel
 import { Point } from './../primitives/point';
 import {
     PortVisibility, ConnectorConstraints, NodeConstraints, Shapes,
-    UmlActivityShapes, PortConstraints, DiagramConstraints, DiagramTools
+    UmlActivityShapes, PortConstraints, DiagramConstraints, DiagramTools, Transform
 } from './../enum/enum';
 import { FlowShapes, SelectorConstraints, ThumbsConstraints, FlipDirection, DistributeOptions } from './../enum/enum';
 import { Alignment, SegmentInfo } from '../rendering/canvas-interface';
@@ -27,13 +27,13 @@ import {
     Lane, Shape, Phase, ChildContainer, SwimLane, Path, Image, Text, BpmnShape, UmlClassifierShape, Header
 } from './../objects/node';
 import { NodeModel } from './../objects/node-model';
-import { Connector, bezierPoints, BezierSegment, ActivityFlow, StraightSegment, OrthogonalSegment } from './../objects/connector';
+import { Connector, bezierPoints, BezierSegment, ActivityFlow, StraightSegment, OrthogonalSegment, BpmnFlow } from './../objects/connector';
 import { ConnectorModel } from './../objects/connector-model';
 import { DecoratorModel } from './../objects/connector-model';
 import { getBasicShape } from './../objects/dictionary/basic-shapes';
 import { getFlowShape } from './../objects/dictionary/flow-shapes';
 import { Diagram } from './../diagram';
-import { Intersection } from './connector';
+import { Intersection, findAngle } from './connector';
 import { SelectorModel, UserHandleModel } from '../interaction/selector-model';
 import { MarginModel } from '../core/appearance-model';
 import { PointPortModel } from './../objects/port-model';
@@ -1764,4 +1764,37 @@ export let alignElement: Function = (element: Container, offsetX: number, offset
             }
         }
     }
+};
+/** @private */
+export let updatePathElement: Function = (anglePoints: PointModel[], connector: ConnectorModel): PathElement => {
+    let pathElement: PathElement = new PathElement();
+    let pathseqData: object;
+    for (let j: number = 0; j < anglePoints.length - 1; j++) {
+        pathseqData = findPath(anglePoints[j], anglePoints[j + 1]);
+        pathElement.data = pathseqData[0];
+        pathElement.id = connector.id + '_' + ((connector.shape as BpmnFlow).sequence);
+        pathElement.offsetX = pathseqData[1].x;
+        pathElement.offsetY = pathseqData[1].y;
+        pathElement.rotateAngle = 45;
+        pathElement.transform = Transform.Self;
+    }
+    return pathElement;
+};
+
+/** @private */
+export let findPath: Function = (sourcePoint: PointModel, targetPoint: PointModel): Object => {
+    let beginningpoint: PointModel = { x: sourcePoint.x, y: sourcePoint.y };
+    let distance: number = findDistance(sourcePoint, targetPoint);
+    distance = Math.min(30, distance / 2);
+    let angle: number = findAngle(sourcePoint, targetPoint);
+    let transferpt: PointModel = Point.transform({ x: beginningpoint.x, y: beginningpoint.y }, angle, distance);
+    let startpoint: PointModel = Point.transform({ x: transferpt.x, y: transferpt.y }, angle, -12);
+    let endpoint: PointModel = Point.transform({ x: startpoint.x, y: startpoint.y }, angle, 12 * 2);
+    let path: string = 'M' + startpoint.x + ' ' + startpoint.y + ' L' + endpoint.x + ' ' + endpoint.y;
+    return [path, transferpt];
+};
+
+/** @private */
+export let findDistance: Function = (point1: PointModel, point2: PointModel): number => {
+    return Math.sqrt(Math.pow(point2.x - point1.x, 2) + Math.pow(point2.y - point1.y, 2));
 };

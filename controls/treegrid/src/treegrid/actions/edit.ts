@@ -157,6 +157,9 @@ export class Edit {
   }
 
   private cellEdit(args: CellEditArgs): void {
+    if (this.keyPress !== 'enter') {
+      this.parent.trigger(events.cellEdit, args);
+    }
     if (this.doubleClickTarget && (this.doubleClickTarget.classList.contains('e-treegridexpand') ||
                this.doubleClickTarget.classList.contains('e-treegridcollapse'))) {
       args.cancel = true; this.doubleClickTarget = null;
@@ -214,7 +217,7 @@ export class Edit {
     //   });
     // }
   }
-    private cellSave(args: CellSaveArgs): void {
+   private cellSave(args: CellSaveArgs): void {
       if (this.parent.editSettings.mode === 'Cell' && this.parent.element.querySelector('form')) {
           args.cancel = true;
           setValue('isEdit', false, this.parent.grid);
@@ -236,7 +239,7 @@ export class Edit {
           row = <HTMLTableRowElement>this.parent.grid.getRows()[rowIndex];
           this.parent.trigger(events.actionBegin, arg);
           if (!arg.cancel) {
-            this.parent.grid.editModule.updateRow(rowIndex, args.rowData);
+            this.updateCell(args, rowIndex);
             if (this.parent.grid.aggregateModule) {
               this.parent.grid.aggregateModule.refresh(args.rowData);
             }
@@ -260,6 +263,10 @@ export class Edit {
           }
       }
     }
+    private updateCell(args: CellSaveArgs, rowIndex: number): void {
+      this.parent.grid.editModule.updateRow(rowIndex, args.rowData);
+      this.parent.grid.getRowsObject()[rowIndex].data = args.rowData;
+     }
     private crudAction(details: { value: ITreeData, action: string }, columnName?: string): void {
       editAction(details, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, columnName);
       if (details.action === 'add' && this.previousNewRowPosition != null) {
@@ -438,6 +445,31 @@ export class Edit {
           value.index = 0;
       }
       return args;
+    }
+
+
+  /**
+   * If the data,index and position given, Adds the record to treegrid rows otherwise it will create edit form.
+   * @return {void}
+   */
+
+     public addRecord(data?: Object, index?: number, position?: RowPosition): void {
+      this.previousNewRowPosition = this.parent.editSettings.newRowPosition;
+      if (data) {
+        if (index > -1 ) {
+          this.selectedIndex = index;
+          this.addRowIndex = index;
+        } else {
+          this.selectedIndex = this.parent.selectedRowIndex;
+          this.addRowIndex = this.parent.selectedRowIndex;
+        }
+        if (position) {
+          this.parent.setProperties({editSettings: {newRowPosition:  position}}, true);
+        }
+        this.parent.grid.editModule.addRecord(data, index);
+      } else {
+      this.parent.grid.editModule.addRecord(data, index);
+      }
     }
 
     /**

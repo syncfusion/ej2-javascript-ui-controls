@@ -2,6 +2,35 @@
 
 ## [Unreleased]
 
+## 17.1.41 (2019-04-16)
+
+### DatePicker
+
+#### Bug Fixes
+
+- #231875 - Now, you can enable the clear button dynamically after disabled the control.
+
+- #F143747 - Now, you can set min and max value as null dynamically.
+
+### DateTimePicker
+
+#### Bug Fixes
+
+- #231596, #232441 - Issue with clear button not shown when disable the `allowEdit` property has been fixed.
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- #231596, #232441 - Issue with clear button not shown when disable the `allowEdit` property has been fixed.
+
+### TimePicker
+
+#### Bug Fixes
+
+- #231596, #232441 - Issue with clear button not shown when disable the `allowEdit` property has been fixed.
+- #231003 Issue with different icon size in bootstrap theme has been fixed.
+
 ## 17.1.32-beta (2019-03-13)
 
 ### DatePicker

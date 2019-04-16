@@ -359,7 +359,10 @@ export class TableOfContentsDialog {
 
         let resetButtonDiv: HTMLElement = createElement('div', { className: 'e-de-toc-reset-button' });
         fieldsDiv.appendChild(resetButtonDiv);
-        let resetElement: HTMLElement = createElement('button', { innerHTML: locale.getConstant('Reset'), id: 'reset' });
+        let resetElement: HTMLElement = createElement('button', {
+            innerHTML: locale.getConstant('Reset'), id: 'reset',
+            attrs: { type: 'button' }
+        });
         resetButtonDiv.appendChild(resetElement);
         let resetButton: Button = new Button({ cssClass: 'e-btn e-flat' });
         resetButton.appendTo(resetElement);
@@ -391,7 +394,10 @@ export class TableOfContentsDialog {
 
         let modifyButtonDiv: HTMLElement = createElement('div', { className: 'e-de-toc-modify-button' });
         rightBottomGeneralDiv.appendChild(modifyButtonDiv);
-        let modifyElement: HTMLElement = createElement('button', { innerHTML: locale.getConstant('Modify'), id: 'modify' });
+        let modifyElement: HTMLElement = createElement('button', {
+            innerHTML: locale.getConstant('Modify'), id: 'modify',
+            attrs: { type: 'button' }
+        });
         modifyButtonDiv.appendChild(modifyElement);
         let modifyButton: Button = new Button({ cssClass: 'e-btn e-flat' });
         modifyButton.appendTo(modifyElement);

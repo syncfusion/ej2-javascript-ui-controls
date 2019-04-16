@@ -92,8 +92,10 @@ export class ConnectorEditing extends ToolBase {
     /**   @private  */
     public mouseUp(args: MouseEventArgs): void {
         let connector: ConnectorModel;
+        let oldValues: Connector;
         if (args.source && (args.source as SelectorModel).connectors) {
             connector = (args.source as SelectorModel).connectors[0];
+            oldValues = { segments: connector.segments } as Connector;
         }
         if (args && args.source && args.info && args.info.ctrlKey && args.info.shiftKey && connector.type === 'Straight') {
             this.addOrRemoveSegment(connector as Connector, this.currentPosition);
@@ -118,7 +120,7 @@ export class ConnectorEditing extends ToolBase {
                         }
                     }
                 }
-                this.commandHandler.updateEndPoint(connector as Connector);
+                this.commandHandler.updateEndPoint(connector as Connector, oldValues);
             }
         }
         if (this.undoElement) {
@@ -198,6 +200,7 @@ export class ConnectorEditing extends ToolBase {
 
     private addOrRemoveSegment(connector: ConnectorModel, point: PointModel): void {
         let updateSeg: boolean; let segmentIndex: number;
+        let oldValues: Connector = { segments: connector.segments } as Connector;
         for (let i: number = 0; i < connector.segments.length; i++) {
             let segment: StraightSegment = (connector.segments)[i] as StraightSegment;
             if (contains(point, segment.point, connector.hitPadding)) {
@@ -228,7 +231,7 @@ export class ConnectorEditing extends ToolBase {
             }
         }
         if (updateSeg) {
-            this.commandHandler.updateEndPoint(connector as Connector);
+            this.commandHandler.updateEndPoint(connector as Connector, oldValues);
         }
     }
     private findIndex(connector: Connector, point: PointModel): number {
@@ -262,6 +265,7 @@ export class ConnectorEditing extends ToolBase {
         obj: ConnectorModel, segment: OrthogonalSegment, point: PointModel, segmentIndex: number):
         boolean {
         let segmentPoint: PointModel = { x: 0, y: 0 };
+        let oldValues: Connector = { segments: obj.segments } as Connector;
         segmentPoint.x = ((segment.points[segmentIndex].x + segment.points[segmentIndex + 1].x) / 2);
         segmentPoint.y = ((segment.points[segmentIndex].y + segment.points[segmentIndex + 1].y) / 2);
         let ty: number = point.y - segmentPoint.y;
@@ -285,7 +289,7 @@ export class ConnectorEditing extends ToolBase {
                 this.segmentIndex = 0;
             }
             this.updateAdjacentSegments(obj as Connector, index, tx, ty);
-            this.commandHandler.updateEndPoint(obj as Connector);
+            this.commandHandler.updateEndPoint(obj as Connector, oldValues);
         }
         return true;
     }
@@ -376,6 +380,7 @@ export class ConnectorEditing extends ToolBase {
 
     private addTerminalSegment(connector: ConnectorModel, segment: OrthogonalSegment, tx: number, ty: number, segmentIndex: number)
         : number {
+        let oldValues: Connector = { segments: connector.segments } as Connector;
         let index: number = connector.segments.indexOf(segment); let first: OrthogonalSegment; let insertseg: OrthogonalSegment;
         let len: number; let dir: Direction;
         connector.segments.pop();
@@ -406,7 +411,7 @@ export class ConnectorEditing extends ToolBase {
         let lastseg: OrthogonalSegment = new OrthogonalSegment(
             connector, 'segments', { type: 'Orthogonal' }, true);
         connector.segments.push(lastseg);
-        this.commandHandler.updateEndPoint(connector as Connector);
+        this.commandHandler.updateEndPoint(connector as Connector, oldValues);
         index = index + segmentIndex;
         return index;
     }
@@ -512,6 +517,7 @@ export class ConnectorEditing extends ToolBase {
         let current: OrthogonalSegment = connector.segments[index] as OrthogonalSegment;
         let prev: OrthogonalSegment = connector.segments[index - 1] as OrthogonalSegment;
         let con: Connector = connector as Connector; let sourcePoint: PointModel;
+        let oldValues: Connector = { segments: connector.segments } as Connector;
         if (prev.length < 0 && connector.sourceID) {
             let sourceNode: Corners = (connector as Connector).sourceWrapper.corners;
             let segments: OrthogonalSegmentModel[] = []; let segValues: Object; let removeCurrentPrev: boolean = false;
@@ -587,7 +593,7 @@ export class ConnectorEditing extends ToolBase {
             }
             this.selectedSegment = ((removeCurrentPrev) ? connector.segments[index - 1] :
                 connector.segments[index + 1]) as OrthogonalSegment;
-            this.commandHandler.updateEndPoint(connector as Connector);
+            this.commandHandler.updateEndPoint(connector as Connector, oldValues);
         }
     }
 

@@ -373,6 +373,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             viewChange: this.onViewChange.bind(this),
             locale: this.locale
         });
+        this.documentEditor.acceptTab = true;
         this.documentEditor.enableLocalPaste = this.enableLocalPaste;
         this.documentEditor.enableAllModules();
         this.documentEditor.pageOutline = '#E0E0E0';

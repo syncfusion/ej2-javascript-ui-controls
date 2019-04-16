@@ -270,6 +270,39 @@ describe('DateRangePicker', () => {
                         (<HTMLElement>document.getElementsByClassName(' e-input-group-icon e-range-icon e-icons')[0]).dispatchEvent(clickEvent);
                         expect(document.querySelector('.e-daterangepicker.e-popup').classList.contains('e-popup')).toBe(true);
                     });
+                    it('allowedit property with e-non-edit calss ', () => {
+                        daterangepicker = new DateRangePicker({value: [new Date('02/11/2017'), new Date('03/11/2017')]});
+                        daterangepicker.appendTo('#date');
+                        expect(daterangepicker.element.getAttribute('readonly')).toBe(null);
+                        expect(daterangepicker.inputWrapper.container.classList.contains('e-non-edit')).toBe(false);
+                        daterangepicker.allowEdit = false;
+                        daterangepicker.dataBind();
+                        expect(daterangepicker.element.getAttribute('readonly')).toBe('');
+                        expect(daterangepicker.inputWrapper.container.classList.contains('e-non-edit')).toBe(true);
+                    });
+                    it('allowedit property with e-non-edit calss with readonly ', () => {
+                        daterangepicker = new DateRangePicker({value: [new Date('02/11/2017'), new Date('03/11/2017')]});
+                        daterangepicker.appendTo('#date');
+                        expect(daterangepicker.element.getAttribute('readonly')).toBe(null);
+                        expect(daterangepicker.inputWrapper.container.classList.contains('e-non-edit')).toBe(false);
+                        daterangepicker.allowEdit = false;
+                        daterangepicker.readonly = true;
+                        daterangepicker.dataBind();
+                        expect(daterangepicker.element.getAttribute('readonly')).toBe('');
+                        expect(daterangepicker.inputWrapper.container.classList.contains('e-non-edit')).toBe(false);
+                    });
+                    it('allowedit property invalid value with e-non-edit calss  ', () => {
+                        daterangepicker = new DateRangePicker({});
+                        daterangepicker.appendTo('#date');
+                        daterangepicker.value = 'invalid';
+                        daterangepicker.dataBind();
+                        expect(daterangepicker.element.getAttribute('readonly')).toBe(null);
+                        expect(daterangepicker.inputWrapper.container.classList.contains('e-non-edit')).toBe(false);
+                        daterangepicker.allowEdit = false;
+                        daterangepicker.dataBind();
+                        expect(daterangepicker.element.getAttribute('readonly')).toBe('');
+                        expect(daterangepicker.inputWrapper.container.classList.contains('e-non-edit')).toBe(true);
+                    });
                     it('Element created with cssClass property', () => {
                         daterangepicker = new DateRangePicker({ cssClass: 'e-custom' });
                         daterangepicker.appendTo('#date');

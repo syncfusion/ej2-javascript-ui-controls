@@ -8,7 +8,6 @@ import { getObject, Grid, Reorder as GridReorder } from '@syncfusion/ej2-grids';
  */
 export class Reorder {
     private parent: TreeGrid;
-    private treeColumn: Column | string | ColumnModel;
 
     /**
      * Constructor for Reorder module
@@ -16,7 +15,6 @@ export class Reorder {
     constructor(parent?: TreeGrid, treeColumn?: Column | string | ColumnModel ) {
       Grid.Inject(GridReorder);
       this.parent = parent;
-      this.treeColumn = treeColumn;
       this.addEventListener();
     }
 
@@ -33,13 +31,11 @@ export class Reorder {
      */
     public addEventListener(): void {
       this.parent.on('getColumnIndex', this.getTreeColumn, this);
-      this.parent.on('setColumnIndex', this.setTreeColumnIndex, this);
     }
 
     public removeEventListener(): void {
       if (this.parent.isDestroyed) { return; }
       this.parent.off('getColumnIndex', this.getTreeColumn);
-      this.parent.off('setColumnIndex', this.getTreeColumn);
     }
     /**
      * To destroy the Reorder 
@@ -50,18 +46,17 @@ export class Reorder {
       this.removeEventListener();
     }
     private getTreeColumn(): void {
-        this.treeColumn = this.parent.columns[this.parent.treeColumnIndex];
-    }
-
-    private setTreeColumnIndex(): void {
-      let treeIndex: number;
-      for (let f: number = 0 ; f < this.parent.columns.length; f++) {
-         let treeColumnfield: string = getObject('field', this.treeColumn);
-         let parentColumnfield: string = getObject('field', this.parent.columns[f]);
-         if (treeColumnfield === parentColumnfield) {
-             treeIndex = f;
-         }
-      }
-      this.parent.treeColumnIndex = treeIndex;
+        let treeColumn: Column | string | ColumnModel = this.parent.columns[this.parent.treeColumnIndex];
+        let treeIndex: number;
+        let updatedCols: Column[] = this.parent.getColumns();
+        for (let f: number = 0 ; f < updatedCols.length; f++) {
+           let treeColumnfield: string = getObject('field', treeColumn);
+           let parentColumnfield: string = getObject('field', updatedCols[f]);
+           if (treeColumnfield === parentColumnfield) {
+               treeIndex = f;
+               break;
+           }
+        }
+        this.parent.setProperties({treeColumnIndex: treeIndex}, true);
     }
 }

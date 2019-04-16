@@ -366,8 +366,7 @@ export interface ColumnModel {
 
   /**
    * Defines the alignment of the column in both header and content cells.    
-   * @default Left
-   * @aspDefaultValueIgnore
+   * @default Syncfusion.EJ2.Grids.TextAlign.Left
    * @isEnumeration true
    * @aspType Syncfusion.EJ2.Grids.TextAlign
    */
@@ -386,8 +385,7 @@ export interface ColumnModel {
    * * `Ellipsis` -  Displays ellipsis when the cell content overflows its area.
    * * `EllipsisWithTooltip` - Displays ellipsis when the cell content overflows its area 
    * also it will display tooltip while hover on ellipsis applied cell.
-   * @default Ellipsis
-   * @aspDefaultValueIgnore
+   * @default Syncfusion.EJ2.Grids.ClipMode.Ellipsis
    * @isEnumeration true
    * @aspType Syncfusion.EJ2.Grids.ClipMode
    */

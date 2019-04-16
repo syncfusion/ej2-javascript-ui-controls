@@ -25,7 +25,6 @@ describe('Command Column ', () => {
     describe('Command Column Rendering feature', () => {
         let rows: HTMLTableRowElement;
         let grid: Grid;
-        let element: Element = createElement('div', { id: 'Grid' });
         beforeAll((done: Function) => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
@@ -92,6 +91,7 @@ describe('Command Column ', () => {
 
         afterAll(() => {
             destroy(grid);
+            grid = rows = null;
         });
 
     });
@@ -99,7 +99,6 @@ describe('Command Column ', () => {
     describe('Command column with sorting, filtering, grouping enable', () => {
         let row: HTMLTableRowElement;
         let grid: Grid;
-        let element: Element = createElement('div', { id: 'Grid' });
         let actionBegin: (e?: Object) => void;
         let actionComplete: (e?: Object) => void;
         beforeAll((done: Function) => {
@@ -143,12 +142,11 @@ describe('Command Column ', () => {
 
         afterAll(() => {
             destroy(grid);
+            grid = row = actionBegin = actionComplete = null;
         });
     });
     describe('Command column with Editing enable', () => {
-        let row: HTMLTableRowElement;
         let grid: Grid;
-        let element: Element = createElement('div', { id: 'Grid' });
         let actionBegin: (e?: Object) => void;
         let actionComplete: (e?: Object) => void;
         beforeAll((done: Function) => {
@@ -213,12 +211,11 @@ describe('Command Column ', () => {
 
         afterAll(() => {
             destroy(grid);
+            grid = actionBegin = actionComplete = null;
         });
     });
     describe('Command column with deleting', () => {
-        let row: HTMLTableRowElement;
         let grid: Grid;
-        let element: Element = createElement('div', { id: 'Grid' });
         let actionBegin: (e?: Object) => void;
         let actionComplete: (e?: Object) => void;
         beforeAll((done: Function) => {
@@ -254,12 +251,12 @@ describe('Command Column ', () => {
 
         afterAll(() => {
             destroy(grid);
+            grid = actionBegin = actionComplete = null;
         });
     });
     describe('Command column with feature combinations', () => {
         let row: HTMLTableRowElement;
         let grid: Grid;
-        let element: Element = createElement('div', { id: 'Grid' });
         let actionBegin: (e?: Object) => void;
         let actionComplete: (e?: Object) => void;
         beforeAll((done: Function) => {
@@ -301,9 +298,10 @@ describe('Command Column ', () => {
         });
 
         it('CommandColumn with print', (done: Function) => {
-            grid.beforePrint = (args: { element: Element }) => {
+            grid.beforePrint = (args: { element: Element, cancel?: boolean }) => {
                 row = args.element.querySelector('.e-gridcontent').querySelectorAll('tr')[0];
                 expect(row.firstElementChild.classList.contains('e-unboundcell')).toBeTruthy();
+                args.cancel = true;
                 done();
             };
             grid.print();
@@ -314,11 +312,11 @@ describe('Command Column ', () => {
             setTimeout(function () {
                 done();
             }, 1000);
+            grid = row = actionBegin = actionComplete = null;
 
         });
     });
     describe('EJ2-7743 ShowConfirmDialog is not showing in Command Column => ', () => {
-        let row: HTMLTableRowElement;
         let grid: Grid;
         let actionBegin: (e?: Object) => void;
         let actionComplete: (e?: Object) => void;
@@ -361,6 +359,7 @@ describe('Command Column ', () => {
 
         afterAll(() => {
             destroy(grid);
+            grid = actionBegin = actionComplete = null;
         });
     });
     describe('Support for command column localization', () => {
@@ -398,6 +397,7 @@ describe('Command Column ', () => {
 
         afterAll(() => {
             destroy(grid);
+            grid = rows = null;
         });
     });
 
@@ -441,6 +441,7 @@ describe('Command Column ', () => {
         });   
         afterAll(function () {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 
@@ -477,6 +478,7 @@ describe('Command Column ', () => {
   
         afterAll(function () {
             destroy(gridObj);
+            gridObj = null;
         });
     });
 });

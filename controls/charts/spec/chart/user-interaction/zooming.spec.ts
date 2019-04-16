@@ -489,6 +489,8 @@ describe('Chart Control', () => {
             chartObj.loaded = null;
             targetElement = document.getElementById('container_Zooming_KitCollection');
             trigger.mousemoveEvent(targetElement, 0, 0, 5, 5);
+            let position: string = document.getElementById('chartmeasuretext').style.position;
+            expect(position === 'fixed').toBe(true);
             expect(targetElement.getAttribute('opacity') != '0.1').toBe(true);
             done();
         });

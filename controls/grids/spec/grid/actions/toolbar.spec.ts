@@ -1,7 +1,7 @@
 /**
  * Grid toolbar spec document
  */
-import { EmitType, EventHandler } from '@syncfusion/ej2-base';
+import { EventHandler } from '@syncfusion/ej2-base';
 import { extend } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
@@ -208,6 +208,7 @@ describe('Toolbar functionalities', () => {
 
         afterAll(() => {
             destroy(gridObj);
+            gridObj = actionBegin = actionComplete = keyup = null;
         });
 
     });

@@ -61,7 +61,7 @@ export class StatusBar {
         div.appendChild(this.pageCount);
         this.updatePageCount();
         let zoomBtn: HTMLButtonElement = createElement('button', {
-            className: 'e-de-statusbar-zoom'
+            className: 'e-de-statusbar-zoom', attrs: { type: 'button' }
         }) as HTMLButtonElement;
         this.statusBarDiv.appendChild(zoomBtn);
         zoomBtn.setAttribute('title', 'Zoom level. Click or tap to open the Zoom options.');
