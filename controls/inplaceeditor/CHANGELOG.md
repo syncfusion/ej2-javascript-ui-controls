@@ -10,6 +10,7 @@
 
 - Toolbar fails to render properly in `RichTextEditor` In-Place Editor when `afterOpen` is set, that issue has been fixed.
 - Not able to hide the close icon issue has been fixed.
+- Change event doesn't trigger, when `RichTextEditor` blurs that issue has been fixed.
 
 ## 16.4.53 (2019-02-13)
 
@@ -41,6 +42,7 @@
 - `space` key action issue is fixed with clicking save and cancel buttons.
 - Value persistence issue with `multi-select` when doing cancel action after removing selected item.
 - Double-Click issue in IOS device is fixed.
+- `Invalid background value` warning thrown in `In-place Editor`, that issue has been fixed.
 
 ## 16.4.40-beta (2018-12-10)
 

@@ -14854,9 +14854,6 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
          */
         _this.isBlur = true;
         _this.needsID = true;
-        _this.onBlurHandler = _this.blurHandler.bind(_this);
-        _this.onFocusHandler = _this.focusHandler.bind(_this);
-        _this.onResizeHandler = _this.resizeHandler.bind(_this);
         return _this;
     }
     /**
@@ -14923,6 +14920,9 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     RichTextEditor.prototype.preRender = function () {
+        this.onBlurHandler = this.blurHandler.bind(this);
+        this.onFocusHandler = this.focusHandler.bind(this);
+        this.onResizeHandler = this.resizeHandler.bind(this);
         this.clickPoints = { clientX: 0, clientY: 0 };
         this.initialValue = this.value;
         this.serviceLocator = new ServiceLocator;

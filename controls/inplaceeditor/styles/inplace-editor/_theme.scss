@@ -54,7 +54,7 @@
 
       .e-btn-save.e-icon-btn,
       .e-btn-cancel.e-icon-btn {
-        background: $editor-btn-bg;
+        background-color: $editor-btn-bg;
         border: $editor-btn-border;
         box-shadow: $editor-btn-box-shadow;
 
@@ -63,17 +63,17 @@
         }
 
         &:hover {
-          background: $editor-btn-hover-bg;
+          background-color: $editor-btn-hover-bg;
           border: $editor-btn-hover-border;
         }
 
         &:focus {
-          background: $editor-btn-focus-bg;
+          background-color: $editor-btn-focus-bg;
           border: $editor-btn-focus-border;
         }
 
         &:active {
-          background: $editor-btn-active-bg;
+          background-color: $editor-btn-active-bg;
           border: $editor-btn-active-border;
         }
 

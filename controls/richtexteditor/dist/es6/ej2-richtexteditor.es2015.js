@@ -14632,9 +14632,6 @@ let RichTextEditor = class RichTextEditor extends Component {
          */
         this.isBlur = true;
         this.needsID = true;
-        this.onBlurHandler = this.blurHandler.bind(this);
-        this.onFocusHandler = this.focusHandler.bind(this);
-        this.onResizeHandler = this.resizeHandler.bind(this);
     }
     /**
      * To provide the array of modules needed for component rendering
@@ -14700,6 +14697,9 @@ let RichTextEditor = class RichTextEditor extends Component {
      * @private
      */
     preRender() {
+        this.onBlurHandler = this.blurHandler.bind(this);
+        this.onFocusHandler = this.focusHandler.bind(this);
+        this.onResizeHandler = this.resizeHandler.bind(this);
         this.clickPoints = { clientX: 0, clientY: 0 };
         this.initialValue = this.value;
         this.serviceLocator = new ServiceLocator;

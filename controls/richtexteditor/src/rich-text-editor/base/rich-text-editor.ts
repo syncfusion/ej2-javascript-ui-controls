@@ -608,9 +608,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     constructor(options?: RichTextEditorModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
-        this.onBlurHandler = this.blurHandler.bind(this);
-        this.onFocusHandler = this.focusHandler.bind(this);
-        this.onResizeHandler = this.resizeHandler.bind(this);
     }
     /**
      * To provide the array of modules needed for component rendering
@@ -688,6 +685,9 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     protected preRender(): void {
+        this.onBlurHandler = this.blurHandler.bind(this);
+        this.onFocusHandler = this.focusHandler.bind(this);
+        this.onResizeHandler = this.resizeHandler.bind(this);
         this.clickPoints = { clientX: 0, clientY: 0 };
         this.initialValue = this.value;
         this.serviceLocator = new ServiceLocator;
