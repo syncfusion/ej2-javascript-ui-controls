@@ -859,6 +859,37 @@ describe('DateRangePicker', () => {
                 expect(+daterangepicker.startDate).toBe(+new Date('1/1/1900'));
             });
         });
+        describe('Clear value with strict mode enabled ', () => {
+            let daterangepicker: any;
+            beforeEach(() => {
+                let ele: HTMLElement = <HTMLElement>createElement('input', { id: 'date' });
+                document.body.appendChild(ele);
+            });
+            afterEach(() => {
+                if (daterangepicker) {
+                    daterangepicker.destroy();
+                }
+                document.body.innerHTML = '';
+            });
+            it('Clear input with strict mode enabled initially', () => {
+                daterangepicker = new DateRangePicker({ startDate: new Date('05/24/2017'), endDate: new Date('08/10/2017'), strictMode: true });
+                daterangepicker.appendTo('#date');
+                daterangepicker.inputElement.value = '';
+                daterangepicker.inputBlurHandler();
+                expect(daterangepicker.inputElement.value).toBe('');
+            });
+            it('Clear input with strict mode enabled dynamically', () => {
+                daterangepicker = new DateRangePicker();
+                daterangepicker.appendTo('#date');
+                daterangepicker.startDate = '4/3/2018';
+                daterangepicker.endDate = '5/1/2018';
+                daterangepicker.strictMode = true;
+                daterangepicker.dataBind();
+                daterangepicker.inputElement.value = '';
+                daterangepicker.inputBlurHandler();
+                expect(daterangepicker.inputElement.value).toBe('');
+            });         
+        });
         describe('Input via attribute testing', () => {
             let daterangepicker: any;
             let ele: HTMLElement;

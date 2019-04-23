@@ -204,7 +204,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
   @Property([])
   public dataSource: Object | DataManager;
   /**    
-   * Defines the external [`Query`](../data/api-query.html) 
+   * Defines the external [`Query`](../../data/api-query.html) 
    * that will be executed along with data processing.    
    * @default null    
    */
@@ -281,7 +281,7 @@ public pagerTemplate: string;
   /**    
    * If `showColumnMenu` set to true, then it will enable the column menu options in each columns.
    * 
-   * > Check the [`Column menu`](./columns.html#column-menu) for its configuration.
+   * > Check the [`Column menu`](../../treegrid/columns/#column-menu) for its configuration.
    * @default false    
    */
   @Property(false)
@@ -307,7 +307,7 @@ public pagerTemplate: string;
   public sortSettings: SortSettingsModel;
   /**
    * Configures the TreeGrid aggregate rows.
-   * > Check the [`Aggregates`](./aggregates.html) for its configuration.
+   * > Check the [`Aggregates`](../../treegrid/aggregates/) for its configuration.
    * @default []
    */
   @Collection<AggregateRowModel>([], AggregateRow)
@@ -422,7 +422,7 @@ public pagerTemplate: string;
   public rowHeight: number;
   /**     
    * If `enableAltRow` is set to true, the TreeGrid will render with `e-altrow` CSS class to the alternative tr elements.    
-   * > Check the [`AltRow`](./row.html#styling-alternate-rows) to customize the styles of alternative rows.
+   * > Check the [`AltRow`](../../treegrid/row/#styling-alternate-rows) to customize the styles of alternative rows.
    * @default true 
    */
   @Property(true)
@@ -768,7 +768,7 @@ public beforeDataBound: EmitType<BeforeDataBoundArgs>;
   /**
    * If `allowExcelExport` set to true, then it will allow the user to export treegrid to Excel file.
    * 
-   * > Check the [`ExcelExport`](./excel-exporting.html) to configure exporting document.
+   * > Check the [`ExcelExport`](../../treegrid/excel-export/) to configure exporting document.
    * @default false    
    */
   @Property(false)
@@ -776,7 +776,7 @@ public beforeDataBound: EmitType<BeforeDataBoundArgs>;
   /**    
    * If `allowPdfExport` set to true, then it will allow the user to export treegrid to Pdf file.
    * 
-   * > Check the [`Pdfexport`](./pdf-exporting.html) to configure the exporting document.
+   * > Check the [`Pdfexport`](../../treegrid/pdf-export/) to configure the exporting document.
    * @default false    
    */
   @Property(false)
@@ -947,7 +947,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
  /**
   * Searches TreeGrid records using the given key.
   * You can customize the default search option by using the
-  * [`searchSettings`](./api-searchSettings.html).
+  * [`searchSettings`](#searchsettings).
   * @param  {string} searchString - Defines the key.
   * @return {void}
   */
@@ -994,7 +994,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
   /**
    * By default, prints all the pages of the TreeGrid and hides the pager.
    * > You can customize print options using the 
-   * [`printMode`](./api-treegrid.html#printmode-string). 
+   * [`printMode`](#printmode). 
    * @return {void}
    */
   public print(): void {

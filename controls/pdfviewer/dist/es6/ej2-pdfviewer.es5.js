@@ -463,9 +463,9 @@ var LinkAnnotation = /** @__PURE__ @class */ (function () {
                         return false;
                     };
                 }
+                var pageDiv = document.getElementById(this_2.pdfViewer.element.id + '_pageDiv_' + pageIndex);
+                pageDiv.appendChild(aTag);
             }
-            var pageDiv = document.getElementById(this_2.pdfViewer.element.id + '_pageDiv_' + pageIndex);
-            pageDiv.appendChild(aTag);
         };
         var this_2 = this;
         for (var i = 0; i < linkAnnotation.length; i++) {

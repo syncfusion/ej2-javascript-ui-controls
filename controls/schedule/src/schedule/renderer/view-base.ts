@@ -1,5 +1,7 @@
-import { createElement, append, prepend, isNullOrUndefined, getValue, getDefaultDateObject, cldrData, Internationalization, addClass }
-    from '@syncfusion/ej2-base';
+import {
+    createElement, append, prepend, isNullOrUndefined, getValue, getDefaultDateObject, cldrData, Internationalization, addClass,
+    setStyleAttribute, formatUnit
+} from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { getDateInMs, addDays, resetTime, WEEK_LENGTH, getWeekFirstDate, getOuterHeight, getScrollBarWidth } from '../base/util';
 import { TdData, ResourceDetails } from '../base/interface';
@@ -373,9 +375,35 @@ export class ViewBase {
         this.parent.resourceBase.renderResourceTree();
     }
     public addAutoHeightClass(element: Element): void {
-        if (!this.parent.uiStateValues.isGroupAdaptive && this.parent.rowAutoHeight && this.parent.activeView.isTimelineView()
+        if (!this.parent.uiStateValues.isGroupAdaptive && this.parent.rowAutoHeight && this.isTimelineView()
             && this.parent.activeViewOptions.group.resources.length > 0) {
             addClass([element], cls.AUTO_HEIGHT);
         }
+    }
+
+    private getColElements(): HTMLElement[] {
+        return [].slice.call(this.parent.element.querySelectorAll('.' + cls.CONTENT_WRAP_CLASS
+            + ' col, .' + cls.DATE_HEADER_WRAP_CLASS + ' col')) as HTMLElement[];
+    }
+
+    public setColWidth(content: HTMLElement): void {
+        if (this.isTimelineView()) {
+            let colElements: HTMLElement[] = this.getColElements();
+            const colWidth: number = Math.ceil(this.parent.getContentTable().offsetWidth / (colElements.length / 2));
+            colElements.forEach((col: HTMLElement) => setStyleAttribute(col, { 'width': formatUnit(colWidth) }));
+            if (content.offsetHeight !== content.clientHeight) {
+                let resourceColumn: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS);
+                if (!isNullOrUndefined(resourceColumn)) {
+                    setStyleAttribute(resourceColumn, {
+                        'height': formatUnit(content.clientHeight)
+                    });
+                }
+            }
+        }
+    }
+
+    public resetColWidth(): void {
+        let colElements: HTMLElement[] = this.getColElements();
+        colElements.forEach((col: HTMLElement) => col.style.width = '');
     }
 }

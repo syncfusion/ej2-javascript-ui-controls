@@ -70,7 +70,7 @@ var Rule = /** @__PURE__ @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate([
-        Property('')
+        Property(null)
     ], Rule.prototype, "condition", void 0);
     __decorate([
         Collection([], Rule)

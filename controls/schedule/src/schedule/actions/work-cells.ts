@@ -65,7 +65,7 @@ export class WorkCellInteraction {
             let date: Date = this.parent.getDateFromElement(target);
             if (!isNullOrUndefined(date) && !this.parent.isAdaptive) {
                 this.parent.setProperties({ selectedDate: date }, true);
-                this.parent.changeView(this.parent.getNavigateView());
+                this.parent.changeView(this.parent.getNavigateView(), e);
             }
         }
     }

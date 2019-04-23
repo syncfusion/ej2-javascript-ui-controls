@@ -6,7 +6,7 @@ import { NavigationPane } from '../../src/file-manager/layout/navigation-pane';
 import { DetailsView } from '../../src/file-manager/layout/details-view';
 import { Toolbar } from '../../src/file-manager/actions/toolbar';
 import { createElement, Browser, Instance, isNullOrUndefined } from '@syncfusion/ej2-base';
-import { toolbarItems, toolbarItems1, data1, data2, data3, data10, data11 } from './data';
+import { toolbarItems, toolbarItems1, data1, data2, data3, data10, data11, stringData } from './data';
 
 FileManager.Inject(Toolbar, NavigationPane, DetailsView);
 
@@ -398,8 +398,57 @@ describe('FileManager control', () => {
                 }, 500);
             }, 500);
         });
-
-
     });
+    describe('Ajax response ', () => {
 
+        let feObj: FileManager;
+        let ele: HTMLElement;
+
+        beforeEach((): void => {
+            jasmine.Ajax.install();
+            let Chromebrowser: string = "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36";
+            Browser.userAgent = Chromebrowser;
+            feObj = undefined;
+            ele = createElement('div', { id: 'file' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+        });
+        it('with JSON string type test case ', (done: Function) => {
+            feObj = new FileManager({
+                ajaxSettings: {
+                    url: '/FileOperations',
+                    uploadUrl: '/Upload', downloadUrl: '/Download', getImageUrl: '/GetImage'
+                },
+                showThumbnail: false
+            }, '#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: (stringData)
+            });
+            setTimeout(function () {
+                this.request = jasmine.Ajax.requests.mostRecent();
+                this.request.respondWith({
+                    status: 200,
+                    responseText: (stringData)
+                });
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function () {
+                    let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_largeicons').querySelectorAll('li');
+                    let treeObj: Element[] = <Element[] & NodeListOf<HTMLLIElement>>document.getElementById('file_tree').querySelectorAll('li');
+                    expect(document.getElementById('file').classList.contains('e-control')).toEqual(true);
+                    expect(document.getElementById('file').classList.contains('e-filemanager')).toEqual(true);
+                    expect(document.getElementById('file_tree').classList.contains('e-treeview')).toEqual(true);
+                    expect(document.getElementById('file_toolbar').classList.contains('e-toolbar')).toEqual(true);
+                    expect(JSON.parse(stringData).files.length).toBe(li.length);
+                    expect(JSON.parse(stringData).files.length).toBe(treeObj.length);
+                    done();
+                }, 500);
+            }, 500);
+        });
+    });
 });

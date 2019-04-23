@@ -75,6 +75,7 @@ export class Month extends ViewBase implements IRenderer {
             header.style[<any>args.cssProperties.padding] = '';
         }
         // tslint:enable:no-any
+        this.setColWidth(content);
     }
     public setContentHeight(content: HTMLElement, leftPanelElement: HTMLElement, height: number): void {
         content.style.height = 'auto';

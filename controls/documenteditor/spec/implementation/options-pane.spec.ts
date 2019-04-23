@@ -313,8 +313,10 @@ describe('Options pane support validation', () => {
         optionsPane.onKeyDown(keydown);
         let dig: any = editor.optionsPaneModule as any;
         let results: any = dig.results;
-        results.currentIndex = 11;
+        results.currentIndex = 10;
+        dig.navigateSearchResult(true);
         optionsPane.navigateNextResultButtonClick();
+        expect(dig.results.currentIndex).toBe(0);
     });
 });
 describe('Options pane replace support', () => {
@@ -865,9 +867,11 @@ describe('open find pane and repalce pane testing', () => {
         optionsPane.onKeyDownOnOptionPane(event);
         expect(document.activeElement.classList.contains("e-de-search-result-item")).toBe(true);
         optionsPane.onKeyDownOnOptionPane(event);
+        expect(document.activeElement.classList.contains("e-de-search-result-item")).toBe(true);
+        optionsPane.onKeyDownOnOptionPane(event);
         expect(document.activeElement.classList.contains("e-de-search-result-hglt")).toBe(true);
         optionsPane.onKeyDownOnOptionPane(event);
-        expect(document.activeElement.classList.contains("e-de-search-result-item")).toBe(true);
+        expect(document.activeElement.classList.contains("e-de-search-result-item")).toBe(false);
         optionsPane.onKeyDownOnOptionPane(event);
         expect(document.activeElement.classList.contains("e-checkbox")).toBe(true);
         optionsPane.onKeyDownOnOptionPane(event);

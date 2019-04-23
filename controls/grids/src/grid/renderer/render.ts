@@ -276,6 +276,7 @@ export class Render {
         let gObj: IGrid = this.parent;
         this.contentRenderer = <ContentRender>this.renderer.getRenderer(RenderType.Content);
         this.headerRenderer = <HeaderRender>this.renderer.getRenderer(RenderType.Header);
+        (<{actionArgs?: NotifyArgs}>e).actionArgs = args;
         gObj.trigger(events.beforeDataBound, e);
         if ((<{ cancel?: boolean }>e).cancel) {
             return;

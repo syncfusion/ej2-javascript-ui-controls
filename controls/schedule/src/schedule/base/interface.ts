@@ -273,6 +273,8 @@ export interface IRenderer {
     setResourceHeaderContent(tdElement: Element, tdData: TdData, className: string): void;
     destroy(): void;
     isTimelineView(): boolean;
+    setColWidth(content: HTMLElement): void;
+    resetColWidth(): void;
 }
 
 /** @hidden */

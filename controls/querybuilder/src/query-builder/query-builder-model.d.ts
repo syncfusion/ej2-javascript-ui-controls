@@ -70,7 +70,7 @@ export interface RuleModel {
 
     /**
      * Specifies the condition value in group.
-     * @default 'and'
+     * @default null
      */
     condition?: string;
 

@@ -150,6 +150,22 @@ describe('TextBox ', () => {
             expect(textbox.placeholder).toBe('Feuilleter');
         });
     });
+    describe('Angular testing for id - ', () => {
+        let inputObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('EJS-TEXTBOX', {id: 'textbox'});
+            document.body.appendChild(element);
+        })
+        afterAll((): void => {
+            inputObj.destroy();
+            document.body.innerHTML = '';
+        });
+        it ('Element id not to match with clone element id - ', () => {
+            inputObj = new TextBox();
+            inputObj.appendTo('#textbox');
+            expect(inputObj.element.getAttribute('id')).not.toBe('textbox');
+        });
+    })
     describe('MultiLine structure testing with textarea element- ', () => {
         let inputObj: any;
         beforeEach((): void => {

@@ -1036,3 +1036,12 @@ export let DrillDown: Object[] = [
     { dataType: "Export", type: "Textile articles",       product: "2010", sales: 20982380561 },
     { dataType: "Export", type: "Textile articles",       product: "2011", sales: 26016143783 }
 ];
+
+export let data: object[] = [
+    {Continent: "China_", Company: "Volkswagen", Sales: 3005994 },
+    {Continent: "China_", Company: "General Motors", Sales: 1230044 },
+    {Continent: "China_", Company: "Honda", Sales: 1197023 },
+    {Continent: "United States_", Company: "General Motors", Sales:3042775  },
+    {Continent: "United States_", Company: "Ford", Sales:2599193  },
+    {Continent: "United States_", Company: "Toyota", Sales:2449587  }
+]

@@ -631,6 +631,8 @@ var VIRTUAL_SCROLL_CLASS = 'e-virtual-scroll';
 var ICON_DISABLE_CLASS = 'e-icon-disable';
 /** @hidden */
 var AUTO_HEIGHT = 'e-auto-height';
+/** @hidden */
+var EVENT_TEMPLATE = 'e-template';
 
 /**
  * Header module
@@ -1432,10 +1434,12 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
             return;
         }
         if (e.event.target.classList.contains(WORK_CELLS_CLASS)) {
+            this.parent.removeSelectedClass();
             EventHandler.add(this.parent.getContentTable(), 'mousemove', this.onMouseSelection, this);
             EventHandler.add(this.parent.getContentTable(), 'mouseup', this.onMoveup, this);
         }
         if (e.event.target.classList.contains(ALLDAY_CELLS_CLASS)) {
+            this.parent.removeSelectedClass();
             var allDayRow = this.parent.getAllDayRow();
             EventHandler.add(allDayRow, 'mousemove', this.onMouseSelection, this);
             EventHandler.add(allDayRow, 'mouseup', this.onMoveup, this);
@@ -1539,7 +1543,7 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
         }
         if (target.classList.contains(MORE_EVENT_HEADER_DATE_CLASS)) {
             this.parent.setProperties({ selectedDate: new Date(parseInt(target.getAttribute('data-date'), 10)) }, true);
-            this.parent.changeView(this.parent.getNavigateView());
+            this.parent.changeView(this.parent.getNavigateView(), e);
             this.processEscape();
             return;
         }
@@ -5926,7 +5930,7 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
             if (!isNullOrUndefined(date) && !this.parent.isAdaptive) {
                 this.closeClick();
                 this.parent.setProperties({ selectedDate: date }, true);
-                this.parent.changeView(this.parent.getNavigateView());
+                this.parent.changeView(this.parent.getNavigateView(), e);
             }
         }
     };
@@ -7256,6 +7260,9 @@ var EventWindow = /** @__PURE__ @class */ (function () {
     EventWindow.prototype.openEditor = function (data, type, isEventData, repeatType) {
         this.parent.removeNewEventElement();
         this.parent.quickPopup.quickPopupHide(true);
+        if (!isNullOrUndefined(this.parent.editorTemplate)) {
+            this.setDialogContent(data);
+        }
         if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
             removeClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], DISABLE_CLASS);
         }
@@ -7276,8 +7283,8 @@ var EventWindow = /** @__PURE__ @class */ (function () {
                 break;
         }
     };
-    EventWindow.prototype.setDialogContent = function () {
-        this.dialogObject.content = this.getEventWindowContent();
+    EventWindow.prototype.setDialogContent = function (args) {
+        this.dialogObject.content = this.getEventWindowContent(args);
         this.dialogObject.dataBind();
     };
     EventWindow.prototype.onBeforeOpen = function (args) {
@@ -7309,7 +7316,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         this.resetForm();
         this.parent.eventBase.focusElement();
     };
-    EventWindow.prototype.getEventWindowContent = function () {
+    EventWindow.prototype.getEventWindowContent = function (args) {
         var container = createElement('div', { className: FORM_CONTAINER_CLASS });
         var form = createElement('form', {
             id: this.parent.element.id + 'EditForm',
@@ -7317,7 +7324,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
             attrs: { onsubmit: 'return false;' }
         });
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
-            append(this.parent.getEditorTemplate()(), form);
+            append(this.parent.getEditorTemplate()(args), form);
         }
         else {
             var content = this.getDefaultEventWindowContent();
@@ -8117,11 +8124,12 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         }
     };
     EventWindow.prototype.resetFormFields = function () {
-        var formelement = this.getFormElements(EVENT_WINDOW_DIALOG_CLASS);
-        for (var index = 0, len = formelement.length; index < len; index++) {
-            var columnName = formelement[index].name;
+        var formElement = this.getFormElements(EVENT_WINDOW_DIALOG_CLASS);
+        for (var _i = 0, formElement_1 = formElement; _i < formElement_1.length; _i++) {
+            var currentElement = formElement_1[_i];
+            var columnName = currentElement.name || this.getColumnName(currentElement);
             if (!isNullOrUndefined(columnName) && columnName !== '') {
-                this.setDefaultValueToElement(formelement[index]);
+                this.setDefaultValueToElement(currentElement);
             }
         }
     };
@@ -8225,8 +8233,8 @@ var EventWindow = /** @__PURE__ @class */ (function () {
     EventWindow.prototype.getObjectFromFormData = function (className) {
         var formElement = this.getFormElements(className);
         var eventObj = {};
-        for (var _i = 0, formElement_1 = formElement; _i < formElement_1.length; _i++) {
-            var currentElement = formElement_1[_i];
+        for (var _i = 0, formElement_2 = formElement; _i < formElement_2.length; _i++) {
+            var currentElement = formElement_2[_i];
             var columnName = currentElement.name || this.getColumnName(currentElement);
             if (!isNullOrUndefined(columnName) && columnName !== '') {
                 eventObj[columnName] = this.getValueFromElement(currentElement);
@@ -10865,6 +10873,8 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             this.quickPopup.onClosePopup();
         }
         if (this.currentView === 'Month' || !this.activeViewOptions.timeScale.enable || this.activeView.isTimelineView()) {
+            this.activeView.resetColWidth();
+            this.notify(scrollUiUpdate, { cssProperties: this.getCssProperties(), isPreventScrollUpdate: true });
             this.notify(dataReady, {});
         }
     };
@@ -13521,10 +13531,33 @@ var ViewBase = /** @__PURE__ @class */ (function () {
         this.parent.resourceBase.renderResourceTree();
     };
     ViewBase.prototype.addAutoHeightClass = function (element) {
-        if (!this.parent.uiStateValues.isGroupAdaptive && this.parent.rowAutoHeight && this.parent.activeView.isTimelineView()
+        if (!this.parent.uiStateValues.isGroupAdaptive && this.parent.rowAutoHeight && this.isTimelineView()
             && this.parent.activeViewOptions.group.resources.length > 0) {
             addClass([element], AUTO_HEIGHT);
         }
+    };
+    ViewBase.prototype.getColElements = function () {
+        return [].slice.call(this.parent.element.querySelectorAll('.' + CONTENT_WRAP_CLASS
+            + ' col, .' + DATE_HEADER_WRAP_CLASS + ' col'));
+    };
+    ViewBase.prototype.setColWidth = function (content) {
+        if (this.isTimelineView()) {
+            var colElements = this.getColElements();
+            var colWidth_1 = Math.ceil(this.parent.getContentTable().offsetWidth / (colElements.length / 2));
+            colElements.forEach(function (col) { return setStyleAttribute(col, { 'width': formatUnit(colWidth_1) }); });
+            if (content.offsetHeight !== content.clientHeight) {
+                var resourceColumn = this.parent.element.querySelector('.' + RESOURCE_COLUMN_WRAP_CLASS);
+                if (!isNullOrUndefined(resourceColumn)) {
+                    setStyleAttribute(resourceColumn, {
+                        'height': formatUnit(content.clientHeight)
+                    });
+                }
+            }
+        }
+    };
+    ViewBase.prototype.resetColWidth = function () {
+        var colElements = this.getColElements();
+        colElements.forEach(function (col) { return col.style.width = ''; });
     };
     return ViewBase;
 }());
@@ -13589,7 +13622,7 @@ var WorkCellInteraction = /** @__PURE__ @class */ (function () {
             var date = this.parent.getDateFromElement(target);
             if (!isNullOrUndefined(date) && !this.parent.isAdaptive) {
                 this.parent.setProperties({ selectedDate: date }, true);
-                this.parent.changeView(this.parent.getNavigateView());
+                this.parent.changeView(this.parent.getNavigateView(), e);
             }
         }
     };
@@ -14729,7 +14762,7 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
         var startDate = new Date(parseInt(target.getAttribute('data-start-date'), 10));
         if (!isNullOrUndefined(startDate) && this.parent.isAdaptive) {
             this.parent.setProperties({ selectedDate: startDate }, true);
-            this.parent.changeView(this.parent.getNavigateView());
+            this.parent.changeView(this.parent.getNavigateView(), event);
         }
         else {
             var endDate = new Date(parseInt(target.getAttribute('data-end-date'), 10));
@@ -14889,6 +14922,7 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
                 content.scrollLeft = this.parent.uiStateValues.left;
             }
         }
+        this.setColWidth(content);
         if (this.parent.activeViewOptions.timeScale.enable) {
             this.highlightCurrentTime();
         }
@@ -15663,6 +15697,7 @@ var Month = /** @__PURE__ @class */ (function (_super) {
             header.style[args.cssProperties.padding] = '';
         }
         // tslint:enable:no-any
+        this.setColWidth(content);
     };
     Month.prototype.setContentHeight = function (content, leftPanelElement, height) {
         content.style.height = 'auto';
@@ -16125,6 +16160,7 @@ var AgendaBase = /** @__PURE__ @class */ (function () {
     }
     AgendaBase.prototype.createAgendaContentElement = function (type, listData, aTd, groupOrder, groupIndex) {
         var listElement;
+        var fieldMapping = this.parent.eventFields;
         if (type === 'noEvents') {
             var noEvents = [{ 'subject': this.parent.localeObj.getConstant('noEvents') }];
             listElement = ListBase.createList(this.parent.createElement, noEvents, {
@@ -16160,7 +16196,13 @@ var AgendaBase = /** @__PURE__ @class */ (function () {
                 this.parent.eventBase.applyResourceColor(appWrapper, listData[li], 'borderColor', groupOrder);
                 var templateEle = void 0;
                 if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
+                    addClass([appWrapper], EVENT_TEMPLATE);
                     templateEle = this.parent.getAppointmentTemplate()(listData[li]);
+                    if (!isNullOrUndefined(listData[li][fieldMapping.recurrenceRule])) {
+                        var iconClass = (listData[li][fieldMapping.id] === listData[li][fieldMapping.recurrenceID]) ?
+                            EVENT_RECURRENCE_ICON_CLASS : EVENT_RECURRENCE_EDIT_ICON_CLASS;
+                        appWrapper.appendChild(createElement('div', { className: ICON + ' ' + iconClass }));
+                    }
                 }
                 else {
                     templateEle = this.createAppointment(listData[li]);
@@ -16834,7 +16876,7 @@ var Agenda = /** @__PURE__ @class */ (function (_super) {
         var date = this.parent.getDateFromElement(closest(e.currentTarget, '.' + AGENDA_CELLS_CLASS));
         if (!isNullOrUndefined(date) && !this.parent.isAdaptive) {
             this.parent.setProperties({ selectedDate: date }, true);
-            this.parent.changeView('Day');
+            this.parent.changeView('Day', e);
         }
     };
     // private isMonthFirstDate(date: Date): boolean {

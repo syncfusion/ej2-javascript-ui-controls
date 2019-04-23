@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.42 (2019-04-23)
+
+### PDF Viewer
+
+#### Bug Fixes
+
+- The issue "the hyperlinkClick event is not triggered for web links" has been fixed.
+
 ## 17.1.41 (2019-04-16)
 
 ### PDF Viewer

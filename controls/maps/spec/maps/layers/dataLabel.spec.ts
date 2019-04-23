@@ -262,7 +262,19 @@ describe('Map layer testing', () => {
                 label.layers[0].dataLabelSettings.template = '<div id="marker1"><p>{{:name}}</p></div>',
                 label.refresh();
         });
-
+        it('checking with datalabel resize', () => {
+            label.loaded = (args: ILoadedEventArgs) => {
+                let spec: string = document.getElementById('label_LayerIndex_0_shapeIndex_2_LabelIndex_2').textContent
+                expect(spec).toEqual('Montana');
+            };
+            label.layers[0].dataLabelSettings.visible = true,
+            label.availableSize.height = 500,
+            label.availableSize.width = 500,
+            label.layers[0].dataLabelSettings.labelPath = 'name',
+            label.layers[0].dataLabelSettings.smartLabelMode = 'None';
+            label.layers[0].dataLabelSettings.intersectionAction = 'Hide';
+            label.refresh();
+        });
 
     });
     describe('testing datalabel from datasource', () => {

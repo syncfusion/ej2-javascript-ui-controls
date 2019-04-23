@@ -5764,7 +5764,13 @@ var regex = {
  */
 var ErrorOption;
 (function (ErrorOption) {
+    /**
+     * Defines the error message.
+     */
     ErrorOption[ErrorOption["Message"] = 0] = "Message";
+    /**
+     * Defines the error element type.
+     */
     ErrorOption[ErrorOption["Label"] = 1] = "Label";
 })(ErrorOption || (ErrorOption = {}));
 /**
@@ -11105,8 +11111,10 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
                 this.createElement('input');
             var index = 0;
             for (index; index < this.element.attributes.length; index++) {
-                inputElement.setAttribute(this.element.attributes[index].nodeName, this.element.attributes[index].nodeValue);
-                inputElement.innerHTML = this.element.innerHTML;
+                if (this.element.attributes[index].nodeName !== 'id') {
+                    inputElement.setAttribute(this.element.attributes[index].nodeName, this.element.attributes[index].nodeValue);
+                    inputElement.innerHTML = this.element.innerHTML;
+                }
             }
             this.element.appendChild(inputElement);
             this.element = inputElement;

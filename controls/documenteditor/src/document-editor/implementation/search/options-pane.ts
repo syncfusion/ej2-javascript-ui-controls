@@ -1,7 +1,7 @@
 import { LayoutViewer } from '../index';
 import { TextSearchResults } from './text-search-results';
 import { TextSearchResult } from './text-search-result';
-import { createElement, isNullOrUndefined, L10n } from '@syncfusion/ej2-base';
+import { createElement, isNullOrUndefined, L10n, classList } from '@syncfusion/ej2-base';
 import { FindOption } from '../../base/types';
 import { TextPosition } from '../selection/selection-helper';
 import { HelperMethods } from '../editor/editor-helper';
@@ -291,7 +291,7 @@ export class OptionsPane {
         let selectionIndex: string = endSelection.getHierarchicalIndexInternal();
         this.results = this.viewer.owner.searchModule.textSearch.findAll(pattern, this.findOption, selectionIndex);
         if (this.results != null && this.results.length > 0) {
-            this.navigateSearchResult();
+            this.navigateSearchResult(false);
         } else {
             this.viewer.renderVisiblePages();
             this.messageDiv.innerHTML = this.localeValue.getConstant('No matches');
@@ -301,8 +301,10 @@ export class OptionsPane {
             this.resultsListBlock.innerHTML = '';
         }
     }
-    private navigateSearchResult(): void {
-        this.viewer.owner.searchModule.navigate(this.results.innerList[this.results.currentIndex]);
+    private navigateSearchResult(navigate: boolean): void {
+        if (navigate) {
+            this.viewer.owner.searchModule.navigate(this.results.innerList[this.results.currentIndex]);
+        }
         this.viewer.owner.searchModule.highlight(this.results);
         this.viewer.owner.searchModule.addFindResultView(this.results);
         this.resultsListBlock.style.display = 'block';
@@ -656,7 +658,7 @@ export class OptionsPane {
                         }
                         this.viewer.owner.findResultsList = [];
                         if (!isNullOrUndefined(this.results) && this.results.innerList.length > 0) {
-                            this.navigateSearchResult();
+                            this.navigateSearchResult(true);
                         } else {
                             this.resultsListBlock.innerHTML = '';
                         }
@@ -741,7 +743,7 @@ export class OptionsPane {
         let index: string = endSelection.getHierarchicalIndexInternal();
         this.results = this.viewer.owner.searchModule.textSearch.findAll(patterns, this.findOption, index);
         if (this.results != null && this.results.length > 0) {
-            this.navigateSearchResult();
+            this.navigateSearchResult(false);
             this.getMessageDivHeight();
             let height: number = this.isOptionsPane ? 215 : 292;
             let resultsContainerHeight: number = this.viewer.owner.getDocumentEditorElement().offsetHeight - height;
@@ -761,53 +763,43 @@ export class OptionsPane {
     public navigateNextResultButtonClick = (): void => {
         if (document.getElementById(this.viewer.owner.containerId + '_list_box_container') != null &&
             document.getElementById(this.viewer.owner.containerId + '_list_box_container').style.display !== 'none') {
-            if (this.results.currentIndex < this.results.length - 1) {
-                this.results.currentIndex = this.results.currentIndex + 1;
-                let currentelement: TextSearchResult = this.results.innerList[this.results.currentIndex];
-                // tslint:disable-next-line:max-line-length
-                this.messageDiv.innerHTML = this.localeValue.getConstant('Result') + ' ' + (this.results.currentIndex + 1) + ' ' + this.localeValue.getConstant('of') + ' ' + this.resultsListBlock.children.length;
-                for (let i: number = 0; i < this.resultsListBlock.children.length; i++) {
-                    let list: HTMLElement = this.resultsListBlock.children[i] as HTMLElement;
-                    if (list.classList.contains('e-de-search-result-hglt')) {
-                        list.classList.remove('e-de-search-result-hglt');
-                        list.children[0].classList.remove('e-de-op-search-word-text');
-                        list.classList.add('e-de-search-result-item');
-                    }
-                }
-                let listElement: HTMLElement = this.resultsListBlock.children[this.results.currentIndex] as HTMLElement;
-                if (listElement.classList.contains('e-de-search-result-item')) {
-                    listElement.classList.remove('e-de-search-result-item');
-                    listElement.classList.add('e-de-search-result-hglt');
-                    listElement.children[0].classList.add('e-de-op-search-word-text');
-                    this.scrollToPosition(listElement);
-                }
-                this.viewer.owner.searchModule.navigate(currentelement);
-                this.viewer.owner.searchModule.highlight(this.results);
-            } else {
-                let currentelement: TextSearchResult = this.results.innerList[0];
-                this.results.currentIndex = 0;
-                // tslint:disable-next-line:max-line-length
-                this.messageDiv.innerHTML = this.localeValue.getConstant('Result') + ' ' + (this.results.currentIndex + 1) + ' ' + this.localeValue.getConstant('of') + ' ' + this.resultsListBlock.children.length;
-                for (let j: number = 0; j < this.resultsListBlock.children.length; j++) {
-                    let lists: HTMLElement = this.resultsListBlock.children[j] as HTMLElement;
-                    if (lists.classList.contains('e-de-search-result-hglt')) {
-                        lists.classList.remove('e-de-search-result-hglt');
-                        lists.children[0].classList.remove('e-de-op-search-word-text');
-                        lists.classList.add('e-de-search-result-item');
-                    }
-                }
-                let listElementsDiv: HTMLElement = this.resultsListBlock.children[this.results.currentIndex] as HTMLElement;
-                if (listElementsDiv.classList.contains('e-de-search-result-item')) {
-                    listElementsDiv.classList.remove('e-de-search-result-item');
-                    listElementsDiv.classList.add('e-de-search-result-hglt');
-                    listElementsDiv.children[0].classList.add('e-de-op-search-word-text');
-                    this.scrollToPosition(listElementsDiv);
-                }
-                this.viewer.owner.searchModule.navigate(currentelement);
-                this.viewer.owner.searchModule.highlight(this.results);
+            let selectionEnd: TextPosition = this.viewer.owner.selection.end;
+            let nextResult: TextSearchResult;
+            let currentIndex: number = 0;
+            if (selectionEnd.isExistAfter(this.results.currentSearchResult.start)) {
+                currentIndex = this.results.currentIndex;
             }
+            for (let i: number = currentIndex; i < this.results.length; i++) {
+                let result: TextSearchResult = this.results.innerList[i];
+                if (selectionEnd.isExistBefore(result.start) || selectionEnd.isAtSamePosition(result.start)) {
+                    nextResult = result;
+                    this.results.currentIndex = i;
+                    break;
+                }
+            }
+            if (isNullOrUndefined(nextResult)) {
+                this.results.currentIndex = 0;
+                nextResult = this.results.innerList[0];
+            }
+            // tslint:disable-next-line:max-line-length
+            this.messageDiv.innerHTML = this.localeValue.getConstant('Result') + ' ' + (this.results.currentIndex + 1) + ' ' + this.localeValue.getConstant('of') + ' ' + this.resultsListBlock.children.length;
+            this.updateListItems(nextResult);
             this.focusedIndex = this.focusedElement.indexOf(this.navigateToNextResult);
         }
+    }
+    private updateListItems(textSearchResult: TextSearchResult): void {
+        let searchElements: NodeListOf<Element> = this.resultsListBlock.getElementsByClassName('e-de-search-result-hglt');
+        for (let j: number = 0; j < searchElements.length; j++) {
+            let list: HTMLElement = searchElements[j] as HTMLElement;
+            classList(list, ['e-de-search-result-item'], ['e-de-search-result-hglt']);
+            classList(list.children[0], [], ['e-de-op-search-word-text']);
+        }
+        let listElement: HTMLElement = this.resultsListBlock.children[this.results.currentIndex] as HTMLElement;
+        classList(listElement, ['e-de-search-result-hglt'], ['e-de-search-result-item']);
+        classList(listElement.children[0], ['e-de-op-search-word-text'], []);
+        this.scrollToPosition(listElement);
+        this.viewer.owner.searchModule.navigate(textSearchResult);
+        this.viewer.owner.searchModule.highlight(this.results);
     }
     /**
      * Fires on getting previous results.
@@ -816,51 +808,27 @@ export class OptionsPane {
     public navigatePreviousResultButtonClick = (): void => {
         if (document.getElementById(this.viewer.owner.containerId + '_list_box_container') != null &&
             document.getElementById(this.viewer.owner.containerId + '_list_box_container').style.display !== 'none') {
-            if (this.results.currentIndex === 0) {
-                this.results.currentIndex = this.results.length - 1;
-                // tslint:disable-next-line:max-line-length
-                this.messageDiv.innerHTML = this.localeValue.getConstant('Result') + ' ' + (this.results.length) + ' ' + this.localeValue.getConstant('of') + ' ' + this.resultsListBlock.children.length;
-                for (let index: number = 0; index < this.resultsListBlock.children.length; index++) {
-                    let list: HTMLElement = this.resultsListBlock.children[index] as HTMLElement;
-                    if (list.classList.contains('e-de-search-result-hglt')) {
-                        list.classList.remove('e-de-search-result-hglt');
-                        list.children[0].classList.remove('e-de-op-search-word-text');
-                        list.classList.add('e-de-search-result-item');
-                    }
-                }
-                let liElement: HTMLElement = this.resultsListBlock.children[this.results.currentIndex] as HTMLElement;
-                if (liElement.classList.contains('e-de-search-result-item')) {
-                    liElement.classList.remove('e-de-search-result-item');
-                    liElement.classList.add('e-de-search-result-hglt');
-                    liElement.children[0].classList.add('e-de-op-search-word-text');
-                    this.scrollToPosition(liElement);
-                }
-                let currentelement: TextSearchResult = this.results.innerList[this.results.currentIndex];
-                this.viewer.owner.searchModule.navigate(currentelement);
-                this.viewer.owner.searchModule.highlight(this.results);
-            } else {
-                // tslint:disable-next-line:max-line-length
-                this.messageDiv.innerHTML = this.localeValue.getConstant('Result') + ' ' + (this.results.currentIndex) + ' ' + this.localeValue.getConstant('of') + ' ' + this.resultsListBlock.children.length;
-                this.results.currentIndex = this.results.currentIndex - 1;
-                for (let j: number = 0; j < this.resultsListBlock.children.length; j++) {
-                    let list: HTMLElement = this.resultsListBlock.children[j] as HTMLElement;
-                    if (list.classList.contains('e-de-search-result-hglt')) {
-                        list.classList.remove('e-de-search-result-hglt');
-                        list.children[0].classList.remove('e-de-op-search-word-text');
-                        list.classList.add('e-de-search-result-item');
-                    }
-                }
-                let listElements: HTMLElement = this.resultsListBlock.children[this.results.currentIndex] as HTMLElement;
-                if (listElements.classList.contains('e-de-search-result-item')) {
-                    listElements.classList.remove('e-de-search-result-item');
-                    listElements.classList.add('e-de-search-result-hglt');
-                    listElements.children[0].classList.add('e-de-op-search-word-text');
-                    this.scrollToPosition(listElements);
-                }
-                let currentelement: TextSearchResult = this.results.innerList[this.results.currentIndex];
-                this.viewer.owner.searchModule.navigate(currentelement);
-                this.viewer.owner.searchModule.highlight(this.results);
+            let previousResult: TextSearchResult;
+            let selectionStart: TextPosition = this.viewer.owner.selection.start;
+            let currentIndex: number = this.results.currentIndex;
+            if (selectionStart.isExistAfter(this.results.currentSearchResult.start)) {
+                currentIndex = this.results.length - 1;
             }
+            for (let i: number = currentIndex; i >= 0; i--) {
+                let result: TextSearchResult = this.results.innerList[i];
+                if (selectionStart.isExistAfter(result.start) || this.viewer.owner.selection.end.isAtSamePosition(result.start)) {
+                    previousResult = result;
+                    this.results.currentIndex = i;
+                    break;
+                }
+            }
+            if (isNullOrUndefined(previousResult)) {
+                this.results.currentIndex = this.results.length - 1;
+                previousResult = this.results.innerList[this.results.currentIndex];
+            }
+            // tslint:disable-next-line:max-line-length
+            this.messageDiv.innerHTML = this.localeValue.getConstant('Result') + ' ' + (this.results.currentIndex + 1) + ' ' + this.localeValue.getConstant('of') + ' ' + this.resultsListBlock.children.length;
+            this.updateListItems(previousResult);
             this.focusedIndex = this.focusedElement.indexOf(this.navigateToPreviousResult);
         }
     }

@@ -60,6 +60,9 @@ export interface ITreeData {
 
 }
 
+/**
+ * Specifies custom format data interfaces.
+ */
 export interface ITreeGridCellFormatter {
     getValue(column: Column, data: Object): Object;
 }

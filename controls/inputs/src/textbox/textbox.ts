@@ -291,8 +291,10 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                               <HTMLInputElement>this.createElement('input');
             let index: number = 0;
             for (index; index < this.element.attributes.length; index++) {
-                inputElement.setAttribute(this.element.attributes[index].nodeName, this.element.attributes[index].nodeValue);
-                inputElement.innerHTML = this.element.innerHTML;
+                if (this.element.attributes[index].nodeName !== 'id') {
+                    inputElement.setAttribute(this.element.attributes[index].nodeName, this.element.attributes[index].nodeValue);
+                    inputElement.innerHTML = this.element.innerHTML;
+                }
             }
             this.element.appendChild(inputElement);
             this.element = inputElement;

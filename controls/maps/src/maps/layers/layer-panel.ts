@@ -365,8 +365,9 @@ export class LayerPanel {
             id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_dataLableIndex_Group', style: 'pointer-events: none;'
         }));
         if (this.mapObject.dataLabelModule && this.currentLayer.dataLabelSettings.visible) {
+            let intersect: object[] = [];
             renderData.map((currentShapeData: object[], i: number) => {
-                this.renderLabel(this.currentLayer, layerIndex, currentShapeData, group, i, labelTemplateEle);
+                this.renderLabel(this.currentLayer, layerIndex, currentShapeData, group, i, labelTemplateEle, intersect);
             });
             this.groupElements.push(group);
         }
@@ -390,10 +391,10 @@ export class LayerPanel {
      */
     private renderLabel(
         layer: LayerSettings, layerIndex: number,
-        shape: object[], group: Element, shapeIndex: number, labelTemplateEle: HTMLElement
+        shape: object[], group: Element, shapeIndex: number, labelTemplateEle: HTMLElement, intersect: object[]
     ): void {
         this.mapObject.dataLabelModule.renderLabel(
-            layer, layerIndex, shape, layer.layerData, group, labelTemplateEle, shapeIndex
+            layer, layerIndex, shape, layer.layerData, group, labelTemplateEle, shapeIndex, intersect
         );
     }
     /**

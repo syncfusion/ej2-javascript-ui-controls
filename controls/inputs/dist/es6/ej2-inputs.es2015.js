@@ -5660,7 +5660,13 @@ let regex = {
  */
 var ErrorOption;
 (function (ErrorOption) {
+    /**
+     * Defines the error message.
+     */
     ErrorOption[ErrorOption["Message"] = 0] = "Message";
+    /**
+     * Defines the error element type.
+     */
     ErrorOption[ErrorOption["Label"] = 1] = "Label";
 })(ErrorOption || (ErrorOption = {}));
 /**
@@ -10872,8 +10878,10 @@ let TextBox = class TextBox extends Component {
                 this.createElement('input');
             let index = 0;
             for (index; index < this.element.attributes.length; index++) {
-                inputElement.setAttribute(this.element.attributes[index].nodeName, this.element.attributes[index].nodeValue);
-                inputElement.innerHTML = this.element.innerHTML;
+                if (this.element.attributes[index].nodeName !== 'id') {
+                    inputElement.setAttribute(this.element.attributes[index].nodeName, this.element.attributes[index].nodeValue);
+                    inputElement.innerHTML = this.element.innerHTML;
+                }
             }
             this.element.appendChild(inputElement);
             this.element = inputElement;

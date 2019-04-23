@@ -145,6 +145,9 @@ export interface RangePopupEventArgs {
 }
 
 export interface RangeFormatObject {
+    /**
+     * Specifies the format in which the date format will process
+     */
     skeleton?: string;
 }
 
@@ -410,7 +413,7 @@ export class DateRangePicker extends CalendarBase {
     /**
      *  Specifies the minimum span of days that can be allowed in date range selection.
      * > For more details refer to 
-     * [`Range Span`] (../../daterangepicker/range-restriction#range-span) documentation.
+     * [`Range Span`] (../../daterangepicker/range-selection/#range-span) documentation.
      * @default null    
      * @aspType int
      */
@@ -419,7 +422,7 @@ export class DateRangePicker extends CalendarBase {
     /**
      *  Specifies the maximum span of days that can be allowed in a date range selection.
      * > For more details refer to 
-     * [`Range Span`](../../daterangepicker/range-restriction#range-span) documentation.
+     * [`Range Span`] (../../daterangepicker/range-selection/#range-span) documentation.
      * @default null
      * @aspType int
      */
@@ -428,7 +431,7 @@ export class DateRangePicker extends CalendarBase {
     /**
      * Specifies the component to act as strict which allows entering only a valid date range in a DateRangePicker.
      * > For more details refer to 
-     * [`Strict Mode`](../../daterangepicker/range-restriction#strict-mode)documentation.
+     * [`Strict Mode`](../../daterangepicker/range-selection#strict-mode)documentation.
      * @default false
      */
     @Property(false)
@@ -1247,6 +1250,10 @@ export class DateRangePicker extends CalendarBase {
                 this.endValue = null;
                 this.setValue();
             } else {
+                if (this.inputElement.value === '') {
+                    this.startValue = null;
+                    this.endValue = null;
+                }
                 Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
                 this.updateInput();
             }

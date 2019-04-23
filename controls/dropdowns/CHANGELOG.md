@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.42 (2019-04-23)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- #232673 - Issue with prevent the first value when clear value using clear button has been fixed.
+
 ## 17.1.41 (2019-04-16)
 
 ### MultiSelect
@@ -15,6 +23,8 @@
 - #232218 - The popup open downward when select the items after scroll the page issue has been resolved.
 
 - #231920 - The Custom value with pre select value not updated when set empty data source issue has been resolved.
+
+- F143612 - Dropdown icon disappeared when set the lengthy placeholder issue has been fixed.
 
 ### DropDownList
 
@@ -75,8 +85,6 @@ The ListBox is a graphical user interface component used to display a list of it
 #### Bug Fixes
 
 - Placeholder is not updated properly when removed the value issue has been resolved.
-
-- F143612 - Dropdown icon disappeared when set the lengthy placeholder issue has been fixed.
 
 ## 17.1.32-beta (2019-03-13)
 

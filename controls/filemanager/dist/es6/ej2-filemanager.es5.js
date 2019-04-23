@@ -1034,6 +1034,9 @@ function createAjax(parent, data, fn, event, navigationPane, operation, targetPa
         contentType: getValue('contentType', eventArgs.ajaxSettings),
         data: getValue('data', eventArgs.ajaxSettings),
         onSuccess: function (result) {
+            if (typeof (result) === 'string') {
+                result = JSON.parse(result);
+            }
             parent.notify(afterRequest, { action: 'success' });
             if (!isNullOrUndefined(result.files)) {
                 // tslint:disable-next-line

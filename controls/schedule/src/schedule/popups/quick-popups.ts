@@ -1011,7 +1011,7 @@ export class QuickPopups {
             if (!isNullOrUndefined(date) && !this.parent.isAdaptive) {
                 this.closeClick();
                 this.parent.setProperties({ selectedDate: date }, true);
-                this.parent.changeView(this.parent.getNavigateView());
+                this.parent.changeView(this.parent.getNavigateView(), e);
             }
         }
     }

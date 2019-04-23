@@ -1437,4 +1437,62 @@ describe('Filtering module => ', () => {
         });
     });
 
+
+    describe('EJ2-25122 Clear filtering with Checkbox=> ', () => {
+        let gridObj: Grid;
+        let actionBegin: () => void;
+        let actionComplete: () => void;        
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    allowPaging: true,
+                    pageSettings: { currentPage: 1 },
+                    filterSettings: {
+                        type: 'Excel',
+                        columns: [
+                            { field: 'CustomerID', matchCase: false, operator: 'equal', predicate: 'or', value: 'TOMSP' },
+                            { field: 'CustomerID', matchCase: false, operator: 'equal', predicate: 'or', value: 'VINET' },
+                            { field: 'Freight', matchCase: false, operator: 'equal', predicate: 'or', value: '32.38' },
+                            { field: 'Freight', matchCase: false, operator: 'equal', predicate: 'or', value: '11.61' },
+                            { field: 'ShipCountry', matchCase: false, operator: 'equal', predicate: 'or', value: 'france' },
+                        ],
+                    },
+                    columns: [
+                        { field: 'OrderID', type: 'number', visible: true },
+                        { field: 'CustomerID', type: 'string' },
+                        { field: 'Freight', format: 'C2', type: 'number' },
+                        { field: 'OrderDate', format: 'yMd', type: 'date' },
+                        { field: 'ShipCountry' }
+                    ],
+                    actionBegin: actionBegin,
+                    actionComplete: actionComplete,
+                }, done);
+            });
+            it('Checking Initial filter', function (done) {
+                var dataBound = function (args: Object) {
+                    expect(gridObj.filterSettings.columns.length).toBe(5);
+                    expect(gridObj.currentViewData.length).toBe(1);
+                    done();
+                };
+                gridObj.dataBound = dataBound;
+            });
+
+            it('Clear filtering with Excel filter', function (done) {
+                var dataBound = function (args: Object) {
+                    expect(gridObj.filterSettings.columns.length).toBe(0);
+                    expect(gridObj.currentViewData.length).toBe(12);
+                    done();
+                };
+                gridObj.dataBound = dataBound;
+                gridObj.clearFiltering();
+            });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionBegin = actionComplete = null;
+        });
+    });
+
 });

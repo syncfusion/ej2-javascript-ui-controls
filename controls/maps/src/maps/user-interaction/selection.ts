@@ -110,7 +110,7 @@ export class Selection {
         let eventArgs: ISelectionEventArgs = {
             opacity: this.selectionsettings.opacity,
             fill: this.selectionType !== 'navigationline' ? this.selectionsettings.fill : 'none',
-            border: { color: this.selectionsettings.border.color, width: this.selectionsettings.border.width},
+            border: { color: this.selectionsettings.border.color, width: this.selectionsettings.border.width / this.maps.scale },
             name: itemSelection,
             target: targetEle.id,
             cancel: false,
@@ -146,8 +146,6 @@ export class Selection {
             }else {
                 customizeStyle(this.selectionType + 'selectionMap', this.selectionType + 'selectionMapStyle', eventArgs);
             }
-            targetEle.setAttribute('stroke-width', eventArgs.border.width.toString());
-            targetEle.setAttribute('stroke', eventArgs.border.color);
             targetEle.setAttribute('class', this.selectionType + 'selectionMapStyle');
         }
     }

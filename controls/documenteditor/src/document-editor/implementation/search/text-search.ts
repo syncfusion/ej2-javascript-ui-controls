@@ -263,7 +263,8 @@ export class TextSearch {
             if (isFirstMatch) {
                 results.currentIndex = 0;
                 return undefined;
-            } else if (results.currentIndex < 0 && selectionEnd.isExistBefore(result.start)) {
+            } else if (results.currentIndex < 0 && (selectionEnd.isExistBefore(result.start) ||
+                selectionEnd.isAtSamePosition(result.start))) {
                 results.currentIndex = results.indexOf(result);
             }
         }

@@ -15,7 +15,7 @@ export interface SelectionSettingsModel {
 
     /**
      * The cell selection modes are flow and box. It requires the selection 
-     * [`mode`](./api-selectionSettings.html#mode-selectionmode) to be either cell or both.
+     * [`mode`](#mode) to be either cell or both.
      * * `Flow`: Selects the range of cells between start index and end index that also includes the other cells of the selected rows.
      * * `Box`: Selects the range of cells within the start and end column indexes that includes in between cells of rows within the range.
      * @default Syncfusion.EJ2.Grids.CellSelectionMode.Flow

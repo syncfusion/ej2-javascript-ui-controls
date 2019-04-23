@@ -3590,8 +3590,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * To edit any particular row by TR element.
-     * @param {HTMLTableRowElement} tr - Defines the table row to be edited.
+     * Starts edit the selected row. At least one row must be selected before invoking this method.
+     * `editSettings.allowEditing` should be true.
+     * @return {void}
      */
     public startEdit(): void {
         if (this.editModule) {
@@ -4470,14 +4471,17 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     public hideScroll(): void {
-        let headerContent: HTMLElement = this.getHeaderContent() as HTMLElement;
-        let contentTable: HTMLElement = this.getContent().querySelector('.e-content') as HTMLElement;
-        if ((this.currentViewData.length * this.getRowHeight()) < this.height) {
-            headerContent.style.paddingRight = '';
-            contentTable.style.overflowY = 'auto';
-        } else {
-            headerContent.style.paddingRight = '16px';
-            contentTable.style.overflowY = 'scroll';
+        let content: HTMLElement = this.getContent().querySelector('.e-content');
+        let cTable: HTMLElement = content.querySelector('.e-movablecontent') ? content.querySelector('.e-movablecontent') : content;
+        if (cTable.scrollHeight <= cTable.clientHeight) {
+            this.scrollModule.removePadding();
+            cTable.style.overflowY = 'auto';
+        }
+        if(this.frozenColumns && cTable.scrollWidth <= cTable.clientWidth){
+            let frozenTable: HTMLElement = this.getContent().querySelector('.e-frozencontent') as HTMLElement;
+            frozenTable.style.height = cTable.offsetHeight + 1 + 'px';
+            frozenTable.style.borderBottom = '0';
+            cTable.style.overflowX = 'auto';    
         }
     }
 

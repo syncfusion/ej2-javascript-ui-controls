@@ -77,6 +77,9 @@ export interface MeridianText {
 }
 
 export interface TimeFormatObject {
+    /**
+     * Specifies the format in which the date format will process
+     */
     skeleton?: string;
 }
 

@@ -2171,8 +2171,11 @@ export class MultiSelect extends DropDownBase implements IInput {
             let temp: string | number | boolean;
             let tempValues: string[] | number[] = this.value ? <string[]>this.value.slice() : <string[]>[];
             if (this.value) {
-                for (temp = this.value[0]; this.value.length !== 0; temp = this.value[0]) {
-                    if (this.removeValue(temp, e)) { break; }
+                let i: number = 0;
+                for (temp = this.value[i]; i < this.value.length; temp = this.value[i]) {
+                    if (this.removeValue(temp, e)) {
+                        i++;
+                    }
                 }
             }
             if (this.mainList && this.listData && this.allowFiltering) {
@@ -2181,7 +2184,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
             this.focusAtFirstListItem();
             this.updateDelimeter(this.delimiterChar);
-            if (this.mode !== 'Box') {
+            if (this.mode !== 'Box' && (!this.inputFocus || this.mode === 'CheckBox')) {
                 this.updateDelimView();
             }
             this.makeTextBoxEmpty();

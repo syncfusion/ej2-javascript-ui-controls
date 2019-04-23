@@ -2174,6 +2174,11 @@
         &:focus {
           background: $schedule-select-bg-color;
         }
+
+        &.e-template {
+          display: inline-flex;
+          flex-direction: row-reverse;
+        }
       }
 
       .e-no-event {

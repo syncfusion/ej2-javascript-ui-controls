@@ -40,6 +40,7 @@ export class Filter implements IAction {
     private isRemove: boolean;
     private contentRefresh: boolean = true;
     private initialLoad: boolean;
+    private refresh: boolean = true;
     private values: Object = {};
     private cellText: Object = {};
     private nextFlMenuOpen: string = '';
@@ -481,9 +482,14 @@ export class Filter implements IAction {
             this.parent.notify(events.preventBatch, { instance: this, handler: this.clearFiltering });
             return;
         }
-        for (let i: number = 0, len: number = cols.length; i < len; i++) {
-            this.removeFilteredColsByField(cols[i].field, false);
+        let colName: string[] = cols.map((f: Column) => f.field);
+        let filteredcols: string[] = colName.filter((item: string, pos: number) => colName.indexOf(item) === pos);
+        this.refresh = false;
+        for (let i: number = 0, len: number = filteredcols.length; i < len; i++) {
+            this.removeFilteredColsByField(filteredcols[i], false);
         }
+        this.refresh = true;
+        this.parent.renderModule.refresh();
         if (this.parent.filterSettings.columns.length === 0 && this.parent.element.querySelector('.e-filtered')) {
             let fltrElement: Element[] = [].slice.call(this.parent.element.querySelectorAll('.e-filtered'));
             for (let i: number = 0, len: number = fltrElement.length; i < len; i++) {
@@ -554,10 +560,13 @@ export class Filter implements IAction {
             this.parent.notify(events.preventBatch, args);
             return;
         }
-        for (let i: number = 0, len: number = cols.length; i < len; i++) {
+        let colName: string[] = cols.map((f: Column) => f.field);
+        let filteredcols: string[] = colName.filter((item: string, pos: number) => colName.indexOf(item) === pos);
+        for (let i: number = 0, len: number = filteredcols.length; i < len; i++) {
+            let len: number = cols.length;
             let column: Column = this.parent.getColumnByField(field) ||
                 getColumnByForeignKeyValue(field, this.parent.getForeignKeyColumns());
-            if (cols[i].field === field || cols[i].field === column.foreignKeyValue) {
+            if (filteredcols[i] === field || filteredcols[i] === column.foreignKeyValue) {
                 if (this.filterSettings.type === 'FilterBar' && !isClearFilterBar) {
                     let selector: string = '[id=\'' + cols[i].field + '_filterBarcell\']';
                     fCell = this.parent.getHeaderContent().querySelector(selector) as HTMLInputElement;
@@ -566,7 +575,11 @@ export class Filter implements IAction {
                         delete this.values[field];
                     }
                 }
-                cols.splice(i, 1);
+                while (len --) {
+                    if (cols[len].field === field) {
+                         cols.splice(len, 1);
+                    }
+                }
                 let fltrElement: Element = this.parent.getColumnHeaderByField(column.field);
                 fltrElement.removeAttribute('aria-filtered');
                 if (this.filterSettings.type !== 'FilterBar') {
@@ -580,12 +593,14 @@ export class Filter implements IAction {
                 if (this.values[field]) {
                     delete this.values[field];
                 }
-                this.parent.notify(events.modelChanged, {
-                    requestType: 'filtering', type: events.actionBegin, currentFilterObject: {
-                        field: column.field, operator: this.operator, value: this.value as string, predicate: this.predicate,
-                        matchCase: this.matchCase, ignoreAccent: this.ignoreAccent, actualFilterValue: {}, actualOperator: {}
-                    }, currentFilterColumn: column
-                });
+                if (this.refresh) {
+                    this.parent.notify(events.modelChanged, {
+                        requestType: 'filtering', type: events.actionBegin, currentFilterObject: {
+                            field: column.field, operator: this.operator, value: this.value as string, predicate: this.predicate,
+                            matchCase: this.matchCase, ignoreAccent: this.ignoreAccent, actualFilterValue: {}, actualOperator: {}
+                        }, currentFilterColumn: column
+                    });
+                }
                 break;
             }
         }

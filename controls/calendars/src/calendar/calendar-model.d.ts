@@ -97,7 +97,7 @@ export interface CalendarBaseModel extends ComponentModel{
      * Determines whether the week number of the year is to be displayed in the calendar or not.
      * @default false
      * > For more details about weekNumber refer to 
-     * [`Calendar with week number`](../../calendar/how-to/week-number#render-the-calendar-with-week-numbers)documentation.
+     * [`Calendar with week number`](../../calendar/how-to/render-the-calendar-with-week-numbers)documentation.
      */
     weekNumber?: boolean;
 

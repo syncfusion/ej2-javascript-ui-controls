@@ -1502,6 +1502,7 @@ describe('Search module testing', () => {
         let replaceelementbox: any = (optionsPane as any).replaceWith;
         replaceelementbox.value = '';
         optionsPane.onReplaceButtonClick();
+        optionsPane.onReplaceButtonClick();
         expect((optionsPane as any).resultsListBlock.children.length).toBe(10);
     });
 });

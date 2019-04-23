@@ -22,7 +22,13 @@ export let regex: any = {
  * @private
  */
 export enum ErrorOption {
+    /**
+     * Defines the error message.
+     */
     Message,
+    /**
+     * Defines the error element type.
+     */
     Label
 }
 
@@ -847,9 +853,21 @@ interface Validator {
 }
 
 export interface ValidArgs {
+    /**
+     * Returns the value in input element.
+     */
     value: string;
+    /**
+     * Returns the rule mapped for the input.
+     */
     param?: Object;
+    /**
+     * Returns the input element.
+     */
     element?: HTMLElement;
+    /**
+     * Returns the current form element.
+     */
     formElement?: HTMLFormElement;
 }
 
@@ -859,9 +877,24 @@ interface ErrorRule {
 }
 
 export interface FormEventArgs {
+    /**
+     * Returns the name of the input element.
+     */
     inputName: string;
+    /**
+     * Returns the error message.
+     */
     message: string;
+    /**
+     * Returns the input element.
+     */
     element: HTMLInputElement;
+    /**
+     * Returns the status input element.
+     */
     status?: string;
+    /**
+     * Returns the error element for corresponding input.
+     */
     errorElement?: HTMLElement;
 }

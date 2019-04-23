@@ -34769,7 +34769,8 @@ var TextSearch = /** @__PURE__ @class */ (function () {
                 results.currentIndex = 0;
                 return undefined;
             }
-            else if (results.currentIndex < 0 && selectionEnd.isExistBefore(result.start)) {
+            else if (results.currentIndex < 0 && (selectionEnd.isExistBefore(result.start) ||
+                selectionEnd.isAtSamePosition(result.start))) {
                 results.currentIndex = results.indexOf(result);
             }
         }
@@ -35723,7 +35724,7 @@ var OptionsPane = /** @__PURE__ @class */ (function () {
             var selectionIndex = endSelection.getHierarchicalIndexInternal();
             _this.results = _this.viewer.owner.searchModule.textSearch.findAll(pattern, _this.findOption, selectionIndex);
             if (_this.results != null && _this.results.length > 0) {
-                _this.navigateSearchResult();
+                _this.navigateSearchResult(false);
             }
             else {
                 _this.viewer.renderVisiblePages();
@@ -35992,7 +35993,7 @@ var OptionsPane = /** @__PURE__ @class */ (function () {
                             }
                             _this.viewer.owner.findResultsList = [];
                             if (!isNullOrUndefined(_this.results) && _this.results.innerList.length > 0) {
-                                _this.navigateSearchResult();
+                                _this.navigateSearchResult(true);
                             }
                             else {
                                 _this.resultsListBlock.innerHTML = '';
@@ -36056,7 +36057,7 @@ var OptionsPane = /** @__PURE__ @class */ (function () {
             var index = endSelection.getHierarchicalIndexInternal();
             _this.results = _this.viewer.owner.searchModule.textSearch.findAll(patterns, _this.findOption, index);
             if (_this.results != null && _this.results.length > 0) {
-                _this.navigateSearchResult();
+                _this.navigateSearchResult(false);
                 _this.getMessageDivHeight();
                 var height = _this.isOptionsPane ? 215 : 292;
                 var resultsContainerHeight = _this.viewer.owner.getDocumentEditorElement().offsetHeight - height;
@@ -36077,52 +36078,27 @@ var OptionsPane = /** @__PURE__ @class */ (function () {
         this.navigateNextResultButtonClick = function () {
             if (document.getElementById(_this.viewer.owner.containerId + '_list_box_container') != null &&
                 document.getElementById(_this.viewer.owner.containerId + '_list_box_container').style.display !== 'none') {
-                if (_this.results.currentIndex < _this.results.length - 1) {
-                    _this.results.currentIndex = _this.results.currentIndex + 1;
-                    var currentelement = _this.results.innerList[_this.results.currentIndex];
-                    // tslint:disable-next-line:max-line-length
-                    _this.messageDiv.innerHTML = _this.localeValue.getConstant('Result') + ' ' + (_this.results.currentIndex + 1) + ' ' + _this.localeValue.getConstant('of') + ' ' + _this.resultsListBlock.children.length;
-                    for (var i = 0; i < _this.resultsListBlock.children.length; i++) {
-                        var list = _this.resultsListBlock.children[i];
-                        if (list.classList.contains('e-de-search-result-hglt')) {
-                            list.classList.remove('e-de-search-result-hglt');
-                            list.children[0].classList.remove('e-de-op-search-word-text');
-                            list.classList.add('e-de-search-result-item');
-                        }
-                    }
-                    var listElement = _this.resultsListBlock.children[_this.results.currentIndex];
-                    if (listElement.classList.contains('e-de-search-result-item')) {
-                        listElement.classList.remove('e-de-search-result-item');
-                        listElement.classList.add('e-de-search-result-hglt');
-                        listElement.children[0].classList.add('e-de-op-search-word-text');
-                        _this.scrollToPosition(listElement);
-                    }
-                    _this.viewer.owner.searchModule.navigate(currentelement);
-                    _this.viewer.owner.searchModule.highlight(_this.results);
+                var selectionEnd = _this.viewer.owner.selection.end;
+                var nextResult = void 0;
+                var currentIndex = 0;
+                if (selectionEnd.isExistAfter(_this.results.currentSearchResult.start)) {
+                    currentIndex = _this.results.currentIndex;
                 }
-                else {
-                    var currentelement = _this.results.innerList[0];
+                for (var i = currentIndex; i < _this.results.length; i++) {
+                    var result = _this.results.innerList[i];
+                    if (selectionEnd.isExistBefore(result.start) || selectionEnd.isAtSamePosition(result.start)) {
+                        nextResult = result;
+                        _this.results.currentIndex = i;
+                        break;
+                    }
+                }
+                if (isNullOrUndefined(nextResult)) {
                     _this.results.currentIndex = 0;
-                    // tslint:disable-next-line:max-line-length
-                    _this.messageDiv.innerHTML = _this.localeValue.getConstant('Result') + ' ' + (_this.results.currentIndex + 1) + ' ' + _this.localeValue.getConstant('of') + ' ' + _this.resultsListBlock.children.length;
-                    for (var j = 0; j < _this.resultsListBlock.children.length; j++) {
-                        var lists = _this.resultsListBlock.children[j];
-                        if (lists.classList.contains('e-de-search-result-hglt')) {
-                            lists.classList.remove('e-de-search-result-hglt');
-                            lists.children[0].classList.remove('e-de-op-search-word-text');
-                            lists.classList.add('e-de-search-result-item');
-                        }
-                    }
-                    var listElementsDiv = _this.resultsListBlock.children[_this.results.currentIndex];
-                    if (listElementsDiv.classList.contains('e-de-search-result-item')) {
-                        listElementsDiv.classList.remove('e-de-search-result-item');
-                        listElementsDiv.classList.add('e-de-search-result-hglt');
-                        listElementsDiv.children[0].classList.add('e-de-op-search-word-text');
-                        _this.scrollToPosition(listElementsDiv);
-                    }
-                    _this.viewer.owner.searchModule.navigate(currentelement);
-                    _this.viewer.owner.searchModule.highlight(_this.results);
+                    nextResult = _this.results.innerList[0];
                 }
+                // tslint:disable-next-line:max-line-length
+                _this.messageDiv.innerHTML = _this.localeValue.getConstant('Result') + ' ' + (_this.results.currentIndex + 1) + ' ' + _this.localeValue.getConstant('of') + ' ' + _this.resultsListBlock.children.length;
+                _this.updateListItems(nextResult);
                 _this.focusedIndex = _this.focusedElement.indexOf(_this.navigateToNextResult);
             }
         };
@@ -36133,52 +36109,27 @@ var OptionsPane = /** @__PURE__ @class */ (function () {
         this.navigatePreviousResultButtonClick = function () {
             if (document.getElementById(_this.viewer.owner.containerId + '_list_box_container') != null &&
                 document.getElementById(_this.viewer.owner.containerId + '_list_box_container').style.display !== 'none') {
-                if (_this.results.currentIndex === 0) {
+                var previousResult = void 0;
+                var selectionStart = _this.viewer.owner.selection.start;
+                var currentIndex = _this.results.currentIndex;
+                if (selectionStart.isExistAfter(_this.results.currentSearchResult.start)) {
+                    currentIndex = _this.results.length - 1;
+                }
+                for (var i = currentIndex; i >= 0; i--) {
+                    var result = _this.results.innerList[i];
+                    if (selectionStart.isExistAfter(result.start) || _this.viewer.owner.selection.end.isAtSamePosition(result.start)) {
+                        previousResult = result;
+                        _this.results.currentIndex = i;
+                        break;
+                    }
+                }
+                if (isNullOrUndefined(previousResult)) {
                     _this.results.currentIndex = _this.results.length - 1;
-                    // tslint:disable-next-line:max-line-length
-                    _this.messageDiv.innerHTML = _this.localeValue.getConstant('Result') + ' ' + (_this.results.length) + ' ' + _this.localeValue.getConstant('of') + ' ' + _this.resultsListBlock.children.length;
-                    for (var index = 0; index < _this.resultsListBlock.children.length; index++) {
-                        var list = _this.resultsListBlock.children[index];
-                        if (list.classList.contains('e-de-search-result-hglt')) {
-                            list.classList.remove('e-de-search-result-hglt');
-                            list.children[0].classList.remove('e-de-op-search-word-text');
-                            list.classList.add('e-de-search-result-item');
-                        }
-                    }
-                    var liElement = _this.resultsListBlock.children[_this.results.currentIndex];
-                    if (liElement.classList.contains('e-de-search-result-item')) {
-                        liElement.classList.remove('e-de-search-result-item');
-                        liElement.classList.add('e-de-search-result-hglt');
-                        liElement.children[0].classList.add('e-de-op-search-word-text');
-                        _this.scrollToPosition(liElement);
-                    }
-                    var currentelement = _this.results.innerList[_this.results.currentIndex];
-                    _this.viewer.owner.searchModule.navigate(currentelement);
-                    _this.viewer.owner.searchModule.highlight(_this.results);
+                    previousResult = _this.results.innerList[_this.results.currentIndex];
                 }
-                else {
-                    // tslint:disable-next-line:max-line-length
-                    _this.messageDiv.innerHTML = _this.localeValue.getConstant('Result') + ' ' + (_this.results.currentIndex) + ' ' + _this.localeValue.getConstant('of') + ' ' + _this.resultsListBlock.children.length;
-                    _this.results.currentIndex = _this.results.currentIndex - 1;
-                    for (var j = 0; j < _this.resultsListBlock.children.length; j++) {
-                        var list = _this.resultsListBlock.children[j];
-                        if (list.classList.contains('e-de-search-result-hglt')) {
-                            list.classList.remove('e-de-search-result-hglt');
-                            list.children[0].classList.remove('e-de-op-search-word-text');
-                            list.classList.add('e-de-search-result-item');
-                        }
-                    }
-                    var listElements = _this.resultsListBlock.children[_this.results.currentIndex];
-                    if (listElements.classList.contains('e-de-search-result-item')) {
-                        listElements.classList.remove('e-de-search-result-item');
-                        listElements.classList.add('e-de-search-result-hglt');
-                        listElements.children[0].classList.add('e-de-op-search-word-text');
-                        _this.scrollToPosition(listElements);
-                    }
-                    var currentelement = _this.results.innerList[_this.results.currentIndex];
-                    _this.viewer.owner.searchModule.navigate(currentelement);
-                    _this.viewer.owner.searchModule.highlight(_this.results);
-                }
+                // tslint:disable-next-line:max-line-length
+                _this.messageDiv.innerHTML = _this.localeValue.getConstant('Result') + ' ' + (_this.results.currentIndex + 1) + ' ' + _this.localeValue.getConstant('of') + ' ' + _this.resultsListBlock.children.length;
+                _this.updateListItems(previousResult);
                 _this.focusedIndex = _this.focusedElement.indexOf(_this.navigateToPreviousResult);
             }
         };
@@ -36441,8 +36392,10 @@ var OptionsPane = /** @__PURE__ @class */ (function () {
         this.occurrenceDiv = createElement('div', { styles: 'display:none;' });
         this.replaceDiv.appendChild(this.occurrenceDiv);
     };
-    OptionsPane.prototype.navigateSearchResult = function () {
-        this.viewer.owner.searchModule.navigate(this.results.innerList[this.results.currentIndex]);
+    OptionsPane.prototype.navigateSearchResult = function (navigate) {
+        if (navigate) {
+            this.viewer.owner.searchModule.navigate(this.results.innerList[this.results.currentIndex]);
+        }
         this.viewer.owner.searchModule.highlight(this.results);
         this.viewer.owner.searchModule.addFindResultView(this.results);
         this.resultsListBlock.style.display = 'block';
@@ -36578,6 +36531,20 @@ var OptionsPane = /** @__PURE__ @class */ (function () {
             // tslint:disable-next-line:max-line-length
             this.occurrenceDiv.innerHTML = this.localeValue.getConstant('We replaced all') + ' ' + count + ' ' + this.localeValue.getConstant('instances') + ' ' + this.localeValue.getConstant('of') + ' "' + findText + '" ' + this.localeValue.getConstant('with') + ' "' + replaceText + '" ';
         }
+    };
+    OptionsPane.prototype.updateListItems = function (textSearchResult) {
+        var searchElements = this.resultsListBlock.getElementsByClassName('e-de-search-result-hglt');
+        for (var j = 0; j < searchElements.length; j++) {
+            var list = searchElements[j];
+            classList(list, ['e-de-search-result-item'], ['e-de-search-result-hglt']);
+            classList(list.children[0], [], ['e-de-op-search-word-text']);
+        }
+        var listElement = this.resultsListBlock.children[this.results.currentIndex];
+        classList(listElement, ['e-de-search-result-hglt'], ['e-de-search-result-item']);
+        classList(listElement.children[0], ['e-de-op-search-word-text'], []);
+        this.scrollToPosition(listElement);
+        this.viewer.owner.searchModule.navigate(textSearchResult);
+        this.viewer.owner.searchModule.highlight(this.results);
     };
     /**
      * Scrolls to position.

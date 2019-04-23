@@ -465,7 +465,7 @@ export class MonthEvent extends EventBase {
         let startDate: Date = new Date(parseInt(target.getAttribute('data-start-date'), 10));
         if (!isNullOrUndefined(startDate) && this.parent.isAdaptive) {
             this.parent.setProperties({ selectedDate: startDate }, true);
-            this.parent.changeView(this.parent.getNavigateView());
+            this.parent.changeView(this.parent.getNavigateView(), event);
         } else {
             let endDate: Date = new Date(parseInt(target.getAttribute('data-end-date'), 10));
             let groupIndex: string = target.getAttribute('data-group-index');

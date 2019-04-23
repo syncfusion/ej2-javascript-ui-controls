@@ -136,6 +136,9 @@ export class EventWindow {
     public openEditor(data: Object, type: CurrentAction, isEventData?: boolean, repeatType?: number): void {
         this.parent.removeNewEventElement();
         this.parent.quickPopup.quickPopupHide(true);
+        if (!isNullOrUndefined(this.parent.editorTemplate)) {
+            this.setDialogContent(data as { [key: string]: Object });
+        }
         if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
             removeClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], cls.DISABLE_CLASS);
         }
@@ -157,8 +160,8 @@ export class EventWindow {
         }
     }
 
-    public setDialogContent(): void {
-        this.dialogObject.content = this.getEventWindowContent();
+    public setDialogContent(args?: { [key: string]: Object }): void {
+        this.dialogObject.content = this.getEventWindowContent(args);
         this.dialogObject.dataBind();
     }
 
@@ -193,7 +196,7 @@ export class EventWindow {
         this.parent.eventBase.focusElement();
     }
 
-    private getEventWindowContent(): HTMLElement {
+    private getEventWindowContent(args?: { [key: string]: Object }): HTMLElement {
         let container: HTMLElement = createElement('div', { className: cls.FORM_CONTAINER_CLASS });
         let form: HTMLFormElement = createElement('form', {
             id: this.parent.element.id + 'EditForm',
@@ -201,7 +204,7 @@ export class EventWindow {
             attrs: { onsubmit: 'return false;' }
         }) as HTMLFormElement;
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
-            append(this.parent.getEditorTemplate()(), form);
+            append(this.parent.getEditorTemplate()(args), form);
         } else {
             let content: HTMLElement = this.getDefaultEventWindowContent();
             form.appendChild(content);
@@ -1015,11 +1018,11 @@ export class EventWindow {
     }
 
     private resetFormFields(): void {
-        let formelement: HTMLInputElement[] = this.getFormElements(cls.EVENT_WINDOW_DIALOG_CLASS);
-        for (let index: number = 0, len: number = formelement.length; index < len; index++) {
-            let columnName: string = formelement[index].name;
+        let formElement: HTMLInputElement[] = this.getFormElements(cls.EVENT_WINDOW_DIALOG_CLASS);
+        for (let currentElement of formElement) {
+            let columnName: string = currentElement.name || this.getColumnName(currentElement);
             if (!isNullOrUndefined(columnName) && columnName !== '') {
-                this.setDefaultValueToElement(formelement[index] as HTMLElement);
+                this.setDefaultValueToElement(currentElement as HTMLElement);
             }
         }
     }

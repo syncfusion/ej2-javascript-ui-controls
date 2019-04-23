@@ -185,7 +185,7 @@ var ListBase;
                 fieldData = getFieldValues(dataSource[i], fields);
             }
             if (fieldData.hasOwnProperty(fields.id) && !isNullOrUndefined(fieldData[fields.id])) {
-                id = fieldData.id;
+                id = fieldData[fields.id];
             }
             var innerEle = [];
             if (curOpt.showCheckBox) {
@@ -917,7 +917,9 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                     this.header(this.headerTitle, false);
                     break;
                 case 'enableVirtualization':
-                    detach(this.contentContainer);
+                    if (!isNullOrUndefined(this.contentContainer)) {
+                        detach(this.contentContainer);
+                    }
                     this.refresh();
                     break;
                 case 'showCheckBox':

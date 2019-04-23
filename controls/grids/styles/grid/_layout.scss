@@ -413,7 +413,7 @@
       padding: $grid-bigger-groupedcell-padding;
     }
 
-    .e-frozenheader table tr td.e-rowcell {
+    &:not(.e-grid-min-height).e-frozenheader table tr td.e-rowcell {
       height: $grid-bigger-rowcell-line-height + $grid-bigger-content-padding + $grid-bigger-content-padding -6;
     }
 
@@ -892,7 +892,6 @@
     }
 
     .e-virtualtable {
-      overflow: hidden;
       will-change: transform;
       z-index: 1;
     }
@@ -1024,7 +1023,7 @@
       width: auto;
     }
 
-    .e-frozenheader table tr td.e-rowcell {
+    &:not(.e-grid-min-height).e-frozenheader table tr td.e-rowcell {
       height: $grid-rowcell-line-height + $grid-content-padding + $grid-content-padding;
     }
 
@@ -2806,7 +2805,7 @@
 
 .e-grid-min-height {
   .e-rowcell {
-    line-height: 0;
+    line-height: initial;
     padding-bottom: 0;
     padding-top: 0;
   }
@@ -2839,7 +2838,7 @@
   .e-rowcell,
   .e-rowcell:first-child,
   .e-rowcell:last-child {
-    line-height: 0;
+    line-height: initial;
     padding-bottom: 0;
     padding-top: 0;
   }

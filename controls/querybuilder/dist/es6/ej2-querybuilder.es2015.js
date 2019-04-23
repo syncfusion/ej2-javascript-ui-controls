@@ -49,7 +49,7 @@ __decorate([
 class Rule extends ChildProperty {
 }
 __decorate([
-    Property('')
+    Property(null)
 ], Rule.prototype, "condition", void 0);
 __decorate([
     Collection([], Rule)

@@ -355,8 +355,9 @@ describe('Agenda View', () => {
             expect(agendaListApp.children[0].childElementCount).toBeGreaterThanOrEqual(1);
             expect(agendaListApp.children[0].children[0].className).toEqual('e-agenda-item e-agenda-view e-level-1');
             expect(agendaListApp.children[0].children[0].childElementCount).toEqual(1);
-            expect(agendaListApp.children[0].children[0].children[0].className).toEqual('e-appointment');
-            expect(agendaListApp.children[0].children[0].children[0].childElementCount).toEqual(3);
+            expect(agendaListApp.children[0].children[0].children[0].className).toEqual('e-appointment e-template');
+            expect(agendaListApp.children[0].children[0].children[0].children[0].className).toEqual('e-icons e-recurrence-icon');
+            expect(agendaListApp.children[0].children[0].children[0].childElementCount).toEqual(4);
         });
     });
 

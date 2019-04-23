@@ -44,7 +44,7 @@ $tbar-btn-box-shadow: none !default;
 $tbar-hover-font: $hover-font-color !default;
 $tbar-press-font: $active-font-color !default;
 $tbar-active-font-color: $active-font-color !default;
-$tbar-default-font-overlay: $default-font-color !default;
+$tbar-default-font-overlay: rgba($grey-dark-font, .3) !default;
 $tbar-default-icon-overlay: rgba($grey-dark-font, .3) !default;
 $tbar-popup-rtl-border-width: 0 $border-size 0 0 !default;
 $tbar-popup-border-width: 0 0 0 $border-size !default;

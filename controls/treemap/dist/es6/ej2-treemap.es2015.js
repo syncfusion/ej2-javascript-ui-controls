@@ -672,7 +672,7 @@ function renderTextElement(options, font, color, parent, isMinus = false) {
         let drilledLabel = text;
         let drillLevelText;
         let spacing = 5;
-        drillLevelText = drilledLabel.split('_');
+        drillLevelText = drilledLabel.split('#');
         for (let z = 0; z < drillLevelText.length; z++) {
             let drillText = (drillLevelText[z].search(options.connectorText) !== -1 && !isNullOrUndefined(options.connectorText)) ?
                 options.connectorText : drillLevelText[z];
@@ -719,7 +719,7 @@ function isContainsData(source, pathName, processData, treemap) {
     for (let i = 0; i < source.length; i++) {
         path = treemap.levels[i] ? treemap.levels[i].groupPath : leaf.labelPath ? leaf.labelPath : treemap.weightValuePath;
         if (source[i] === processData[path]) {
-            name += (processData[path]) + (i === source.length - 1 ? '' : '_');
+            name += (processData[path]) + (i === source.length - 1 ? '' : '#');
             if (name === pathName) {
                 isExist = true;
                 break;
@@ -765,7 +765,7 @@ function findHightLightItems(data, items, mode, treeMap) {
         }
     }
     else if (mode === 'All') {
-        let parentName = data['levelOrderName'].split('_')[0];
+        let parentName = data['levelOrderName'].split('#')[0];
         let currentItem;
         for (let i = 0; i < treeMap.layout.renderItems.length; i++) {
             currentItem = treeMap.layout.renderItems[i];
@@ -1815,10 +1815,10 @@ class LayoutPanel {
             txtVisible = isLeafItem ? leaf.showLabels : (levels[index]).showHeader;
             if (index === this.treemap.currentLevel) {
                 if (this.treemap.enableBreadcrumb) {
-                    let re = /_/gi;
-                    connectorText = '_' + this.treemap.breadcrumbConnector + '_';
+                    let re = /#/gi;
+                    connectorText = '#' + this.treemap.breadcrumbConnector + '#';
                     levelName = item['levelOrderName'].replace(re, connectorText);
-                    levelName = index !== 0 ? '_' + levelName : levelName;
+                    levelName = index !== 0 ? '#' + levelName : levelName;
                 }
                 else {
                     levelName = item['name'];
@@ -1956,7 +1956,7 @@ class LayoutPanel {
         }
         else {
             for (let i = 0; i < parentData.length; i++) {
-                if (parentData[i]['levelOrderName'] === item['levelOrderName'].split('_')[0]) {
+                if (parentData[i]['levelOrderName'] === item['levelOrderName'].split('#')[0]) {
                     itemFill = treemap.palette.length > 0 ? treemap.palette[i % treemap.palette.length] :
                         !isNullOrUndefined(treemap.colorValuePath) ?
                             parentData[i]['data'][treemap.colorValuePath] : itemFill;
@@ -2511,11 +2511,11 @@ let TreeMap = class TreeMap extends Component {
             for (let j = 0; j < childData.length; j++) {
                 childData[j]['name'] = childData[j][path];
                 childData[j]['levelOrderName'] = (levelIndex === 0 ? childData[j]['name'] :
-                    data['levelOrderName'] + '_' + childData[j]['name']) + '';
+                    data['levelOrderName'] + '#' + childData[j]['name']) + '';
                 let childItemLevel = childData[j]['levelOrderName'];
                 let childLevel;
-                if (childItemLevel.search('_') > 0) {
-                    childLevel = childItemLevel.split('_').length - 1;
+                if (childItemLevel.search('#') > 0) {
+                    childLevel = childItemLevel.split('#').length - 1;
                 }
                 childData[j]['groupIndex'] = isNullOrUndefined(levelIndex) ? childLevel === this.levels.length
                     ? this.levels.length : childLevel : levelIndex;
@@ -2583,7 +2583,7 @@ let TreeMap = class TreeMap extends Component {
                     if (i !== 0) {
                         for (let k = 0; k <= i; k++) {
                             let childGroupPath = this.levels[k] ? this.levels[k].groupPath : groupPath;
-                            childName += (this.dataSource[j][childGroupPath]) + ((k === i) ? '' : '_');
+                            childName += (this.dataSource[j][childGroupPath]) + ((k === i) ? '' : '#');
                         }
                     }
                     if (!(orderNames.length > 0 ? orderNames.indexOf(childName ?
@@ -2634,7 +2634,7 @@ let TreeMap = class TreeMap extends Component {
         for (let i = 0; i < processData.length; i++) {
             totalWeight = 0;
             groupName = processData[i]['groupName'];
-            split = processData[i]['levelOrderName'].split('_');
+            split = processData[i]['levelOrderName'].split('#');
             this.dataSource.forEach((data) => {
                 if (isContainsData(split, processData[i]['levelOrderName'], data, this)) {
                     totalWeight += parseFloat(data[this.weightValuePath]);
@@ -2778,7 +2778,7 @@ let TreeMap = class TreeMap extends Component {
         let k;
         let text;
         let levelLabels = item['levelOrderName'];
-        let levelText = levelLabels.split('_');
+        let levelText = levelLabels.split('#');
         for (k of Object.keys(levelText)) {
             if (levelText[k] === labelText) {
                 drillLevel = parseInt(k, 10);
@@ -2795,22 +2795,22 @@ let TreeMap = class TreeMap extends Component {
         let p = 0;
         let levelItems;
         let text1;
-        let drillTextLevel = this.layout.renderItems[0]['levelOrderName'].split('_').length;
+        let drillTextLevel = this.layout.renderItems[0]['levelOrderName'].split('#').length;
         for (let h = 0; h < drillTextLevel; h++) {
-            text1 = h === 0 ? drillLevelValues['levelText'][h] : text1 + '_' + drillLevelValues['levelText'][h];
+            text1 = h === 0 ? drillLevelValues['levelText'][h] : text1 + '#' + drillLevelValues['levelText'][h];
         }
         p = drillTextLevel > 1 ? drillTextLevel : p;
         for (levelItems of Object['values'](this.layout.renderItems)) {
-            let drillLevelText = levelItems['levelOrderName'].split('_');
+            let drillLevelText = levelItems['levelOrderName'].split('#');
             if (drillLevelText[0] === drillLevelValues['levelText'][0]) {
                 text = p === 0 ? isNullOrUndefined(text1) ? text1 : drillLevelValues['levelText'][p] :
-                    directLevel ? text1 : text1 + '_' + drillLevelValues['levelText'][p];
+                    directLevel ? text1 : text1 + '#' + drillLevelValues['levelText'][p];
                 if (text === levelItems['levelOrderName']) {
                     this.drilledItems.push({ name: levelItems['levelOrderName'], data: levelItems });
                     p++;
                     directLevel = true;
                     if (p <= item['groupIndex']) {
-                        text = text + '_' + drillLevelValues['levelText'][p];
+                        text = text + '#' + drillLevelValues['levelText'][p];
                         text1 = text;
                     }
                 }

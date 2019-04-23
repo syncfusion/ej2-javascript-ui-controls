@@ -33,6 +33,9 @@ const OFFSETVALUE: number = 4;
 const SELECTED: string = 'e-selected';
 const NONEDIT: string = 'e-non-edit';
 export interface FormatObject {
+    /**
+     * Specifies the format in which the date format will process
+     */
     skeleton?: string;
 }
 

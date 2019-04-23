@@ -95,9 +95,9 @@ export class LinkAnnotation {
                         return false;
                     };
                 }
+                let pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
+                pageDiv.appendChild(aTag);
             }
-            let pageDiv: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_pageDiv_' + pageIndex);
-            pageDiv.appendChild(aTag);
         }
     }
 

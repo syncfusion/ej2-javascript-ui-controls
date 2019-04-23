@@ -369,7 +369,7 @@ export class Agenda extends ViewBase implements IRenderer {
             (closest((<Element>e.currentTarget), '.' + cls.AGENDA_CELLS_CLASS) as HTMLTableCellElement);
         if (!isNullOrUndefined(date) && !this.parent.isAdaptive) {
             this.parent.setProperties({ selectedDate: date }, true);
-            this.parent.changeView('Day');
+            this.parent.changeView('Day', e);
         }
     }
 

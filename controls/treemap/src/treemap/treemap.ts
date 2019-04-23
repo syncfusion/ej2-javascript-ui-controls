@@ -698,10 +698,10 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
             for (let j: number = 0; j < childData.length; j++) {
                 childData[j]['name'] = childData[j][path];
                 childData[j]['levelOrderName'] = (levelIndex === 0 ? childData[j]['name'] :
-                    data['levelOrderName'] + '_' + childData[j]['name']) + '';
+                    data['levelOrderName'] + '#' + childData[j]['name']) + '';
                 let childItemLevel: string = childData[j]['levelOrderName']; let childLevel: number;
-                if (childItemLevel.search('_') > 0) {
-                    childLevel = childItemLevel.split('_').length - 1;
+                if (childItemLevel.search('#') > 0) {
+                    childLevel = childItemLevel.split('#').length - 1;
                 }
                 childData[j]['groupIndex'] = isNullOrUndefined(levelIndex) ? childLevel === this.levels.length
                     ? this.levels.length : childLevel : levelIndex;
@@ -768,7 +768,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                     if (i !== 0) {
                         for (let k: number = 0; k <= i; k++) {
                             let childGroupPath: string = this.levels[k] ? this.levels[k].groupPath : groupPath;
-                            childName += (this.dataSource[j][childGroupPath]) + ((k === i) ? '' : '_');
+                            childName += (this.dataSource[j][childGroupPath]) + ((k === i) ? '' : '#');
                         }
                     }
                     if (!(orderNames.length > 0 ? orderNames.indexOf(childName ?
@@ -820,7 +820,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         for (let i: number = 0; i < processData.length; i++) {
             totalWeight = 0;
             groupName = processData[i]['groupName'];
-            split = (processData[i]['levelOrderName'] as string).split('_');
+            split = (processData[i]['levelOrderName'] as string).split('#');
             (<Object[]>this.dataSource).forEach((data: Object) => {
                 if (isContainsData(split, processData[i]['levelOrderName'], data, this)) {
                     totalWeight += parseFloat(data[this.weightValuePath]);
@@ -978,7 +978,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         //to find the levels by clicking the particular text both for drillDownView as true / false.
         let drillLevel: number; let k: string; let text: String;
         let levelLabels: string = item['levelOrderName'];
-        let levelText: string[] = levelLabels.split('_');
+        let levelText: string[] = levelLabels.split('#');
         for (k of Object.keys(levelText)) {
             if (levelText[k] === labelText) {
                 drillLevel = parseInt(k, 10);
@@ -993,22 +993,22 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         //At the time store all the previous drilled level items in drilledItems
         // This condition satisfies while drilldown View is set as false and the text contains '[+]'
         let text: string; let p: number = 0; let levelItems: string; let text1: string;
-        let drillTextLevel: number = this.layout.renderItems[0]['levelOrderName'].split('_').length;
+        let drillTextLevel: number = this.layout.renderItems[0]['levelOrderName'].split('#').length;
         for (let h: number = 0; h < drillTextLevel; h++) {
-            text1 = h === 0 ? drillLevelValues['levelText'][h] : text1 + '_' + drillLevelValues['levelText'][h];
+            text1 = h === 0 ? drillLevelValues['levelText'][h] : text1 + '#' + drillLevelValues['levelText'][h];
         }
         p = drillTextLevel > 1 ? drillTextLevel : p;
         for (levelItems of Object['values'](this.layout.renderItems)) {
-            let drillLevelText: string = levelItems['levelOrderName'].split('_');
+            let drillLevelText: string = levelItems['levelOrderName'].split('#');
             if (drillLevelText[0] === drillLevelValues['levelText'][0]) {
                 text = p === 0 ? isNullOrUndefined(text1) ? text1 : drillLevelValues['levelText'][p] :
-                    directLevel ? text1 : text1 + '_' + drillLevelValues['levelText'][p];
+                    directLevel ? text1 : text1 + '#' + drillLevelValues['levelText'][p];
                 if (text === levelItems['levelOrderName']) {
                     this.drilledItems.push({ name: levelItems['levelOrderName'], data: levelItems });
                     p++;
                     directLevel = true;
                     if (p <= item['groupIndex']) {
-                        text = text + '_' + drillLevelValues['levelText'][p];
+                        text = text + '#' + drillLevelValues['levelText'][p];
                         text1 = text;
                     }
                 }

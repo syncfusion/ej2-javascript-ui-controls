@@ -5801,6 +5801,7 @@ class Render {
         let gObj = this.parent;
         this.contentRenderer = this.renderer.getRenderer(RenderType.Content);
         this.headerRenderer = this.renderer.getRenderer(RenderType.Header);
+        e.actionArgs = args;
         gObj.trigger(beforeDataBound, e);
         if (e.cancel) {
             return;
@@ -12364,8 +12365,9 @@ let Grid = Grid_1 = class Grid extends Component {
         }
     }
     /**
-     * To edit any particular row by TR element.
-     * @param {HTMLTableRowElement} tr - Defines the table row to be edited.
+     * Starts edit the selected row. At least one row must be selected before invoking this method.
+     * `editSettings.allowEditing` should be true.
+     * @return {void}
      */
     startEdit() {
         if (this.editModule) {
@@ -13193,15 +13195,17 @@ let Grid = Grid_1 = class Grid extends Component {
         return previousRowData;
     }
     hideScroll() {
-        let headerContent = this.getHeaderContent();
-        let contentTable = this.getContent().querySelector('.e-content');
-        if ((this.currentViewData.length * this.getRowHeight()) < this.height) {
-            headerContent.style.paddingRight = '';
-            contentTable.style.overflowY = 'auto';
+        let content = this.getContent().querySelector('.e-content');
+        let cTable = content.querySelector('.e-movablecontent') ? content.querySelector('.e-movablecontent') : content;
+        if (cTable.scrollHeight <= cTable.clientHeight) {
+            this.scrollModule.removePadding();
+            cTable.style.overflowY = 'auto';
         }
-        else {
-            headerContent.style.paddingRight = '16px';
-            contentTable.style.overflowY = 'scroll';
+        if (this.frozenColumns && cTable.scrollWidth <= cTable.clientWidth) {
+            let frozenTable = this.getContent().querySelector('.e-frozencontent');
+            frozenTable.style.height = cTable.offsetHeight + 1 + 'px';
+            frozenTable.style.borderBottom = '0';
+            cTable.style.overflowX = 'auto';
         }
     }
     /**
@@ -16503,6 +16507,7 @@ class Filter {
     constructor(parent, filterSettings, serviceLocator) {
         this.predicate = 'and';
         this.contentRefresh = true;
+        this.refresh = true;
         this.values = {};
         this.cellText = {};
         this.nextFlMenuOpen = '';
@@ -16914,9 +16919,14 @@ class Filter {
             this.parent.notify(preventBatch, { instance: this, handler: this.clearFiltering });
             return;
         }
-        for (let i = 0, len = cols.length; i < len; i++) {
-            this.removeFilteredColsByField(cols[i].field, false);
+        let colName = cols.map((f) => f.field);
+        let filteredcols = colName.filter((item, pos) => colName.indexOf(item) === pos);
+        this.refresh = false;
+        for (let i = 0, len = filteredcols.length; i < len; i++) {
+            this.removeFilteredColsByField(filteredcols[i], false);
         }
+        this.refresh = true;
+        this.parent.renderModule.refresh();
         if (this.parent.filterSettings.columns.length === 0 && this.parent.element.querySelector('.e-filtered')) {
             let fltrElement = [].slice.call(this.parent.element.querySelectorAll('.e-filtered'));
             for (let i = 0, len = fltrElement.length; i < len; i++) {
@@ -16982,10 +16992,13 @@ class Filter {
             this.parent.notify(preventBatch, args);
             return;
         }
-        for (let i = 0, len = cols.length; i < len; i++) {
+        let colName = cols.map((f) => f.field);
+        let filteredcols = colName.filter((item, pos) => colName.indexOf(item) === pos);
+        for (let i = 0, len = filteredcols.length; i < len; i++) {
+            let len = cols.length;
             let column = this.parent.getColumnByField(field) ||
                 getColumnByForeignKeyValue(field, this.parent.getForeignKeyColumns());
-            if (cols[i].field === field || cols[i].field === column.foreignKeyValue) {
+            if (filteredcols[i] === field || filteredcols[i] === column.foreignKeyValue) {
                 if (this.filterSettings.type === 'FilterBar' && !isClearFilterBar) {
                     let selector = '[id=\'' + cols[i].field + '_filterBarcell\']';
                     fCell = this.parent.getHeaderContent().querySelector(selector);
@@ -16994,7 +17007,11 @@ class Filter {
                         delete this.values[field];
                     }
                 }
-                cols.splice(i, 1);
+                while (len--) {
+                    if (cols[len].field === field) {
+                        cols.splice(len, 1);
+                    }
+                }
                 let fltrElement = this.parent.getColumnHeaderByField(column.field);
                 fltrElement.removeAttribute('aria-filtered');
                 if (this.filterSettings.type !== 'FilterBar') {
@@ -17008,12 +17025,14 @@ class Filter {
                 if (this.values[field]) {
                     delete this.values[field];
                 }
-                this.parent.notify(modelChanged, {
-                    requestType: 'filtering', type: actionBegin, currentFilterObject: {
-                        field: column.field, operator: this.operator, value: this.value, predicate: this.predicate,
-                        matchCase: this.matchCase, ignoreAccent: this.ignoreAccent, actualFilterValue: {}, actualOperator: {}
-                    }, currentFilterColumn: column
-                });
+                if (this.refresh) {
+                    this.parent.notify(modelChanged, {
+                        requestType: 'filtering', type: actionBegin, currentFilterObject: {
+                            field: column.field, operator: this.operator, value: this.value, predicate: this.predicate,
+                            matchCase: this.matchCase, ignoreAccent: this.ignoreAccent, actualFilterValue: {}, actualOperator: {}
+                        }, currentFilterColumn: column
+                    });
+                }
                 break;
             }
         }

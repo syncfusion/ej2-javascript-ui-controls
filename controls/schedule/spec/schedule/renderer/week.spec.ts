@@ -394,6 +394,31 @@ describe('Schedule Week view', () => {
             expect(eventName3).toEqual('popupOpen');
         });
 
+        it('single and multiple cell click and selection', () => {
+            let eventName: string;
+            schObj = new Schedule({
+                select: (args: SelectEventArgs) => {
+                    eventName = args.name;
+                },
+                cellClick: (args: CellClickEventArgs) => {
+                    eventName = args.name;
+                },
+                currentView: 'Week', selectedDate: new Date(2017, 9, 5)
+            });
+            schObj.appendTo('#Schedule');
+            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            expect(schObj.getSelectedElements().length).toEqual(0);
+            triggerMouseEvent(workCells[135], 'mousedown');
+            triggerMouseEvent(workCells[149], 'mousemove');
+            triggerMouseEvent(workCells[149], 'mouseup');
+            expect(eventName).toEqual('select');
+            expect(schObj.getSelectedElements().length).toEqual(3);
+            eventName = null;
+            triggerMouseEvent(workCells[136], 'click');
+            expect(eventName).toEqual('cellClick');
+            expect(schObj.getSelectedElements().length).toEqual(1);
+        });
+
         it('multi cell select', () => {
             let eventName: string;
             schObj = new Schedule({

@@ -465,7 +465,9 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                     this.header(this.headerTitle, false);
                     break;
                 case 'enableVirtualization':
+                    if (!isNullOrUndefined(this.contentContainer)) {
                     detach(this.contentContainer);
+                    }
                     this.refresh();
                     break;
                 case 'showCheckBox':

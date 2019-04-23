@@ -6285,9 +6285,10 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             let temp;
             let tempValues = this.value ? this.value.slice() : [];
             if (this.value) {
-                for (temp = this.value[0]; this.value.length !== 0; temp = this.value[0]) {
+                let i = 0;
+                for (temp = this.value[i]; i < this.value.length; temp = this.value[i]) {
                     if (this.removeValue(temp, e)) {
-                        break;
+                        i++;
                     }
                 }
             }
@@ -6297,7 +6298,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             }
             this.focusAtFirstListItem();
             this.updateDelimeter(this.delimiterChar);
-            if (this.mode !== 'Box') {
+            if (this.mode !== 'Box' && (!this.inputFocus || this.mode === 'CheckBox')) {
                 this.updateDelimView();
             }
             this.makeTextBoxEmpty();

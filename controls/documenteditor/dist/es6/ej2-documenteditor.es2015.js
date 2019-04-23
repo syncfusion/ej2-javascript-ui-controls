@@ -33437,7 +33437,8 @@ class TextSearch {
                 results.currentIndex = 0;
                 return undefined;
             }
-            else if (results.currentIndex < 0 && selectionEnd.isExistBefore(result.start)) {
+            else if (results.currentIndex < 0 && (selectionEnd.isExistBefore(result.start) ||
+                selectionEnd.isAtSamePosition(result.start))) {
                 results.currentIndex = results.indexOf(result);
             }
         }
@@ -34336,7 +34337,7 @@ class OptionsPane {
             let selectionIndex = endSelection.getHierarchicalIndexInternal();
             this.results = this.viewer.owner.searchModule.textSearch.findAll(pattern, this.findOption, selectionIndex);
             if (this.results != null && this.results.length > 0) {
-                this.navigateSearchResult();
+                this.navigateSearchResult(false);
             }
             else {
                 this.viewer.renderVisiblePages();
@@ -34605,7 +34606,7 @@ class OptionsPane {
                             }
                             this.viewer.owner.findResultsList = [];
                             if (!isNullOrUndefined(this.results) && this.results.innerList.length > 0) {
-                                this.navigateSearchResult();
+                                this.navigateSearchResult(true);
                             }
                             else {
                                 this.resultsListBlock.innerHTML = '';
@@ -34669,7 +34670,7 @@ class OptionsPane {
             let index = endSelection.getHierarchicalIndexInternal();
             this.results = this.viewer.owner.searchModule.textSearch.findAll(patterns, this.findOption, index);
             if (this.results != null && this.results.length > 0) {
-                this.navigateSearchResult();
+                this.navigateSearchResult(false);
                 this.getMessageDivHeight();
                 let height = this.isOptionsPane ? 215 : 292;
                 let resultsContainerHeight = this.viewer.owner.getDocumentEditorElement().offsetHeight - height;
@@ -34690,52 +34691,27 @@ class OptionsPane {
         this.navigateNextResultButtonClick = () => {
             if (document.getElementById(this.viewer.owner.containerId + '_list_box_container') != null &&
                 document.getElementById(this.viewer.owner.containerId + '_list_box_container').style.display !== 'none') {
-                if (this.results.currentIndex < this.results.length - 1) {
-                    this.results.currentIndex = this.results.currentIndex + 1;
-                    let currentelement = this.results.innerList[this.results.currentIndex];
-                    // tslint:disable-next-line:max-line-length
-                    this.messageDiv.innerHTML = this.localeValue.getConstant('Result') + ' ' + (this.results.currentIndex + 1) + ' ' + this.localeValue.getConstant('of') + ' ' + this.resultsListBlock.children.length;
-                    for (let i = 0; i < this.resultsListBlock.children.length; i++) {
-                        let list = this.resultsListBlock.children[i];
-                        if (list.classList.contains('e-de-search-result-hglt')) {
-                            list.classList.remove('e-de-search-result-hglt');
-                            list.children[0].classList.remove('e-de-op-search-word-text');
-                            list.classList.add('e-de-search-result-item');
-                        }
-                    }
-                    let listElement = this.resultsListBlock.children[this.results.currentIndex];
-                    if (listElement.classList.contains('e-de-search-result-item')) {
-                        listElement.classList.remove('e-de-search-result-item');
-                        listElement.classList.add('e-de-search-result-hglt');
-                        listElement.children[0].classList.add('e-de-op-search-word-text');
-                        this.scrollToPosition(listElement);
-                    }
-                    this.viewer.owner.searchModule.navigate(currentelement);
-                    this.viewer.owner.searchModule.highlight(this.results);
+                let selectionEnd = this.viewer.owner.selection.end;
+                let nextResult;
+                let currentIndex = 0;
+                if (selectionEnd.isExistAfter(this.results.currentSearchResult.start)) {
+                    currentIndex = this.results.currentIndex;
                 }
-                else {
-                    let currentelement = this.results.innerList[0];
+                for (let i = currentIndex; i < this.results.length; i++) {
+                    let result = this.results.innerList[i];
+                    if (selectionEnd.isExistBefore(result.start) || selectionEnd.isAtSamePosition(result.start)) {
+                        nextResult = result;
+                        this.results.currentIndex = i;
+                        break;
+                    }
+                }
+                if (isNullOrUndefined(nextResult)) {
                     this.results.currentIndex = 0;
-                    // tslint:disable-next-line:max-line-length
-                    this.messageDiv.innerHTML = this.localeValue.getConstant('Result') + ' ' + (this.results.currentIndex + 1) + ' ' + this.localeValue.getConstant('of') + ' ' + this.resultsListBlock.children.length;
-                    for (let j = 0; j < this.resultsListBlock.children.length; j++) {
-                        let lists = this.resultsListBlock.children[j];
-                        if (lists.classList.contains('e-de-search-result-hglt')) {
-                            lists.classList.remove('e-de-search-result-hglt');
-                            lists.children[0].classList.remove('e-de-op-search-word-text');
-                            lists.classList.add('e-de-search-result-item');
-                        }
-                    }
-                    let listElementsDiv = this.resultsListBlock.children[this.results.currentIndex];
-                    if (listElementsDiv.classList.contains('e-de-search-result-item')) {
-                        listElementsDiv.classList.remove('e-de-search-result-item');
-                        listElementsDiv.classList.add('e-de-search-result-hglt');
-                        listElementsDiv.children[0].classList.add('e-de-op-search-word-text');
-                        this.scrollToPosition(listElementsDiv);
-                    }
-                    this.viewer.owner.searchModule.navigate(currentelement);
-                    this.viewer.owner.searchModule.highlight(this.results);
+                    nextResult = this.results.innerList[0];
                 }
+                // tslint:disable-next-line:max-line-length
+                this.messageDiv.innerHTML = this.localeValue.getConstant('Result') + ' ' + (this.results.currentIndex + 1) + ' ' + this.localeValue.getConstant('of') + ' ' + this.resultsListBlock.children.length;
+                this.updateListItems(nextResult);
                 this.focusedIndex = this.focusedElement.indexOf(this.navigateToNextResult);
             }
         };
@@ -34746,52 +34722,27 @@ class OptionsPane {
         this.navigatePreviousResultButtonClick = () => {
             if (document.getElementById(this.viewer.owner.containerId + '_list_box_container') != null &&
                 document.getElementById(this.viewer.owner.containerId + '_list_box_container').style.display !== 'none') {
-                if (this.results.currentIndex === 0) {
+                let previousResult;
+                let selectionStart = this.viewer.owner.selection.start;
+                let currentIndex = this.results.currentIndex;
+                if (selectionStart.isExistAfter(this.results.currentSearchResult.start)) {
+                    currentIndex = this.results.length - 1;
+                }
+                for (let i = currentIndex; i >= 0; i--) {
+                    let result = this.results.innerList[i];
+                    if (selectionStart.isExistAfter(result.start) || this.viewer.owner.selection.end.isAtSamePosition(result.start)) {
+                        previousResult = result;
+                        this.results.currentIndex = i;
+                        break;
+                    }
+                }
+                if (isNullOrUndefined(previousResult)) {
                     this.results.currentIndex = this.results.length - 1;
-                    // tslint:disable-next-line:max-line-length
-                    this.messageDiv.innerHTML = this.localeValue.getConstant('Result') + ' ' + (this.results.length) + ' ' + this.localeValue.getConstant('of') + ' ' + this.resultsListBlock.children.length;
-                    for (let index = 0; index < this.resultsListBlock.children.length; index++) {
-                        let list = this.resultsListBlock.children[index];
-                        if (list.classList.contains('e-de-search-result-hglt')) {
-                            list.classList.remove('e-de-search-result-hglt');
-                            list.children[0].classList.remove('e-de-op-search-word-text');
-                            list.classList.add('e-de-search-result-item');
-                        }
-                    }
-                    let liElement = this.resultsListBlock.children[this.results.currentIndex];
-                    if (liElement.classList.contains('e-de-search-result-item')) {
-                        liElement.classList.remove('e-de-search-result-item');
-                        liElement.classList.add('e-de-search-result-hglt');
-                        liElement.children[0].classList.add('e-de-op-search-word-text');
-                        this.scrollToPosition(liElement);
-                    }
-                    let currentelement = this.results.innerList[this.results.currentIndex];
-                    this.viewer.owner.searchModule.navigate(currentelement);
-                    this.viewer.owner.searchModule.highlight(this.results);
+                    previousResult = this.results.innerList[this.results.currentIndex];
                 }
-                else {
-                    // tslint:disable-next-line:max-line-length
-                    this.messageDiv.innerHTML = this.localeValue.getConstant('Result') + ' ' + (this.results.currentIndex) + ' ' + this.localeValue.getConstant('of') + ' ' + this.resultsListBlock.children.length;
-                    this.results.currentIndex = this.results.currentIndex - 1;
-                    for (let j = 0; j < this.resultsListBlock.children.length; j++) {
-                        let list = this.resultsListBlock.children[j];
-                        if (list.classList.contains('e-de-search-result-hglt')) {
-                            list.classList.remove('e-de-search-result-hglt');
-                            list.children[0].classList.remove('e-de-op-search-word-text');
-                            list.classList.add('e-de-search-result-item');
-                        }
-                    }
-                    let listElements = this.resultsListBlock.children[this.results.currentIndex];
-                    if (listElements.classList.contains('e-de-search-result-item')) {
-                        listElements.classList.remove('e-de-search-result-item');
-                        listElements.classList.add('e-de-search-result-hglt');
-                        listElements.children[0].classList.add('e-de-op-search-word-text');
-                        this.scrollToPosition(listElements);
-                    }
-                    let currentelement = this.results.innerList[this.results.currentIndex];
-                    this.viewer.owner.searchModule.navigate(currentelement);
-                    this.viewer.owner.searchModule.highlight(this.results);
-                }
+                // tslint:disable-next-line:max-line-length
+                this.messageDiv.innerHTML = this.localeValue.getConstant('Result') + ' ' + (this.results.currentIndex + 1) + ' ' + this.localeValue.getConstant('of') + ' ' + this.resultsListBlock.children.length;
+                this.updateListItems(previousResult);
                 this.focusedIndex = this.focusedElement.indexOf(this.navigateToPreviousResult);
             }
         };
@@ -35054,8 +35005,10 @@ class OptionsPane {
         this.occurrenceDiv = createElement('div', { styles: 'display:none;' });
         this.replaceDiv.appendChild(this.occurrenceDiv);
     }
-    navigateSearchResult() {
-        this.viewer.owner.searchModule.navigate(this.results.innerList[this.results.currentIndex]);
+    navigateSearchResult(navigate) {
+        if (navigate) {
+            this.viewer.owner.searchModule.navigate(this.results.innerList[this.results.currentIndex]);
+        }
         this.viewer.owner.searchModule.highlight(this.results);
         this.viewer.owner.searchModule.addFindResultView(this.results);
         this.resultsListBlock.style.display = 'block';
@@ -35191,6 +35144,20 @@ class OptionsPane {
             // tslint:disable-next-line:max-line-length
             this.occurrenceDiv.innerHTML = this.localeValue.getConstant('We replaced all') + ' ' + count + ' ' + this.localeValue.getConstant('instances') + ' ' + this.localeValue.getConstant('of') + ' "' + findText + '" ' + this.localeValue.getConstant('with') + ' "' + replaceText + '" ';
         }
+    }
+    updateListItems(textSearchResult) {
+        let searchElements = this.resultsListBlock.getElementsByClassName('e-de-search-result-hglt');
+        for (let j = 0; j < searchElements.length; j++) {
+            let list = searchElements[j];
+            classList(list, ['e-de-search-result-item'], ['e-de-search-result-hglt']);
+            classList(list.children[0], [], ['e-de-op-search-word-text']);
+        }
+        let listElement = this.resultsListBlock.children[this.results.currentIndex];
+        classList(listElement, ['e-de-search-result-hglt'], ['e-de-search-result-item']);
+        classList(listElement.children[0], ['e-de-op-search-word-text'], []);
+        this.scrollToPosition(listElement);
+        this.viewer.owner.searchModule.navigate(textSearchResult);
+        this.viewer.owner.searchModule.highlight(this.results);
     }
     /**
      * Scrolls to position.

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.42 (2019-04-23)
+
+### Document Editor
+
+#### Bug Fixes
+
+- #231353 - Text search results are now navigated properly.
+
 ## 17.1.41 (2019-04-16)
 
 ### Document Editor

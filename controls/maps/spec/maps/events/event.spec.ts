@@ -809,8 +809,8 @@ describe('Map Events tesing', () => {
             map.loaded = (args: ILoadedEventArgs): void => {
                 spec = getElement('container_LayerIndex_0_shapeIndex_2_dataIndex_26');
                 trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
-                expect(spec.getAttribute('stroke-width')).toBe('2');
-                expect(spec.getAttribute('stroke')).toBe('green');
+                expect(spec.getAttribute('stroke-width')).toBe('0');
+                expect(spec.getAttribute('stroke')).toBe('#000000');
                 done();
             };
             map.refresh();
@@ -915,7 +915,7 @@ describe('Map Events tesing', () => {
             map.loaded = (args: ILoadedEventArgs): void => {
                 spec = getElement('container_LayerIndex_0_shapeIndex_9_dataIndex_5');
                 trigger.clickEvent(spec);
-                expect(spec.getAttribute('stroke-width')).toBe('2');
+                expect(spec.getAttribute('stroke-width')).toBe('0');
                 done();
             };
             map.refresh();

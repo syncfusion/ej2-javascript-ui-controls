@@ -1036,6 +1036,35 @@ describe('MultiSelect', () => {
             expect(dropDowns.componentWrapper.querySelector('.e-delim-view.e-delim-values').innerText === 'JavaScript').toBe(true);
         });
     });
+    describe('EJ2-25259- clear all.', () => {
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdown' });
+        let dropDowns: any;
+        beforeAll(() => {
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            element.remove();
+            document.body.innerHTML = '';
+        });
+
+        it(' clear the value maintain in list item', () => {
+            let keyEventArgs: any = { preventDefault: (): void => { }, action: 'down' };
+            dropDowns = new MultiSelect({
+                dataSource: ['JavaScript', 'AS.NET'],
+                value: ['JavaScript'],
+                removing: function(args: any) {
+                    if (args.itemData === 'JavaScript'){
+                        args.cancel = true;
+                    }
+                }
+
+            });
+            dropDowns.appendTo(element);
+            dropDowns.showPopup();
+            dropDowns.ClearAll(keyboardEventArgs);
+            expect(dropDowns.componentWrapper.querySelector('.e-delim-view.e-delim-values').innerText === 'JavaScript').toBe(true);
+        });
+    });
     describe('EJ2-25134 - popup open downward', () => {
         let listObj: any;
         let data: string[] = ['JAVA', 'C#', 'C++', '.NET', 'Oracle'];

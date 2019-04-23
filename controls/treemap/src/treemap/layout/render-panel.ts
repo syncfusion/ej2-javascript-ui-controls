@@ -445,10 +445,10 @@ export class LayoutPanel {
             txtVisible = isLeafItem ? leaf.showLabels : (levels[index]).showHeader;
             if (index === this.treemap.currentLevel) {
                 if (this.treemap.enableBreadcrumb) {
-                    let re: RegExp = /_/gi;
-                    connectorText = '_' + this.treemap.breadcrumbConnector + '_';
+                    let re: RegExp = /#/gi;
+                    connectorText = '#' + this.treemap.breadcrumbConnector + '#';
                     levelName = item['levelOrderName'].replace(re, connectorText);
-                    levelName = index !== 0 ? '_' + levelName : levelName;
+                    levelName = index !== 0 ? '#' + levelName : levelName;
                 } else {
                     levelName = item['name'];
                 }
@@ -590,7 +590,7 @@ export class LayoutPanel {
             itemOpacity = option['opacity'];
         } else {
             for (let i: number = 0; i < parentData.length; i++) {
-                if ((parentData[i]['levelOrderName'] as string) === (item['levelOrderName'] as string).split('_')[0]) {
+                if ((parentData[i]['levelOrderName'] as string) === (item['levelOrderName'] as string).split('#')[0]) {
                     itemFill = treemap.palette.length > 0 ? treemap.palette[i % treemap.palette.length] :
                         !isNullOrUndefined(treemap.colorValuePath) ?
                             parentData[i]['data'][treemap.colorValuePath] : itemFill;

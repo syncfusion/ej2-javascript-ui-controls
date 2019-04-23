@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.42 (2019-04-23)
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- #232966 - Now, you can clear daterangepicker input value using keyboard when strict mode is enabled.
+
 ## 17.1.41 (2019-04-16)
 
 ### DatePicker

@@ -58,7 +58,7 @@ export declare class Columns extends ChildProperty<Columns> {
 export declare class Rule extends ChildProperty<Rule> {
     /**
      * Specifies the condition value in group.
-     * @default 'and'
+     * @default null
      */
     condition: string;
     /**

@@ -631,6 +631,8 @@ const VIRTUAL_SCROLL_CLASS = 'e-virtual-scroll';
 const ICON_DISABLE_CLASS = 'e-icon-disable';
 /** @hidden */
 const AUTO_HEIGHT = 'e-auto-height';
+/** @hidden */
+const EVENT_TEMPLATE = 'e-template';
 
 /**
  * Header module
@@ -1428,10 +1430,12 @@ class KeyboardInteraction {
             return;
         }
         if (e.event.target.classList.contains(WORK_CELLS_CLASS)) {
+            this.parent.removeSelectedClass();
             EventHandler.add(this.parent.getContentTable(), 'mousemove', this.onMouseSelection, this);
             EventHandler.add(this.parent.getContentTable(), 'mouseup', this.onMoveup, this);
         }
         if (e.event.target.classList.contains(ALLDAY_CELLS_CLASS)) {
+            this.parent.removeSelectedClass();
             let allDayRow = this.parent.getAllDayRow();
             EventHandler.add(allDayRow, 'mousemove', this.onMouseSelection, this);
             EventHandler.add(allDayRow, 'mouseup', this.onMoveup, this);
@@ -1535,7 +1539,7 @@ class KeyboardInteraction {
         }
         if (target.classList.contains(MORE_EVENT_HEADER_DATE_CLASS)) {
             this.parent.setProperties({ selectedDate: new Date(parseInt(target.getAttribute('data-date'), 10)) }, true);
-            this.parent.changeView(this.parent.getNavigateView());
+            this.parent.changeView(this.parent.getNavigateView(), e);
             this.processEscape();
             return;
         }
@@ -5865,7 +5869,7 @@ class QuickPopups {
             if (!isNullOrUndefined(date) && !this.parent.isAdaptive) {
                 this.closeClick();
                 this.parent.setProperties({ selectedDate: date }, true);
-                this.parent.changeView(this.parent.getNavigateView());
+                this.parent.changeView(this.parent.getNavigateView(), e);
             }
         }
     }
@@ -7161,6 +7165,9 @@ class EventWindow {
     openEditor(data, type, isEventData, repeatType) {
         this.parent.removeNewEventElement();
         this.parent.quickPopup.quickPopupHide(true);
+        if (!isNullOrUndefined(this.parent.editorTemplate)) {
+            this.setDialogContent(data);
+        }
         if (!this.parent.isAdaptive && isNullOrUndefined(this.parent.editorTemplate)) {
             removeClass([this.dialogObject.element.querySelector('.e-recurrenceeditor')], DISABLE_CLASS);
         }
@@ -7181,8 +7188,8 @@ class EventWindow {
                 break;
         }
     }
-    setDialogContent() {
-        this.dialogObject.content = this.getEventWindowContent();
+    setDialogContent(args) {
+        this.dialogObject.content = this.getEventWindowContent(args);
         this.dialogObject.dataBind();
     }
     onBeforeOpen(args) {
@@ -7214,7 +7221,7 @@ class EventWindow {
         this.resetForm();
         this.parent.eventBase.focusElement();
     }
-    getEventWindowContent() {
+    getEventWindowContent(args) {
         let container = createElement('div', { className: FORM_CONTAINER_CLASS });
         let form = createElement('form', {
             id: this.parent.element.id + 'EditForm',
@@ -7222,7 +7229,7 @@ class EventWindow {
             attrs: { onsubmit: 'return false;' }
         });
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
-            append(this.parent.getEditorTemplate()(), form);
+            append(this.parent.getEditorTemplate()(args), form);
         }
         else {
             let content = this.getDefaultEventWindowContent();
@@ -8019,11 +8026,11 @@ class EventWindow {
         }
     }
     resetFormFields() {
-        let formelement = this.getFormElements(EVENT_WINDOW_DIALOG_CLASS);
-        for (let index = 0, len = formelement.length; index < len; index++) {
-            let columnName = formelement[index].name;
+        let formElement = this.getFormElements(EVENT_WINDOW_DIALOG_CLASS);
+        for (let currentElement of formElement) {
+            let columnName = currentElement.name || this.getColumnName(currentElement);
             if (!isNullOrUndefined(columnName) && columnName !== '') {
-                this.setDefaultValueToElement(formelement[index]);
+                this.setDefaultValueToElement(currentElement);
             }
         }
     }
@@ -10533,6 +10540,8 @@ let Schedule = class Schedule extends Component {
             this.quickPopup.onClosePopup();
         }
         if (this.currentView === 'Month' || !this.activeViewOptions.timeScale.enable || this.activeView.isTimelineView()) {
+            this.activeView.resetColWidth();
+            this.notify(scrollUiUpdate, { cssProperties: this.getCssProperties(), isPreventScrollUpdate: true });
             this.notify(dataReady, {});
         }
     }
@@ -13127,10 +13136,33 @@ class ViewBase {
         this.parent.resourceBase.renderResourceTree();
     }
     addAutoHeightClass(element) {
-        if (!this.parent.uiStateValues.isGroupAdaptive && this.parent.rowAutoHeight && this.parent.activeView.isTimelineView()
+        if (!this.parent.uiStateValues.isGroupAdaptive && this.parent.rowAutoHeight && this.isTimelineView()
             && this.parent.activeViewOptions.group.resources.length > 0) {
             addClass([element], AUTO_HEIGHT);
         }
+    }
+    getColElements() {
+        return [].slice.call(this.parent.element.querySelectorAll('.' + CONTENT_WRAP_CLASS
+            + ' col, .' + DATE_HEADER_WRAP_CLASS + ' col'));
+    }
+    setColWidth(content) {
+        if (this.isTimelineView()) {
+            let colElements = this.getColElements();
+            const colWidth = Math.ceil(this.parent.getContentTable().offsetWidth / (colElements.length / 2));
+            colElements.forEach((col) => setStyleAttribute(col, { 'width': formatUnit(colWidth) }));
+            if (content.offsetHeight !== content.clientHeight) {
+                let resourceColumn = this.parent.element.querySelector('.' + RESOURCE_COLUMN_WRAP_CLASS);
+                if (!isNullOrUndefined(resourceColumn)) {
+                    setStyleAttribute(resourceColumn, {
+                        'height': formatUnit(content.clientHeight)
+                    });
+                }
+            }
+        }
+    }
+    resetColWidth() {
+        let colElements = this.getColElements();
+        colElements.forEach((col) => col.style.width = '');
     }
 }
 
@@ -13194,7 +13226,7 @@ class WorkCellInteraction {
             let date = this.parent.getDateFromElement(target);
             if (!isNullOrUndefined(date) && !this.parent.isAdaptive) {
                 this.parent.setProperties({ selectedDate: date }, true);
-                this.parent.changeView(this.parent.getNavigateView());
+                this.parent.changeView(this.parent.getNavigateView(), e);
             }
         }
     }
@@ -14277,7 +14309,7 @@ class MonthEvent extends EventBase {
         let startDate = new Date(parseInt(target.getAttribute('data-start-date'), 10));
         if (!isNullOrUndefined(startDate) && this.parent.isAdaptive) {
             this.parent.setProperties({ selectedDate: startDate }, true);
-            this.parent.changeView(this.parent.getNavigateView());
+            this.parent.changeView(this.parent.getNavigateView(), event);
         }
         else {
             let endDate = new Date(parseInt(target.getAttribute('data-end-date'), 10));
@@ -14420,6 +14452,7 @@ class VerticalView extends ViewBase {
                 content.scrollLeft = this.parent.uiStateValues.left;
             }
         }
+        this.setColWidth(content);
         if (this.parent.activeViewOptions.timeScale.enable) {
             this.highlightCurrentTime();
         }
@@ -15120,6 +15153,7 @@ class Month extends ViewBase {
             header.style[args.cssProperties.padding] = '';
         }
         // tslint:enable:no-any
+        this.setColWidth(content);
     }
     setContentHeight(content, leftPanelElement, height) {
         content.style.height = 'auto';
@@ -15578,6 +15612,7 @@ class AgendaBase {
     }
     createAgendaContentElement(type, listData, aTd, groupOrder, groupIndex) {
         let listElement;
+        let fieldMapping = this.parent.eventFields;
         if (type === 'noEvents') {
             let noEvents = [{ 'subject': this.parent.localeObj.getConstant('noEvents') }];
             listElement = ListBase.createList(this.parent.createElement, noEvents, {
@@ -15613,7 +15648,13 @@ class AgendaBase {
                 this.parent.eventBase.applyResourceColor(appWrapper, listData[li], 'borderColor', groupOrder);
                 let templateEle;
                 if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
+                    addClass([appWrapper], EVENT_TEMPLATE);
                     templateEle = this.parent.getAppointmentTemplate()(listData[li]);
+                    if (!isNullOrUndefined(listData[li][fieldMapping.recurrenceRule])) {
+                        let iconClass = (listData[li][fieldMapping.id] === listData[li][fieldMapping.recurrenceID]) ?
+                            EVENT_RECURRENCE_ICON_CLASS : EVENT_RECURRENCE_EDIT_ICON_CLASS;
+                        appWrapper.appendChild(createElement('div', { className: ICON + ' ' + iconClass }));
+                    }
                 }
                 else {
                     templateEle = this.createAppointment(listData[li]);
@@ -16266,7 +16307,7 @@ class Agenda extends ViewBase {
         let date = this.parent.getDateFromElement(closest(e.currentTarget, '.' + AGENDA_CELLS_CLASS));
         if (!isNullOrUndefined(date) && !this.parent.isAdaptive) {
             this.parent.setProperties({ selectedDate: date }, true);
-            this.parent.changeView('Day');
+            this.parent.changeView('Day', e);
         }
     }
     // private isMonthFirstDate(date: Date): boolean {

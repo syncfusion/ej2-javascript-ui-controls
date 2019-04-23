@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.42 (2019-04-23)
+
+### File Manager
+
+#### New Features
+
+- Added filesystem provider support for ASP.NET MVC 4 and 5 frameworks.
+
 ## 17.1.40 (2019-04-09)
 
 ### File Manager

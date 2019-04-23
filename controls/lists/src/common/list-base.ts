@@ -224,7 +224,7 @@ export namespace ListBase {
                 fieldData = <{ [key: string]: Object }>getFieldValues(dataSource[i], fields);
             }
             if (fieldData.hasOwnProperty(fields.id) && !isNullOrUndefined(fieldData[fields.id])) {
-                id = <string>fieldData.id;
+                id = <string>fieldData[fields.id];
             }
             let innerEle: HTMLElement[] = [];
             if (curOpt.showCheckBox) {

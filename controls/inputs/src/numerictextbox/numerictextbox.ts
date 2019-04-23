@@ -87,7 +87,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     /**
      * Specifies a minimum value that is allowed a user can enter.
      * For more information on min, refer to
-     * [min](../numerictextbox/getting-started#range-validation/).
+     * [min](../../numerictextbox/getting-started#range-validation/).
      * @default null
      * @aspType object
      */
@@ -97,7 +97,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     /**
      * Specifies a maximum value that is allowed a user can enter.
      * For more information on max, refer to
-     * [max](../numerictextbox/getting-started#range-validation/).
+     * [max](../../numerictextbox/getting-started#range-validation/).
      * @default null
      * @aspType object
      */
@@ -107,7 +107,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     /**
      * Specifies the incremental or decremental step size for the NumericTextBox.
      * For more information on step, refer to
-     * [step](../numerictextbox/getting-started#range-validation/).
+     * [step](../../numerictextbox/getting-started#range-validation/).
      * @default 1
      */
     @Property(1)
@@ -123,7 +123,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     /**
      * Gets or sets the string shown as a hint/placeholder when the NumericTextBox is empty.
      * It acts as a label and floats above the NumericTextBox based on the
-     * <b><a href="#floatlabeltype-string" target="_blank">floatLabelType.</a></b>
+     * <b><a href="#floatlabeltype" target="_blank">floatLabelType.</a></b>
      * @default null
      */
     @Property(null)
@@ -176,7 +176,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     /**
      * Specifies the number format that indicates the display format for the value of the NumericTextBox.
      * For more information on formats, refer to
-     * [formats](../numerictextbox/formats#standard-formats/).
+     * [formats](../../numerictextbox/formats#standard-formats/).
      * @default 'n2'
      */
     @Property('n2')
@@ -185,7 +185,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     /**
      * Specifies the number precision applied to the textbox value when the NumericTextBox is focused.
      * For more information on decimals, refer to
-     * [decimals](../numerictextbox/formats#precision-of-numbers/).
+     * [decimals](../../numerictextbox/formats#precision-of-numbers/).
      * @default null
      */
     @Property(null)
@@ -245,7 +245,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     public validateDecimalOnType: boolean;
 
     /**
-     * The <b><a href="#placeholder-string" target="_blank">placeholder</a></b> acts as a label
+     * The <b><a href="#placeholder" target="_blank">placeholder</a></b> acts as a label
      * and floats above the NumericTextBox based on the below values.
      * Possible values are:
      * * `Never` - Never floats the label in the NumericTextBox when the placeholder is available.

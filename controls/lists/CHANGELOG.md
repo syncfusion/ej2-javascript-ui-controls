@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 17.1.42 (2019-04-23)
+
+### ListView
+
+#### Bug Fixes
+
+- Issue in enabling `virtualization` with empty data source has been fixed.
+
+## 17.1.40 (2019-04-09)
+
+### ListBase
+
+#### Bug Fixes
+
+- Issue with single level element generation with fields mapping has been fixed.
+
 ## 17.1.32-beta (2019-03-13)
 
 ### ListView

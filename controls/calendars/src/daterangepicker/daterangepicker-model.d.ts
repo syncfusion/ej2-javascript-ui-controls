@@ -197,7 +197,7 @@ export interface DateRangePickerModel extends CalendarBaseModel{
     /**
      *  Specifies the minimum span of days that can be allowed in date range selection.
      * > For more details refer to 
-     * [`Range Span`] (../../daterangepicker/range-restriction#range-span) documentation.
+     * [`Range Span`] (../../daterangepicker/range-selection/#range-span) documentation.
      * @default null    
      * @aspType int
      */
@@ -206,7 +206,7 @@ export interface DateRangePickerModel extends CalendarBaseModel{
     /**
      *  Specifies the maximum span of days that can be allowed in a date range selection.
      * > For more details refer to 
-     * [`Range Span`](../../daterangepicker/range-restriction#range-span) documentation.
+     * [`Range Span`] (../../daterangepicker/range-selection/#range-span) documentation.
      * @default null
      * @aspType int
      */
@@ -215,7 +215,7 @@ export interface DateRangePickerModel extends CalendarBaseModel{
     /**
      * Specifies the component to act as strict which allows entering only a valid date range in a DateRangePicker.
      * > For more details refer to 
-     * [`Strict Mode`](../../daterangepicker/range-restriction#strict-mode)documentation.
+     * [`Strict Mode`](../../daterangepicker/range-selection#strict-mode)documentation.
      * @default false
      */
     strictMode?: boolean;

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 17.1.42 (2019-04-23)
+
+### Grid
+
+#### Bug Fixes
+
+- #233507- Need to modify `api` description for `startedit` method is resolved.
+- #229454- A large text content gets collapsed while using `rowHeight` in grid is resolved.
+- #232985- Need to send edit operation `args` in `beforeDataBound` event is resolved.
+- #231808- Problem in hiding scrollbar place holder when having frozen is resolved.
+- #232924- Horizontal scrollbar gets hidden in `IE` and `EDGE` browsers is resolved.
+
 ## 17.1.41 (2019-04-16)
 
 ### Grid

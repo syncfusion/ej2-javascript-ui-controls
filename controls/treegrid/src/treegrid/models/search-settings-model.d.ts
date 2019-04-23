@@ -14,7 +14,7 @@ export interface SearchSettingsModel {
     /**
      * If ignoreCase set to true, then search ignores the diacritic characters or accents while filtering.
      *
-     * > Check the [`Diacritics`](./filtering.html/#diacritics) filtering.
+     * > Check the [`Diacritics`](../../../treegrid/filtering/#diacritics) filtering.
      * @default false
      */
     ignoreCase?: boolean;

@@ -103,6 +103,7 @@ export class VerticalView extends ViewBase implements IRenderer {
                 content.scrollLeft = this.parent.uiStateValues.left;
             }
         }
+        this.setColWidth(content);
         if (this.parent.activeViewOptions.timeScale.enable) {
             this.highlightCurrentTime();
         }

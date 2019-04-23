@@ -6095,6 +6095,7 @@ var Render = /** @__PURE__ @class */ (function () {
         var gObj = this.parent;
         this.contentRenderer = this.renderer.getRenderer(RenderType.Content);
         this.headerRenderer = this.renderer.getRenderer(RenderType.Header);
+        e.actionArgs = args;
         gObj.trigger(beforeDataBound, e);
         if (e.cancel) {
             return;
@@ -12881,8 +12882,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * To edit any particular row by TR element.
-     * @param {HTMLTableRowElement} tr - Defines the table row to be edited.
+     * Starts edit the selected row. At least one row must be selected before invoking this method.
+     * `editSettings.allowEditing` should be true.
+     * @return {void}
      */
     Grid.prototype.startEdit = function () {
         if (this.editModule) {
@@ -13719,15 +13721,17 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         return previousRowData;
     };
     Grid.prototype.hideScroll = function () {
-        var headerContent = this.getHeaderContent();
-        var contentTable = this.getContent().querySelector('.e-content');
-        if ((this.currentViewData.length * this.getRowHeight()) < this.height) {
-            headerContent.style.paddingRight = '';
-            contentTable.style.overflowY = 'auto';
+        var content = this.getContent().querySelector('.e-content');
+        var cTable = content.querySelector('.e-movablecontent') ? content.querySelector('.e-movablecontent') : content;
+        if (cTable.scrollHeight <= cTable.clientHeight) {
+            this.scrollModule.removePadding();
+            cTable.style.overflowY = 'auto';
         }
-        else {
-            headerContent.style.paddingRight = '16px';
-            contentTable.style.overflowY = 'scroll';
+        if (this.frozenColumns && cTable.scrollWidth <= cTable.clientWidth) {
+            var frozenTable = this.getContent().querySelector('.e-frozencontent');
+            frozenTable.style.height = cTable.offsetHeight + 1 + 'px';
+            frozenTable.style.borderBottom = '0';
+            cTable.style.overflowX = 'auto';
         }
     };
     /**
@@ -17105,6 +17109,7 @@ var Filter = /** @__PURE__ @class */ (function () {
     function Filter(parent, filterSettings, serviceLocator) {
         this.predicate = 'and';
         this.contentRefresh = true;
+        this.refresh = true;
         this.values = {};
         this.cellText = {};
         this.nextFlMenuOpen = '';
@@ -17519,9 +17524,14 @@ var Filter = /** @__PURE__ @class */ (function () {
             this.parent.notify(preventBatch, { instance: this, handler: this.clearFiltering });
             return;
         }
-        for (var i = 0, len = cols.length; i < len; i++) {
-            this.removeFilteredColsByField(cols[i].field, false);
+        var colName = cols.map(function (f) { return f.field; });
+        var filteredcols = colName.filter(function (item, pos) { return colName.indexOf(item) === pos; });
+        this.refresh = false;
+        for (var i = 0, len = filteredcols.length; i < len; i++) {
+            this.removeFilteredColsByField(filteredcols[i], false);
         }
+        this.refresh = true;
+        this.parent.renderModule.refresh();
         if (this.parent.filterSettings.columns.length === 0 && this.parent.element.querySelector('.e-filtered')) {
             var fltrElement = [].slice.call(this.parent.element.querySelectorAll('.e-filtered'));
             for (var i = 0, len = fltrElement.length; i < len; i++) {
@@ -17588,10 +17598,13 @@ var Filter = /** @__PURE__ @class */ (function () {
             this.parent.notify(preventBatch, args);
             return;
         }
-        for (var i = 0, len = cols.length; i < len; i++) {
+        var colName = cols.map(function (f) { return f.field; });
+        var filteredcols = colName.filter(function (item, pos) { return colName.indexOf(item) === pos; });
+        for (var i = 0, len = filteredcols.length; i < len; i++) {
+            var len_1 = cols.length;
             var column = this.parent.getColumnByField(field) ||
                 getColumnByForeignKeyValue(field, this.parent.getForeignKeyColumns());
-            if (cols[i].field === field || cols[i].field === column.foreignKeyValue) {
+            if (filteredcols[i] === field || filteredcols[i] === column.foreignKeyValue) {
                 if (this.filterSettings.type === 'FilterBar' && !isClearFilterBar) {
                     var selector = '[id=\'' + cols[i].field + '_filterBarcell\']';
                     fCell = this.parent.getHeaderContent().querySelector(selector);
@@ -17600,7 +17613,11 @@ var Filter = /** @__PURE__ @class */ (function () {
                         delete this.values[field];
                     }
                 }
-                cols.splice(i, 1);
+                while (len_1--) {
+                    if (cols[len_1].field === field) {
+                        cols.splice(len_1, 1);
+                    }
+                }
                 var fltrElement = this.parent.getColumnHeaderByField(column.field);
                 fltrElement.removeAttribute('aria-filtered');
                 if (this.filterSettings.type !== 'FilterBar') {
@@ -17614,12 +17631,14 @@ var Filter = /** @__PURE__ @class */ (function () {
                 if (this.values[field]) {
                     delete this.values[field];
                 }
-                this.parent.notify(modelChanged, {
-                    requestType: 'filtering', type: actionBegin, currentFilterObject: {
-                        field: column.field, operator: this.operator, value: this.value, predicate: this.predicate,
-                        matchCase: this.matchCase, ignoreAccent: this.ignoreAccent, actualFilterValue: {}, actualOperator: {}
-                    }, currentFilterColumn: column
-                });
+                if (this.refresh) {
+                    this.parent.notify(modelChanged, {
+                        requestType: 'filtering', type: actionBegin, currentFilterObject: {
+                            field: column.field, operator: this.operator, value: this.value, predicate: this.predicate,
+                            matchCase: this.matchCase, ignoreAccent: this.ignoreAccent, actualFilterValue: {}, actualOperator: {}
+                        }, currentFilterColumn: column
+                    });
+                }
                 break;
             }
         }

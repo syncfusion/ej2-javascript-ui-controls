@@ -1802,7 +1802,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     /**
      * Searches TreeGrid records using the given key.
      * You can customize the default search option by using the
-     * [`searchSettings`](./api-searchSettings.html).
+     * [`searchSettings`](#searchsettings).
      * @param  {string} searchString - Defines the key.
      * @return {void}
      */
@@ -1850,7 +1850,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     /**
      * By default, prints all the pages of the TreeGrid and hides the pager.
      * > You can customize print options using the
-     * [`printMode`](./api-treegrid.html#printmode-string).
+     * [`printMode`](#printmode).
      * @return {void}
      */
     print() {

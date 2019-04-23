@@ -5036,6 +5036,10 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                 this.setValue();
             }
             else {
+                if (this.inputElement.value === '') {
+                    this.startValue = null;
+                    this.endValue = null;
+                }
                 Input.setValue('', this.inputElement, this.floatLabelType, this.showClearButton);
                 this.updateInput();
             }

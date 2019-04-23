@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 17.1.42 (2019-04-23)
+
+### TreeMap
+
+#### Bug Fixes
+
+- #I233284 – The issue of breaking the treemap, if data contains the "_" character in its value has been fixed.
+
 ## 17.1.32-beta (2019-03-13)
 
 ### TreeMap

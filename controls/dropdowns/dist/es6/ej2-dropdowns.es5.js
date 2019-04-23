@@ -6398,9 +6398,10 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             var temp = void 0;
             var tempValues = this.value ? this.value.slice() : [];
             if (this.value) {
-                for (temp = this.value[0]; this.value.length !== 0; temp = this.value[0]) {
+                var i = 0;
+                for (temp = this.value[i]; i < this.value.length; temp = this.value[i]) {
                     if (this.removeValue(temp, e)) {
-                        break;
+                        i++;
                     }
                 }
             }
@@ -6410,7 +6411,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             }
             this.focusAtFirstListItem();
             this.updateDelimeter(this.delimiterChar);
-            if (this.mode !== 'Box') {
+            if (this.mode !== 'Box' && (!this.inputFocus || this.mode === 'CheckBox')) {
                 this.updateDelimView();
             }
             this.makeTextBoxEmpty();

@@ -377,3 +377,5 @@ export let data19: any = {
     "error": null,
     "details": null
 }
+
+export let stringData: string = '{"files":[{"name":"1.png","size":49792,"dateModified":"1/3/2018 4:07:28 PM","dateCreated":"10/17/2018 12:57:59 PM","hasChild":false,"isFile":true,"type":".png","filterPath":null},{"name":"Documents","size":0,"dateModified":"10/16/2018 7:43:17 PM","dateCreated":"10/15/2018 5:39:03 PM","hasChild":true,"isFile":false,"type":"","filterPath":null},{"name":"Employees","size":0,"dateModified":"10/15/2018 5:39:03 PM","dateCreated":"10/15/2018 5:39:03 PM","hasChild":false,"isFile":false,"type":"","filterPath":null},{"name":"Food","size":0,"dateModified":"10/15/2018 5:39:03 PM","dateCreated":"10/15/2018 5:39:03 PM","hasChild":false,"isFile":false,"type":"","filterPath":null},{"name":"Nature","size":0,"dateModified":"10/15/2018 5:39:03 PM","dateCreated":"10/15/2018 5:39:03 PM","hasChild":false,"isFile":false,"type":"","filterPath":null}],"error":null,"details":null,"cwd":{"name":"FileContent","size":0,"dateModified":"11/15/2018 11:42:21 AM","dateCreated":"11/8/2018 4:07:00 PM","hasChild":true,"isFile":false,"type":"","filterPath":"D:/EJ2/FileExplorer//Services"}}';

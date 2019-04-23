@@ -97,6 +97,9 @@ function createAjax(
         contentType: getValue('contentType', eventArgs.ajaxSettings),
         data: getValue('data', eventArgs.ajaxSettings),
         onSuccess: (result: ReadArgs) => {
+            if (typeof (result) === 'string') {
+                result = JSON.parse(result);
+            }
             parent.notify(events.afterRequest, { action: 'success' });
             if (!isNOU(result.files)) {
                 // tslint:disable-next-line

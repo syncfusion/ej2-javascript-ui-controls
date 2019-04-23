@@ -423,3 +423,5 @@ export const VIRTUAL_SCROLL_CLASS: string = 'e-virtual-scroll';
 export const ICON_DISABLE_CLASS: string = 'e-icon-disable';
 /** @hidden */
 export const AUTO_HEIGHT: string = 'e-auto-height';
+/** @hidden */
+export const EVENT_TEMPLATE: string = 'e-template';

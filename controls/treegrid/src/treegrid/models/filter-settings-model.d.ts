@@ -45,7 +45,7 @@ export interface FilterSettingsModel {
      * The `operators` is used to override the default operators in filter menu. This should be defined by type wise
      * (string, number, date and boolean). Based on the column type, this customize operator list will render in filter menu.
      *
-     * > Check the [`Filter Menu Operator`](./how-to.html#customizing-filter-menu-operators-list) customization.
+     * > Check the `Filter Menu Operator` customization.
      * @default null
      */
     operators?: ICustomOptr;
@@ -53,7 +53,7 @@ export interface FilterSettingsModel {
     /**
      * If ignoreAccent set to true, then filter ignores the diacritic characters or accents while filtering.
      *
-     * > Check the [`Diacritics`](./filtering.html/#diacritics) filtering.
+     * > Check the [`Diacritics`](../../../treegrid/filtering/#diacritics) filtering.
      * @default false
      */
     ignoreAccent?: boolean;

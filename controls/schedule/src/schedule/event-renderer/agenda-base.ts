@@ -30,6 +30,7 @@ export class AgendaBase {
     public createAgendaContentElement(
         type: string, listData: { [key: string]: Object }[], aTd: Element, groupOrder?: string[], groupIndex?: number): Element {
         let listElement: HTMLElement;
+        let fieldMapping: EventFieldsMapping = this.parent.eventFields;
         if (type === 'noEvents') {
             let noEvents: { [key: string]: Object }[] = [{ 'subject': this.parent.localeObj.getConstant('noEvents') }];
             listElement = ListBase.createList(this.parent.createElement, noEvents, {
@@ -64,7 +65,13 @@ export class AgendaBase {
                 this.parent.eventBase.applyResourceColor(appWrapper, listData[li], 'borderColor', groupOrder);
                 let templateEle: HTMLElement[];
                 if (!isNullOrUndefined(this.parent.activeViewOptions.eventTemplate)) {
+                    addClass([appWrapper], cls.EVENT_TEMPLATE);
                     templateEle = this.parent.getAppointmentTemplate()(listData[li]);
+                    if (!isNullOrUndefined(listData[li][fieldMapping.recurrenceRule])) {
+                        let iconClass: string = (listData[li][fieldMapping.id] === listData[li][fieldMapping.recurrenceID]) ?
+                            cls.EVENT_RECURRENCE_ICON_CLASS : cls.EVENT_RECURRENCE_EDIT_ICON_CLASS;
+                        appWrapper.appendChild(createElement('div', { className: cls.ICON + ' ' + iconClass }));
+                    }
                 } else {
                     templateEle = this.createAppointment(listData[li]);
                 }

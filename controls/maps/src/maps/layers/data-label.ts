@@ -20,7 +20,6 @@ export class DataLabel {
      * @private
      */
     public dataLabelCollections: Object[];
-    private intersect: object[] = [];
     private value: object = { rightWidth: 0, leftWidth: 0, heightTop: 0, heightBottom: 0 };
     constructor(maps: Maps) {
         this.maps = maps;
@@ -50,7 +49,7 @@ export class DataLabel {
      */
     public renderLabel(
         layer: LayerSettings, layerIndex: number, shape: object,
-        layerData: object[], group: Element, labelTemplateElement: HTMLElement, index: number
+        layerData: object[], group: Element, labelTemplateElement: HTMLElement, index: number, intersect: object[]
     ): void {
         let dataLabel: DataLabelSettingsModel = layer.dataLabelSettings;
         let style: FontModel = layer.dataLabelSettings.textStyle;
@@ -176,12 +175,12 @@ export class DataLabel {
                 }
                 text = options['text'] as string;
                 if (dataLabelSettings.intersectionAction === 'Hide') {
-                    for (let i: number = 0; i < this.intersect.length; i++) {
-                        if (!isNullOrUndefined(this.intersect[i])) {
-                            if (this.value[index]['leftWidth'] > this.intersect[i]['rightWidth']
-                                || this.value[index]['rightWidth'] < this.intersect[i]['leftWidth']
-                                || this.value[index]['heightTop'] > this.intersect[i]['heightBottom']
-                                || this.value[index]['heightBottom'] < this.intersect[i]['heightTop']) {
+                    for (let i: number = 0; i < intersect.length; i++) {
+                        if (!isNullOrUndefined(intersect[i])) {
+                            if (this.value[index]['leftWidth'] > intersect[i]['rightWidth']
+                                || this.value[index]['rightWidth'] < intersect[i]['leftWidth']
+                                || this.value[index]['heightTop'] > intersect[i]['heightBottom']
+                                || this.value[index]['heightBottom'] < intersect[i]['heightTop']) {
                                 text = text;
                             } else {
                                 text = '';
@@ -189,28 +188,28 @@ export class DataLabel {
                             }
                         }
                     }
-                    this.intersect.push(this.value[index]);
+                    intersect.push(this.value[index]);
                     options = new TextOption(labelId, textLocation.x, textLocation.y, 'middle', text, '', '');
                 }
                 let difference: number;
                 if (dataLabelSettings.intersectionAction === 'Trim') {
-                    for (let j: number = 0; j < this.intersect.length; j++) {
-                        if (!isNullOrUndefined(this.intersect[j])) {
-                            if (this.intersect[j]['rightWidth'] < this.value[index]['leftWidth']
-                                || this.intersect[j]['leftWidth'] > this.value[index]['rightWidth']
-                                || this.intersect[j]['heightBottom'] < this.value[index]['heightTop']
-                                || this.intersect[j]['heightTop'] > this.value[index]['heightBottom']) {
+                    for (let j: number = 0; j < intersect.length; j++) {
+                        if (!isNullOrUndefined(intersect[j])) {
+                            if (intersect[j]['rightWidth'] < this.value[index]['leftWidth']
+                                || intersect[j]['leftWidth'] > this.value[index]['rightWidth']
+                                || intersect[j]['heightBottom'] < this.value[index]['heightTop']
+                                || intersect[j]['heightTop'] > this.value[index]['heightBottom']) {
                                 trimmedLable = text;
                                 difference = 0;
                             } else {
-                                if (this.value[index]['leftWidth'] > this.intersect[j]['leftWidth']) {
-                                    width = this.intersect[j]['rightWidth'] - this.value[index]['leftWidth'];
+                                if (this.value[index]['leftWidth'] > intersect[j]['leftWidth']) {
+                                    width = intersect[j]['rightWidth'] - this.value[index]['leftWidth'];
                                     difference = width - (this.value[index]['rightWidth'] - this.value[index]['leftWidth']);
                                     trimmedLable = textTrim(difference, text, style);
                                     break;
                                 }
-                                if (this.value[index]['leftWidth'] < this.intersect[j]['leftWidth']) {
-                                    width = this.value[index]['rightWidth'] - this.intersect[j]['leftWidth'];
+                                if (this.value[index]['leftWidth'] < intersect[j]['leftWidth']) {
+                                    width = this.value[index]['rightWidth'] - intersect[j]['leftWidth'];
                                     difference = Math.abs(width - (this.value[index]['rightWidth'] - this.value[index]['leftWidth']));
                                     trimmedLable = textTrim(difference, text, style);
                                     break;
@@ -218,7 +217,7 @@ export class DataLabel {
                             }
                         }
                     }
-                    this.intersect.push(this.value[index]);
+                    intersect.push(this.value[index]);
                     options = new TextOption(labelId, textLocation.x, (textLocation.y), 'middle', trimmedLable, '', '');
                 }
                 if (dataLabelSettings.intersectionAction === 'None') {

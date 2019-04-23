@@ -1084,7 +1084,8 @@ function createStyle(id, className, eventArgs) {
     return createElement('style', {
         id: id, innerHTML: '.' + className + '{fill:'
             + eventArgs.fill + ';' + 'opacity:' + eventArgs.opacity.toString() + ';' +
-            '}'
+            'stroke-width:' + eventArgs.border.width.toString() + ';' +
+            'stroke:' + eventArgs.border.color + ';' + '}'
     });
 }
 /**
@@ -1094,8 +1095,8 @@ function customizeStyle(id, className, eventArgs) {
     var styleEle = getElement(id);
     styleEle.innerHTML = '.' + className + '{fill:'
         + eventArgs.fill + ';' + 'opacity:' + eventArgs.opacity.toString() + ';' +
-        'stroke-width:' + eventArgs.border.width.toString() +
-        'stroke-color:' + eventArgs.border.color + '}';
+        'stroke-width:' + eventArgs.border.width.toString() + ';' +
+        'stroke:' + eventArgs.border.color + '}';
 }
 /**
  * Function to remove class from element
@@ -3654,8 +3655,9 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
             id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_dataLableIndex_Group', style: 'pointer-events: none;'
         }));
         if (this.mapObject.dataLabelModule && this.currentLayer.dataLabelSettings.visible) {
+            var intersect_1 = [];
             renderData.map(function (currentShapeData, i) {
-                _this.renderLabel(_this.currentLayer, layerIndex, currentShapeData, group, i, labelTemplateEle);
+                _this.renderLabel(_this.currentLayer, layerIndex, currentShapeData, group, i, labelTemplateEle, intersect_1);
             });
             this.groupElements.push(group);
         }
@@ -3674,8 +3676,8 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
     /**
      *  render datalabel
      */
-    LayerPanel.prototype.renderLabel = function (layer, layerIndex, shape, group, shapeIndex, labelTemplateEle) {
-        this.mapObject.dataLabelModule.renderLabel(layer, layerIndex, shape, layer.layerData, group, labelTemplateEle, shapeIndex);
+    LayerPanel.prototype.renderLabel = function (layer, layerIndex, shape, group, shapeIndex, labelTemplateEle, intersect) {
+        this.mapObject.dataLabelModule.renderLabel(layer, layerIndex, shape, layer.layerData, group, labelTemplateEle, shapeIndex, intersect);
     };
     /**
      * To render path for multipolygon
@@ -5560,7 +5562,6 @@ var Bubble = /** @__PURE__ @class */ (function () {
  */
 var DataLabel = /** @__PURE__ @class */ (function () {
     function DataLabel(maps) {
-        this.intersect = [];
         this.value = { rightWidth: 0, leftWidth: 0, heightTop: 0, heightBottom: 0 };
         this.maps = maps;
         this.dataLabelCollections = [];
@@ -5587,7 +5588,7 @@ var DataLabel = /** @__PURE__ @class */ (function () {
      * @param labelTemplateElement
      * @param index
      */
-    DataLabel.prototype.renderLabel = function (layer, layerIndex, shape, layerData, group, labelTemplateElement, index) {
+    DataLabel.prototype.renderLabel = function (layer, layerIndex, shape, layerData, group, labelTemplateElement, index, intersect) {
         var dataLabel = layer.dataLabelSettings;
         var style = layer.dataLabelSettings.textStyle;
         var templateFn;
@@ -5708,12 +5709,12 @@ var DataLabel = /** @__PURE__ @class */ (function () {
                 }
                 text = options['text'];
                 if (dataLabelSettings.intersectionAction === 'Hide') {
-                    for (var i = 0; i < this.intersect.length; i++) {
-                        if (!isNullOrUndefined(this.intersect[i])) {
-                            if (this.value[index]['leftWidth'] > this.intersect[i]['rightWidth']
-                                || this.value[index]['rightWidth'] < this.intersect[i]['leftWidth']
-                                || this.value[index]['heightTop'] > this.intersect[i]['heightBottom']
-                                || this.value[index]['heightBottom'] < this.intersect[i]['heightTop']) {
+                    for (var i = 0; i < intersect.length; i++) {
+                        if (!isNullOrUndefined(intersect[i])) {
+                            if (this.value[index]['leftWidth'] > intersect[i]['rightWidth']
+                                || this.value[index]['rightWidth'] < intersect[i]['leftWidth']
+                                || this.value[index]['heightTop'] > intersect[i]['heightBottom']
+                                || this.value[index]['heightBottom'] < intersect[i]['heightTop']) {
                                 text = text;
                             }
                             else {
@@ -5722,29 +5723,29 @@ var DataLabel = /** @__PURE__ @class */ (function () {
                             }
                         }
                     }
-                    this.intersect.push(this.value[index]);
+                    intersect.push(this.value[index]);
                     options = new TextOption(labelId, textLocation.x, textLocation.y, 'middle', text, '', '');
                 }
                 var difference = void 0;
                 if (dataLabelSettings.intersectionAction === 'Trim') {
-                    for (var j = 0; j < this.intersect.length; j++) {
-                        if (!isNullOrUndefined(this.intersect[j])) {
-                            if (this.intersect[j]['rightWidth'] < this.value[index]['leftWidth']
-                                || this.intersect[j]['leftWidth'] > this.value[index]['rightWidth']
-                                || this.intersect[j]['heightBottom'] < this.value[index]['heightTop']
-                                || this.intersect[j]['heightTop'] > this.value[index]['heightBottom']) {
+                    for (var j = 0; j < intersect.length; j++) {
+                        if (!isNullOrUndefined(intersect[j])) {
+                            if (intersect[j]['rightWidth'] < this.value[index]['leftWidth']
+                                || intersect[j]['leftWidth'] > this.value[index]['rightWidth']
+                                || intersect[j]['heightBottom'] < this.value[index]['heightTop']
+                                || intersect[j]['heightTop'] > this.value[index]['heightBottom']) {
                                 trimmedLable = text;
                                 difference = 0;
                             }
                             else {
-                                if (this.value[index]['leftWidth'] > this.intersect[j]['leftWidth']) {
-                                    width = this.intersect[j]['rightWidth'] - this.value[index]['leftWidth'];
+                                if (this.value[index]['leftWidth'] > intersect[j]['leftWidth']) {
+                                    width = intersect[j]['rightWidth'] - this.value[index]['leftWidth'];
                                     difference = width - (this.value[index]['rightWidth'] - this.value[index]['leftWidth']);
                                     trimmedLable = textTrim(difference, text, style);
                                     break;
                                 }
-                                if (this.value[index]['leftWidth'] < this.intersect[j]['leftWidth']) {
-                                    width = this.value[index]['rightWidth'] - this.intersect[j]['leftWidth'];
+                                if (this.value[index]['leftWidth'] < intersect[j]['leftWidth']) {
+                                    width = this.value[index]['rightWidth'] - intersect[j]['leftWidth'];
                                     difference = Math.abs(width - (this.value[index]['rightWidth'] - this.value[index]['leftWidth']));
                                     trimmedLable = textTrim(difference, text, style);
                                     break;
@@ -5752,7 +5753,7 @@ var DataLabel = /** @__PURE__ @class */ (function () {
                             }
                         }
                     }
-                    this.intersect.push(this.value[index]);
+                    intersect.push(this.value[index]);
                     options = new TextOption(labelId, textLocation.x, (textLocation.y), 'middle', trimmedLable, '', '');
                 }
                 if (dataLabelSettings.intersectionAction === 'None') {
@@ -7349,7 +7350,7 @@ var Highlight = /** @__PURE__ @class */ (function () {
             var eventArgs = {
                 opacity: this.highlightSettings.opacity,
                 fill: targetEle.id.indexOf('NavigationIndex') === -1 ? this.highlightSettings.fill : 'none',
-                border: { color: this.highlightSettings.border.color, width: this.highlightSettings.border.width },
+                border: { color: this.highlightSettings.border.color, width: this.highlightSettings.border.width / this.maps.scale },
                 name: itemHighlight,
                 target: targetEle.id,
                 cancel: false,
@@ -7381,8 +7382,6 @@ var Highlight = /** @__PURE__ @class */ (function () {
             else {
                 customizeStyle('highlightMap', 'highlightMapStyle', eventArgs);
             }
-            targetEle.setAttribute('stroke-width', eventArgs.border.width.toString());
-            targetEle.setAttribute('stroke', eventArgs.border.color);
             targetEle.setAttribute('class', 'highlightMapStyle');
         }
     };
@@ -7513,7 +7512,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         var eventArgs = {
             opacity: this.selectionsettings.opacity,
             fill: this.selectionType !== 'navigationline' ? this.selectionsettings.fill : 'none',
-            border: { color: this.selectionsettings.border.color, width: this.selectionsettings.border.width },
+            border: { color: this.selectionsettings.border.color, width: this.selectionsettings.border.width / this.maps.scale },
             name: itemSelection,
             target: targetEle.id,
             cancel: false,
@@ -7550,8 +7549,6 @@ var Selection = /** @__PURE__ @class */ (function () {
             else {
                 customizeStyle(this.selectionType + 'selectionMap', this.selectionType + 'selectionMapStyle', eventArgs);
             }
-            targetEle.setAttribute('stroke-width', eventArgs.border.width.toString());
-            targetEle.setAttribute('stroke', eventArgs.border.color);
             targetEle.setAttribute('class', this.selectionType + 'selectionMapStyle');
         }
     };

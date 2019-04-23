@@ -1,13 +1,14 @@
 import { TreeMap } from '../../../src/treemap/treemap';
 import { ILoadedEventArgs, IResizeEventArgs } from '../../../src/treemap/model/interface';
 import { createElement, remove } from '@syncfusion/ej2-base';
-import { jobData, sportsData, hierarchicalData, Country_Population } from '../base/data.spec';
+import { jobData, sportsData, hierarchicalData, Country_Population, data } from '../base/data.spec';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
 
 let jobDataSource: Object[] = jobData;
 let gameDataSource: Object[] = sportsData;
 let hierarchyData: Object[] = hierarchicalData;
 let popuationData: Object[] = Country_Population;
+let underscoreData: Object[] = data;
 /**
  * Tree map spec document
  */
@@ -576,6 +577,43 @@ describe('TreeMap Component Base Spec', () => {
             };
             treemap.renderDirection = 'TopLeftBottomRight';
             treemap.levels = [{ groupPath: 'GameName', headerTemplate: '<div><p>{{:GameName}}</p></div>' }];
+            treemap.refresh();
+        });
+    });
+    describe('TreeMap Render Testing with _ datasource spec', () => {
+        let element: Element;
+        let treemap: TreeMap;
+        let id: string = 'container';
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            (element as HTMLDivElement).style.width = '600px';
+            (element as HTMLDivElement).style.height = '400px';
+            document.body.appendChild(element);
+            treemap = new TreeMap({}, '#' + id);
+        });
+        afterAll(() => {
+            treemap.destroy();
+            remove(treemap.element);
+        });
+        it('Checking with underscore datasource', () => {            
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(args.treemap.element.id + '_Level_Index_0_Item_Index_0_RectPath');
+                expect(element != null).toBe(true);
+            };
+            treemap.dataSource = underscoreData;
+            treemap.weightValuePath = 'Sales';
+            treemap.leafItemSettings = {
+                showLabels: true,
+                labelPath: '',
+                fill: '#006699',
+                border: {
+                    color: 'black',
+                    width: 2
+                },
+                labelTemplate: ''
+            };
+            treemap.renderDirection = 'TopRightBottomLeft';
+            treemap.levels = [{ groupPath: 'Continent', border: { color: 'white', width: 0.5 }, }];
             treemap.refresh();
         });
     });

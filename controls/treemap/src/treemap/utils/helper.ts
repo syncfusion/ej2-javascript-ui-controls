@@ -269,7 +269,7 @@ export function renderTextElement(
     if (breadCrumbText) {
         let drilledLabel: string = text;
         let drillLevelText: string[]; let spacing: number = 5;
-        drillLevelText = drilledLabel.split('_');
+        drillLevelText = drilledLabel.split('#');
         for (let z: number = 0; z < drillLevelText.length; z++) {
             let drillText: string = (drillLevelText[z].search(options.connectorText) !== -1 && !isNullOrUndefined(options.connectorText)) ?
                 options.connectorText : drillLevelText[z];
@@ -317,7 +317,7 @@ export function isContainsData(source: string[], pathName: string, processData: 
     let leaf: LeafItemSettingsModel = treemap.leafItemSettings; for (let i: number = 0; i < source.length; i++) {
         path = treemap.levels[i] ? treemap.levels[i].groupPath : leaf.labelPath ? leaf.labelPath : treemap.weightValuePath;
         if (source[i] === processData[path]) {
-            name += (processData[path]) + (i === source.length - 1 ? '' : '_');
+            name += (processData[path]) + (i === source.length - 1 ? '' : '#');
             if (name === pathName) {
                 isExist = true;
                 break;
@@ -363,7 +363,7 @@ export function findHightLightItems(data: Object, items: string[], mode: string,
             findHightLightItems(data['parent'], items, mode, treeMap);
         }
     } else if (mode === 'All') {
-        let parentName: string = (data['levelOrderName'] as string).split('_')[0];
+        let parentName: string = (data['levelOrderName'] as string).split('#')[0];
         let currentItem: Object;
         for (let i: number = 0; i < treeMap.layout.renderItems.length; i++) {
             currentItem = treeMap.layout.renderItems[i];

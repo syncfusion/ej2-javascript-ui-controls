@@ -3648,6 +3648,202 @@ describe('Schedule timeline day view', () => {
         });
     });
 
+    describe('Multi level resource rendering with Timescale -  Schedule width 500', () => {
+        let schObj: Schedule;
+        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        beforeAll((done: Function) => {
+            document.body.appendChild(elem);
+            let dataBound: EmitType<Object> = () => { done(); };
+            schObj = new Schedule({
+                height: '550px', width: '500px',
+                currentView: 'TimelineWeek',
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                group: {
+                    byGroupID: false,
+                    resources: ['Halls', 'Rooms', 'Owners']
+                },
+                resources: [
+                    {
+                        field: 'HallId', title: 'Hall',
+                        name: 'Halls', allowMultiple: false,
+                        dataSource: [
+                            { HallText: 'Hall 1', Id: 1, HallColor: '#cb6bb2' },
+                            { HallText: 'Hall 2', Id: 2, HallColor: '#56ca85' }
+                        ],
+                        textField: 'HallText', idField: 'Id', colorField: 'HallColor'
+                    },
+                    {
+                        field: 'RoomId', title: 'Room',
+                        name: 'Rooms', allowMultiple: false,
+                        dataSource: [
+                            { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
+                            { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' },
+                            { RoomText: 'ROOM 3', Id: 3, RoomGroupId: 1, RoomColor: '#56ca85' }
+                        ],
+                        textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
+                    },
+                    {
+                        field: 'OwnerId', title: 'Owner',
+                        name: 'Owners', allowMultiple: true,
+                        dataSource: [
+                            { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                            { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                            { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                            { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                            { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                            { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                            { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                            { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                            { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                            { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        ],
+                        textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                    }
+                ],
+                selectedDate: new Date(2018, 4, 1),
+                eventSettings: { dataSource: timelineResourceData },
+                dataBound: dataBound,
+                timeScale: {
+                    enable: true,
+                    interval: 1440,
+                    slotCount: 2
+                }
+            });
+            schObj.appendTo('#Schedule');
+        });
+        afterAll(() => {
+            if (schObj) {
+                schObj.destroy();
+            }
+            remove(elem);
+        });
+        it('Check events offsetleft - slot count 2', () => {
+            let colElement: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
+            expect(colElement.style.width).toEqual('50px');
+            expect(colElement.style.width).toEqual('50px');
+        });
+        it('Check events offsetleft - slot count 6', (done) => {
+            schObj.dataBound = () => {
+                let colElement: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
+                expect(colElement.style.width).toEqual('50px');
+                done();
+            };
+            schObj.timeScale.slotCount = 6;
+            schObj.dataBind();
+        });
+        it('Check events offsetleft - with start hour and end hour', (done) => {
+            schObj.dataBound = () => {
+                let colElement: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
+                expect(colElement.style.width).toEqual('50px');
+                done();
+            };
+            schObj.timeScale.slotCount = 2;
+            schObj.timeScale.interval = 420;
+            schObj.startHour = '04:00';
+            schObj.endHour = '11:00';
+            schObj.dataBind();
+        });
+    });
+
+    describe('Multi level resource rendering with Timescale -  Schedule width 1900', () => {
+        let schObj: Schedule;
+        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
+        beforeAll((done: Function) => {
+            document.body.appendChild(elem);
+            let dataBound: EmitType<Object> = () => { done(); };
+            schObj = new Schedule({
+                height: '550px', width: '1900px',
+                currentView: 'TimelineWeek',
+                views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'],
+                group: {
+                    byGroupID: false,
+                    resources: ['Halls', 'Rooms', 'Owners']
+                },
+                resources: [
+                    {
+                        field: 'HallId', title: 'Hall',
+                        name: 'Halls', allowMultiple: false,
+                        dataSource: [
+                            { HallText: 'Hall 1', Id: 1, HallColor: '#cb6bb2' },
+                            { HallText: 'Hall 2', Id: 2, HallColor: '#56ca85' }
+                        ],
+                        textField: 'HallText', idField: 'Id', colorField: 'HallColor'
+                    },
+                    {
+                        field: 'RoomId', title: 'Room',
+                        name: 'Rooms', allowMultiple: false,
+                        dataSource: [
+                            { RoomText: 'ROOM 1', Id: 1, RoomGroupId: 1, RoomColor: '#cb6bb2' },
+                            { RoomText: 'ROOM 2', Id: 2, RoomGroupId: 2, RoomColor: '#56ca85' },
+                            { RoomText: 'ROOM 3', Id: 3, RoomGroupId: 1, RoomColor: '#56ca85' }
+                        ],
+                        textField: 'RoomText', idField: 'Id', groupIDField: 'RoomGroupId', colorField: 'RoomColor'
+                    },
+                    {
+                        field: 'OwnerId', title: 'Owner',
+                        name: 'Owners', allowMultiple: true,
+                        dataSource: [
+                            { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                            { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                            { OwnerText: 'Michael', Id: 3, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                            { OwnerText: 'Oliver', Id: 4, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                            { OwnerText: 'John', Id: 5, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                            { OwnerText: 'Barry', Id: 6, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                            { OwnerText: 'Felicity', Id: 7, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                            { OwnerText: 'Cisco', Id: 8, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                            { OwnerText: 'Sara', Id: 9, OwnerGroupId: 3, OwnerColor: '#7499e1' },
+                            { OwnerText: 'Malcolm', Id: 10, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                        ],
+                        textField: 'OwnerText', idField: 'Id', groupIDField: 'OwnerGroupId', colorField: 'OwnerColor'
+                    }
+                ],
+                selectedDate: new Date(2018, 4, 1),
+                eventSettings: { dataSource: timelineResourceData },
+                dataBound: dataBound,
+                timeScale: {
+                    enable: true,
+                    interval: 1440,
+                    slotCount: 2
+                }
+            });
+            schObj.appendTo('#Schedule');
+        });
+        afterAll(() => {
+            if (schObj) {
+                schObj.destroy();
+            }
+            remove(elem);
+        });
+
+        it('Check events offsetleft - slot count 2', () => {
+            let colElement: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
+            let tdElement: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' tbody tr:first-child td:first-child') as HTMLElement;
+            expect(colElement.getAttribute('style')).toEqual('width: ' + tdElement.offsetWidth + 'px;');
+        });
+        it('Check events offsetleft - slot count 6', (done) => {
+            schObj.dataBound = () => {
+                let colElement: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
+                expect(colElement.style.width).toEqual('50px');
+                done();
+            };
+            schObj.timeScale.slotCount = 6;
+            schObj.dataBind();
+        });
+        it('Check events offsetleft - with start hour and end hour', (done) => {
+            schObj.dataBound = () => {
+                let colElement: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' table colgroup col:first-child') as HTMLElement;
+                let tdElement: HTMLElement = schObj.element.querySelector('.' + cls.CONTENT_WRAP_CLASS + ' tbody tr:first-child td:first-child') as HTMLElement;
+                expect(colElement.getAttribute('style')).toEqual('width: ' + tdElement.offsetWidth + 'px;');
+                done();
+            };
+            schObj.timeScale.slotCount = 2;
+            schObj.timeScale.interval = 420;
+            schObj.startHour = '04:00';
+            schObj.endHour = '11:00';
+            schObj.dataBind();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         // tslint:disable:no-any

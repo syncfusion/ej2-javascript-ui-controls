@@ -127,8 +127,8 @@ export class Highlight {
         if (this.maps.legendSettings.visible ? (this.maps.legendModule.legendElement !== this.maps.legendModule.oldShapeElement) : true) {
         let eventArgs: ISelectionEventArgs = {
             opacity: this.highlightSettings.opacity,
-                fill: targetEle.id.indexOf('NavigationIndex') === -1 ? this.highlightSettings.fill : 'none',
-            border: { color: this.highlightSettings.border.color, width: this.highlightSettings.border.width },
+            fill: targetEle.id.indexOf('NavigationIndex') === -1 ? this.highlightSettings.fill : 'none',
+            border: { color: this.highlightSettings.border.color, width: this.highlightSettings.border.width / this.maps.scale },
             name: itemHighlight,
             target: targetEle.id,
             cancel: false,
@@ -160,8 +160,6 @@ export class Highlight {
             } else {
                 customizeStyle('highlightMap', 'highlightMapStyle', eventArgs);
             }
-            targetEle.setAttribute('stroke-width', eventArgs.border.width.toString());
-            targetEle.setAttribute('stroke', eventArgs.border.color);
             targetEle.setAttribute('class', 'highlightMapStyle');
         }
     }

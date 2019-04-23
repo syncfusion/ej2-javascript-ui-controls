@@ -1172,7 +1172,8 @@ export function createStyle(id: string, className: string, eventArgs: IShapeSele
     return createElement('style', {
         id: id, innerHTML: '.' + className + '{fill:'
             + eventArgs.fill + ';' + 'opacity:' + eventArgs.opacity.toString() + ';' +
-            '}'
+            'stroke-width:' + eventArgs.border.width.toString() + ';' +
+            'stroke:' + eventArgs.border.color + ';' + '}'
     });
 }
 /**
@@ -1182,8 +1183,8 @@ export function customizeStyle(id: string, className: string, eventArgs: IShapeS
     let styleEle: Element = getElement(id);
     styleEle.innerHTML = '.' + className + '{fill:'
         + eventArgs.fill + ';' + 'opacity:' + eventArgs.opacity.toString() + ';' +
-        'stroke-width:' + eventArgs.border.width.toString() +
-        'stroke-color:' + eventArgs.border.color + '}';
+        'stroke-width:' + eventArgs.border.width.toString() + ';' +
+        'stroke:' + eventArgs.border.color + '}';
 }
 /**
  * Function to remove class from element
