@@ -2,30 +2,33 @@
  The only JavaScript UI library you will ever need.
  [![Screens of showcase applications](https://ej2.syncfusion.com/products/ej2-banner.gif)](https://syncfusion.com/javascript-ui-controls/)
  *Screens of [showcase applications](#showcase-applications) created using Essential JS 2*
- ## Table of Contents
- * [Framework highlights](#framework-highlights)
+ 
+## Table of Contents
+* [Framework highlights](#framework-highlights)
 * [Control list](#control-list)
 * [Resources](#resources)
 * [Supported Frameworks](#supported-frameworks)
 * [Showcase Applications](#showcase-applications)
 * [Release Notes](#release-notes)
 * [License](#license)
- ## Framework highlights
- ### Lightweight and user friendly
+
+## Framework highlights
+### Lightweight and user friendly
  The entire Essential JS 2 framework is built from scratch to be lightweight and modular. Its footprint can be reduced further by including only the specific components and features your application requires.
- ### Modular architecture
+### Modular architecture
  All components have been built as modules to enable selective referencing, so only the components and features you need are included in your application.
- ### Built for performance
+### Built for performance
  Performance is critical for delivering a good user experience. We ensure that all our components are designed and built to achieve the best performance possible.
- ### Responsive and touch friendly
+### Responsive and touch friendly
  All Essential JS 2 controls are touch friendly and render adaptively based on the device they are on to provide optimal usage experience on phones, tablets and desktops.
- ### Stunning built-in themes
+### Stunning built-in themes
  Pixel-perfect built-in themes are available in material, bootstrap and fabric design. In addition, it comes with Accessible high-contrast theme and an online tool "[Theme Studio](https://ej2.syncfusion.com/themestudio/)" to customize the provided built-in themes.
- ### Globalization simplified
+### Globalization simplified
  Easily build applications to be used by a global audience in various language and culture settings.
- ### Stay current
+### Stay current
  With our commitment to at least four major updates per year, you receive the most up-to-date functionality and new components in addition to monthly service packs and bug fixes. Custom patches are available as needed.
- ## Control List
+
+## Control List
  * Grids
     * [**Data Grid**](https://syncfusion.com/javascript-ui-controls/js-data-grid?utm_medium=listing&utm_source=npm&utm_campaign=ej2-common-npm) - [*Live demo*](https://ej2.syncfusion.com/demos#/material/grid/grid-overview.html)
     * [**Pivot Table**](https://www.syncfusion.com/javascript-ui-controls/js-pivot-table?utm_medium=listing&utm_source=npm&utm_campaign=ej2-common-npm) - [*Live demo*](https://ej2.syncfusion.com/demos#/material/pivot-view/default.html)
@@ -102,15 +105,17 @@
     * [Query Builder UI](https://www.syncfusion.com/javascript-ui-controls/js-query-builder?utm_medium=listing&utm_source=npm&utm_campaign=ej2-common-npm) - [*Live demo*](https://ej2.syncfusion.com/demos/#/material/query-builder/default.html)
 * Viewer
     * [PDF Viewer](https://www.syncfusion.com/javascript-ui-controls/js-pdf-viewer?utm_medium=listing&utm_source=npm&utm_campaign=ej2-common-npm) - [*Live demo*](https://ej2.syncfusion.com/demos/#/material/pdfviewer/default.html)
- ## Supported Frameworks
- * [Angular](https://www.syncfusion.com/angular-ui-components?utm_medium=listing&utm_source=npm&utm_campaign=ej2-common-npm)
+ 
+## Supported Frameworks
+* [Angular](https://www.syncfusion.com/angular-ui-components?utm_medium=listing&utm_source=npm&utm_campaign=ej2-common-npm)
 * [React](https://www.syncfusion.com/react-ui-components?utm_medium=listing&utm_source=npm&utm_campaign=ej2-common-npm)
 * [Vue.js](https://www.syncfusion.com/vue-ui-components?utm_medium=listing&utm_source=npm&utm_campaign=ej2-common-npm)
 * [ASP.NET Core](https://www.syncfusion.com/aspnet-core-ui-controls?utm_medium=listing&utm_source=npm&utm_campaign=ej2-common-npm)
 * [ASP.NET MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls?utm_medium=listing&utm_source=npm&utm_campaign=ej2-common-npm)
 * [ASP.NET Core Blazor](https://www.syncfusion.com/aspnet-core-blazor-components?utm_medium=listing&utm_source=npm&utm_campaign=ej2-common-npm)
- ## Resources
- * [Documentation](https://ej2.syncfusion.com/documentation/)
+
+## Resources
+* [Documentation](https://ej2.syncfusion.com/documentation/)
 * [Theme Studio](https://ej2.syncfusion.com/themestudio/)
 * [Custom Resource Generator](https://crg.syncfusion.com/)
 * [Contact Support](https://www.syncfusion.com/support/directtrac/incidents/newincident?utm_medium=listing&utm_source=npm&utm_campaign=ej2-common-npm)
@@ -118,7 +123,8 @@
 * [What's New](https://www.syncfusion.com/products/whatsnew/essential-js2?utm_medium=listing&utm_source=npm&utm_campaign=ej2-common-npm)
 * [Road Map](https://www.syncfusion.com/products/roadmap/essential-js2?utm_medium=listing&utm_source=npm&utm_campaign=ej2-common-npm)
 * [E-Books](https://www.syncfusion.com/ebooks?tag=javascript&utm_medium=listing&utm_source=npm&utm_campaign=ej2-common-npm)
- ## Showcase Applications
+
+## Showcase Applications
 * [Diagram Builder](https://ej2.syncfusion.com/showcase/angular/diagrambuilder/)
 * [Story Estimator](https://aspdotnetcore.syncfusion.com/showcase/aspnetcore/story-estimator/)
 * [Stock Chart](https://ej2.syncfusion.com/showcase/angular/stockchart)
@@ -128,9 +134,11 @@
 * [Loan Calculator](https://ej2.syncfusion.com/showcase/typescript/loancalculator/)
 * [Health Tracker](https://ej2.syncfusion.com/showcase/typescript/healthtracker/)
 * [Task Planner](https://aspdotnetcore.syncfusion.com/showcase/aspnetcore/task-planner/)
- ## Release Notes
+
+## Release Notes
  Please refer this [link](https://ej2.syncfusion.com/documentation/release-notes/index/)
- ## License
+
+## License
  This is a commercial product and requires a paid license for possession or use. Syncfusion’s licensed software, including this component, is subject to the terms and conditions of Syncfusion's EULA (https://www.syncfusion.com/eula/es/). To acquire a license, you can purchase one at https://www.syncfusion.com/sales/products or start a free 30-day trial here (https://www.syncfusion.com/account/manage-trials/start-trials).
  A free community license (https://www.syncfusion.com/products/communitylicense) is also available for companies and individuals whose organizations have less than $1 million USD in annual gross revenue and five or fewer developers.
      © Copyright 2018 Syncfusion, Inc. All Rights Reserved. 
