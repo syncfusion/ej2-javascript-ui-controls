@@ -1,0 +1,10 @@
+@include export-module('datetimepicker-highcontrast-icons') {
+  /*! component icons */
+  .e-datetime-wrapper {
+
+    & .e-time-icon.e-icons::before {
+      content: '\e97f';
+      font-family: 'e-icons';
+    }
+  }
+}

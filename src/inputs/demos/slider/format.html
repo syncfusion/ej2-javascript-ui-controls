@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Slider</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Typescript UI Controls" />
+    <meta name="author" content="Syncfusion" />
+    <link href="../../node_modules/@syncfusion/ej2-buttons/styles/material.css" rel="stylesheet" />
+    <link href="../../node_modules/@syncfusion/ej2-popups/styles/material.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="../../styles/slider/material.css" />
+    <script src="../../node_modules/requirejs/require.js" data-main="format"></script>
+    <script>
+        require.config({
+            packages: [{
+                name: '@syncfusion/ej2-base',
+                location: '../../node_modules/@syncfusion/ej2-base/dist',
+                main: 'ej2-base.umd.min.js'
+            }, {
+                name: '@syncfusion/ej2-buttons',
+                location: '../../node_modules/@syncfusion/ej2-buttons/dist',
+                main: 'ej2-buttons.umd.min.js'
+            }, {
+                name: '@syncfusion/ej2-popups',
+                location: '../../node_modules/@syncfusion/ej2-popups/dist',
+                main: 'ej2-popups.umd.min.js'
+            }, ]
+        });
+    </script>
+    <style>
+        html,
+        body {
+            height: 100%;
+            width: 100%;
+            margin: 0px;
+        }
+
+        body {
+            overflow-y: scroll;
+        }
+        .slider-demo {
+            width: 30%;
+            display: block;
+            margin: 0 auto;
+            margin-top: 30px;
+            position: relative;
+        }
+        h5 {
+            display: inline-block;
+            text-align: center;
+            font-weight: bold;
+        }
+        html, body { height: 100%; }
+    </style>
+</head>
+
+<body>
+
+    <div class="slider-demo">
+        <h5> Slider with standard format</h5>
+         <div id="slider">
+    </div>
+    </div>
+    <div class="slider-demo">
+        <h5> Range Slider with custom format (# specifier) </h5>
+         <div id="slider-02"></div>
+    </div>
+    <div class="slider-demo">
+        <h5> Min-Range Slider custom format (0 specifier)  </h5>
+         <div id="slider-03"></div>
+    </div>
+    <div class="slider-demo">
+        <h5> Slider with custom format (text) </h5>
+         <div id="slider-04"></div>
+    </div>
+    <div class="slider-demo">
+        <h5> Slider with Weeks Ticks and Tooltip customization </h5>
+         <div id="slider-05"></div>
+    </div>
+    <div class="slider-demo">
+        <h5> Slider with Date Ticks and Tooltip customization </h5>
+         <div id="slider-06"></div>
+    </div>
+    <div class="slider-demo">
+        <h5> Slider with Time Ticks and Tooltip customization </h5>
+         <div id="slider-07"></div>
+    </div>
+</body>
+</html>

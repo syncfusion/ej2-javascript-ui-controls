@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title> Typescript Components</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Typescript UI Controls" />
+    <meta name="author" content="Syncfusion" />
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" />
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+    <link href="../../theme-files/fabric.css" rel="stylesheet" />
+
+    <script>
+        window.require = {
+            config: function (json) {
+                window.rsConfig = json;
+                window.rsConfig.baseUrl = "";
+            }
+        };
+    </script>
+    <script src="./../../demo-config.js"></script>
+    <script src="./../../../node_modules/requirejs/require.js" data-main="./default"></script>
+    <script>
+        require.config(window.rsConfig);
+    </script>
+    <style>
+        .e-querybuilder {
+            margin: 4% auto;
+        }
+
+        #apply {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="main">
+        <div id="querybuilder" class="row"> </div>
+        <div id="apply" class="row"><button class="e-control e-btn e-small e-primary">Apply</button></div>
+        <div class="control-section">
+            <div class="content-wrapper">
+                <div id="Grid" style="margin: 0 auto;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

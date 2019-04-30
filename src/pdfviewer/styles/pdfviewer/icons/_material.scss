@@ -1,0 +1,186 @@
+@include export-module('pdfviewer-material-icons') {
+  .e-pdfviewer {
+    .e-pv-icon::before {
+      font-family: 'e-icons';
+    }
+
+    .e-pv-icon-search::before {
+      font-family: 'e-icons';
+      font-size: 12px;
+    }
+
+    .e-pv-open-document-icon::before {
+      content: '\ec04';
+    }
+
+    .e-pv-download-document-icon::before {
+      content: '\ec0b';
+    }
+
+    .e-pv-print-document-icon::before {
+      content: '\ec20';
+    }
+
+    .e-pv-first-page-navigation-icon::before {
+      content: '\ec05';
+    }
+
+    .e-pv-previous-page-navigation-icon::before,
+    .e-pv-prev-search-icon::before {
+      content: '\ec06';
+    }
+
+    .e-pv-next-page-navigation-icon::before,
+    .e-pv-next-search-icon::before {
+      content: '\ec07';
+    }
+
+    .e-pv-last-page-navigation-icon::before {
+      content: '\ec08';
+    }
+
+    .e-pv-zoom-out-icon::before {
+      content: '\ec09';
+    }
+
+    .e-pv-zoom-in-icon::before {
+      content: '\ec0a';
+    }
+
+    .e-pv-thumbnail-view-icon::before {
+      content: '\ec27';
+    }
+
+    .e-pv-thumbnail-view-disable-icon::before {
+      color: $pv-thumbnail-icon-disable-color;
+      content: '\ec27';
+    }
+
+    .e-pv-thumbnail-view-selection-icon::before {
+      color: $pv-thumbnail-icon-selection-color;
+      content: '\ec27';
+    }
+
+    .e-pv-bookmark-icon::before {
+      content: '\ec0c';
+    }
+
+    .e-pv-bookmark-disable-icon::before {
+      color: $pv-thumbnail-icon-disable-color;
+      content: '\ec0c';
+    }
+
+    .e-pv-bookmark-selection-icon::before {
+      color: $pv-thumbnail-icon-selection-color;
+      content: '\ec0c';
+    }
+
+    .e-pv-title-close-icon::before,
+    .e-pv-annotation-tools-close-icon::before,
+    .e-pv-annotation-popup-close::before {
+      content: '\ec0f';
+    }
+
+    .e-pv-resize-icon::before {
+      content: '\e84b';
+      font-size: 10px;
+    }
+
+    .e-pv-text-select-tool-icon::before {
+      content: '\ec1d';
+    }
+
+    .e-pv-pan-tool-icon::before {
+      content: '\ec1a';
+    }
+
+    .e-pv-text-search-icon::before {
+      content: '\ec0d';
+    }
+
+    .e-pv-search-icon::before {
+      content: '\ec0d';
+      font-family: 'e-icons';
+    }
+
+    .e-pv-search-close::before {
+      content: '\ec0f';
+      font-family: 'e-icons';
+    }
+
+    .e-pv-annotation-icon::before {
+      content: '\ec26';
+    }
+
+    .e-pv-annotation-color-icon::before {
+      content: '\ec19';
+    }
+
+    .e-pv-annotation-opacity-icon::before {
+      content: '\ec1b';
+    }
+
+    .e-pv-annotation-delete-icon::before {
+      content: '\ec1c';
+    }
+
+    .e-pv-undo-icon::before {
+      content: '\ec14';
+    }
+
+    .e-pv-redo-icon::before {
+      content: '\ec21';
+    }
+
+    .e-pv-more-icon::before {
+      content: '\ec16';
+    }
+
+    .e-pv-backward-icon::before {
+      content: '\e977';
+    }
+
+    .e-pv-notification-icon {
+      background-image: $pv-corrupted-notification-background-image;
+      background-repeat: $pv-corrupted-notification-background-repeat;
+      background-size: $pv-corrupted-notification-background-size;
+      height: $pv-corrupted-notification-height;
+    }
+
+    .e-pv-notification-icon-rtl {
+      background-image: $pv-corrupted-notification-background-image;
+      background-position: $pv-corrupted-notification-background-position;
+      background-repeat: $pv-corrupted-notification-background-repeat;
+      background-size: $pv-corrupted-notification-background-size;
+      height: $pv-corrupted-notification-height;
+    }
+  }
+
+  .e-pv-download-document-icon.e-menu-icon::before {
+    content: '\ec0b';
+  }
+
+  .e-pv-bookmark-icon.e-menu-icon::before {
+    content: '\ec0c';
+  }
+
+  .e-pv-highlight-icon::before {
+    content: '\ec15';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-underline-icon::before {
+    content: '\ec17';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-strikethrough-icon::before {
+    content: '\ec18';
+    font-family: 'e-icons';
+  }
+
+  .e-pv-copy-icon::before {
+    content: '\e33d';
+    font-family: 'e-icons';
+  }
+}

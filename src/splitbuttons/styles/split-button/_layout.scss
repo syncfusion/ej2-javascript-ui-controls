@@ -1,0 +1,324 @@
+@include export-module('split-button-layout') {
+  /*! splitbutton layout */
+  .e-split-btn-wrapper {
+    display: inline-flex;
+    white-space: nowrap;
+    width: min-content;
+
+    .e-split-btn {
+      border-bottom-right-radius: 0;
+      border-top-right-radius: 0;
+      text-transform: none;
+      z-index: 1;
+      @if $skin-name == 'bootstrap4' {
+        padding-left: $split-btn-icon-btn-padding;
+        padding-right: $split-btn-icon-btn-padding;
+      }
+      @else {
+        padding-left: 10px;
+        padding-right: 4px;
+      }
+
+      &:focus {
+        outline-offset: $split-btn-focus-outline-offset;
+      }
+
+      &:focus,
+      &:hover,
+      &:active {
+        z-index: 2;
+      }
+
+      &.e-top-icon-btn {
+        padding-bottom: 10px;
+        padding-top: 10px;
+      }
+
+      .e-btn-icon {
+        font-size: $drop-down-btn-icon-font-size;
+        margin-left: 0;
+        padding-right: 8px;
+        width: auto;
+      }
+
+      .e-icon-top {
+        padding-bottom: 4px;
+        padding-right: 0;
+      }
+
+      &.e-icon-btn {
+        padding-left: $split-btn-icon-btn-padding;
+        padding-right: $split-btn-icon-btn-padding;
+
+        .e-btn-icon {
+          padding-right: 0;
+        }
+      }
+    }
+
+    .e-dropdown-btn {
+      border-bottom-left-radius: 0;
+      border-top-left-radius: 0;
+      margin-left: $split-btn-sec-btn-margin-left;
+      @if $skin-name == 'bootstrap4' {
+        padding-left: $split-btn-icon-btn-padding;
+        padding-right: $split-btn-icon-btn-padding;
+      }
+      @else {
+        padding-left: 4px;
+        padding-right: 4px;
+      }
+
+      &:focus,
+      &:hover,
+      &:active {
+        z-index: $split-btn-zindex;
+      }
+
+      &:disabled {
+        &:focus,
+        &:hover,
+        &:active {
+          z-index: 0;
+        }
+      }
+
+      &:focus {
+        outline-offset: $split-btn-focus-outline-offset;
+      }
+    }
+
+    .e-btn {
+      box-shadow: none;
+
+      &:hover,
+      &:focus {
+        box-shadow: none;
+      }
+
+      &:active {
+        box-shadow: $split-btn-active-box-shadow;
+      }
+
+      &:disabled {
+        box-shadow: none;
+      }
+    }
+
+    &.e-rtl {
+      .e-split-btn {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: $split-btn-border-radius;
+        border-top-left-radius: 0;
+        border-top-right-radius: $split-btn-border-radius;
+        margin-left: $split-btn-sec-btn-margin-left;
+        @if $skin-name == 'bootstrap4' {
+          padding-left: $split-btn-icon-btn-padding;
+          padding-right: $split-btn-icon-btn-padding;
+        }
+        @else {
+          padding-left: 4px;
+          padding-right: 10px;
+        }
+
+        .e-btn-icon {
+          margin-right: 0;
+          padding-left: 8px;
+          padding-right: 0;
+        }
+
+        .e-icon-top {
+          padding-left: 0;
+        }
+
+        &.e-icon-btn {
+          padding-left: $split-btn-icon-btn-padding;
+          padding-right: $split-btn-icon-btn-padding;
+
+          .e-btn-icon {
+            padding-left: 0;
+          }
+        }
+    }
+
+      .e-dropdown-btn {
+        border-bottom-left-radius: $split-btn-border-radius;
+        border-bottom-right-radius: 0;
+        border-top-left-radius: $split-btn-border-radius;
+        border-top-right-radius: 0;
+        margin-left: 0;
+      }
+    }
+
+    &.e-vertical {
+      display: inline-block;
+
+      .e-split-btn,
+      .e-dropdown-btn {
+        display: block;
+        width: 100%;
+      }
+
+      .e-split-btn {
+        border-bottom-left-radius: 0;
+        border-top-right-radius: $split-btn-border-radius;
+        line-height: 1;
+        @if $skin-name == 'bootstrap4' {
+          padding-bottom: $split-btn-icon-btn-padding;
+          padding-right: $split-btn-icon-btn-padding;
+        }
+        @else {
+          padding-bottom: 4px;
+          padding-right: 10px;
+        }
+
+        .e-icon-top {
+          padding-bottom: 4px;
+        }
+      }
+
+      .e-dropdown-btn {
+        border-bottom-left-radius: $split-btn-border-radius;
+        border-top-right-radius: 0;
+        line-height: $split-btn-vertical-secondary-icon-line-height;
+        margin-left: 0;
+        margin-top: $split-btn-sec-btn-margin-left;
+        @if $skin-name == 'bootstrap4' {
+          padding-bottom: $split-btn-icon-btn-padding;
+          padding-top: $split-btn-icon-btn-padding;
+        }
+        @else {
+          padding-bottom: 4px;
+          padding-top: 4px;
+        }
+
+        .e-icon-bottom {
+          padding-top: 0;
+        }
+      }
+
+      &.e-rtl {
+        .e-split-btn {
+          border-bottom-right-radius: 0;
+          border-top-left-radius: $split-btn-border-radius;
+          margin-left: 0;
+        }
+
+        .e-dropdown-btn {
+          border-bottom-right-radius: $split-btn-border-radius;
+          border-top-left-radius: 0;
+        }
+      }
+    }
+  }
+
+  .e-bigger .e-split-btn-wrapper,
+  .e-bigger.e-split-btn-wrapper {
+    .e-split-btn {
+      @if $skin-name == 'bootstrap4' {
+        padding-left: $split-btn-icon-btn-padding-bigger;
+        padding-right: $split-btn-icon-btn-padding-bigger;
+      }
+      @else {
+        padding-left: 12px;
+        padding-right: 6px;
+      }
+
+      &.e-top-icon-btn {
+        padding-bottom: 12px;
+        padding-top: 12px;
+      }
+
+      .e-btn-icon {
+        font-size: $drop-down-btn-icon-font-size-bigger;
+        margin-left: 0;
+        padding-right: 10px;
+        width: auto;
+      }
+
+      .e-icon-top {
+        padding-bottom: 6px;
+        padding-right: 0;
+      }
+
+      &.e-icon-btn {
+        padding-left: $split-btn-icon-btn-padding-bigger;
+        padding-right: $split-btn-icon-btn-padding-bigger;
+
+        .e-btn-icon {
+          padding-right: 0;
+        }
+      }
+    }
+
+    .e-dropdown-btn {
+      @if $skin-name == 'bootstrap4' {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+      @else {
+        padding-left: 4px;
+        padding-right: 4px;
+      }
+    }
+
+    &.e-rtl {
+      .e-split-btn {
+        @if $skin-name == 'bootstrap4' {
+          padding-left: $split-btn-icon-btn-padding-bigger;
+          padding-right: $split-btn-icon-btn-padding-bigger;
+        }
+        @else {
+          padding-left: 6px;
+          padding-right: 12px;
+        }
+
+        .e-btn-icon {
+          padding-left: 10px;
+          padding-right: 0;
+        }
+
+        .e-icon-top {
+          padding-left: 0;
+        }
+
+        &.e-icon-btn {
+          padding-left: $split-btn-icon-btn-padding-bigger;
+          padding-right: $split-btn-icon-btn-padding-bigger;
+
+          .e-btn-icon {
+            padding-left: 0;
+          }
+        }
+      }
+    }
+
+    &.e-vertical {
+      .e-split-btn {
+        @if $skin-name == 'bootstrap4' {
+          padding-bottom: $split-btn-icon-btn-padding-bigger;
+          padding-right: $split-btn-icon-btn-padding-bigger;
+        }
+        @else {
+          padding-bottom: 6px;
+          padding-right: 12px;
+        }
+      }
+
+      .e-dropdown-btn {
+        @if $skin-name == 'bootstrap4' {
+          padding-bottom: $split-btn-icon-btn-padding-bigger;
+          padding-top: $split-btn-icon-btn-padding-bigger;
+        }
+        @else {
+          padding-bottom: 4px;
+          padding-top: 4px;
+        }
+
+        .e-icon-bottom {
+          padding-top: 0;
+        }
+      }
+    }
+  }
+}

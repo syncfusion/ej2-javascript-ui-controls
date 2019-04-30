@@ -1,0 +1,136 @@
+@include export-module('split-button-theme') {
+  /*! splitbutton theme */
+  .e-split-btn-wrapper {
+    .e-split-btn {
+      border-right-color: $split-btn-seperator-border-color;
+
+      &:focus {
+        border-right-color: $split-btn-focus-border-color;
+      }
+
+      &:active {
+        border-right-color: $split-btn-active-border-color;
+      }
+
+      &:disabled {
+        border-right-color: $btn-disabled-bgcolor;
+      }
+    }
+
+    &:hover {
+      & .e-split-btn {
+        border-right-color: $split-btn-hover-border-color;
+
+        &:disabled {
+          border-right-color: $btn-disabled-border-color;
+        }
+      }
+    }
+
+    &.e-rtl {
+      .e-split-btn {
+        @if $skin-name != 'bootstrap4' {
+          border-color: transparent;
+        }
+        @else {
+          border-left-color: $split-btn-seperator-border-color;
+          border-right-color: $split-btn-seperator-default-border-color;
+        }
+
+        &:focus {
+          @if $skin-name != 'bootstrap4' {
+            border-color: transparent;
+          }
+          @else {
+            border-left-color: $split-btn-focus-border-color;
+            border-right-color: $split-btn-focus-vertical-border-color;
+          }
+        }
+
+        &:active {
+          @if $skin-name != 'bootstrap4' {
+            border-color: transparent;
+          }
+          @else {
+            border-left-color: $split-btn-active-border-color;
+            border-right-color: $split-btn-active-vertical-border-color;
+          }
+        }
+
+        &:disabled {
+          border-left-color: $btn-disabled-border-color;
+          border-right-color: $split-btn-disabled-vertical-border-color;
+        }
+      }
+
+      &:hover {
+        & .e-split-btn {
+          border-left-color: $split-btn-hover-border-color;
+          border-right-color: $split-btn-hover-vertical-border-color;
+
+          &:disabled {
+            border-left-color: $btn-disabled-border-color;
+          }
+        }
+      }
+    }
+
+    &.e-vertical {
+      .e-split-btn {
+        border-bottom-color: $split-btn-seperator-vertical-border-color;
+        border-right-color: $split-btn-seperator-default-border-color;
+
+        &:focus {
+          border-bottom-color: $split-btn-focus-border-color;
+          border-right-color: $split-btn-focus-vertical-border-color;
+        }
+
+        &:active {
+          border-bottom-color: $split-btn-active-border-color;
+          border-right-color: $split-btn-active-vertical-border-color;
+        }
+
+        &:disabled {
+          border-bottom-color: $btn-disabled-border-color;
+          border-right-color: $split-btn-disabled-vertical-border-color;
+        }
+      }
+
+      &:hover {
+        & .e-split-btn {
+          border-bottom-color: $split-btn-hover-border-color;
+          border-right-color: $split-btn-hover-vertical-border-color;
+
+          &:disabled {
+            border-bottom-color: $btn-disabled-border-color;
+          }
+        }
+      }
+
+      &.e-rtl {
+        .e-split-btn {
+          border-left-color: $split-btn-seperator-default-border-color;
+
+          &:focus {
+            border-left-color: $split-btn-focus-left-border-color;
+          }
+
+          &:active {
+            border-left-color: $split-btn-active-left-border-color;
+          }
+
+          &:disabled {
+            border-left-color: $split-btn-disabled-left-border-color;
+          }
+        }
+
+        &:hover {
+          & .e-split-btn {
+            border-left-color: $split-btn-hover-left-border-color;
+          }
+        }
+      }
+    }
+  }
+}
+  

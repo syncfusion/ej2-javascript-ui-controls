@@ -1,0 +1,96 @@
+@include export-module('tree-layout') {
+  .e-bigger {
+    .e-treegrid {
+      .e-treegridexpand,
+      .e-treegridcollapse {
+        height: $treegrid-bigger-icon-size;
+        width: $treegrid-bigger-icon-size;
+      }
+
+      .e-rowcell.e-treerowcell {
+        padding-left: $treegrid-bigger-treecell-padding;
+      }
+
+      .e-hierarchycheckbox {
+        padding-left: 2px;
+      }
+    }
+  }
+
+  .e-treegrid {
+
+    .e-treegridexpand::before,
+    .e-treegridcollapse::before {
+      vertical-align: middle;
+    }
+
+    .e-treegridexpand:hover::before,
+    .e-treegridcollapse:hover::before {
+      color: $treegrid-right-arrow-hover-color;
+    }
+
+    .e-rowcell.e-treerowcell {
+      padding-left: $treegrid-treecell-padding;
+    }
+
+    .e-rtl {
+      .e-treegridcollapse {
+        transform: scale(-1);
+      }
+    }
+
+    .e-treegridexpand {
+      transform: rotate(90deg);
+    }
+
+    .e-treecolumn-container {
+      span {
+        display: inline-block;
+        vertical-align: middle;
+      }
+    }
+
+    .e-treegridexpand,
+    .e-treegridcollapse {
+      color: $treegrid-right-arrow-icon-color;
+      cursor: pointer;
+      font-size: $treegrid-right-arrow-icon-font-size;
+      height: 16px;
+      text-align: center;
+      vertical-align: bottom;
+      width: 16px;
+    }
+
+    .e-treecell {
+      display: table-cell;
+    }
+
+    .e-grid {
+      &.e-wrap .e-rowcell .e-treecolumn-container {
+        white-space: nowrap;
+      }
+
+      &.e-wrap .e-rowcell .e-treecolumn-container .e-treecell {
+        display: inline-block;
+        white-space: normal;
+        word-wrap: break-word;
+      }
+   }
+
+    .e-summarycell {
+      pointer-events: none;
+    }
+
+    &.e-grid.e-print-grid-layout .e-icons {
+      display: inline-block;
+    }
+
+    .e-treecheckselect,
+    .e-treeselectall {
+      margin: 0;
+      opacity: 0;
+      position: absolute;
+      width: 0;
+    }
+  }
+}

@@ -1,0 +1,42 @@
+$tooltip-shadow-color: rgba(0, 0, 0, .3) !default;
+$tooltip-drop-shadow: drop-shadow(0 6px 10px $tooltip-shadow-color) !default;
+$tooltip-content-bg-color: $neutral-dark !default;
+$tooltip-content-border-color: $neutral-dark !default;
+$tooltip-content-font-color:  $grey-dark-font !default;
+$tooltip-default-icon-color: $grey-dark-font !default;
+$tooltip-icon-bg-normal: $neutral-light !default;
+$tooltip-hover-icon-color: $neutral-light-font !default;
+$tooltip-icon-bg-hover: $neutral-light !default;
+$tooltip-font-size: 11px !default;
+$tooltip-mobile-font-size: 12px !default;
+$tooltip-border-radius: 0 !default;
+$tooltip-opacity: 1 !default;
+$tooltip-arrow-outer-border: 8px !default;
+$tooltip-arrow-inner-border: 7px !default;
+$tooltip-horizontal-padding: 12px !default;
+$tooltip-vertical-padding: 12px !default;
+$tooltip-mobile-horizontal-padding: 15px !default;
+$tooltip-mobile-vertical-padding: 15px !default;
+$tooltip-line-height: 16px !default;
+$tooltip-arrow-icon-font-size: 16px !default;
+$tooltip-icon-border-color: $neutral-tertiary !default;
+
+$tooltip-tip-bottom-height: 8px !default;
+$tooltip-tip-bottom-left: 50% !default;
+$tooltip-tip-bottom-top: 100% !default;
+$tooltip-tip-bottom-width: 16px !default;
+
+$tooltip-tip-top-height: 8px !default;
+$tooltip-tip-top-left: 50% !default;
+$tooltip-tip-top-top: -9px !default;
+$tooltip-tip-top-width: 16px !default;
+
+$tooltip-tip-left-height: 16px !default;
+$tooltip-tip-left-left: -9px !default;
+$tooltip-tip-left-top: 48% !default;
+$tooltip-tip-left-width: 8px !default;
+
+$tooltip-tip-right-height: 16px !default;
+$tooltip-tip-right-left: 100% !default;
+$tooltip-tip-right-top: 50% !default;
+$tooltip-tip-right-width: 8px !default;

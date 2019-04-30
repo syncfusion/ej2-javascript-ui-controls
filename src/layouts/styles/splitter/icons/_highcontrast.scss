@@ -1,0 +1,40 @@
+@include export-module('splitter-highcontrast-icons') {
+  .e-splitter {
+    .e-split-bar {
+      &.e-split-bar-horizontal {
+        .e-resize-handler::before {
+          content: '\e984';
+          font-family: 'e-icons';
+          font-size: $splitbar-icon-size;
+        }
+      }
+
+      &.e-split-bar-vertical {
+        & .e-resize-handler::before {
+          content: '\e984';
+          font-family: 'e-icons';
+          font-size: $splitbar-icon-size;
+          transform: rotate(90deg);
+        }
+      }
+    }
+  }
+
+  .e-bigger {
+    .e-splitter {
+      .e-split-bar {
+        .e-resize-handler::before {
+          font-size: $bigger-splitbar-icon-size;
+        }
+      }
+    }
+
+    &.e-splitter {
+      .e-split-bar {
+        .e-resize-handler::before {
+          font-size: $bigger-splitbar-icon-size;
+        }
+      }
+    }
+  }
+}

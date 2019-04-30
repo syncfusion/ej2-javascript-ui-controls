@@ -1,0 +1,10 @@
+@include export-module('drop-down-button-highcontrast-icons') {
+  #{&}.e-dropdown-btn,
+  #{&}.e-dropdown-btn.e-btn {
+    .e-caret {
+      &::before {
+        content: '\e966';
+      }
+    }
+  }
+}

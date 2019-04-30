@@ -1,0 +1,22 @@
+/*! component's default definitions and variables */
+$skin-name: 'material' !default;
+$navigation-arrow-background: $grey-white !default;
+$navigation-icon-background-hover: $accent !default;
+$navigation-icon-border-hover: rgba(227, 22, 91, .5) !default;
+$splitter-border-color: $grey-300 !default;
+$splitpane-font-size: 13px !default;
+$splitpane-font-weight: normal !default;
+$splitpane-font-family: $font-family !default;
+$splitpane-font-color: rgba($grey-light-font, .87) !default;
+$splitbar-border-color: $grey-300 !default;
+$splitbar-hover-border-color: $accent !default;
+$splitbar-icon-color: rgba($grey-light-font, .54) !default;
+$splitbar-icon-size: 14px !default;
+$collapse-icon-bg-color: $grey-white !default;
+$splitbar-icon-gap: 18px !default;
+$resize-icon-bg-color: $grey-white !default;
+$split-bar-border: none !default;
+// Bigger style
+$bigger-splitbar-icon-gap: 20px !default;
+$bigger-splitpane-font-size: 14px !default;
+$bigger-splitbar-icon-size: 16px !default;

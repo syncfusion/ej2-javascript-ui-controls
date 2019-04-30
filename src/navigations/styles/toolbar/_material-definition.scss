@@ -1,0 +1,164 @@
+/*! component's theme wise override definitions and variables */
+$tbar-skin: 'material' !default;
+$tbar-pop-icon-bgr-padding: 0;
+$tbar-pop-btn-txt-bgr-pad: 0;
+$tbar-btn-bgr-minheight: 0;
+$tbar-btn-icn-bgr-padding: 0;
+$tbar-icons-bgr-font-size: 14px;
+$tbar-btn-icn-right-bgr-padding: 0;
+$tbar-btn-nrml-minheight: 0;
+$tbar-pop-icon-nrml-padding: 0;
+$tbar-pop-btn-txt-nrml-pad: 0;
+$tbar-btn-icn-nrml-padding: 0;
+$tbar-btn-icn-right-nrml-padding: 0;
+$tbar-radius: '';
+$tbar-pop-radius: '';
+$tbar-separator-border-type: $border-type;
+$tbar-pop-box-shadow: 0 2px 2px 1px rgba(0, 0, 0, .21);
+
+$tbar-default-bg: $grey-50 !default;
+$tbar-press-bg: $grey-400 !default;
+$tbar-press-border-color: $tbar-press-bg !default;
+$tbar-zero-value: 0 !default;
+$tbar-btn-bgr-minwidth: '' !default;
+$tbar-btn-nrml-minwidth: 0 !default;
+$tbar-border-radius: $border-radius !default;
+$tbar-tab-highlight-color:  rgba(0, 0, 0, 0) !default;
+$tbar-border-nav-type: solid !default;
+$tbar-btn-box-shadow: none !default;
+
+$tbar-active-bg: $grey-400 !default;
+
+$tbar-nrml-size: 42px !default;
+$tbar-bgr-size: 56px !default;
+$tbar-nrml-items-size: 42px !default;
+$tbar-bgr-items-size: 56px !default;
+$tbar-nrml-item-size: 42px !default;
+$tbar-bgr-item-size: 48px !default;
+$tbar-item-nrml-minwidth: 34px !default;
+$tbar-btn-pop-nrml-minheight: 24px !default;
+$tbar-btn-pop-bgr-minheight: 30px !default;
+$tbar-item-nrml-mrgn: 3px !default;
+$tbar-item-bgr-mrgn: 3px !default;
+$tbar-nav-nrml-width: 32px !default;
+$tbar-nav-bgr-width: 40px !default;
+$tbar-popup-padding: 0 !default;
+$tbar-btn-border-radius: '' !default;
+$tbar-btn-pressed-box-shadow: '' !default;
+
+$tbar-item-bgr-padding: 5px !default;
+$tbar-item-nrml-padding: 3.5px !default;
+$btn-txt-nrml-padding: 0 2px 0 2px !default;
+$btn-txt-bgr-padding: 0 2.5px 0 2.5px !default;
+$tbar-item-pop-nrml-padding: 0 !default;
+$tbar-item-pop-bgr-padding: 0 !default;
+$tbar-multirow-items-mrgn-bigger: 24px !default;
+$tbar-multirow-items-mrgn-small: 18px !default;
+$tbar-multirow-item-mrgn: 0 !default;
+
+$tbar-btn-bgr-mrgn: 5.5px 0 !default;
+$tbar-v-btn-bgr-mrgn: 5.5px auto !default;
+$tbar-btn-bgr-height: calc(100% - 11px) !default;
+$tbar-btn-nrml-height: calc(100% - 10px) !default;
+$tbar-btn-nrml-mrgn: 4px 0 !default;
+$tbar-v-btn-nrml-mrgn: 4px auto !default;
+$tbar-separator-nrml-mrgn: 7.5px 3px  !default;
+$tbar-separator-bgr-mrgn: 10px 5px  !default;
+$tbar-separator-vertical-bgr-mrgn: 5px 10px  !default;
+$tbar-separator-vertical-nrml-mrgn: 3px 7.5px  !default;
+$tbar-separator-nrml-height: calc(100% - 15px) !default;
+$tbar-separator-bgr-height: calc(100% - 20px) !default;
+$tbar-separator-nrml-minheight: 27px !default;
+$tbar-separator-bgr-minheight: 36px !default;
+$tbar-btn-icon-bgr-width: 27px !default;
+$tbar-btn-icon-bgr-height: 34px !default;
+$tbar-btn-bgr-line-height: 35px !default;
+$tbar-btn-nrml-line-height: 25px !default;
+$tbar-btn-icon-bgr-line-height: 34px !default;
+$tbar-btn-txt-line-height: inherit !default;
+$tbar-btn-icon-nrml-width: 24px !default;
+$tbar-btn-icon-nrml-height: 25px !default;
+$tbar-btn-icon-nrml-line-height: 25px !default;
+$tbar-left-item-line-height: 35px !default;
+$tbar-right-item-line-height: 24px !default;
+$tbar-btn-bgr-padding: $tbar-zero-value 6px  !default;
+$tbar-btn-nrml-padding: $tbar-zero-value 1.5px  !default;
+$tbar-pop-btn-bgr-padding: $tbar-zero-value 16px !default;
+$tbar-pop-btn-nrml-padding: $tbar-zero-value 16px !default;
+
+$tbar-btn-border: none !default;
+$tbar-nav-press-border: '' !default;
+$tbar-nav-hover-border: '' !default;
+$tbar-nav-focus-border: '' !default;
+$tbar-nav-pressed-box-shadow: '' !default;
+$tbar-border-nav-active-type: '' !default;
+$tbar-border-size: 1px !default;
+$tbar-border-type: none !default;
+$tbar-box-shadow: none !default;
+$tbar-separator-size: .5px !default;
+$tba-horizontal-separator: 0 $tbar-separator-size 0 0 !default;
+$tba-vertical-separator: 0 0 $tbar-separator-size 0 !default;
+$tbar-popup-border-width: 0 0 0 $border-size !default;
+$tbar-popup-rtl-border-width: 0 $border-size 0 0 !default;
+$tbar-popup-vertical-border-width: $border-size 0 0 0 !default;
+$tbar-popup-vertical-rtl-border-width: 0 0 $border-size 0 !default;
+
+$tbar-btn-weight: 400 !default;
+$tbar-btn-family: 'Roboto', 'Segoe UI', 'GeezaPro', 'DejaVu Serif' !default;;
+$tbar-btn-font-size: 14px !default;
+$tbar-btn-txt-font-size: $tbar-btn-font-size !default;
+$tbar-hover-bg: rgba($grey-black, .12) !default;
+$tbar-hover-border-color: rgba($grey-black, .12) !default;
+$tbar-focus-border-color: $tbar-hover-border-color !default;
+$tbar-focus-bg: $tbar-hover-bg !default;
+$tbar-default-icon-color: rgba($grey-light-font, .54) !default;
+$tbar-default-font: rgba($grey-light-font, .87)  !default;
+$tbar-hover-font: $tbar-default-font !default;
+$tbar-active-font-color: $tbar-default-font !default;
+$tbar-press-font: $tbar-default-font !default;
+
+$tbar-pressed-bg: $tbar-hover-bg !default;
+$tbar-pressed-border: $tbar-hover-border-color !default;
+$tbar-pressed-font: $tbar-hover-font !default;
+$tbar-select-font: $tbar-hover-font !default;
+
+
+$tbar-default-icon-overlay: rgba($grey-light-font, .26) !default;
+$tbar-default-font-overlay: rgba($grey-light-font, .38) !default;
+$tbar-separator-border: rgba($grey-black, .12) !default;
+$tbar-default-border: $tbar-separator-border !default;
+
+$tbar-ribble-animation-border-frame: rgba(255, 255, 255, .5) !default;
+$tbar-ribble-animation-shadow-frame: 0 0 0 0 $tbar-ribble-animation-border-frame !default;
+$tbar-ribble-animation-shadow-frame-end: 0 0 0 200px rgba(255, 255, 255, .12) !default;
+
+
+@mixin tbar-btn-animation {
+  background-color: transparent;
+  border-radius: 50%;
+  border-width: 1px;
+  box-sizing: border-box;
+  content: '' ;
+  height: 1px;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  visibility: hidden;
+  width: 1px;
+}
+
+@mixin tbar-btn-animation-after {
+  animation: tbar-popup-shadow .6s ease-out 0ms;
+  visibility: visible;
+}
+
+@keyframes tbar-popup-shadow {
+  0% {
+    border-color: $tbar-ribble-animation-border-frame;
+    box-shadow: $tbar-ribble-animation-shadow-frame;
+    }
+
+  100% {
+    box-shadow: $tbar-ribble-animation-shadow-frame-end;
+    }
+ }

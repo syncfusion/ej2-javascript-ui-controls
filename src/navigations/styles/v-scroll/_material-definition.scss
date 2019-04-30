@@ -1,0 +1,77 @@
+/*! component's theme wise override definitions and variables */
+$vscroll-skin: 'material' !default;
+$vscroll-nav-nrml-height: 40px !default;
+$vscroll-hover-font: $hover-font-color  !default;
+$vscroll-active-font-color: $active-font-color  !default;
+$vscroll-border-size: $border-size !default;
+$vscroll-border-type: solid !default;
+
+$vscroll-default-bg: $grey-50 !default;
+$vscroll-press-bg: $grey-400 !default;
+$vscroll-active-bg: $grey-400 !default;
+$vscroll-border-size: 1px !default;
+$vscroll-nav-nrml-minheight: 16px !default;
+$vscroll-nav-bgr-minheight: 24px !default;
+$vscroll-nav-nrml-width: 16px !default;
+$vscroll-nav-bgr-width: 24px !default;
+$vscroll-nrml-padding: 0 $vscroll-nav-nrml-width !default;
+$vscroll-bgr-padding: $vscroll-nav-bgr-width 0 !default;
+$vscroll-border-type: $border-type !default;
+$vscroll-box-shadow: none !default;
+$vscroll-hover-bg: rgba($grey-black, .12) !default;
+$vscroll-hover-border-color: rgba($grey-black, .12) !default;
+$vscroll-default-icon-color: rgba($grey-light-font, .54) !default;
+$vscroll-focus-border: '' !default;
+$vscroll-active-border: '' !default;
+$vscroll-hover-border: '' !default;
+$vscroll-active-box-shadow: '' !default;
+$vscroll-overlay-opacity: .5 !default;
+$vscroll-overlay-bg: $grey-50 !default;
+$vscroll-overlay-start: rgba($vscroll-overlay-bg, 0) !default;
+$vscroll-overlay-end: rgba($vscroll-overlay-bg, 1) !default;
+$vscroll-right-bg: linear-gradient(-270deg, $vscroll-overlay-start 0%, $vscroll-overlay-end 100%) !default;
+$vscroll-left-bg:  linear-gradient(-270deg, $vscroll-overlay-end 0%, $vscroll-overlay-start 100%) !default;
+
+$vscroll-device-arrow-box-shadow: -4px 0 8px 0 rgba($shadow , .06) !default;
+$vscroll-device-arrow-rtl-box-shadow: 4px 0 8px 0 rgba($shadow , .06) !default;
+$vscroll-device-arrow-bg: $grey-50 !default;
+$vscroll-device-arrow-border-size: 1px !default;
+$vscroll-device-arrow-border-color: rgba($grey-black, .12) !default;
+$vscroll-device-arrow-color: $accent !default;
+$vscroll-device-arrow-size: 14px !default;
+$vscroll-device-arrow-width: 56px !default;
+
+$vscroll-default-border: $vscroll-hover-border-color !default;
+$vscroll-ribble-animation-border-frame: rgba(255, 255, 255, .5) !default;
+$vscroll-ribble-animation-shadow-frame: 0 0 0 0 $vscroll-ribble-animation-border-frame !default;
+$vscroll-ribble-animation-shadow-frame-end: 0 0 0 200px rgba(255, 255, 255, .12) !default;
+
+@mixin vscroll-btn-animation {
+  background-color: transparent;
+  border-radius: 50%;
+  border-width: 1px;
+  box-sizing: border-box;
+  content: '' ;
+  height: 1px;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  visibility: hidden;
+  width: 1px;
+}
+
+@mixin vscroll-btn-animation-after {
+  animation: vscroll-popup-shadow .6s ease-out 0ms;
+  visibility: visible;
+}
+
+@keyframes vscroll-popup-shadow {
+  0% {
+    border-color: $vscroll-ribble-animation-border-frame;
+    box-shadow: $vscroll-ribble-animation-shadow-frame;
+  }
+
+  100% {
+    box-shadow: $vscroll-ribble-animation-shadow-frame-end;
+  }
+}

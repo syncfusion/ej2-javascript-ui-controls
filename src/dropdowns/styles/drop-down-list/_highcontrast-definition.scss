@@ -1,0 +1,99 @@
+$ddl-input-font-size: 14px !default;
+$ddl-input-border: $border-size $border-type !default;
+$ddl-input-font-family: $font-family !default;
+$ddl-zero-value: 0 !default;
+$ddl-input-margin-bottom: $ddl-zero-value !default;
+$ddl-input-padding: 8px !default;
+$ddl-input-group-border-width: 1px !default;
+$ddl-clear-icon-margin-right: 0 !default;
+$ddl-active-font-color: $active-font-color !default;
+
+$ddl-list-search-icon-padding: 8px !default;
+$ddl-list-filter-text-indent: 0 12px !default;
+$ddl-list-icon-color: $bg-base-20 !default;
+$ddl-list-box-shadow-color: rgba(0, 0, 0, .4) !default;
+$ddl-bigger-list-font-size: 15px !default;
+$ddl-default-border-color: $border-default !default;
+$ddl-popup-background-color: $bg-base-0 !default;
+$ddl-filter-border: 1px solid $border-fg !default;
+$ddl-filter-top-border: 0 !default;
+$ddl-filter-padding: 5px !default;
+$ddl-filter-box-shadow: 0 !default;
+$ddl-filter-background-color: $bg-base-0 !default;
+$ddl-back-icon-margin: -2px 10px 0 -54px !default;
+$ddl-back-icon-padding: 0 !default;
+
+@include export-module('dropdownlist-highcontrast') {
+  .e-bigger .e-ddl.e-popup .e-input-group .e-clear-icon {
+    height: 36px;
+  }
+
+  .e-ddl#{&} {
+    &.e-popup {
+      border: 0;
+      box-shadow: 0 0 5px 0 $ddl-list-box-shadow-color;
+      margin-top: 1px;& .e-content.e-nodata {
+        background-color: $bg-base-0;
+      }& .e-dropdownbase {
+        & .e-list-item {
+          & .e-highlight {
+            color: $header-font;
+          }
+        }
+      }& .e-input-group {
+        display: flex;
+        width: auto;
+        @at-root {
+          & input {
+            line-height: 15px;
+          }
+        }& .e-clear-icon {
+          border-radius: 20px;
+          height: 20px;
+          margin: 5px;
+          min-width: 20px;
+        }& .e-clear-icon {
+          &::before {
+            font-size: 10px;
+        }
+      }
+      }& .e-filter-parent {
+        border-left-width: 0;
+        border-right-width: 0;& .e-input-group.e-control-wrapper:hover:active {
+          border-color: $border-fg;
+        }
+      }.e-bigger & {
+        &.e-ddl-device {
+          .e-input-group {
+            margin: 0 0 0 55px;
+          }
+        }&.e-ddl-device-filter {
+          margin-top: 0;
+        }& .e-list-item,
+        & .e-list-group-item,
+        & .e-fixed-head {
+          font-size: 15px;
+          line-height: 45px;
+          padding-left: 0;
+          text-indent: 16px;
+        }
+
+        & .e-dd-group {
+          & .e-list-item {
+            padding-left: 4px;
+          }
+        }
+
+        & .e-input-group {
+          padding: 4px 0;
+        }
+
+        & .e-input-group {
+          & input {
+            height: 30px;
+          }
+        }
+        }
+    }
+  }
+}

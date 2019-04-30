@@ -1,3 +1,0 @@
-/**
- * Enum values for EditorManager
- */
