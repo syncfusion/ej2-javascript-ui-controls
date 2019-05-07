@@ -1157,7 +1157,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private setPlaceholderSize(downIconWidth: number): void {
         if (isNullOrUndefined(this.value) || this.value.length === 0) {
-            this.searchWrapper.style.width = 'calc(100% - ' + downIconWidth + 'px)';
+            this.searchWrapper.style.width = ('calc(100% - ' + (downIconWidth + 10)) + 'px';
         } else if (!isNullOrUndefined(this.value)) {
             this.searchWrapper.removeAttribute('style');
         }
@@ -1187,6 +1187,14 @@ export class MultiSelect extends DropDownBase implements IInput {
                 element: this.element
             };
             this.trigger('change', eventArgs);
+            this.updateTempValue();
+        }
+    }
+    private updateTempValue(): void {
+        if (!this.value) {
+            this.tempValues = this.value;
+        } else {
+            this.tempValues = <string[]>this.value.slice();
         }
     }
     private getPagingCount(): number {
@@ -1224,11 +1232,6 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (this.enabled) {
             this.showOverAllClear();
             this.inputFocus = true;
-            if (!this.value) {
-                this.tempValues = this.value;
-            } else {
-                this.tempValues = <string[]>this.value.slice();
-            }
             if (this.value && this.value.length) {
                 if (this.mode !== 'Delimiter' && this.mode !== 'CheckBox') {
                     this.chipCollectionWrapper.style.display = '';
@@ -1446,6 +1449,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
             this.selectByKey(e);
         }
+        this.checkPlaceholderSize();
     }
     private checkBackCommand(e: KeyboardEventArgs): void {
         if (e.keyCode === 8 && this.targetElement() === '') {
@@ -1492,8 +1496,10 @@ export class MultiSelect extends DropDownBase implements IInput {
     private escapeAction(): void {
         let temp: string[] | number[] = this.tempValues ? <string[]>this.tempValues.slice() : <string[]>[];
         if (this.value && this.validateValues(this.value, temp)) {
-            this.value = temp;
-            this.initialValueUpdate();
+            if (this.mode !== 'CheckBox') {
+                this.value = temp;
+                this.initialValueUpdate();
+            }
             if (this.mode !== 'Delimiter' && this.mode !== 'CheckBox') {
                 this.chipCollectionWrapper.style.display = '';
             } else {
@@ -2509,6 +2515,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
             if (limit < this.maximumSelectionLength) {
                 this.updateListSelection(li, e);
+                this.checkPlaceholderSize();
                 this.addListFocus(<HTMLElement>li);
                 if ((this.allowCustomValue || this.allowFiltering) && this.mainList && this.listData) {
                     if (this.mode !== 'CheckBox') {
@@ -2545,7 +2552,6 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.refreshListItems(isNullOrUndefined(li) ? null : li.textContent);
         }
         this.refreshPlaceHolder();
-        this.checkPlaceholderSize();
     }
     private onMouseOver(e: MouseEvent): void {
         let currentLi: HTMLElement = <HTMLElement>closest(<Element>e.target, '.' + dropDownBaseClasses.li);
@@ -2841,6 +2847,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
         }
         this.textboxValueUpdate();
+        this.checkPlaceholderSize();
     }
     private textboxValueUpdate(): void {
         if (this.mode !== 'Box' && !this.isPopupOpen()) {

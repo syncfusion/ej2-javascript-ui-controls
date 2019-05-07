@@ -2279,7 +2279,7 @@ var AxisLayoutPanel = /** @__PURE__ @class */ (function () {
                 axis.visibleLabels.push(new VisibleLabels(argsData.text, i));
             }
         }
-        var lastLabel = axis.visibleLabels[axis.visibleLabels.length - 1].value;
+        var lastLabel = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value : null;
         var maxVal = axis.visibleRange.max;
         if (lastLabel !== maxVal && axis.showLastLabel === true) {
             argsData = {

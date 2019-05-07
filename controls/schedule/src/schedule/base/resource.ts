@@ -531,7 +531,7 @@ export class ResourceBase {
         this.colorIndex = null;
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             for (let resource of this.parent.activeViewOptions.group.resources) {
-                let index: number = util.findIndexInData(<{ [key: string]: Object }[]>this.parent.resources, 'name', resource);
+                let index: number = util.findIndexInData(<{ [key: string]: Object }[]>this.parent.resourceCollection, 'name', resource);
                 if (index >= 0) {
                     requiredResources.push(this.parent.resourceCollection[index]);
                 }
@@ -625,11 +625,10 @@ export class ResourceBase {
         let dateSlots: TdData[] = <TdData[]>extend([], renderDates, null, true);
         for (let dateSlot of dateSlots) {
             if (startHour) {
-                dateSlot.startHour =
-                    this.parent.globalize.parseDate(startHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+                dateSlot.startHour = this.parent.getStartEndTime(startHour);
             }
             if (endHour) {
-                dateSlot.endHour = this.parent.globalize.parseDate(endHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+                dateSlot.endHour = this.parent.getStartEndTime(endHour);
             }
             if (groupOrder) {
                 dateSlot.groupOrder = groupOrder;

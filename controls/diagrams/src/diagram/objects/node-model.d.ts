@@ -659,7 +659,6 @@ export interface BpmnSubEventModel {
 
 /**
  * Interface for a class BpmnTransactionSubProcess
- * @private
  */
 export interface BpmnTransactionSubProcessModel {
 
@@ -1671,7 +1670,6 @@ export interface SwimLaneModel extends ShapeModel{
 
 /**
  * Interface for a class ChildContainer
- * @private
  */
 export interface ChildContainerModel {
 

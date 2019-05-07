@@ -62,6 +62,9 @@ var Columns = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(null)
     ], Columns.prototype, "step", void 0);
+    __decorate([
+        Property(null)
+    ], Columns.prototype, "value", void 0);
     return Columns;
 }(ChildProperty));
 var Rule = /** @__PURE__ @class */ (function (_super) {
@@ -890,17 +893,21 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         }
         return result;
     };
-    QueryBuilder.prototype.renderMultiSelect = function (rule, parentId, i, selectedValue) {
+    QueryBuilder.prototype.renderMultiSelect = function (rule, parentId, i, selectedValue, values) {
         var isFetched = false;
         var ds;
+        var isValues = false;
         if (this.dataColl[1]) {
             if (Object.keys(this.dataColl[1]).indexOf(rule.field) > -1) {
                 isFetched = true;
                 ds = this.getDistinctValues(this.dataColl, rule.field);
             }
         }
+        if (!this.dataColl.length && values.length) {
+            isValues = true;
+        }
         var multiSelectObj = new MultiSelect({
-            dataSource: isFetched ? ds : this.dataManager,
+            dataSource: isValues ? values : (isFetched ? ds : this.dataManager),
             query: new Query([rule.field]),
             fields: { text: rule.field, value: rule.field },
             value: selectedValue,
@@ -911,6 +918,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             actionBegin: this.multiSelectOpen.bind(this, parentId + '_valuekey' + i)
         });
         multiSelectObj.appendTo('#' + parentId + '_valuekey' + i);
+        this.updateRules(multiSelectObj.element, selectedValue, 0);
     };
     QueryBuilder.prototype.multiSelectOpen = function (parentId, args) {
         var _this = this;
@@ -976,13 +984,31 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var fieldObj = getComponent(document.getElementById(parentId + '_filterkey'), 'dropdownlist');
         return this.columns[fieldObj.index];
     };
+    QueryBuilder.prototype.setDefaultValue = function (parentId, isArryValue, isNumber) {
+        var itemData = this.getItemData(parentId);
+        if (isNullOrUndefined(itemData.value)) {
+            return isNumber ? isArryValue ? [0, 0] : 0 : isArryValue ? [] : '';
+        }
+        if (isArryValue) {
+            if (!(itemData.value instanceof Array)) {
+                return [itemData.value];
+            }
+        }
+        else {
+            if (itemData.value instanceof Array) {
+                return itemData.value[0];
+            }
+        }
+        // this.updateRules(ruleValElem, itemData.defaultValue, idx);
+        return itemData.value;
+    };
     QueryBuilder.prototype.renderStringValue = function (parentId, rule, operator, idx, ruleValElem) {
         var selectedVal;
         var columnData = this.getItemData(parentId);
-        var selectedValue = this.isImportRules ? rule.value : '';
-        if ((operator === 'in' || operator === 'notin') && this.dataColl.length) {
-            selectedVal = this.isImportRules ? rule.value : [];
-            this.renderMultiSelect(columnData, parentId, idx, selectedVal);
+        var selectedValue = this.isImportRules ? rule.value : this.setDefaultValue(parentId, false, false);
+        if ((operator === 'in' || operator === 'notin') && (this.dataColl.length || columnData.values)) {
+            selectedVal = this.isImportRules ? rule.value : this.setDefaultValue(parentId, true, false);
+            this.renderMultiSelect(columnData, parentId, idx, selectedVal, columnData.values);
             if (this.displayMode === 'Vertical' || this.element.className.indexOf('e-device') > -1) {
                 ruleValElem.style.width = '100%';
             }
@@ -993,7 +1019,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             if (operator === 'in' || operator === 'notin') {
-                selectedVal = this.isImportRules ? rule.value : [];
+                selectedVal = this.isImportRules ? rule.value : this.setDefaultValue(parentId, true, false);
                 selectedValue = selectedVal.join(',');
             }
             var inputobj = new TextBox({
@@ -1006,12 +1032,11 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         }
     };
     QueryBuilder.prototype.renderNumberValue = function (parentId, rule, operator, idx, ruleValElem, itemData, length) {
-        var selectedValue = this.isImportRules ? rule.value : 0;
-        var selectedVal;
         var columnData = this.getItemData(parentId);
-        if ((operator === 'in' || operator === 'notin') && this.dataColl.length) {
-            selectedVal = this.isImportRules ? rule.value : [];
-            this.renderMultiSelect(columnData, parentId, idx, selectedVal);
+        var selectedVal = this.isImportRules ? rule.value : this.setDefaultValue(parentId, false, true);
+        if ((operator === 'in' || operator === 'notin') && (this.dataColl.length || columnData.values)) {
+            selectedVal = this.isImportRules ? rule.value : this.setDefaultValue(parentId, true, false);
+            this.renderMultiSelect(columnData, parentId, idx, selectedVal, columnData.values);
             if (this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical') {
                 ruleValElem.style.width = '100%';
             }
@@ -1021,7 +1046,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             }
         }
         else if (operator === 'in' || operator === 'notin') {
-            selectedVal = this.isImportRules ? rule.value : [];
+            selectedVal = this.isImportRules ? rule.value : this.setDefaultValue(parentId, true, false);
             var selVal = selectedVal.join(',');
             var inputobj = new TextBox({
                 placeholder: 'Value',
@@ -1038,10 +1063,10 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             var max = (itemData.validation && itemData.validation.max) ? itemData.validation.max : Number.MAX_VALUE;
             var format = itemData.format ? itemData.format : 'n';
             if (length > 1 && rule) {
-                selectedValue = rule.value[idx] ? rule.value[idx] : 0;
+                selectedVal = rule.value[idx] ? rule.value[idx] : this.setDefaultValue(parentId, true, true);
             }
             var numeric = new NumericTextBox({
-                value: selectedValue,
+                value: (selectedVal instanceof Array) ? selectedVal[idx] : selectedVal,
                 format: format, min: min, max: max, width: '100%',
                 step: itemData.step ? itemData.step : 1,
                 change: this.changeValue.bind(this, idx)
@@ -1097,7 +1122,13 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                         case 'boolean':
                             {
                                 var values = itemData.values && itemData.values.length ? itemData.values : ['True', 'False'];
-                                var isCheck = this.isImportRules ? Boolean(rule.value) : true;
+                                var isCheck = false;
+                                if (itemData.value) {
+                                    isCheck = values[i].toString() === itemData.value.toString();
+                                }
+                                else if (rule.value) {
+                                    isCheck = values[i].toString() === rule.value.toString();
+                                }
                                 var radiobutton = new RadioButton({
                                     label: values[i].toString(), name: parentId + 'default', checked: isCheck, value: values[i],
                                     change: this.changeValue.bind(this, i)
@@ -1110,6 +1141,10 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                             {
                                 var selectedValue = new Date();
                                 var selVal = void 0;
+                                if (itemData.value) {
+                                    selectedValue = itemData.value instanceof Date ?
+                                        itemData.value : new Date(itemData.value);
+                                }
                                 if (this.isImportRules && rule && rule.value) {
                                     selectedValue = (length_1 > 1) ? new Date(rule.value[i]) : new Date(rule.value);
                                     var format = void 0;
@@ -1264,6 +1299,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 else {
                     rule.value = this.intl.formatDate(getComponent(element, controlName).value, format);
                 }
+                break;
+            case 'multiselect':
+                rule.value = getComponent(element, controlName).value;
                 break;
         }
     };
@@ -2056,7 +2094,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var pred;
         var pred2;
         var ruleValue;
-        var matchCase = false;
+        var ignoreCase = false;
         var column;
         for (var i = 0, len = ruleColl.length; i < len; i++) {
             var keys = Object.keys(ruleColl[i]);
@@ -2078,9 +2116,11 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             }
             else if (ruleColl[i].operator.length) {
                 var oper = ruleColl[i].operator.toLowerCase();
-                var strOperColl = ['contains', 'startswith', 'endswith'];
                 var dateOperColl = ['equal', 'notequal'];
-                matchCase = (strOperColl.indexOf(oper) > -1 || (ruleColl[i].type === 'date' && dateOperColl.indexOf(oper) > -1));
+                ignoreCase = this.matchCase ? false : true;
+                if (ruleColl[i].type === 'date' && dateOperColl.indexOf(oper) > -1) {
+                    ignoreCase = true;
+                }
                 column = this.getColumn(ruleColl[i].field);
                 if (ruleColl[i].type === 'date') {
                     var format = { type: 'dateTime', format: column.format || 'MM/dd/yyyy' };
@@ -2096,7 +2136,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     else {
                         var value = ruleValue;
                         if (value !== '') {
-                            pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue, matchCase);
+                            pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue, ignoreCase);
                         }
                     }
                 }
@@ -2108,10 +2148,10 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                         else {
                             var value = ruleValue;
                             if (pred && value !== '') {
-                                pred = pred.and(ruleColl[i].field, ruleColl[i].operator, ruleValue, matchCase);
+                                pred = pred.and(ruleColl[i].field, ruleColl[i].operator, ruleValue, ignoreCase);
                             }
                             else if (value !== '') {
-                                pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue, matchCase);
+                                pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue, ignoreCase);
                             }
                         }
                     }
@@ -2122,10 +2162,10 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                         else {
                             var value = ruleValue;
                             if (pred && value !== '') {
-                                pred = pred.or(ruleColl[i].field, ruleColl[i].operator, ruleValue, matchCase);
+                                pred = pred.or(ruleColl[i].field, ruleColl[i].operator, ruleValue, ignoreCase);
                             }
                             else if (value !== '') {
-                                pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue, matchCase);
+                                pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue, ignoreCase);
                             }
                         }
                     }
@@ -2577,6 +2617,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property('auto')
     ], QueryBuilder.prototype, "width", void 0);
+    __decorate([
+        Property(false)
+    ], QueryBuilder.prototype, "matchCase", void 0);
     __decorate([
         Complex({ condition: 'and', rules: [] }, Rule)
     ], QueryBuilder.prototype, "rule", void 0);

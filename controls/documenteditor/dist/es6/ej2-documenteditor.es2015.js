@@ -15428,9 +15428,11 @@ class Layout {
                 if (!isNullOrUndefined(fieldCode) && fieldCode.toLowerCase().match('numpages')) {
                     let textElement = fieldBegin.fieldSeparator.nextNode;
                     if (!isNullOrUndefined(textElement)) {
+                        let prevPageNum = textElement.text;
                         textElement.text = this.viewer.pages.length.toString();
                         let paragraph = fieldBegin.line.paragraph;
-                        if (!isNullOrUndefined(paragraph.bodyWidget) && !isNullOrUndefined(paragraph.bodyWidget.page)) {
+                        if (!isNullOrUndefined(paragraph.bodyWidget) && !isNullOrUndefined(paragraph.bodyWidget.page)
+                            && prevPageNum !== textElement.text) {
                             let lineIndex = paragraph.childWidgets.indexOf(fieldBegin.line);
                             let elementIndex = fieldBegin.line.children.indexOf(textElement);
                             this.reLayoutParagraph(paragraph, lineIndex, elementIndex);

@@ -682,6 +682,33 @@ describe('TreeGrid base module', () => {
       destroy(gridObj);
     });
   });
+  describe('keyBoard Interaction for collapse particular parent row by selecting a cell', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          columns: ['taskID', 'taskName', 'duration', 'progress'],
+        },
+        done
+      );
+    });
+    it('keyBoard Interaction', () => {
+      //gridObj.selectCell({ cellIndex: 3, rowIndex: 0 }, true);
+      debugger;
+      gridObj.keyboardModule.keyAction({ action: 'ctrlShiftUpArrow', preventDefault: preventDefault,
+          target: gridObj.getRows()[0].getElementsByClassName('e-rowcell')[3] } as any);
+      rows = gridObj.getRows();
+      expect((rows[1] as HTMLTableRowElement).style.display).toBe('none');
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
 
 
   it('memory leak', () => {

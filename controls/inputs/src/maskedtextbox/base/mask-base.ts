@@ -623,12 +623,6 @@ function triggerMaskChangeEvent(event: KeyboardEvent, oldValue: string): void {
 function maskInputKeyUpHandler(event: KeyboardEvent): void {
     if (this.mask) {
         let collec: { value: string, startIndex: number, endIndex: number };
-        let key: string = event.key;
-        if (key && key.length === 1 && this.floatLabelType === 'Never' && this.undoCollec.length > 0) {
-            if (this.undoCollec[this.undoCollec.length - 1].value === this.element.value) {
-                validateValue.call(this, key, event.ctrlKey, event);
-            }
-        }
         if (!this.maskKeyPress && event.keyCode === 229) {
             let oldEventVal: string;
             if (this.element.value.length === 1) {
@@ -671,7 +665,6 @@ function maskInputKeyUpHandler(event: KeyboardEvent): void {
         }
     } else {
         triggerMaskChangeEvent.call(this, event);
-        this.value = this.element.value;
     }
     if (this.element.selectionStart === 0 && this.element.selectionEnd === 0) {
         // tslint:disable-next-line

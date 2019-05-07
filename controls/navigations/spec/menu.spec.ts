@@ -81,7 +81,6 @@ describe('Menu', () => {
                 },
                 {
                     text: 'technologies',
-                    iconCss: 'e-icons e-share',
                     items: [
                         {
                             text: 'Programming Languages',
@@ -217,6 +216,65 @@ describe('Menu', () => {
             expect(wrap.tagName).toEqual('EJS-MENU');
             expect(wrap.children[0].classList.contains('e-menu')).toBeTruthy();
         });
+
+        it('Hamburger mode with vertical orientation Checking', () => {
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items, orientation: 'Vertical', hamburgerMode: true }, '#menu');
+            let wrap: HTMLElement = menu.getWrapper();
+            expect(wrap.classList.contains('e-hamburger')).toEqual(true);
+            expect(wrap.children[0].classList.contains('e-vertical')).toEqual(true);
+        });
+
+        it('Hamburger mode with user interaction checking', () => {
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items, hamburgerMode: true }, '#menu');
+            let wrap: HTMLElement = menu.getWrapper();
+            (wrap.children[0].getElementsByClassName('e-menu-icon')[0] as HTMLElement).click();
+            expect(menu.element.classList.contains('e-hide-menu')).toBeFalsy();
+            // Sub menu li
+            let li: HTMLElement = ul.children[1] as HTMLElement;
+            triggerMouseEvent(li, 'mouseover');
+            expect(li.getElementsByTagName('ul').length).toBeGreaterThan(0);
+            let subLi: HTMLElement = li.getElementsByTagName('ul')[0].children[2] as HTMLElement;
+            triggerMouseEvent(subLi, 'mouseover');
+            expect(subLi.getElementsByTagName('ul').length).toBeGreaterThan(0);
+            (wrap.children[0].getElementsByClassName('e-menu-icon')[0] as HTMLElement).click();
+            expect(menu.element.classList.contains('e-hide-menu')).toBeTruthy();
+            menu.destroy();
+            menu = new Menu({ items: items, orientation: 'Vertical' }, '#menu');
+            menu.hamburgerMode = true;
+            menu.dataBind();
+            expect(menu.element.previousElementSibling.classList.contains('e-vertical')).toBeTruthy();
+        });
+
+        it('target with or without hamburger mode checking', () => {
+            document.body.appendChild(ul);
+            let trgtElem: HTMLElement = createElement('button', { id: 'menuTrgt' });
+            document.body.appendChild(trgtElem);
+            menu = new Menu({ items: items, hamburgerMode: true }, '#menu');
+            menu.target = '#menuTrgt';
+            menu.dataBind();
+            expect(menu.element.classList.contains('e-hide-menu')).toBeTruthy();
+            menu.destroy();
+            menu = new Menu({ items: items, target: '#menuTrgt' }, '#menu');
+            menu.hamburgerMode = true;
+            menu.dataBind();
+            expect(menu.element.previousElementSibling.classList.contains('e-vertical')).toBeTruthy();
+            menu.destroy();
+            menu = new Menu({ items: items, hamburgerMode: true, target: '#menuTrgt' }, '#menu');
+            menu.target = '';
+            menu.dataBind();
+            expect(menu.element.previousElementSibling.classList.contains('e-vertical')).toBeTruthy();
+            menu.destroy();
+            menu = new Menu({ items: items, orientation: 'Vertical', target: '#menuTrgt' }, '#menu');
+            menu.title = 'Hamburger';
+            menu.dataBind();
+            let wrap: HTMLElement = menu.getWrapper();
+            menu.hamburgerMode = true;
+            menu.dataBind();
+            expect(menu.element.previousElementSibling.classList.contains('e-vertical')).toBeFalsy();
+            expect(wrap.getElementsByClassName('e-menu-title')[0].innerHTML).toBe('Hamburger');
+        });
     });
 
     describe('Property', () => {
@@ -235,6 +293,23 @@ describe('Menu', () => {
             menu = new Menu({ items: items, orientation: 'Vertical' }, '#menu');
             let wrap: HTMLElement = menu.getWrapper();
             expect(wrap.children[0].classList.contains('e-vertical')).toEqual(true);
+        });
+        it('Hamburger mode Checking', () => {
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items, hamburgerMode: true }, '#menu');
+            let wrap: HTMLElement = menu.getWrapper();
+            expect(wrap.classList.contains('e-hamburger')).toEqual(true);
+            menu.hamburgerMode = false;
+            menu.dataBind();
+            expect(wrap.classList.contains('e-hamburger')).toEqual(false);
+        });
+        it('title Checking', () => {
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items, hamburgerMode: true }, '#menu');
+            menu.title = 'Hamburger Menu';
+            menu.dataBind();
+            let wrap: HTMLElement = menu.getWrapper();
+            expect(wrap.getElementsByClassName('e-menu-title')[0].innerHTML).toEqual('Hamburger Menu');
         });
         it('flat datasource binding', () => {
             document.body.appendChild(ul);
@@ -298,6 +373,21 @@ describe('Menu', () => {
             menu.removeItems(['blog'], true);
             expect(menu.items[4].separator).toBeTruthy();
         });
+
+        it('open and close', () => {
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items, hamburgerMode: true }, '#menu');
+            menu.open();
+            expect(menu.element.classList.contains('e-hide-menu')).toBeFalsy();
+            menu.close();
+            expect(menu.element.classList.contains('e-hide-menu')).toBeTruthy();
+            menu.hamburgerMode = false;
+            menu.dataBind();
+            menu.open();
+            expect(menu.element.classList.contains('e-hide-menu')).toBeFalsy();
+            menu.close();
+            expect(menu.element.classList.contains('e-hide-menu')).toBeFalsy();
+        });
     });
 
     describe('Events', () => {
@@ -358,6 +448,26 @@ describe('Menu', () => {
             menu.dataBind();
             expect(ul.classList.contains('e-vertical')).toBeFalsy();
         });
+        it('hamburger mode', () => {
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items }, '#menu');
+            menu.hamburgerMode = true;
+            menu.dataBind();
+            expect(menu.getWrapper().classList.contains('e-hamburger')).toBeTruthy();
+            menu.hamburgerMode = false;
+            menu.dataBind();
+            expect(menu.getWrapper().classList.contains('e-hamburger')).toBeFalsy();
+        });
+        it('hamburger mode with orientation', () => {
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items, hamburgerMode: true }, '#menu');
+            menu.orientation = 'Vertical';
+            menu.dataBind();
+            expect(ul.previousElementSibling.classList.contains('e-vertical')).toBeTruthy();
+            menu.orientation = 'Horizontal';
+            menu.dataBind();
+            expect(ul.previousElementSibling.classList.contains('e-vertical')).toBeFalsy();
+        });
         it('items', () => {
             document.body.appendChild(ul);
             menu = new Menu({ items: items }, '#menu');
@@ -417,6 +527,7 @@ describe('Menu', () => {
             triggerMouseEvent(li, 'mouseover');
             let popup: Element[] = menu.getPopups();
             expect(popup.length).toBe(1);
+            triggerMouseEvent(li, 'mousedown');
             triggerMouseEvent(document.body, 'mouseover');
             popup = menu.getPopups();
             expect(popup.length).toBe(0);
@@ -515,6 +626,12 @@ describe('Menu', () => {
             type: 'keyup',
             target: null
         };
+        let enterEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            action: 'enter',
+            type: 'keyup',
+            target: null
+        };
         it('end arrow action', () => {
             document.body.appendChild(ul);
             menu = new Menu({ items: items }, '#menu');
@@ -565,6 +682,15 @@ describe('Menu', () => {
             let li: Element[] = <Element[] & NodeListOf<HTMLLIElement>>subElem.querySelectorAll('li');
             expect((li[li.length - 1] as Element).classList.contains('e-focused')).toBe(true);
             menu.closeMenu(1);
+        });
+        it('enter action', () => {
+            document.body.appendChild(ul);
+            menu = new Menu({ items: items, hamburgerMode: true }, '#menu');
+            expect(menu.element.classList.contains('e-hide-menu')).toBe(true);
+            menu.getWrapper().querySelector('.e-menu-header .e-menu-icon').focus();
+            enterEventArgs.target = document.activeElement;
+            menu.keyBoardHandler(enterEventArgs);
+            expect(menu.element.classList.contains('e-hide-menu')).toBe(false);
         });
         it('rtl - right arrow action', () => {
             document.body.appendChild(ul);

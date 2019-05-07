@@ -54,6 +54,11 @@ export declare class Columns extends ChildProperty<Columns> {
      * @default null
      */
     step: number;
+    /**
+     * Specifies the default value for columns.
+     * @default null
+     */
+    value: string[] | number[] | string | number | boolean | Date;
 }
 export declare class Rule extends ChildProperty<Rule> {
     /**
@@ -239,6 +244,12 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      */
     width: string;
     /**
+     * If match case is set to true, the grid filters the records with exact match.
+     * if false, it filters case insensitive records (uppercase and lowercase letters treated the same).
+     * @default false
+     */
+    matchCase: boolean;
+    /**
      * Defines rules in the QueryBuilder.
      * Specifies the initial rule, which is JSON data.
      * @default {}
@@ -282,6 +293,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private closePopup;
     private processTemplate;
     private getItemData;
+    private setDefaultValue;
     private renderStringValue;
     private renderNumberValue;
     private processValueString;

@@ -741,6 +741,39 @@ describe('DropDownList', () => {
         });
     });
 
+    describe('EJ2-26287: popup collision not working', () => {
+        let element: HTMLInputElement;
+        let data: { [key: string]: Object }[] = [
+            { id: 'list1', text: 'JAVA' },
+            { id: 'list2', text: 'C#' }
+        ];
+        let listObj: DropDownList;
+        beforeAll(() => {
+            let parentEle: any = <HTMLInputElement>createElement('div');
+            document.body.appendChild(parentEle);
+            
+            let divEle: any =  <HTMLInputElement>createElement('div', { styles: 'height:700px; position: relative;' });
+            parentEle.appendChild(divEle);
+            element = <HTMLInputElement>createElement('input', { id: 'ddl' }); 
+            parentEle.appendChild(element);
+            listObj = new DropDownList({
+                dataSource: data, 
+                fields: { text: "text", value: "id" },
+                allowFiltering: true
+            });
+            listObj.appendTo('#ddl');
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+        });
+        it('when enable the filtering', () => { 
+            listObj.focusIn();
+            listObj.showPopup();
+            expect((listObj as any).list.querySelectorAll('li').length === data.length).toBe(true); 
+            expect(parseInt(getComputedStyle((listObj as any).popupObj.element).marginTop) === 0).toBe(true);
+        });
+    });
+
     describe('EJ2-18309 - Maximum call stack error while emptying dataSource with filtering and remote data', () => {
         let listObj: any;
         let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdownlist' });

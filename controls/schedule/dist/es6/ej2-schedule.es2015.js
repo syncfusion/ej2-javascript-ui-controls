@@ -3981,9 +3981,10 @@ class EventBase {
                 app.isSpanned = true;
                 data.push(app);
                 start = end;
-                if ((new Date(start.getTime()).setHours(0, 0, 0, 0) === new Date(eventEndTime.getTime()).setHours(0, 0, 0, 0))
+                if ((resetTime(new Date(start.getTime())).getTime() === resetTime(new Date(eventEndTime.getTime())).getTime())
                     && !(end.getTime() === eventEndTime.getTime())) {
-                    end = new Date(new Date(start.getTime()).setHours(eventEndTime.getHours(), eventEndTime.getMinutes()));
+                    end = new Date(start.getTime());
+                    end = new Date(end.setHours(eventEndTime.getHours(), eventEndTime.getMinutes(), eventEndTime.getSeconds()));
                 }
                 else {
                     end = addDays(resetTime(new Date(start.getTime())), 1);
@@ -7854,7 +7855,7 @@ class EventWindow {
         else {
             startDate = new Date(this.parent.activeCellsData.startTime.getTime());
             if (this.parent.currentView === 'Month' || this.parent.currentView === 'MonthAgenda' || this.parent.activeCellsData.isAllDay) {
-                let startHour = this.parent.globalize.parseDate(this.parent.workHours.start, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+                let startHour = this.parent.getStartEndTime(this.parent.workHours.start);
                 startDate.setHours(startHour.getHours(), startHour.getMinutes(), startHour.getSeconds());
                 endDate = new Date(startDate.getTime());
                 endDate.setMilliseconds(MS_PER_MINUTE * this.getSlotDuration());
@@ -9617,7 +9618,7 @@ class ResourceBase {
         this.colorIndex = null;
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             for (let resource of this.parent.activeViewOptions.group.resources) {
-                let index = findIndexInData(this.parent.resources, 'name', resource);
+                let index = findIndexInData(this.parent.resourceCollection, 'name', resource);
                 if (index >= 0) {
                     requiredResources.push(this.parent.resourceCollection[index]);
                 }
@@ -9711,11 +9712,10 @@ class ResourceBase {
         let dateSlots = extend([], renderDates, null, true);
         for (let dateSlot of dateSlots) {
             if (startHour) {
-                dateSlot.startHour =
-                    this.parent.globalize.parseDate(startHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+                dateSlot.startHour = this.parent.getStartEndTime(startHour);
             }
             if (endHour) {
-                dateSlot.endHour = this.parent.globalize.parseDate(endHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+                dateSlot.endHour = this.parent.getStartEndTime(endHour);
             }
             if (groupOrder) {
                 dateSlot.groupOrder = groupOrder;
@@ -10516,6 +10516,17 @@ let Schedule = class Schedule extends Component {
             remove(eventClone);
         }
     }
+    getStartEndTime(startEndTime) {
+        if (!isNullOrUndefined(startEndTime) && startEndTime !== '') {
+            let startEndDate = resetTime(new Date());
+            let timeString = startEndTime.split(':');
+            if (timeString.length === 2) {
+                startEndDate.setHours(parseInt(timeString[0], 10), parseInt(timeString[1], 10), 0);
+            }
+            return startEndDate;
+        }
+        return null;
+    }
     onDocumentClick(args) {
         this.notify(documentClick, { event: args });
     }
@@ -10871,8 +10882,8 @@ let Schedule = class Schedule extends Component {
      * @returns {void}
      */
     setWorkHours(dates, start, end, groupIndex) {
-        let startHour = this.globalize.parseDate(start, { skeleton: 'Hm', calendar: this.getCalendarMode() });
-        let endHour = this.globalize.parseDate(end, { skeleton: 'Hm', calendar: this.getCalendarMode() });
+        let startHour = this.getStartEndTime(start);
+        let endHour = this.getStartEndTime(end);
         let tableEle = this.getContentTable();
         if (isNullOrUndefined(startHour) || isNullOrUndefined(endHour) || !tableEle) {
             return;
@@ -10883,13 +10894,14 @@ let Schedule = class Schedule extends Component {
         if (startHour < viewStartHour) {
             startHour = viewStartHour;
         }
-        if (endHour > this.activeView.getEndHour()) {
-            endHour = this.activeView.getEndHour();
+        let viewEndHour = this.activeView.getEndHour();
+        if (endHour > viewEndHour) {
+            endHour = viewEndHour;
         }
         let msMajorInterval = this.activeViewOptions.timeScale.interval * MS_PER_MINUTE;
         let msInterval = msMajorInterval / this.activeViewOptions.timeScale.slotCount;
-        let startIndex = Math.round((getDateInMs(startHour) - getDateInMs(viewStartHour)) / msInterval);
-        let endIndex = Math.ceil((getDateInMs(endHour) - getDateInMs(viewStartHour)) / msInterval);
+        let startIndex = Math.round((startHour.getTime() - viewStartHour.getTime()) / msInterval);
+        let endIndex = Math.ceil((endHour.getTime() - viewStartHour.getTime()) / msInterval);
         let cells = [];
         for (let date of dates) {
             resetTime(date);
@@ -10899,6 +10911,11 @@ let Schedule = class Schedule extends Component {
             }
             let colIndex = this.getIndexOfDate(renderDates, date);
             if (colIndex >= 0) {
+                if (this.activeView.isTimelineView()) {
+                    let slotsPerDay = Math.round((viewEndHour.getTime() - viewStartHour.getTime()) / msInterval);
+                    startIndex = startIndex + (colIndex * slotsPerDay);
+                    endIndex = endIndex + (colIndex * slotsPerDay);
+                }
                 for (let i = startIndex; i < endIndex; i++) {
                     if (this.activeView.isTimelineView()) {
                         let rowIndex = (!isNullOrUndefined(groupIndex)) ? groupIndex : 0;
@@ -12922,14 +12939,14 @@ class ViewBase {
         return addDays(this.renderDates[this.renderDates.length - 1], 1);
     }
     getStartHour() {
-        let startHour = this.parent.globalize.parseDate(this.parent.activeViewOptions.startHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        let startHour = this.parent.getStartEndTime(this.parent.activeViewOptions.startHour);
         if (isNullOrUndefined(startHour)) {
             startHour = new Date(2000, 0, 0, 0);
         }
         return startHour;
     }
     getEndHour() {
-        let endHour = this.parent.globalize.parseDate(this.parent.activeViewOptions.endHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        let endHour = this.parent.getStartEndTime(this.parent.activeViewOptions.endHour);
         if (isNullOrUndefined(endHour)) {
             endHour = new Date(2000, 0, 0, 0);
         }
@@ -13147,6 +13164,9 @@ class ViewBase {
     resetColWidth() {
         let colElements = this.getColElements();
         colElements.forEach((col) => col.style.width = '');
+    }
+    getContentAreaElement() {
+        return this.element.querySelector('.' + CONTENT_WRAP_CLASS);
     }
 }
 
@@ -14463,7 +14483,7 @@ class VerticalView extends ViewBase {
         }
     }
     scrollToHour(hour) {
-        let date = this.parent.globalize.parseDate(hour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        let date = this.parent.getStartEndTime(hour);
         if (isNullOrUndefined(date)) {
             return;
         }
@@ -14490,8 +14510,8 @@ class VerticalView extends ViewBase {
     }
     getDateSlots(renderDates, workDays, workStartHour = this.parent.workHours.start, workEndHour = this.parent.workHours.end) {
         let dateCol = [];
-        let start = this.parent.globalize.parseDate(workStartHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
-        let end = this.parent.globalize.parseDate(workEndHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        let start = this.parent.getStartEndTime(workStartHour);
+        let end = this.parent.getStartEndTime(workEndHour);
         for (let col of renderDates) {
             let classList$$1 = [HEADER_CELLS_CLASS];
             if (this.isCurrentDate(col)) {
@@ -14935,9 +14955,6 @@ class VerticalView extends ViewBase {
     getLeftPanelElement() {
         return this.element.querySelector('.' + TIME_CELLS_WRAP_CLASS);
     }
-    getContentAreaElement() {
-        return this.element.querySelector('.' + CONTENT_WRAP_CLASS);
-    }
     getEndDateFromStartDate(start) {
         let msMajorInterval = this.parent.activeViewOptions.timeScale.interval * MS_PER_MINUTE;
         let msInterval = msMajorInterval / this.parent.activeViewOptions.timeScale.slotCount;
@@ -14961,8 +14978,8 @@ class VerticalView extends ViewBase {
             length = 1;
         }
         let dt = new Date(msStartHour);
-        let start = this.parent.globalize.parseDate(this.parent.workHours.start, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
-        let end = this.parent.globalize.parseDate(this.parent.workHours.end, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        let start = this.parent.getStartEndTime(this.parent.workHours.start);
+        let end = this.parent.getStartEndTime(this.parent.workHours.end);
         for (let i = 0; i < length; i++) {
             let majorTickDivider = i % (msMajorInterval / msInterval);
             let row = {
@@ -15458,9 +15475,6 @@ class Month extends ViewBase {
         let args = { elementType: type, element: ntd, date: data.date, groupIndex: data.groupIndex };
         this.parent.trigger(renderCell, args);
         return ntd;
-    }
-    getContentAreaElement() {
-        return this.element.querySelector('.' + CONTENT_WRAP_CLASS);
     }
     renderDateHeaderElement(data, ntd) {
         if (this.parent.currentView === 'TimelineMonth') {
@@ -15989,7 +16003,7 @@ class Agenda extends ViewBase {
         let agendaDate = resetTime(this.parent.selectedDate);
         let tBody = this.parent.getContentTable();
         tBody.innerHTML = '';
-        this.renderContent(tBody, agendaDate);
+        this.renderInitialContent(tBody, agendaDate);
         this.agendaBase.wireEventActions();
         let contentArea = closest(tBody, '.' + CONTENT_WRAP_CLASS);
         contentArea.scrollTop = 1;
@@ -16006,23 +16020,36 @@ class Agenda extends ViewBase {
         }
         this.parent.eventsProcessed = this.parent.eventsProcessed.concat(this.agendaBase.processAgendaEvents(processedData));
     }
-    renderContent(tBody, agendaDate) {
-        let fieldMapping = this.parent.eventFields;
+    renderInitialContent(tBody, agendaDate) {
+        let emptyTBody = createElement('tbody');
         let firstDate = new Date(agendaDate.getTime());
-        let lastDate = (!this.parent.activeViewOptions.allowVirtualScrolling) ?
-            addDays(firstDate, this.parent.agendaDaysCount) : this.getEndDateFromStartDate(firstDate);
-        let isObject = this.appointmentFiltering(firstDate, lastDate);
-        if (isObject.length === 0 && this.parent.activeViewOptions.allowVirtualScrolling) {
-            lastDate = firstDate;
-            firstDate = new Date(this.minDate.getTime());
-            isObject = this.appointmentFiltering(firstDate, lastDate);
-            if (isObject.length === 0) {
-                firstDate = lastDate;
-                lastDate = new Date(this.maxDate.getTime());
-                isObject = this.appointmentFiltering(firstDate, lastDate);
+        let lastDate = (this.parent.activeViewOptions.allowVirtualScrolling && this.parent.hideEmptyAgendaDays) ?
+            this.getEndDateFromStartDate(firstDate) : addDays(firstDate, this.parent.agendaDaysCount);
+        this.renderContent(emptyTBody, firstDate, lastDate);
+        append([].slice.call(emptyTBody.childNodes), tBody);
+        // Initial rendering, to load previous date events upto scroll bar enable
+        if (this.parent.activeViewOptions.allowVirtualScrolling && this.parent.hideEmptyAgendaDays && this.parent.eventsData.length > 0) {
+            let contentArea = this.getContentAreaElement();
+            while (contentArea.offsetWidth <= contentArea.clientWidth) {
+                let emptyTBody = createElement('tbody');
+                lastDate = firstDate;
+                firstDate = addDays(lastDate, -this.parent.agendaDaysCount);
+                this.renderContent(emptyTBody, firstDate, lastDate);
+                prepend([].slice.call(emptyTBody.childNodes), tBody);
+                if (firstDate <= this.minDate) {
+                    break;
+                }
             }
         }
-        if (isObject.length > 0 && this.parent.activeViewOptions.allowVirtualScrolling) {
+        if (tBody.childNodes.length <= 0) {
+            this.agendaBase.renderEmptyContent(tBody, agendaDate);
+        }
+    }
+    renderContent(tBody, agendaDate, lastDate) {
+        let fieldMapping = this.parent.eventFields;
+        let firstDate = new Date(agendaDate.getTime());
+        let isObject = this.appointmentFiltering(firstDate, lastDate);
+        if (isObject.length > 0 && this.parent.activeViewOptions.allowVirtualScrolling && this.parent.hideEmptyAgendaDays) {
             let appoint = isObject;
             agendaDate = appoint[0][fieldMapping.startTime];
             agendaDate = new Date(new Date(agendaDate.getTime()).setHours(0, 0, 0, 0));
@@ -16030,8 +16057,6 @@ class Agenda extends ViewBase {
         }
         let endDate;
         if (!this.parent.hideEmptyAgendaDays || (this.parent.agendaDaysCount > 0 && isObject.length > 0)) {
-            let noOfDays = (!this.parent.hideEmptyAgendaDays || !this.parent.activeViewOptions.allowVirtualScrolling ||
-                this.parent.agendaDaysCount < isObject.length) ? this.parent.agendaDaysCount : isObject.length;
             if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
                 let date = agendaDate;
                 if (!this.parent.activeViewOptions.group.byDate) {
@@ -16045,7 +16070,7 @@ class Agenda extends ViewBase {
                 this.agendaBase.calculateResourceTableElement(tBody, this.parent.agendaDaysCount, date);
             }
             else {
-                for (let day = 0; day < noOfDays; day++) {
+                for (let day = 0; day < this.parent.agendaDaysCount; day++) {
                     let filterData = [];
                     filterData = this.appointmentFiltering(agendaDate);
                     let nTr = this.agendaBase.createTableRowElement(agendaDate, 'data');
@@ -16081,10 +16106,6 @@ class Agenda extends ViewBase {
                 }
             }
             endDate = new Date(agendaDate.getTime() - MS_PER_DAY);
-        }
-        else {
-            this.agendaBase.renderEmptyContent(tBody, agendaDate);
-            endDate = addDays(agendaDate, this.parent.agendaDaysCount - 1);
         }
         this.agendaDates = { start: firstDate, end: endDate };
     }
@@ -16124,7 +16145,7 @@ class Agenda extends ViewBase {
             filterDate = this.getPreviousNextDate(addDays(scrollDate, -1), direction);
             filterData = this.appointmentFiltering(filterDate.start, filterDate.end);
             if (filterData.length > 0 || !this.parent.hideEmptyAgendaDays) {
-                this.renderContent(emptyTBody, filterDate.start);
+                this.renderContent(emptyTBody, filterDate.start, filterDate.end);
                 prepend([].slice.call(emptyTBody.childNodes), tBody);
                 this.agendaBase.wireEventActions();
                 for (let s = 0, element = tBody.children; s < element.length; s++) {
@@ -16142,7 +16163,7 @@ class Agenda extends ViewBase {
             filterDate = this.getPreviousNextDate(addDays(scrollDate, 1), direction);
             filterData = this.appointmentFiltering(filterDate.start, filterDate.end);
             if (filterData.length > 0 || !this.parent.hideEmptyAgendaDays) {
-                this.renderContent(emptyTBody, filterDate.start);
+                this.renderContent(emptyTBody, filterDate.start, filterDate.end);
                 append([].slice.call(emptyTBody.childNodes), tBody);
                 this.agendaBase.wireEventActions();
                 this.updateHeaderText(scrollDate);
@@ -16964,7 +16985,7 @@ class TimelineViews extends VerticalView {
         this.scrollHeaderLabels(target);
     }
     scrollToWorkHour() {
-        let start = this.parent.globalize.parseDate(this.parent.workHours.start, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        let start = this.parent.getStartEndTime(this.parent.workHours.start);
         let currDateTime = this.isWorkDay(this.parent.selectedDate) && this.parent.workHours.highlight &&
             !isNullOrUndefined(start) ? new Date(+this.parent.selectedDate).setHours(start.getHours(), start.getMinutes())
             : new Date(+this.parent.selectedDate).setHours(0, 0, 0, 0);
@@ -16975,7 +16996,7 @@ class TimelineViews extends VerticalView {
         }
     }
     scrollToHour(hour) {
-        let date = this.parent.globalize.parseDate(hour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        let date = this.parent.getStartEndTime(hour);
         if (isNullOrUndefined(date)) {
             return;
         }
@@ -17113,8 +17134,8 @@ class TimelineViews extends VerticalView {
         let resLevel = this.parent.resourceBase.renderedResources[i];
         let resSHr = resLevel.resourceData[resLevel.resource.startHourField] || this.parent.workHours.start;
         let resEHr = resLevel.resourceData[resLevel.resource.endHourField] || this.parent.workHours.end;
-        tdData.startHour = this.parent.globalize.parseDate(resSHr, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
-        tdData.endHour = this.parent.globalize.parseDate(resEHr, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        tdData.startHour = this.parent.getStartEndTime(resSHr);
+        tdData.endHour = this.parent.getStartEndTime(resEHr);
         tdData.workDays = resLevel.resourceData[resLevel.resource.workDaysField] || this.parent.workDays;
         tdData.className = resLevel.className;
         tdData.groupIndex = resLevel.groupIndex;

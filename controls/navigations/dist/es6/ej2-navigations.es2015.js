@@ -1061,6 +1061,11 @@ let MenuBase = class MenuBase extends Component {
             wrapper.classList.add(RTL);
         }
         wrapper.appendChild(this.element);
+        if (this.isMenu && this.hamburgerMode) {
+            if (!this.target) {
+                this.createHeaderContainer(wrapper);
+            }
+        }
     }
     renderItems() {
         if (!this.items.length) {
@@ -1083,16 +1088,23 @@ let MenuBase = class MenuBase extends Component {
             let targetElems = selectAll(this.target);
             for (let i = 0, len = targetElems.length; i < len; i++) {
                 target = targetElems[i];
-                if (Browser.isIos) {
-                    new Touch(target, { tapHold: this.touchHandler.bind(this) });
+                if (this.isMenu) {
+                    EventHandler.add(target, 'click', this.menuHeaderClickHandler, this);
                 }
                 else {
-                    EventHandler.add(target, 'contextmenu', this.cmenuHandler, this);
+                    if (Browser.isIos) {
+                        new Touch(target, { tapHold: this.touchHandler.bind(this) });
+                    }
+                    else {
+                        EventHandler.add(target, 'contextmenu', this.cmenuHandler, this);
+                    }
                 }
             }
             this.targetElement = target;
-            for (let parent of getScrollableParent(this.targetElement)) {
-                EventHandler.add(parent, 'scroll', this.scrollHandler, this);
+            if (!this.isMenu) {
+                for (let parent of getScrollableParent(this.targetElement)) {
+                    EventHandler.add(parent, 'scroll', this.scrollHandler, this);
+                }
             }
         }
         if (!Browser.isDevice) {
@@ -1125,15 +1137,23 @@ let MenuBase = class MenuBase extends Component {
         });
     }
     mouseDownHandler(e) {
+        let isValidLI = false;
+        if (this.isMenu && !this.showItemOnClick) {
+            let cul = this.getUlByNavIdx();
+            if (cul) {
+                isValidLI = Array.prototype.indexOf.call(cul.children, e.target.closest('li')) > -1;
+            }
+        }
         if (closest(e.target, '.e-' + this.getModuleName() + '-wrapper') !== this.getWrapper()
-            && !closest(e.target, '.e-' + this.getModuleName() + '-popup')) {
-            this.closeMenu(this.navIdx.length, e);
+            && (!closest(e.target, '.e-' + this.getModuleName() + '-popup') || isValidLI)) {
+            this.closeMenu(this.isMenu ? null : this.navIdx.length, e);
         }
     }
     keyBoardHandler(e) {
         let actionName = '';
         let trgt = e.target;
-        let actionNeeded = this.isMenu && !this.element.classList.contains('e-vertical') && this.navIdx.length < 1;
+        let actionNeeded = this.isMenu && !this.hamburgerMode && !this.element.classList.contains('e-vertical')
+            && this.navIdx.length < 1;
         e.preventDefault();
         if (this.enableScrolling && e.keyCode === 13 && trgt.classList.contains('e-scroll-nav')) {
             this.removeLIStateByClass([FOCUSED, SELECTED], [closest(trgt, '.e-' + this.getModuleName() + '-wrapper')]);
@@ -1186,7 +1206,12 @@ let MenuBase = class MenuBase extends Component {
                 this.leftEscKeyHandler(e);
                 break;
             case ENTER:
-                this.rightEnterKeyHandler(e);
+                if (this.hamburgerMode && trgt.tagName === 'SPAN' && trgt.classList.contains('e-menu-icon')) {
+                    this.menuHeaderClickHandler(e);
+                }
+                else {
+                    this.rightEnterKeyHandler(e);
+                }
                 break;
             case ESCAPE:
                 this.leftEscKeyHandler(e);
@@ -1348,6 +1373,9 @@ let MenuBase = class MenuBase extends Component {
                 if (!beforeCloseArgs.cancel) {
                     if (this.isMenu) {
                         popupEle = closest(ul, '.' + POPUP);
+                        if (this.hamburgerMode) {
+                            popupEle.parentElement.style.minHeight = '';
+                        }
                         this.unWireKeyboardEvent(popupEle);
                         this.destroyScrollObj(getInstance(popupEle.children[0], VScroll), popupEle.children[0]);
                         popupObj = getInstance(popupEle, Popup);
@@ -1420,40 +1448,37 @@ let MenuBase = class MenuBase extends Component {
                 popupWrapper = this.createElement('div', {
                     className: 'e-' + this.getModuleName() + '-wrapper ' + POPUP, id: li.id + '-menu-popup'
                 });
-                document.body.appendChild(popupWrapper);
-                let isNestedOrVerticalMenu = this.element.classList.contains('e-vertical') || this.navIdx.length !== 1;
-                popupObj = new Popup(popupWrapper, {
-                    relateTo: li,
-                    collision: { X: isNestedOrVerticalMenu || this.enableRtl ? 'none' : 'flip', Y: 'fit' },
-                    position: isNestedOrVerticalMenu ? { X: 'right', Y: 'top' } : { X: 'left', Y: 'bottom' },
-                    targetType: 'relative',
-                    enableRtl: this.enableRtl,
-                    content: ul,
-                    open: () => {
-                        let scrollEle = select('.e-menu-vscroll', popupObj.element);
-                        if (scrollEle) {
-                            scrollEle.style.height = 'inherit';
-                            scrollEle.style.maxHeight = '';
-                        }
-                        let ul = select('.e-ul', popupObj.element);
-                        popupObj.element.style.maxHeight = '';
-                        ul.focus();
-                        this.triggerOpen(ul);
-                    }
-                });
-                if (this.cssClass) {
-                    addClass([popupWrapper], this.cssClass.split(' '));
+                if (this.hamburgerMode) {
+                    top = li.offsetHeight;
+                    li.appendChild(popupWrapper);
                 }
-                popupObj.hide();
+                else {
+                    document.body.appendChild(popupWrapper);
+                }
+                let isNestedOrVerticalMenu = this.element.classList.contains('e-vertical') || this.navIdx.length !== 1;
+                popupObj = this.generatePopup(popupWrapper, ul, li, isNestedOrVerticalMenu);
+                if (this.hamburgerMode) {
+                    this.calculateIndentSize(ul, li);
+                }
+                else {
+                    if (this.cssClass) {
+                        addClass([popupWrapper], this.cssClass.split(' '));
+                    }
+                    popupObj.hide();
+                }
                 eventArgs = this.triggerBeforeOpen(li, ul, item, e, 0, 0);
-                top = eventArgs.top;
-                left = eventArgs.left;
+                if (!this.hamburgerMode) {
+                    top = eventArgs.top;
+                    left = eventArgs.left;
+                }
                 popupWrapper.style.display = 'block';
-                popupWrapper.style.maxHeight = popupWrapper.getBoundingClientRect().height + 'px';
-                this.addScrolling(popupWrapper, ul, 'vscroll', popupWrapper.offsetHeight, ul.offsetHeight);
-                this.checkScrollOffset(e);
+                if (!this.hamburgerMode) {
+                    popupWrapper.style.maxHeight = popupWrapper.getBoundingClientRect().height + 'px';
+                    this.addScrolling(popupWrapper, ul, 'vscroll', popupWrapper.offsetHeight, ul.offsetHeight);
+                    this.checkScrollOffset(e);
+                }
                 let collide;
-                if (!left && !top) {
+                if (!this.hamburgerMode && !left && !top) {
                     popupObj.refreshPosition(li, true);
                     left = parseInt(popupWrapper.style.left, 10);
                     top = parseInt(popupWrapper.style.top, 10);
@@ -1502,19 +1527,103 @@ let MenuBase = class MenuBase extends Component {
         }
         else {
             if (this.isMenu) {
-                this.wireKeyboardEvent(popupWrapper);
-                rippleEffect(popupWrapper, { selector: '.' + ITEM });
-                popupWrapper.style.left = left + 'px';
-                popupWrapper.style.top = top + 'px';
-                let animationOptions = this.animationSettings.effect !== 'None' ? {
-                    name: this.animationSettings.effect, duration: this.animationSettings.duration,
-                    timingFunction: this.animationSettings.easing
-                } : null;
-                popupObj.show(animationOptions, li);
+                if (this.hamburgerMode) {
+                    popupWrapper.style.top = top + 'px';
+                    popupWrapper.style.left = 0 + 'px';
+                    this.toggleAnimation(popupWrapper);
+                }
+                else {
+                    this.wireKeyboardEvent(popupWrapper);
+                    rippleEffect(popupWrapper, { selector: '.' + ITEM });
+                    popupWrapper.style.left = left + 'px';
+                    popupWrapper.style.top = top + 'px';
+                    let animationOptions = this.animationSettings.effect !== 'None' ? {
+                        name: this.animationSettings.effect, duration: this.animationSettings.duration,
+                        timingFunction: this.animationSettings.easing
+                    } : null;
+                    popupObj.show(animationOptions, li);
+                }
             }
             else {
                 this.setPosition(li, ul, top, left);
                 this.toggleAnimation(ul);
+            }
+        }
+    }
+    calculateIndentSize(ul, li) {
+        let liStyle = getComputedStyle(li);
+        let liIndent = parseInt(liStyle.textIndent, 10);
+        if (this.navIdx.length < 2 && !li.classList.contains('e-blankicon')) {
+            liIndent *= 2;
+        }
+        else {
+            liIndent += (liIndent / 4);
+        }
+        ul.style.textIndent = liIndent + 'px';
+        let blankIconElem = ul.querySelectorAll('.e-blankicon');
+        if (blankIconElem && blankIconElem.length) {
+            let menuIconElem = ul.querySelector('.e-menu-icon');
+            let menuIconElemStyle = getComputedStyle(menuIconElem);
+            let blankIconIndent = (parseInt(menuIconElemStyle.marginRight, 10) + menuIconElem.offsetWidth + liIndent);
+            blankIconElem.forEach((element) => element.style.textIndent = blankIconIndent + 'px');
+        }
+    }
+    generatePopup(popupWrapper, ul, li, isNestedOrVerticalMenu) {
+        let popupObj = new Popup(popupWrapper, {
+            actionOnScroll: this.hamburgerMode ? 'none' : 'reposition',
+            relateTo: li,
+            collision: this.hamburgerMode ? { X: 'none', Y: 'none' } : { X: isNestedOrVerticalMenu ||
+                    this.enableRtl ? 'none' : 'flip', Y: 'fit' },
+            position: (isNestedOrVerticalMenu && !this.hamburgerMode) ? { X: 'right', Y: 'top' } : { X: 'left', Y: 'bottom' },
+            targetType: 'relative',
+            enableRtl: this.enableRtl,
+            content: ul,
+            open: () => {
+                let scrollEle = select('.e-menu-vscroll', popupObj.element);
+                if (scrollEle) {
+                    scrollEle.style.height = 'inherit';
+                    scrollEle.style.maxHeight = '';
+                }
+                let ul = select('.e-ul', popupObj.element);
+                popupObj.element.style.maxHeight = '';
+                ul.focus();
+                this.triggerOpen(ul);
+            }
+        });
+        return popupObj;
+    }
+    createHeaderContainer(wrapper) {
+        wrapper = wrapper || this.getWrapper();
+        let spanElem = this.createElement('span', { className: 'e-' + this.getModuleName() + '-header' });
+        let spanTitle = this.createElement('span', {
+            className: 'e-' + this.getModuleName() + '-title', innerHTML: this.title
+        });
+        let spanIcon = this.createElement('span', {
+            className: 'e-icons e-' + this.getModuleName() + '-icon', attrs: { 'tabindex': '0' }
+        });
+        spanElem.appendChild(spanTitle);
+        spanElem.appendChild(spanIcon);
+        wrapper.insertBefore(spanElem, this.element);
+    }
+    openHamburgerMenu(e) {
+        if (this.hamburgerMode) {
+            let eventArgs;
+            eventArgs = this.triggerBeforeOpen(null, this.element, null, e, 0, 0);
+            if (!eventArgs.cancel) {
+                this.element.classList.remove('e-hide-menu');
+                this.triggerOpen(this.element);
+            }
+        }
+    }
+    closeHamburgerMenu(e) {
+        if (this.hamburgerMode) {
+            let beforeCloseArgs;
+            beforeCloseArgs = { element: this.element, parentItem: null, event: e, items: this.items, cancel: false };
+            this.trigger('beforeClose', beforeCloseArgs);
+            if (!beforeCloseArgs.cancel) {
+                this.closeMenu(null, e);
+                this.element.classList.add('e-hide-menu');
+                this.trigger('onClose', { element: this.element, parentItem: null, items: this.items });
             }
         }
     }
@@ -1689,7 +1798,7 @@ let MenuBase = class MenuBase extends Component {
             }
         }
         if (this.isMenu) {
-            if ((trgt.parentElement !== wrapper && !closest(trgt, '.e-' + this.getModuleName() + '-popup'))
+            if (!this.showItemOnClick && (trgt.parentElement !== wrapper && !closest(trgt, '.e-' + this.getModuleName() + '-popup'))
                 && (!cli || (cli && !this.getIndex(cli.id, true).length))) {
                 this.removeLIStateByClass([FOCUSED, SELECTED], [wrapper]);
                 if (this.navIdx.length) {
@@ -1736,6 +1845,9 @@ let MenuBase = class MenuBase extends Component {
             }
         }
         return false;
+    }
+    menuHeaderClickHandler(e) {
+        this.element.classList.contains('e-hide-menu') ? this.openHamburgerMenu(e) : this.closeHamburgerMenu(e);
     }
     clickHandler(e) {
         if (this.isTapHold) {
@@ -1808,12 +1920,17 @@ let MenuBase = class MenuBase extends Component {
                 }
             }
             else {
-                if (this.isMenu && trgt.tagName === 'DIV' && this.navIdx.length && closest(trgt, '.e-menu-vscroll')) {
-                    let popupEle = closest(trgt, '.' + POPUP);
-                    let cIdx = Array.prototype.indexOf.call(this.getPopups(), popupEle) + 1;
-                    if (cIdx < this.navIdx.length) {
-                        this.closeMenu(cIdx + 1, e);
-                        this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]);
+                if (this.isMenu) {
+                    if (trgt.tagName === 'DIV' && this.navIdx.length && closest(trgt, '.e-menu-vscroll')) {
+                        let popupEle = closest(trgt, '.' + POPUP);
+                        let cIdx = Array.prototype.indexOf.call(this.getPopups(), popupEle) + 1;
+                        if (cIdx < this.navIdx.length) {
+                            this.closeMenu(cIdx + 1, e);
+                            this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]);
+                        }
+                    }
+                    if (trgt.tagName === 'SPAN' && trgt.classList.contains('e-menu-icon')) {
+                        this.menuHeaderClickHandler(e);
                     }
                 }
                 else {
@@ -1987,18 +2104,25 @@ let MenuBase = class MenuBase extends Component {
             let targetElems = selectAll(targetSelctor);
             for (let i = 0, len = targetElems.length; i < len; i++) {
                 target = targetElems[i];
-                if (Browser.isIos) {
-                    touchModule = getInstance(target, Touch);
-                    if (touchModule) {
-                        touchModule.destroy();
-                    }
+                if (this.isMenu) {
+                    EventHandler.remove(target, 'click', this.menuHeaderClickHandler);
                 }
                 else {
-                    EventHandler.remove(target, 'contextmenu', this.cmenuHandler);
+                    if (Browser.isIos) {
+                        touchModule = getInstance(target, Touch);
+                        if (touchModule) {
+                            touchModule.destroy();
+                        }
+                    }
+                    else {
+                        EventHandler.remove(target, 'contextmenu', this.cmenuHandler);
+                    }
                 }
             }
-            for (let parent of getScrollableParent(this.targetElement)) {
-                EventHandler.remove(parent, 'scroll', this.scrollHandler);
+            if (!this.isMenu) {
+                for (let parent of getScrollableParent(this.targetElement)) {
+                    EventHandler.remove(parent, 'scroll', this.scrollHandler);
+                }
             }
         }
         if (!Browser.isDevice) {
@@ -2016,6 +2140,8 @@ let MenuBase = class MenuBase extends Component {
         }
     }
     toggleAnimation(ul, isMenuOpen = true) {
+        let pUlHeight;
+        let pElement;
         if (this.animationSettings.effect === 'None' || !isMenuOpen) {
             this.end(ul, isMenuOpen);
         }
@@ -2025,11 +2151,35 @@ let MenuBase = class MenuBase extends Component {
                 duration: this.animationSettings.duration,
                 timingFunction: this.animationSettings.easing,
                 begin: (options) => {
-                    options.element.style.display = 'block';
-                    options.element.style.maxHeight = options.element.getBoundingClientRect().height + 'px';
+                    if (this.hamburgerMode) {
+                        pElement = options.element.parentElement;
+                        options.element.style.position = 'absolute';
+                        pUlHeight = pElement.offsetHeight;
+                        options.element.style.maxHeight = options.element.offsetHeight + 'px';
+                        pElement.style.maxHeight = '';
+                    }
+                    else {
+                        options.element.style.display = 'block';
+                        options.element.style.maxHeight = options.element.getBoundingClientRect().height + 'px';
+                    }
+                },
+                progress: (options) => {
+                    if (this.hamburgerMode) {
+                        pElement.style.minHeight = (pUlHeight + options.element.offsetHeight) + 'px';
+                    }
                 },
                 end: (options) => {
-                    this.end(options.element, isMenuOpen);
+                    if (this.hamburgerMode) {
+                        options.element.style.position = '';
+                        options.element.style.maxHeight = '';
+                        pElement.style.minHeight = '';
+                        options.element.style.top = 0 + 'px';
+                        options.element.children[0].focus();
+                        this.triggerOpen(options.element.children[0]);
+                    }
+                    else {
+                        this.end(options.element, isMenuOpen);
+                    }
                 }
             });
         }
@@ -5458,6 +5608,7 @@ var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, 
 /// <reference path='../common/menu-base-model.d.ts'/>
 const VMENU = 'e-vertical';
 const SCROLLABLE = 'e-scrollable';
+const HAMBURGER = 'e-hamburger';
 /**
  * The Menu is a graphical user interface that serve as navigation headers for your application or site.
  * ```html
@@ -5514,11 +5665,20 @@ let Menu = class Menu extends MenuBase {
         attributes(this.element, { 'role': 'menubar', 'tabindex': '0' });
         if (this.orientation === 'Vertical') {
             this.element.classList.add(VMENU);
+            if (this.hamburgerMode && !this.target) {
+                this.element.previousElementSibling.classList.add(VMENU);
+            }
             this.element.setAttribute('aria-orientation', 'vertical');
         }
         else {
             if (Browser.isDevice && !this.enableScrolling) {
                 this.element.parentElement.classList.add(SCROLLABLE);
+            }
+        }
+        if (this.hamburgerMode) {
+            this.element.parentElement.classList.add(HAMBURGER);
+            if (this.orientation === 'Horizontal') {
+                this.element.classList.add('e-hide-menu');
             }
         }
     }
@@ -5542,16 +5702,74 @@ let Menu = class Menu extends MenuBase {
                 case 'orientation':
                     if (newProp.orientation === 'Vertical') {
                         this.element.classList.add(VMENU);
+                        if (this.hamburgerMode) {
+                            if (!this.target) {
+                                this.element.previousElementSibling.classList.add(VMENU);
+                            }
+                            this.element.classList.remove('e-hide-menu');
+                        }
                         this.element.setAttribute('aria-orientation', 'vertical');
                     }
                     else {
                         this.element.classList.remove(VMENU);
+                        if (this.hamburgerMode) {
+                            if (!this.target) {
+                                this.element.previousElementSibling.classList.remove(VMENU);
+                            }
+                            this.element.classList.add('e-hide-menu');
+                        }
                         this.element.removeAttribute('aria-orientation');
                     }
                     break;
                 case 'items':
                     if (!Object.keys(oldProp.items).length) {
                         this.updateMenuItems(newProp.items);
+                    }
+                    break;
+                case 'hamburgerMode':
+                    if (!this.element.previousElementSibling) {
+                        super.createHeaderContainer();
+                    }
+                    if (newProp.hamburgerMode) {
+                        this.element.parentElement.classList.add(HAMBURGER);
+                    }
+                    else {
+                        this.element.parentElement.classList.remove(HAMBURGER);
+                    }
+                    if (this.orientation === 'Vertical') {
+                        if (!this.target) {
+                            this.element.previousElementSibling.classList.add(VMENU);
+                        }
+                        this.element.classList.remove('e-hide-menu');
+                    }
+                    else {
+                        if (this.target) {
+                            this.element.previousElementSibling.classList.add(VMENU);
+                        }
+                        else {
+                            this.element.previousElementSibling.classList.remove(VMENU);
+                        }
+                        this.element.classList[newProp.hamburgerMode ? 'add' : 'remove']('e-hide-menu');
+                    }
+                    break;
+                case 'title':
+                    if (this.hamburgerMode && this.element.previousElementSibling) {
+                        this.element.previousElementSibling.querySelector('.e-menu-title').innerHTML = newProp.title;
+                    }
+                    break;
+                case 'target':
+                    if (this.hamburgerMode) {
+                        this.unWireEvents(oldProp.target);
+                        this.wireEvents();
+                        if (this.orientation === 'Horizontal') {
+                            if (!newProp.target) {
+                                if (!this.element.previousElementSibling) {
+                                    super.createHeaderContainer();
+                                }
+                            }
+                            this.element.previousElementSibling.classList.add(VMENU);
+                            this.element.classList.add('e-hide-menu');
+                        }
                     }
                     break;
             }
@@ -5578,6 +5796,20 @@ let Menu = class Menu extends MenuBase {
             this.items.push(item);
         }
     }
+    /**
+     * This method is used to open the Menu in hamburger mode.
+     * @method open
+     * @returns void
+     */
+    open() {
+        super.openHamburgerMenu();
+    }
+    /**
+     * Closes the Menu if it is opened in hamburger mode.
+     */
+    close() {
+        super.closeHamburgerMenu();
+    }
 };
 __decorate$6([
     Property('Horizontal')
@@ -5588,6 +5820,12 @@ __decorate$6([
 __decorate$6([
     Property(false)
 ], Menu.prototype, "enableScrolling", void 0);
+__decorate$6([
+    Property(false)
+], Menu.prototype, "hamburgerMode", void 0);
+__decorate$6([
+    Property('Menu')
+], Menu.prototype, "title", void 0);
 __decorate$6([
     Complex({}, FieldSettings)
 ], Menu.prototype, "fields", void 0);

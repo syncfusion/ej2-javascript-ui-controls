@@ -11,7 +11,7 @@ import { iterateArrayOrObject, prepareColumns, parentsUntil, wrap, templateCompi
 import { getRowHeight } from './util';
 import * as events from '../base/constant';
 import { ReturnType } from '../base/type';
-import { IDialogUI } from './interface';
+import { IDialogUI, ScrollPositionType } from './interface';
 import { IRenderer, IValueFormatter, IFilterOperator, IIndex, RowDataBoundEventArgs, QueryCellInfoEventArgs } from './interface';
 import { CellDeselectEventArgs, CellSelectEventArgs, CellSelectingEventArgs, ParentDetails, ContextMenuItemModel } from './interface';
 import { PdfQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, ExcelExportProperties, PdfExportProperties } from './interface';
@@ -703,6 +703,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public isEdit: boolean;
     /** @hidden */
     public commonQuery: Query;
+    /** @hidden */
+    public scrollPosition: ScrollPositionType;
     /** @hidden */
     public isLastCellPrimaryKey: boolean;
     /** @hidden */
@@ -1811,14 +1813,14 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public getPersistData(): string {
         let keyEntity: string[] = ['pageSettings', 'sortSettings',
-            'filterSettings', 'groupSettings', 'columns', 'searchSettings', 'selectedRowIndex'];
+            'filterSettings', 'groupSettings', 'columns', 'searchSettings', 'selectedRowIndex', 'scrollPosition'];
         let ignoreOnPersist: { [x: string]: string[] } = {
             pageSettings: ['template', 'pageSizes', 'enableQueryString', 'totalRecordsCount', 'pageCount'],
             filterSettings: ['type', 'mode', 'showFilterBarStatus', 'immediateModeDelay', 'ignoreAccent'],
             groupSettings: ['showDropArea', 'showToggleButton', 'showGroupedColumn', 'showUngroupButton',
                 'disablePageWiseAggregates', 'hideCaptionCount'],
             searchSettings: ['fields', 'operator', 'ignoreCase'],
-            sortSettings: [], columns: [], selectedRowIndex: []
+            sortSettings: [], columns: [], selectedRowIndex: [], scrollPosition: []
         };
         let ignoreOnColumn: string[] = ['filter', 'edit', 'filterBarTemplate', 'headerTemplate', 'template',
             'commandTemplate', 'commands', 'dataSource', 'headerText'];
@@ -4251,6 +4253,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let data: string = window.localStorage.getItem(this.getModuleName() + this.element.id);
         if (!(isNullOrUndefined(data) || (data === ''))) {
             let dataObj: Grid = JSON.parse(data);
+            if (this.enableVirtualization) {
+                dataObj.pageSettings.currentPage = 1;
+            }
             let keys: string[] = Object.keys(dataObj);
             this.isProtectedOnChange = true;
             for (let key of keys) {

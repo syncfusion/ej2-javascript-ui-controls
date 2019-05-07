@@ -6,7 +6,7 @@ import { ISort, IFilter, IFieldOptions, ICalculatedFields, IDataSet } from '../.
 import { PivotFieldListModel } from './field-list-model';
 import * as events from '../../common/base/constant';
 import * as cls from '../../common/base/css-constant';
-import { LoadEventArgs, EnginePopulatingEventArgs, EnginePopulatedEventArgs } from '../../common/base/interface';
+import { LoadEventArgs, EnginePopulatingEventArgs, EnginePopulatedEventArgs, AggregateEventArgs } from '../../common/base/interface';
 import { FieldDroppedEventArgs } from '../../common/base/interface';
 import { Mode } from '../../common/base/enum';
 import { PivotCommon } from '../../common/base/pivot-common';
@@ -183,6 +183,13 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      */
     @Event()
     public onFieldDropped: EmitType<FieldDroppedEventArgs>;
+
+    /**
+     * This allows to change the cell value.
+     * @event
+     */
+    @Event()
+    public aggregateCellInfo: EmitType<AggregateEventArgs>;
 
     /** 
      * Triggers when data source is populated in the Pivot Field List.
@@ -480,7 +487,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 this.clonedReport = this.clonedReport ? this.clonedReport : extend({}, this.dataSource, null, true) as IDataOptions;
                 this.setProperties({ dataSource: { data: pivotDataSet } }, true);
             }
-            this.engineModule.renderEngine(this.dataSource, this.frameCustomProperties());
+            this.engineModule.renderEngine(this.dataSource, this.frameCustomProperties(), this.getValueCellInfo.bind(this));
             this.pivotFieldList = this.engineModule.fieldList;
             let eventArgs: EnginePopulatedEventArgs = {
                 pivotFieldList: this.pivotFieldList,
@@ -492,6 +499,13 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         this.trigger(events.dataBound);
     }
     /* tslint:enable */
+
+    private getValueCellInfo(aggregateObj: AggregateEventArgs): AggregateEventArgs {
+        let args: AggregateEventArgs = aggregateObj;
+        this.trigger(events.aggregateCellInfo, args);
+        return args;
+    }
+
     private fieldListRender(): void {
         this.element.innerHTML = '';
         if (this.renderMode === 'Popup' && this.dialogRenderer.fieldListDialog && !this.dialogRenderer.fieldListDialog.isDestroyed) {
@@ -587,7 +601,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                     this.lastCalcFieldInfo = {};
                 }
             } else {
-                this.engineModule.renderEngine(this.dataSource, customProperties);
+                this.engineModule.renderEngine(this.dataSource, customProperties, this.getValueCellInfo.bind(this));
             }
             this.getFieldCaption(this.dataSource);
         } else {

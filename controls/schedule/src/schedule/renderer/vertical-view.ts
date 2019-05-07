@@ -129,7 +129,7 @@ export class VerticalView extends ViewBase implements IRenderer {
         }
     }
     public scrollToHour(hour: string): void {
-        let date: Date = this.parent.globalize.parseDate(hour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        let date: Date = this.parent.getStartEndTime(hour);
         if (isNullOrUndefined(date)) {
             return;
         }
@@ -156,8 +156,8 @@ export class VerticalView extends ViewBase implements IRenderer {
     public getDateSlots(renderDates: Date[], workDays: number[], workStartHour: string = this.parent.workHours.start, workEndHour: string =
         this.parent.workHours.end): TdData[] {
         let dateCol: TdData[] = [];
-        let start: Date = this.parent.globalize.parseDate(workStartHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
-        let end: Date = this.parent.globalize.parseDate(workEndHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        let start: Date = this.parent.getStartEndTime(workStartHour);
+        let end: Date = this.parent.getStartEndTime(workEndHour);
         for (let col of renderDates) {
             let classList: string[] = [cls.HEADER_CELLS_CLASS];
             if (this.isCurrentDate(col)) {
@@ -586,9 +586,6 @@ export class VerticalView extends ViewBase implements IRenderer {
     public getLeftPanelElement(): HTMLElement {
         return this.element.querySelector('.' + cls.TIME_CELLS_WRAP_CLASS) as HTMLElement;
     }
-    public getContentAreaElement(): HTMLElement {
-        return this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
-    }
     public getEndDateFromStartDate(start: Date): Date {
         let msMajorInterval: number = this.parent.activeViewOptions.timeScale.interval * util.MS_PER_MINUTE;
         let msInterval: number = msMajorInterval / this.parent.activeViewOptions.timeScale.slotCount;
@@ -612,10 +609,8 @@ export class VerticalView extends ViewBase implements IRenderer {
             length = 1;
         }
         let dt: Date = new Date(msStartHour);
-        let start: Date =
-            this.parent.globalize.parseDate(this.parent.workHours.start, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
-        let end: Date =
-            this.parent.globalize.parseDate(this.parent.workHours.end, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        let start: Date = this.parent.getStartEndTime(this.parent.workHours.start);
+        let end: Date = this.parent.getStartEndTime(this.parent.workHours.end);
         for (let i: number = 0; i < length; i++) {
             let majorTickDivider: number = i % (msMajorInterval / msInterval);
             let row: TimeSlotData = {

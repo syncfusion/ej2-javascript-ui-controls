@@ -3541,44 +3541,9 @@
     }
     @else if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' {
       padding-right: 0;
-      transform: translate3d(-10px, -33px, 0) scale(1);
+      transform: translate3d(-10px, -37px, 0) scale(1);
     }
   }
-
-  .e-float-input textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-float-input.e-control-wrapper textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom {
-    @if $input-skin-name == 'material' {
-      transform: translate3d(0, 16px, 0) scale(1);
-    }
-    @else if $input-skin-name == 'fabric' or  $input-skin-name == 'highcontrast' {
-      font-style: $input-font-normal;
-      transform: translate3d(0, 16px, 0) scale(1);
-    }
-    @else if $input-skin-name == 'bootstrap' {
-      padding-right: 0;
-      transform: translate3d(0, 16px, 0) scale(1);
-    }
-  }
-
-  .e-float-input textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
-  .e-float-input.e-control-wrapper textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom {
-    font-size: $float-placeholder-font-size;
-    font-style: $input-font-style;
-    font-weight: 400;
-    left: 0;
-    overflow: hidden;
-    padding-left: $float-label-padding;
-    pointer-events: none;
-    position: absolute;
-    text-overflow: ellipsis;
-    top: -11px;
-    transform: translate3d(0, 16px, 0) scale(1);
-    transform-origin: left top;
-    transition: .25s cubic-bezier(.25, .8, .25, 1);
-    user-select: none;
-    white-space: nowrap;
-    width: 100%;
-   }
 
   .e-float-input.e-bigger textarea:focus ~ label.e-float-text,
   .e-float-input.e-bigger textarea:valid ~ label.e-float-text,
@@ -3647,6 +3612,16 @@
     }
     @else if $input-skin-name == 'fabric' or $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' or $input-skin-name == 'highcontrast' {
       top: 15px;
+    }
+  }
+
+  .e-float-input.e-small textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-small .e-float-input textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-float-input.e-control-wrapper.e-small textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-small .e-float-input.e-control-wrapper textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom {
+    font-size: $float-placeholder-small-font-size;
+    @if $input-skin-name == 'material' {
+      top: -11px;
     }
   }
 
@@ -4055,11 +4030,46 @@
       padding-right: 0;
       transform: translate3d(-10px, -43px, 0) scale(1);
     }
-    @else if $input-skin-name == 'bootstrap' {
+    @else if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' {
       padding-right: 0;
       transform: translate3d(-10px, -37px, 0) scale(1);
     }
   }
+
+  .e-float-input textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-float-input.e-control-wrapper textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom {
+    @if $input-skin-name == 'material' {
+      transform: translate3d(0, 16px, 0) scale(1);
+    }
+    @else if $input-skin-name == 'fabric' or  $input-skin-name == 'highcontrast' {
+      font-style: $input-font-normal;
+      transform: translate3d(0, 16px, 0) scale(1);
+    }
+    @else if $input-skin-name == 'bootstrap' {
+      padding-right: 0;
+      transform: translate3d(0, 16px, 0) scale(1);
+    }
+  }
+
+  .e-float-input textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom,
+  .e-float-input.e-control-wrapper textarea:not(:focus):valid ~ label.e-float-text.e-label-bottom {
+    font-size: $float-placeholder-font-size;
+    font-style: $input-font-style;
+    font-weight: 400;
+    left: 0;
+    overflow: hidden;
+    padding-left: $float-label-padding;
+    pointer-events: none;
+    position: absolute;
+    text-overflow: ellipsis;
+    top: -11px;
+    transform: translate3d(0, 16px, 0) scale(1);
+    transform-origin: left top;
+    transition: .25s cubic-bezier(.25, .8, .25, 1);
+    user-select: none;
+    white-space: nowrap;
+    width: 100%;
+   }
 
   // sass-lint:disable no-vendor-prefixes
   textarea.e-input#{$css}::-webkit-textarea-placeholder,
@@ -4245,7 +4255,7 @@
       padding-right: 0;
       transform: translate3d(-10px, -43px, 0) scale(1);
     }
-    @else if $input-skin-name == 'bootstrap' {
+    @else if $input-skin-name == 'bootstrap' or $input-skin-name == 'bootstrap4' {
       padding-right: 0;
       transform: translate3d(-10px, -39px, 0) scale(1);
     }

@@ -126,7 +126,7 @@ export class Toolbar {
                     break;
                 case 'Chart':
                     items.push({
-                        template: '<ul id="' + this.parent.element.id + '_chart"></ul>',
+                        template: '<ul id="' + this.parent.element.id + '_pivotchart"></ul>',
                         id: this.parent.element.id + 'chart'
                     });
                     break;
@@ -499,7 +499,7 @@ export class Toolbar {
                 items: menuChartTypes, cssClass: toDisable ? cls.MENU_DISABLE : '', enableRtl: this.parent.enableRtl,
                 select: this.chartClick.bind(this)
             },
-            '#' + this.parent.element.id + '_chart');
+            '#' + this.parent.element.id + '_pivotchart');
         let menuData: MenuItemModel[] = [
             {
                 iconCss: cls.GRID_EXPORT + ' ' + cls.ICON,
@@ -718,6 +718,10 @@ export class Toolbar {
             this.parent.grid.element.style.display = '';
             this.parent.chart.element.style.display = 'none';
             this.parent.currentView = 'Table';
+            if(this.parent.showGroupingBar) { 
+                (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement).style.display = "";
+                (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = "none";
+            }
         }
     }
 
@@ -728,6 +732,10 @@ export class Toolbar {
                 this.parent.grid.element.style.display = 'none';
                 this.parent.chart.element.style.display = '';
                 this.parent.currentView = 'Chart';
+                if(this.parent.showGroupingBar) { 
+                    (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement).style.display = "none";
+                    (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = "";
+                }
             }
         }
     }

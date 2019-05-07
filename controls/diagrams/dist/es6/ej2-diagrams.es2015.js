@@ -3275,6 +3275,18 @@ __decorate$3([
  * Defines the textual description of nodes/connectors
  */
 class Annotation extends ChildProperty {
+    // tslint:disable-next-line:no-any
+    constructor(parent, propName, defaultValue, isArray) {
+        super(parent, propName, defaultValue, isArray);
+        if (!defaultValue.id) {
+            if (parent.parentObj && parent.parentObj.propName && parent.parentObj.propName === 'phases') {
+                this.id = parent.parentObj.id;
+            }
+            else {
+                this.id = randomId();
+            }
+        }
+    }
 }
 __decorate$3([
     Property('')
@@ -7345,6 +7357,7 @@ class Connector extends NodeBase {
         if ((this.shape.sequence) === 'Conditional') {
             this.targetDecorator.shape = 'Arrow';
             this.sourceDecorator.shape = 'Diamond';
+            pathseq.id = this.id + this.shape.type;
             this.sourceDecorator.style.fill = 'white';
             this.targetDecorator.style.fill = 'black';
             this.sourceDecorator.width = 20;
@@ -9180,15 +9193,21 @@ class GridPanel extends Container {
         return desiredSize;
     }
 }
-/** @private */
+/**
+ * Defines the behavior of the RowDefinition of node
+ */
 class RowDefinition {
     constructor() {
+        /** returns the height of node */
         this.height = undefined;
     }
 }
-/** @private */
+/**
+ * Defines the behavior of the ColumnDefinition of node
+ */
 class ColumnDefinition {
     constructor() {
+        /** returns the width of node */
         this.width = undefined;
     }
 }
@@ -11899,6 +11918,9 @@ __decorate$4([
 __decorate$4([
     Property(true)
 ], BpmnSubEvent.prototype, "visible", void 0);
+/**
+ * Defines the behavior of the BpmnTransactionSubProcess
+ */
 class BpmnTransactionSubProcess extends ChildProperty {
 }
 __decorate$4([
@@ -12915,7 +12937,6 @@ __decorate$4([
 /**
  * Defines the behavior of container
  */
-/** @private */
 class ChildContainer {
     /**
      * @private
@@ -30346,6 +30367,9 @@ class Diagram extends Component {
                 let connector = connectors[conn];
                 let points = this.getPoints(connector);
                 updateConnector(connector, points);
+                if (connector.shape.type === 'Bpmn' && connector.shape.sequence === 'Default') {
+                    this.commandHandler.updatePathElementOffset(connector);
+                }
                 connector.wrapper.measure(new Size(undefined, undefined));
                 connector.wrapper.arrange(connector.wrapper.desiredSize);
                 this.updateConnectorAnnotation(connector);
@@ -36931,6 +36955,7 @@ class BpmnDiagrams {
         if (task === 'SubProcess' && subProcess) {
             content = this.getBPMNSubProcessShape(node);
         }
+        content.id = task + node.id;
         eventshape.children = [content];
         eventshape.style.fill = 'transparent';
         eventshape.style.strokeColor = 'transparent';
@@ -41472,7 +41497,7 @@ class HierarchicalTree {
             if (!(info.y && info.y > dimensions.y)) {
                 info.y = dimensions.y;
             }
-            if (!(x && x > info.mid)) {
+            if (info.mid) {
                 x = info.mid;
             }
             if (info.tree.assistants.length) {
@@ -41699,7 +41724,7 @@ class HierarchicalTree {
         let left;
         let diff;
         let intersect;
-        let levelBounds;
+        let levelBounds = { x: 0, y: 0, right: 0, bottom: 0 };
         for (i = 0; i < info.tree.assistants.length; i++) {
             asst = layout.graphNodes[info.tree.assistants[i]];
             //Arrange assistants at both left and right sides of parent(like alternate layout)
@@ -42856,9 +42881,9 @@ class HierarchicalTree {
         let height;
         let offsetX;
         let offsetY;
-        width = node.actualSize.width;
-        height = node.actualSize.height;
-        if (!node.excludeFromLayout) {
+        if (node && !node.excludeFromLayout) {
+            width = node.actualSize.width;
+            height = node.actualSize.height;
             offsetX = layout.anchorX;
             offsetY = layout.anchorY;
             /*Performance - instead of checking conditions for every node, we can make the layout related

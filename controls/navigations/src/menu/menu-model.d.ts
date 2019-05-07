@@ -26,6 +26,18 @@ export interface MenuModel extends MenuBaseModel{
     enableScrolling?: boolean;
 
     /**
+     * Specifies whether to enable / disable the hamburger mode in Menu.
+     * @default false
+     */
+    hamburgerMode?: boolean;
+
+    /**
+     * Specifies the title text for hamburger mode in Menu.
+     * @default 'Menu'
+     */
+    title?: string;
+
+    /**
      * Specifies mapping fields from the dataSource.
      * @default { itemId: "id", text: "text", parentId: "parentId", iconCss: "iconCss", url: "url", separator: "separator",
      * children: "items" }

@@ -58,7 +58,8 @@ export class FieldList implements IAction {
             allowCalculatedField: this.parent.allowCalculatedField,
             enableRtl: this.parent.enableRtl,
             locale: this.parent.locale,
-            target: this.parent.element.parentElement
+            target: this.parent.element.parentElement,
+            aggregateCellInfo : this.parent.bindTriggerEvents.bind(this.parent)
         });
         this.parent.pivotFieldListModule.appendTo('#' + this.element.id);
     }
@@ -70,6 +71,9 @@ export class FieldList implements IAction {
                 clearTimeout(this.timeOutObj);
                 this.timeOutObj = setTimeout(this.update.bind(this));
             } else {
+                setStyleAttribute(this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS) as HTMLElement, {
+                    left: 'auto'
+                });
                 if (this.parent.enableRtl) {
                     removeClass([this.element.querySelector('.' + cls.TOGGLE_FIELD_LIST_CLASS)], 'e-fieldlist-left');
                 } else {

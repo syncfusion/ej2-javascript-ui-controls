@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 17.1.44 (2019-05-07)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- #235167 - Multiselect dropdown jump down when the `showDropDownIcon` is set to true issue has been resolved.
+
+- #209393 - Change event not fired during tab key navigation issue has been resolved.
+
+### DropDownList
+
+#### Bug Fixes
+
+- #234846 - The popup collision issue has been resolved while enable the filtering.
+
 ## 17.1.43 (2019-04-30)
 
 ### ComboBox
@@ -19,6 +35,8 @@
 #### Bug Fixes
 
 - #231680 - The data source is observable using Async Pipe with pre select value not updated issue has been resolved.
+
+- #230651 - Eval function security issue has been resolved.
 
 ## 17.1.42 (2019-04-23)
 

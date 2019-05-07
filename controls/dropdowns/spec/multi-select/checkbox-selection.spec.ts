@@ -1715,6 +1715,54 @@ describe('MultiSelect', () => {
             }, 800);
         });
     });
+    describe('EJ2-19524 - UI breaking when use lengthy place holder', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect', attrs: { type: "text" } });
+        let datasource: { [key: string]: Object }[] =  [
+                { id: 'list1', text: 'JAVA' },
+                { id: 'list2', text: 'C#' },
+                { id: 'list3', text: 'C++' },
+                { id: 'list4', text: '.NET' },
+                { id: 'list5', text: 'Oracle' },
+                { id: 'list6', text: 'GO' },
+                { id: 'list7', text: 'Haskell' },
+                { id: 'list8', text: 'Racket' },
+                { id: 'list8', text: 'F#' }];
+            beforeAll(() => {
+                document.body.appendChild(element);
+                listObj = new MultiSelect({
+                    dataSource: datasource,
+                    fields: { text: "text", value: "id" },
+                    placeholder: 'My placeholder 12345566789',
+                    width: 100,
+                    showDropDownIcon: true
+                });
+                listObj.appendTo(element);
+            });
+            afterAll(() => {
+                if (element) {
+                    listObj.destroy();
+                    element.remove();
+                }
+            });
+            it('Select all in check box mode', () => {
+                listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, 
+                    placeholder: "select counties" ,showDropDownIcon: true , width: 300, mode : 'CheckBox' , filterBarPlaceholder:"Select value" , showSelectAll: true });
+                listObj.appendTo(element);
+                listObj.showPopup();
+                mouseEventArgs.type = "mousedown";
+                mouseEventArgs.target = document.getElementsByClassName('e-all-text')[0];
+                mouseEventArgs.currentTarget = document.getElementsByClassName('e-selectall-parent')[0];
+                (<any>listObj).checkBoxSelectionModule.clickHandler(mouseEventArgs);
+                let wrapper: HTMLElement = (<any>listObj).inputElement.parentElement.parentElement;
+                if (wrapper && wrapper.firstElementChild && wrapper.firstChild.nextSibling) {
+                    expect((<any>listObj).searchWrapper.classList.contains('e-zero-size')).toBe(true);
+                }
+                else
+                    expect(true).toBe(false);            
+                listObj.destroy();
+            });
+        });
     describe('mulitselect checkbox IE blur event', () => {
         let ele: HTMLElement = document.createElement('input');
         ele.id = 'newlist';

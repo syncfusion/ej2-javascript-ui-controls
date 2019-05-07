@@ -253,22 +253,36 @@ export class Layout extends ChildProperty<Layout> {
 }
 
 /**
- * Defines the properties of the node
+ * Interface for the class node
  */
 export interface INode {
+    /** returns ID of node */
     id: string;
+    /** returns offsetX of node */
     offsetX: number;
+    /** returns offsetY of node */
     offsetY: number;
+    /** returns actual size of node */
     actualSize: { width: number, height: number };
+    /** returns InEdges of node */
     inEdges: string[];
+    /** returns outEdges of node */
     outEdges: string[];
+    /** returns pivot points of node */
     pivot: PointModel;
+    /** returns false if the node to be arranged in layout, else it returns true */
     excludeFromLayout: boolean;
+    /** returns true if the node to be expanded, else it returns false */
     isExpanded: boolean;
+    /** returns data of the node */
     data: Object;
+    /** returns bounds of the node */
     treeBounds?: Bounds;
+    /** returns the difference between old position and new position of node */
     differenceX?: number;
+    /** returns the difference between old position and new position of node */
     differenceY?: number;
+    /** returns true if the node is already visited in layout, else it returns false */
     visited?: boolean;
 }
 
@@ -286,11 +300,19 @@ export interface IConnector {
     segments?: OrthogonalSegmentModel[] | StraightSegmentModel[] | BezierSegmentModel[];
 }
 
+/**
+ * Defines the properties of the layout bounds
+ */
 export interface Bounds {
+    /** returns the left position, where the layout is rendered  */
     x: number;
+    /** returns the top position, where layout is rendered  */
     y: number;
+    /** returns the right position, where layout is rendered  */
     right: number;
+    /** returns the bottom position, where layout is rendered  */
     bottom: number;
+    /** returns how much distance layout is moved  */
     canMoveBy?: number;
 }
 

@@ -4009,9 +4009,10 @@ var EventBase = /** @__PURE__ @class */ (function () {
                 app.isSpanned = true;
                 data.push(app);
                 start = end;
-                if ((new Date(start.getTime()).setHours(0, 0, 0, 0) === new Date(eventEndTime.getTime()).setHours(0, 0, 0, 0))
+                if ((resetTime(new Date(start.getTime())).getTime() === resetTime(new Date(eventEndTime.getTime())).getTime())
                     && !(end.getTime() === eventEndTime.getTime())) {
-                    end = new Date(new Date(start.getTime()).setHours(eventEndTime.getHours(), eventEndTime.getMinutes()));
+                    end = new Date(start.getTime());
+                    end = new Date(end.setHours(eventEndTime.getHours(), eventEndTime.getMinutes(), eventEndTime.getSeconds()));
                 }
                 else {
                     end = addDays(resetTime(new Date(start.getTime())), 1);
@@ -7952,7 +7953,7 @@ var EventWindow = /** @__PURE__ @class */ (function () {
         else {
             startDate = new Date(this.parent.activeCellsData.startTime.getTime());
             if (this.parent.currentView === 'Month' || this.parent.currentView === 'MonthAgenda' || this.parent.activeCellsData.isAllDay) {
-                var startHour = this.parent.globalize.parseDate(this.parent.workHours.start, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+                var startHour = this.parent.getStartEndTime(this.parent.workHours.start);
                 startDate.setHours(startHour.getHours(), startHour.getMinutes(), startHour.getSeconds());
                 endDate = new Date(startDate.getTime());
                 endDate.setMilliseconds(MS_PER_MINUTE * this.getSlotDuration());
@@ -9901,7 +9902,7 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             for (var _i = 0, _a = this.parent.activeViewOptions.group.resources; _i < _a.length; _i++) {
                 var resource = _a[_i];
-                var index_1 = findIndexInData(this.parent.resources, 'name', resource);
+                var index_1 = findIndexInData(this.parent.resourceCollection, 'name', resource);
                 if (index_1 >= 0) {
                     requiredResources.push(this.parent.resourceCollection[index_1]);
                 }
@@ -9998,11 +9999,10 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
         for (var _i = 0, dateSlots_1 = dateSlots; _i < dateSlots_1.length; _i++) {
             var dateSlot = dateSlots_1[_i];
             if (startHour) {
-                dateSlot.startHour =
-                    this.parent.globalize.parseDate(startHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+                dateSlot.startHour = this.parent.getStartEndTime(startHour);
             }
             if (endHour) {
-                dateSlot.endHour = this.parent.globalize.parseDate(endHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+                dateSlot.endHour = this.parent.getStartEndTime(endHour);
             }
             if (groupOrder) {
                 dateSlot.groupOrder = groupOrder;
@@ -10850,6 +10850,17 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             remove(eventClone);
         }
     };
+    Schedule.prototype.getStartEndTime = function (startEndTime) {
+        if (!isNullOrUndefined(startEndTime) && startEndTime !== '') {
+            var startEndDate = resetTime(new Date());
+            var timeString = startEndTime.split(':');
+            if (timeString.length === 2) {
+                startEndDate.setHours(parseInt(timeString[0], 10), parseInt(timeString[1], 10), 0);
+            }
+            return startEndDate;
+        }
+        return null;
+    };
     Schedule.prototype.onDocumentClick = function (args) {
         this.notify(documentClick, { event: args });
     };
@@ -11208,8 +11219,8 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * @returns {void}
      */
     Schedule.prototype.setWorkHours = function (dates, start, end, groupIndex) {
-        var startHour = this.globalize.parseDate(start, { skeleton: 'Hm', calendar: this.getCalendarMode() });
-        var endHour = this.globalize.parseDate(end, { skeleton: 'Hm', calendar: this.getCalendarMode() });
+        var startHour = this.getStartEndTime(start);
+        var endHour = this.getStartEndTime(end);
         var tableEle = this.getContentTable();
         if (isNullOrUndefined(startHour) || isNullOrUndefined(endHour) || !tableEle) {
             return;
@@ -11220,13 +11231,14 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
         if (startHour < viewStartHour) {
             startHour = viewStartHour;
         }
-        if (endHour > this.activeView.getEndHour()) {
-            endHour = this.activeView.getEndHour();
+        var viewEndHour = this.activeView.getEndHour();
+        if (endHour > viewEndHour) {
+            endHour = viewEndHour;
         }
         var msMajorInterval = this.activeViewOptions.timeScale.interval * MS_PER_MINUTE;
         var msInterval = msMajorInterval / this.activeViewOptions.timeScale.slotCount;
-        var startIndex = Math.round((getDateInMs(startHour) - getDateInMs(viewStartHour)) / msInterval);
-        var endIndex = Math.ceil((getDateInMs(endHour) - getDateInMs(viewStartHour)) / msInterval);
+        var startIndex = Math.round((startHour.getTime() - viewStartHour.getTime()) / msInterval);
+        var endIndex = Math.ceil((endHour.getTime() - viewStartHour.getTime()) / msInterval);
         var cells = [];
         for (var _i = 0, dates_1 = dates; _i < dates_1.length; _i++) {
             var date = dates_1[_i];
@@ -11237,6 +11249,11 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             }
             var colIndex = this.getIndexOfDate(renderDates, date);
             if (colIndex >= 0) {
+                if (this.activeView.isTimelineView()) {
+                    var slotsPerDay = Math.round((viewEndHour.getTime() - viewStartHour.getTime()) / msInterval);
+                    startIndex = startIndex + (colIndex * slotsPerDay);
+                    endIndex = endIndex + (colIndex * slotsPerDay);
+                }
                 for (var i = startIndex; i < endIndex; i++) {
                     if (this.activeView.isTimelineView()) {
                         var rowIndex = (!isNullOrUndefined(groupIndex)) ? groupIndex : 0;
@@ -13316,14 +13333,14 @@ var ViewBase = /** @__PURE__ @class */ (function () {
         return addDays(this.renderDates[this.renderDates.length - 1], 1);
     };
     ViewBase.prototype.getStartHour = function () {
-        var startHour = this.parent.globalize.parseDate(this.parent.activeViewOptions.startHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        var startHour = this.parent.getStartEndTime(this.parent.activeViewOptions.startHour);
         if (isNullOrUndefined(startHour)) {
             startHour = new Date(2000, 0, 0, 0);
         }
         return startHour;
     };
     ViewBase.prototype.getEndHour = function () {
-        var endHour = this.parent.globalize.parseDate(this.parent.activeViewOptions.endHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        var endHour = this.parent.getStartEndTime(this.parent.activeViewOptions.endHour);
         if (isNullOrUndefined(endHour)) {
             endHour = new Date(2000, 0, 0, 0);
         }
@@ -13543,6 +13560,9 @@ var ViewBase = /** @__PURE__ @class */ (function () {
     ViewBase.prototype.resetColWidth = function () {
         var colElements = this.getColElements();
         colElements.forEach(function (col) { return col.style.width = ''; });
+    };
+    ViewBase.prototype.getContentAreaElement = function () {
+        return this.element.querySelector('.' + CONTENT_WRAP_CLASS);
     };
     return ViewBase;
 }());
@@ -14934,7 +14954,7 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     VerticalView.prototype.scrollToHour = function (hour) {
-        var date = this.parent.globalize.parseDate(hour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        var date = this.parent.getStartEndTime(hour);
         if (isNullOrUndefined(date)) {
             return;
         }
@@ -14963,8 +14983,8 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
         if (workStartHour === void 0) { workStartHour = this.parent.workHours.start; }
         if (workEndHour === void 0) { workEndHour = this.parent.workHours.end; }
         var dateCol = [];
-        var start = this.parent.globalize.parseDate(workStartHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
-        var end = this.parent.globalize.parseDate(workEndHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        var start = this.parent.getStartEndTime(workStartHour);
+        var end = this.parent.getStartEndTime(workEndHour);
         for (var _i = 0, renderDates_1 = renderDates; _i < renderDates_1.length; _i++) {
             var col = renderDates_1[_i];
             var classList$$1 = [HEADER_CELLS_CLASS];
@@ -15416,9 +15436,6 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
     VerticalView.prototype.getLeftPanelElement = function () {
         return this.element.querySelector('.' + TIME_CELLS_WRAP_CLASS);
     };
-    VerticalView.prototype.getContentAreaElement = function () {
-        return this.element.querySelector('.' + CONTENT_WRAP_CLASS);
-    };
     VerticalView.prototype.getEndDateFromStartDate = function (start) {
         var msMajorInterval = this.parent.activeViewOptions.timeScale.interval * MS_PER_MINUTE;
         var msInterval = msMajorInterval / this.parent.activeViewOptions.timeScale.slotCount;
@@ -15442,8 +15459,8 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
             length = 1;
         }
         var dt = new Date(msStartHour);
-        var start = this.parent.globalize.parseDate(this.parent.workHours.start, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
-        var end = this.parent.globalize.parseDate(this.parent.workHours.end, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        var start = this.parent.getStartEndTime(this.parent.workHours.start);
+        var end = this.parent.getStartEndTime(this.parent.workHours.end);
         for (var i = 0; i < length; i++) {
             var majorTickDivider = i % (msMajorInterval / msInterval);
             var row = {
@@ -16007,9 +16024,6 @@ var Month = /** @__PURE__ @class */ (function (_super) {
         this.parent.trigger(renderCell, args);
         return ntd;
     };
-    Month.prototype.getContentAreaElement = function () {
-        return this.element.querySelector('.' + CONTENT_WRAP_CLASS);
-    };
     Month.prototype.renderDateHeaderElement = function (data, ntd) {
         if (this.parent.currentView === 'TimelineMonth') {
             return;
@@ -16558,7 +16572,7 @@ var Agenda = /** @__PURE__ @class */ (function (_super) {
         var agendaDate = resetTime(this.parent.selectedDate);
         var tBody = this.parent.getContentTable();
         tBody.innerHTML = '';
-        this.renderContent(tBody, agendaDate);
+        this.renderInitialContent(tBody, agendaDate);
         this.agendaBase.wireEventActions();
         var contentArea = closest(tBody, '.' + CONTENT_WRAP_CLASS);
         contentArea.scrollTop = 1;
@@ -16576,23 +16590,36 @@ var Agenda = /** @__PURE__ @class */ (function (_super) {
         }
         this.parent.eventsProcessed = this.parent.eventsProcessed.concat(this.agendaBase.processAgendaEvents(processedData));
     };
-    Agenda.prototype.renderContent = function (tBody, agendaDate) {
-        var fieldMapping = this.parent.eventFields;
+    Agenda.prototype.renderInitialContent = function (tBody, agendaDate) {
+        var emptyTBody = createElement('tbody');
         var firstDate = new Date(agendaDate.getTime());
-        var lastDate = (!this.parent.activeViewOptions.allowVirtualScrolling) ?
-            addDays(firstDate, this.parent.agendaDaysCount) : this.getEndDateFromStartDate(firstDate);
-        var isObject = this.appointmentFiltering(firstDate, lastDate);
-        if (isObject.length === 0 && this.parent.activeViewOptions.allowVirtualScrolling) {
-            lastDate = firstDate;
-            firstDate = new Date(this.minDate.getTime());
-            isObject = this.appointmentFiltering(firstDate, lastDate);
-            if (isObject.length === 0) {
-                firstDate = lastDate;
-                lastDate = new Date(this.maxDate.getTime());
-                isObject = this.appointmentFiltering(firstDate, lastDate);
+        var lastDate = (this.parent.activeViewOptions.allowVirtualScrolling && this.parent.hideEmptyAgendaDays) ?
+            this.getEndDateFromStartDate(firstDate) : addDays(firstDate, this.parent.agendaDaysCount);
+        this.renderContent(emptyTBody, firstDate, lastDate);
+        append([].slice.call(emptyTBody.childNodes), tBody);
+        // Initial rendering, to load previous date events upto scroll bar enable
+        if (this.parent.activeViewOptions.allowVirtualScrolling && this.parent.hideEmptyAgendaDays && this.parent.eventsData.length > 0) {
+            var contentArea = this.getContentAreaElement();
+            while (contentArea.offsetWidth <= contentArea.clientWidth) {
+                var emptyTBody_1 = createElement('tbody');
+                lastDate = firstDate;
+                firstDate = addDays(lastDate, -this.parent.agendaDaysCount);
+                this.renderContent(emptyTBody_1, firstDate, lastDate);
+                prepend([].slice.call(emptyTBody_1.childNodes), tBody);
+                if (firstDate <= this.minDate) {
+                    break;
+                }
             }
         }
-        if (isObject.length > 0 && this.parent.activeViewOptions.allowVirtualScrolling) {
+        if (tBody.childNodes.length <= 0) {
+            this.agendaBase.renderEmptyContent(tBody, agendaDate);
+        }
+    };
+    Agenda.prototype.renderContent = function (tBody, agendaDate, lastDate) {
+        var fieldMapping = this.parent.eventFields;
+        var firstDate = new Date(agendaDate.getTime());
+        var isObject = this.appointmentFiltering(firstDate, lastDate);
+        if (isObject.length > 0 && this.parent.activeViewOptions.allowVirtualScrolling && this.parent.hideEmptyAgendaDays) {
             var appoint = isObject;
             agendaDate = appoint[0][fieldMapping.startTime];
             agendaDate = new Date(new Date(agendaDate.getTime()).setHours(0, 0, 0, 0));
@@ -16600,8 +16627,6 @@ var Agenda = /** @__PURE__ @class */ (function (_super) {
         }
         var endDate;
         if (!this.parent.hideEmptyAgendaDays || (this.parent.agendaDaysCount > 0 && isObject.length > 0)) {
-            var noOfDays = (!this.parent.hideEmptyAgendaDays || !this.parent.activeViewOptions.allowVirtualScrolling ||
-                this.parent.agendaDaysCount < isObject.length) ? this.parent.agendaDaysCount : isObject.length;
             if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
                 var date = agendaDate;
                 if (!this.parent.activeViewOptions.group.byDate) {
@@ -16615,7 +16640,7 @@ var Agenda = /** @__PURE__ @class */ (function (_super) {
                 this.agendaBase.calculateResourceTableElement(tBody, this.parent.agendaDaysCount, date);
             }
             else {
-                for (var day = 0; day < noOfDays; day++) {
+                for (var day = 0; day < this.parent.agendaDaysCount; day++) {
                     var filterData = [];
                     filterData = this.appointmentFiltering(agendaDate);
                     var nTr = this.agendaBase.createTableRowElement(agendaDate, 'data');
@@ -16651,10 +16676,6 @@ var Agenda = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             endDate = new Date(agendaDate.getTime() - MS_PER_DAY);
-        }
-        else {
-            this.agendaBase.renderEmptyContent(tBody, agendaDate);
-            endDate = addDays(agendaDate, this.parent.agendaDaysCount - 1);
         }
         this.agendaDates = { start: firstDate, end: endDate };
     };
@@ -16694,7 +16715,7 @@ var Agenda = /** @__PURE__ @class */ (function (_super) {
             filterDate = this.getPreviousNextDate(addDays(scrollDate, -1), direction);
             filterData = this.appointmentFiltering(filterDate.start, filterDate.end);
             if (filterData.length > 0 || !this.parent.hideEmptyAgendaDays) {
-                this.renderContent(emptyTBody, filterDate.start);
+                this.renderContent(emptyTBody, filterDate.start, filterDate.end);
                 prepend([].slice.call(emptyTBody.childNodes), tBody);
                 this.agendaBase.wireEventActions();
                 for (var s = 0, element = tBody.children; s < element.length; s++) {
@@ -16712,7 +16733,7 @@ var Agenda = /** @__PURE__ @class */ (function (_super) {
             filterDate = this.getPreviousNextDate(addDays(scrollDate, 1), direction);
             filterData = this.appointmentFiltering(filterDate.start, filterDate.end);
             if (filterData.length > 0 || !this.parent.hideEmptyAgendaDays) {
-                this.renderContent(emptyTBody, filterDate.start);
+                this.renderContent(emptyTBody, filterDate.start, filterDate.end);
                 append([].slice.call(emptyTBody.childNodes), tBody);
                 this.agendaBase.wireEventActions();
                 this.updateHeaderText(scrollDate);
@@ -17595,7 +17616,7 @@ var TimelineViews = /** @__PURE__ @class */ (function (_super) {
         this.scrollHeaderLabels(target);
     };
     TimelineViews.prototype.scrollToWorkHour = function () {
-        var start = this.parent.globalize.parseDate(this.parent.workHours.start, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        var start = this.parent.getStartEndTime(this.parent.workHours.start);
         var currDateTime = this.isWorkDay(this.parent.selectedDate) && this.parent.workHours.highlight &&
             !isNullOrUndefined(start) ? new Date(+this.parent.selectedDate).setHours(start.getHours(), start.getMinutes())
             : new Date(+this.parent.selectedDate).setHours(0, 0, 0, 0);
@@ -17606,7 +17627,7 @@ var TimelineViews = /** @__PURE__ @class */ (function (_super) {
         }
     };
     TimelineViews.prototype.scrollToHour = function (hour) {
-        var date = this.parent.globalize.parseDate(hour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        var date = this.parent.getStartEndTime(hour);
         if (isNullOrUndefined(date)) {
             return;
         }
@@ -17747,8 +17768,8 @@ var TimelineViews = /** @__PURE__ @class */ (function (_super) {
         var resLevel = this.parent.resourceBase.renderedResources[i];
         var resSHr = resLevel.resourceData[resLevel.resource.startHourField] || this.parent.workHours.start;
         var resEHr = resLevel.resourceData[resLevel.resource.endHourField] || this.parent.workHours.end;
-        tdData.startHour = this.parent.globalize.parseDate(resSHr, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
-        tdData.endHour = this.parent.globalize.parseDate(resEHr, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        tdData.startHour = this.parent.getStartEndTime(resSHr);
+        tdData.endHour = this.parent.getStartEndTime(resEHr);
         tdData.workDays = resLevel.resourceData[resLevel.resource.workDaysField] || this.parent.workDays;
         tdData.className = resLevel.className;
         tdData.groupIndex = resLevel.groupIndex;

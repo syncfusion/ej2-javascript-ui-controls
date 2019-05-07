@@ -326,6 +326,11 @@ export interface DrillOptionsModel {
      */
     items?: string[];
 
+    /**
+     * It allows to set the delimiter.
+     */
+    delimiter?: string;
+
 }
 
 /**
@@ -387,6 +392,12 @@ export interface DataSourceModel {
      * @default []
      */
     filters?: FieldOptionsModel[];
+
+    /**
+     * It allows to hide fields from fieldlist.
+     * @default []
+     */
+    excludeFields?: string[];
 
     /**
      * It allows to set the expanded state of headers.

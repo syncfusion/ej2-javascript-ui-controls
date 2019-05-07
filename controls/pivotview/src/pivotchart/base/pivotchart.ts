@@ -114,7 +114,7 @@ export class PivotChart {
                     let cell: IAxisSet = pivotValues[rowIndex][cellIndex] as IAxisSet;
                     if (!totColIndex[cell.colIndex] && cell.axis === 'value' &&
                         (chartSettings.enableMultiAxis ? true : cell.actualText === this.currentMeasure)) {
-                        if (firstRowCell.isDrilled) {
+                        if (firstRowCell.members.length > 0) {
                             break;
                         }
                         let columnSeries: string = cell.columnHeaders.toString().split('.').join(' - ') + ' | ' + cell.actualText;

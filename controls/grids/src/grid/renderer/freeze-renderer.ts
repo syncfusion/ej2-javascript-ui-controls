@@ -182,7 +182,9 @@ export class FreezeRender extends HeaderRender implements IRenderer {
                 fRows = fHdr.querySelector(wrapMode === 'Content' ? 'tbody' : 'thead').querySelectorAll('tr') as NodeListOf<HTMLElement>;
                 mRows = mHdr.querySelector(wrapMode === 'Content' ? 'tbody' : 'thead').querySelectorAll('tr') as NodeListOf<HTMLElement>;
             }
-            this.setWrapHeight(fRows, mRows, obj.isModeChg, false, this.colDepth > 1);
+            if (!this.parent.getHeaderContent().querySelectorAll('.e-stackedheadercell').length) {
+                this.setWrapHeight(fRows, mRows, obj.isModeChg, false, this.colDepth > 1);
+            }
             this.refreshStackedHdrHgt();
         }
     }

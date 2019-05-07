@@ -401,9 +401,9 @@ export class InitialDrillSettings extends ChildProperty<InitialDrillSettings> {
 export class LeafItemSettings extends ChildProperty<LeafItemSettings> {
     /**
      * Specifies the fill color for leaf items.
-     * @default '#808080'
+     * @default null
      */
-    @Property('#808080')
+    @Property(null)
     public fill: string;
     /**
      * Items rendering with random colors.
@@ -630,9 +630,9 @@ export class LevelSettings extends ChildProperty<LevelSettings> {
     public border: BorderModel;
     /**
      * Specifies the background of level.
-     * @default '#808080'
+     * @default null
      */
-    @Property('#808080')
+    @Property(null)
     public fill: string;
     /**
      * Items rendering with random colors.

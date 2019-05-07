@@ -394,6 +394,8 @@ export interface IGrid extends Component<HTMLElement> {
 
     commonQuery?: Query;
 
+    scrollPosition: ScrollPositionType;
+
     isLastCellPrimaryKey?: boolean;
 
     editModule?: Edit;
@@ -1296,6 +1298,14 @@ export interface ParentDetails {
     parentKeyField?: string;
     parentKeyFieldValue?: string;
     parentRowData?: Object;
+}
+
+/**
+ * @hidden
+ */
+export interface ScrollPositionType {
+    top?: number;
+    left?: number;
 }
 
 /**

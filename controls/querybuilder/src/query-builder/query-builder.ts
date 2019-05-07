@@ -72,6 +72,13 @@ export class Columns extends ChildProperty<Columns> {
      */
     @Property(null)
     public step: number;
+    /**
+     * Specifies the default value for columns.
+     * @default null
+     */
+    @Property(null)
+    public value:  string[] | number[] | string | number | boolean | Date;
+
 }
 export class Rule extends ChildProperty<Rule> {
     /**
@@ -287,6 +294,13 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      */
     @Property('auto')
     public width: string;
+    /**
+     * If match case is set to true, the grid filters the records with exact match. 
+     * if false, it filters case insensitive records (uppercase and lowercase letters treated the same).
+     * @default false
+     */
+    @Property(false)
+    public matchCase: boolean;
     /**
      * Defines rules in the QueryBuilder.
      * Specifies the initial rule, which is JSON data.
@@ -1009,16 +1023,20 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
         return result;
     }
-    private renderMultiSelect(rule: RuleModel, parentId: string, i: number, selectedValue: string[] | number[]): void {
-        let isFetched: boolean = false; let ds: object[];
+    private renderMultiSelect(rule: ColumnsModel, parentId: string, i: number, selectedValue: string[] | number[], values:
+        string[] | number[] | boolean[]): void {
+        let isFetched: boolean = false; let ds: object[]; let isValues: boolean = false;
         if (this.dataColl[1]) {
             if (Object.keys(this.dataColl[1]).indexOf(rule.field) > -1) {
                 isFetched = true;
                 ds = this.getDistinctValues(this.dataColl, rule.field);
             }
         }
+        if (!this.dataColl.length && values.length) {
+            isValues = true;
+        }
         let multiSelectObj: MultiSelect = new MultiSelect({
-            dataSource: isFetched ? ds as { [key: string]: object }[] : this.dataManager,
+            dataSource: isValues ? values : (isFetched ? ds as { [key: string]: object }[] : this.dataManager),
             query: new Query([rule.field]),
             fields: { text: rule.field, value: rule.field },
             value: selectedValue,
@@ -1029,6 +1047,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             actionBegin: this.multiSelectOpen.bind(this, parentId + '_valuekey' + i)
         });
         multiSelectObj.appendTo('#' + parentId + '_valuekey' + i);
+        this.updateRules(multiSelectObj.element, selectedValue, 0);
     }
     private multiSelectOpen(parentId: string, args: PopupEventArgs): void {
         if (this.dataSource instanceof DataManager) {
@@ -1091,12 +1110,30 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         let fieldObj: DropDownList = getComponent(document.getElementById(parentId + '_filterkey'), 'dropdownlist') as DropDownList;
         return this.columns[fieldObj.index];
     }
+     private setDefaultValue(parentId?: string, isArryValue?: boolean, isNumber?: boolean):
+     string[] | number[] | string | number | boolean | Date {
+        let itemData: ColumnsModel = this.getItemData(parentId);
+        if (isNullOrUndefined(itemData.value)) {
+            return isNumber ? isArryValue ? [0, 0] : 0 : isArryValue ? [] : '';
+        }
+        if (isArryValue) {
+           if (!(itemData.value instanceof Array)) {
+                 return [itemData.value] as string[] | number[];
+           }
+        } else {
+            if (itemData.value instanceof Array) {
+                return itemData.value[0];
+          }
+        }
+       // this.updateRules(ruleValElem, itemData.defaultValue, idx);
+        return itemData.value;
+     }
     private renderStringValue(parentId: string, rule: RuleModel, operator: string, idx: number, ruleValElem: HTMLElement): void {
         let selectedVal: string[]; let columnData: ColumnsModel = this.getItemData(parentId);
-        let selectedValue: string = this.isImportRules ? rule.value as string : '';
-        if ((operator === 'in' || operator === 'notin') && this.dataColl.length) {
-            selectedVal = this.isImportRules ? rule.value as string[] : [];
-            this.renderMultiSelect(columnData, parentId, idx, selectedVal);
+        let selectedValue: string = this.isImportRules ? rule.value as string : this.setDefaultValue(parentId, false, false) as string;
+        if ((operator === 'in' || operator === 'notin') && (this.dataColl.length || columnData.values )) {
+            selectedVal = this.isImportRules ? rule.value as string[] : this.setDefaultValue(parentId, true, false) as string[];
+            this.renderMultiSelect(columnData, parentId, idx, selectedVal, columnData.values);
             if (this.displayMode === 'Vertical' || this.element.className.indexOf('e-device') > -1) {
                 ruleValElem.style.width = '100%';
             } else {
@@ -1105,7 +1142,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
         } else {
             if (operator === 'in' || operator === 'notin') {
-                selectedVal = this.isImportRules ? rule.value as string[] : [];
+                selectedVal = this.isImportRules ? rule.value as string[] : this.setDefaultValue(parentId, true, false) as string[];
                 selectedValue = selectedVal.join(',');
             }
             let inputobj: TextBox = new TextBox({
@@ -1120,11 +1157,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private renderNumberValue(
         parentId: string, rule: RuleModel, operator: string, idx: number, ruleValElem: HTMLElement, itemData: ColumnsModel,
         length: number): void {
-        let selectedValue: number = this.isImportRules ? rule.value as number : 0;
-        let selectedVal: number[]; let columnData: ColumnsModel = this.getItemData(parentId);
-        if ((operator === 'in' || operator === 'notin') && this.dataColl.length) {
-            selectedVal = this.isImportRules ? rule.value as number[] : [];
-            this.renderMultiSelect(columnData, parentId, idx, selectedVal);
+        let columnData: ColumnsModel = this.getItemData(parentId);
+        let selectedVal: number | number[] =
+        this.isImportRules ? rule.value as number : this.setDefaultValue(parentId, false, true) as number;
+        if ((operator === 'in' || operator === 'notin') && (this.dataColl.length || columnData.values)) {
+            selectedVal = this.isImportRules ? rule.value as number[] : this.setDefaultValue(parentId, true, false) as number[];
+            this.renderMultiSelect(columnData, parentId, idx, selectedVal, columnData.values);
             if (this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical') {
                 ruleValElem.style.width = '100%';
             } else {
@@ -1132,7 +1170,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 ruleValElem.style.width = null;
             }
         } else if (operator === 'in' || operator === 'notin') {
-            selectedVal = this.isImportRules ? rule.value as number[] : [];
+            selectedVal = this.isImportRules ? rule.value as number[] : this.setDefaultValue(parentId, true, false) as number[];
             let selVal: string = selectedVal.join(',');
             let inputobj: TextBox = new TextBox({
                 placeholder: 'Value',
@@ -1149,10 +1187,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 (itemData.validation && itemData.validation.max) ? itemData.validation.max : Number.MAX_VALUE;
             let format: string = itemData.format ? itemData.format : 'n';
             if (length > 1 && rule) {
-                selectedValue = rule.value[idx] ? rule.value[idx] : 0;
+                selectedVal = rule.value[idx] ? rule.value[idx] : this.setDefaultValue(parentId, true, true) as number;
             }
             let numeric: NumericTextBox = new NumericTextBox({
-                value: selectedValue as number,
+                value: (selectedVal instanceof Array) ? selectedVal[idx] : selectedVal as number,
                 format: format, min: min, max: max, width: '100%',
                 step: itemData.step ? itemData.step : 1,
                 change: this.changeValue.bind(this, idx)
@@ -1201,7 +1239,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         case 'boolean': {
                             let values: string[] =
                                 itemData.values && itemData.values.length ? itemData.values as string[] : ['True', 'False'];
-                            let isCheck: boolean = this.isImportRules ? Boolean(rule.value) : true;
+                            let isCheck: boolean = false;
+                            if (itemData.value) {
+                                isCheck = values[i].toString() === itemData.value.toString();
+                            } else if (rule.value) {
+                                isCheck = values[i].toString() === rule.value.toString();
+                            }
                             let radiobutton: RadioButton = new RadioButton({
                                 label: values[i].toString(), name: parentId + 'default', checked: isCheck, value: values[i],
                                 change: this.changeValue.bind(this, i)
@@ -1212,6 +1255,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                             break;
                         case 'date': {
                             let selectedValue: Date = new Date(); let selVal: string;
+                            if (itemData.value) {
+                                selectedValue =  itemData.value instanceof Date ?
+                                itemData.value : new Date(itemData.value as string | number);
+                            }
                             if (this.isImportRules && rule && rule.value) {
                                 selectedValue = (length > 1) ? new Date(rule.value[i] as string) : new Date(rule.value as string);
                                 let format: DateFormatOptions;
@@ -1359,6 +1406,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     rule.value = this.intl.formatDate((getComponent(element, controlName) as DatePicker).value, format);
                 }
                 break;
+            case 'multiselect':
+                rule.value = (getComponent(element, controlName) as MultiSelect).value as number[] | string[];
+                break;
+
         }
 
     }
@@ -2091,7 +2142,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      */
     public getPredicate(rule: RuleModel): Predicate {
         let ruleColl: RuleModel[] = rule.rules; let pred: Predicate; let pred2: Predicate; let date: Date;
-        let ruleValue: string | number | Date; let matchCase: boolean = false; let column: ColumnsModel;
+        let ruleValue: string | number | Date; let ignoreCase: boolean = false; let column: ColumnsModel;
         for (let i: number = 0, len: number = ruleColl.length; i < len; i++) {
             let keys: string[] = Object.keys(ruleColl[i]);
             if (keys.indexOf('rules') > -1) {
@@ -2109,9 +2160,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 }
             } else if (ruleColl[i].operator.length) {
                 let oper: string = ruleColl[i].operator.toLowerCase();
-                let strOperColl: string[] = ['contains', 'startswith', 'endswith'];
                 let dateOperColl: string[] = ['equal', 'notequal'];
-                matchCase = (strOperColl.indexOf(oper) > -1 || (ruleColl[i].type === 'date' && dateOperColl.indexOf(oper) > -1));
+                ignoreCase = this.matchCase ? false : true;
+                if (ruleColl[i].type === 'date' && dateOperColl.indexOf(oper) > -1) {
+                    ignoreCase = true;
+                }
                 column = this.getColumn(ruleColl[i].field);
                 if (ruleColl[i].type === 'date') {
                     let format: DateFormatOptions = { type: 'dateTime', format: column.format || 'MM/dd/yyyy' } as DateFormatOptions;
@@ -2125,7 +2178,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     } else {
                         let value: string | number | Date = ruleValue as string | number | Date;
                         if (value !== '') {
-                            pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number | Date, matchCase);
+                            pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number | Date, ignoreCase);
                         }
                     }
                 } else {
@@ -2135,10 +2188,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         } else {
                             let value: string | number | Date = ruleValue as string | number | Date;
                             if (pred && value !== '') {
-                                pred = pred.and(ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number | Date, matchCase);
+                                pred = pred.and(ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number | Date, ignoreCase);
                             } else if (value !== '') {
                                 pred = new Predicate(
-                                    ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number | Date, matchCase);
+                                    ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number | Date, ignoreCase);
                             }
                         }
                     } else {
@@ -2147,10 +2200,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         } else {
                             let value: string | number = ruleValue as string | number;
                             if (pred && value !== '') {
-                                pred = pred.or(ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number, matchCase);
+                                pred = pred.or(ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number, ignoreCase);
                             } else if (value !== '') {
                                 pred = new Predicate(
-                                    ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number | Date, matchCase);
+                                    ruleColl[i].field, ruleColl[i].operator, ruleValue as string | number | Date, ignoreCase);
                             }
                         }
                     }

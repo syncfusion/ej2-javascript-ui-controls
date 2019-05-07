@@ -3542,8 +3542,18 @@ var Hyperlink = /** @__PURE__ @class */ (function (_super) {
  */
 var Annotation = /** @__PURE__ @class */ (function (_super) {
     __extends$8(Annotation, _super);
-    function Annotation() {
-        return _super !== null && _super.apply(this, arguments) || this;
+    // tslint:disable-next-line:no-any
+    function Annotation(parent, propName, defaultValue, isArray) {
+        var _this = _super.call(this, parent, propName, defaultValue, isArray) || this;
+        if (!defaultValue.id) {
+            if (parent.parentObj && parent.parentObj.propName && parent.parentObj.propName === 'phases') {
+                _this.id = parent.parentObj.id;
+            }
+            else {
+                _this.id = randomId();
+            }
+        }
+        return _this;
     }
     __decorate$3([
         Property('')
@@ -7807,6 +7817,7 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
         if ((this.shape.sequence) === 'Conditional') {
             this.targetDecorator.shape = 'Arrow';
             this.sourceDecorator.shape = 'Diamond';
+            pathseq.id = this.id + this.shape.type;
             this.sourceDecorator.style.fill = 'white';
             this.targetDecorator.style.fill = 'black';
             this.sourceDecorator.width = 20;
@@ -9707,16 +9718,22 @@ var GridPanel = /** @__PURE__ @class */ (function (_super) {
     };
     return GridPanel;
 }(Container));
-/** @private */
+/**
+ * Defines the behavior of the RowDefinition of node
+ */
 var RowDefinition = /** @__PURE__ @class */ (function () {
     function RowDefinition() {
+        /** returns the height of node */
         this.height = undefined;
     }
     return RowDefinition;
 }());
-/** @private */
+/**
+ * Defines the behavior of the ColumnDefinition of node
+ */
 var ColumnDefinition = /** @__PURE__ @class */ (function () {
     function ColumnDefinition() {
+        /** returns the width of node */
         this.width = undefined;
     }
     return ColumnDefinition;
@@ -12515,6 +12532,9 @@ var BpmnSubEvent = /** @__PURE__ @class */ (function (_super) {
     ], BpmnSubEvent.prototype, "visible", void 0);
     return BpmnSubEvent;
 }(ChildProperty));
+/**
+ * Defines the behavior of the BpmnTransactionSubProcess
+ */
 var BpmnTransactionSubProcess = /** @__PURE__ @class */ (function (_super) {
     __extends$9(BpmnTransactionSubProcess, _super);
     function BpmnTransactionSubProcess() {
@@ -13624,7 +13644,6 @@ var SwimLane = /** @__PURE__ @class */ (function (_super) {
 /**
  * Defines the behavior of container
  */
-/** @private */
 var ChildContainer = /** @__PURE__ @class */ (function () {
     function ChildContainer() {
     }
@@ -31481,6 +31500,9 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 var connector = connectors[conn];
                 var points = this.getPoints(connector);
                 updateConnector(connector, points);
+                if (connector.shape.type === 'Bpmn' && connector.shape.sequence === 'Default') {
+                    this.commandHandler.updatePathElementOffset(connector);
+                }
                 connector.wrapper.measure(new Size(undefined, undefined));
                 connector.wrapper.arrange(connector.wrapper.desiredSize);
                 this.updateConnectorAnnotation(connector);
@@ -38143,6 +38165,7 @@ var BpmnDiagrams = /** @__PURE__ @class */ (function () {
         if (task === 'SubProcess' && subProcess) {
             content = this.getBPMNSubProcessShape(node);
         }
+        content.id = task + node.id;
         eventshape.children = [content];
         eventshape.style.fill = 'transparent';
         eventshape.style.strokeColor = 'transparent';
@@ -42697,7 +42720,7 @@ var HierarchicalTree = /** @__PURE__ @class */ (function () {
             if (!(info.y && info.y > dimensions.y)) {
                 info.y = dimensions.y;
             }
-            if (!(x && x > info.mid)) {
+            if (info.mid) {
                 x = info.mid;
             }
             if (info.tree.assistants.length) {
@@ -42924,7 +42947,7 @@ var HierarchicalTree = /** @__PURE__ @class */ (function () {
         var left;
         var diff;
         var intersect;
-        var levelBounds;
+        var levelBounds = { x: 0, y: 0, right: 0, bottom: 0 };
         for (i = 0; i < info.tree.assistants.length; i++) {
             asst = layout.graphNodes[info.tree.assistants[i]];
             //Arrange assistants at both left and right sides of parent(like alternate layout)
@@ -44081,9 +44104,9 @@ var HierarchicalTree = /** @__PURE__ @class */ (function () {
         var height;
         var offsetX;
         var offsetY;
-        width = node.actualSize.width;
-        height = node.actualSize.height;
-        if (!node.excludeFromLayout) {
+        if (node && !node.excludeFromLayout) {
+            width = node.actualSize.width;
+            height = node.actualSize.height;
             offsetX = layout.anchorX;
             offsetY = layout.anchorY;
             /*Performance - instead of checking conditions for every node, we can make the layout related

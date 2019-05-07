@@ -1,9 +1,10 @@
-import { Grid, Edit as GridEdit, SaveEventArgs, CellSaveArgs, CellEditArgs, getUid, getObject} from '@syncfusion/ej2-grids';
-import { BatchCancelArgs, Column, RecordDoubleClickEventArgs } from '@syncfusion/ej2-grids';
+import { Grid, Edit as GridEdit, SaveEventArgs, CellSaveArgs, CellEditArgs, getUid, getObject,
+  NotifyArgs, Row} from '@syncfusion/ej2-grids';
+import { BatchCancelArgs, Column, RecordDoubleClickEventArgs, RowInfo } from '@syncfusion/ej2-grids';
 import { TreeGrid } from '../base/treegrid';
 import { ITreeData, CellSaveEventArgs } from '../base/interface';
 import * as events from '../base/constant';
-import { isNullOrUndefined, extend, setValue, removeClass, KeyboardEventArgs, getValue } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, setValue, removeClass, KeyboardEventArgs, addClass, getValue } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
 import { findChildrenRecords } from '../utils';
 import { editAction, updateParentRow } from './crud-actions';
@@ -17,6 +18,7 @@ export class Edit {
     private parent: TreeGrid;
     private isSelfReference: boolean;
     private addRowIndex: number;
+    private addRowRecord: ITreeData;
     private isOnBatch: boolean;
     private keyPress: string;
     // private editedData: ITreeData;
@@ -64,6 +66,7 @@ export class Edit {
         this.parent.on(events.cellSave, this.cellSave, this);
         this.parent.on(events.batchCancel, this.batchCancel, this);
         this.parent.grid.on(events.keyPressed, this.keyPressed, this);
+        this.parent.grid.on('content-ready', this.contentready, this);
         this.parent.on(events.cellEdit, this.cellEdit, this);
         this.parent.grid.on(events.doubleTap, this.recordDoubleClick, this);
         this.parent.on('savePreviousRowPosition', this.savePreviousRowPosition, this);
@@ -100,6 +103,7 @@ export class Edit {
         this.parent.off(events.cellSave, this.cellSave);
         this.parent.off(events.batchCancel, this.batchCancel);
         this.parent.grid.off(events.keyPressed, this.keyPressed);
+        this.parent.grid.off('content-ready', this.contentready);
         this.parent.off(events.cellEdit, this.cellEdit);
         this.parent.grid.off(events.doubleTap, this.recordDoubleClick);
         this.parent.off('savePreviousRowPosition', this.savePreviousRowPosition);
@@ -191,11 +195,13 @@ export class Edit {
 
   private batchCancel(e: BatchCancelArgs): void {
     if (this.parent.editSettings.mode === 'Cell') {
+      let cellDetails: RowInfo = getValue('editModule.cellDetails', this.parent.grid.editModule);
+      let selectRowIndex: number = cellDetails.rowIndex;
       this.parent.renderModule.cellRender({
-            data: this.parent.grid.getSelectedRecords()[0],
-            cell: (<HTMLTableRowElement>this.parent.grid.getSelectedRows()[0]).cells[this.parent.treeColumnIndex],
-            column: this.parent.grid.getColumns()[this.parent.treeColumnIndex]
-          });
+        data: cellDetails.rowData,
+        cell: this.parent.getRows()[selectRowIndex].cells[this.parent.treeColumnIndex],
+        column: this.parent.grid.getColumns()[this.parent.treeColumnIndex]
+      });
       this.updateGridEditMode('Normal');
       this.isOnBatch = false;
     }
@@ -252,7 +258,7 @@ export class Edit {
             removeClass([row], ['e-editedrow', 'e-batchrow']);
             removeClass(row.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
             editAction({ value: <ITreeData>args.rowData, action: 'edit' }, this.parent, this.isSelfReference,
-                       this.addRowIndex, this.selectedIndex, args.columnName);
+                       this.addRowIndex, this.selectedIndex, args.columnName, this.addRowRecord);
             let saveArgs: CellSaveEventArgs = {
               type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
               previousData: args.previousValue, row: row, target: (args.cell as HTMLElement)
@@ -268,10 +274,48 @@ export class Edit {
       this.parent.grid.getRowsObject()[rowIndex].data = args.rowData;
      }
     private crudAction(details: { value: ITreeData, action: string }, columnName?: string): void {
-      editAction(details, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, columnName);
+      editAction(details, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, columnName, this.addRowRecord);
+      this.parent.parentData = [];
+      let data: Object = this.parent.grid.dataSource;
+      for (let i: number = 0; i < (<Object[]>this.parent.grid.dataSource).length; i++) {
+        data[i].index = i;
+        setValue('uniqueIDCollection.' + data[i].uniqueID + '.index', i, this.parent);
+        if (!data[i].level) {
+          this.parent.parentData.push(data[i]);
+      }
+      }
       if (details.action === 'add' && this.previousNewRowPosition != null) {
         this.parent.setProperties({editSettings: {newRowPosition:  this.previousNewRowPosition}}, true);
         this.previousNewRowPosition = null;
+      }
+    }
+    private updateIndex (data: Object, rows: Object, records: Object): void {
+      for (let j: number = 0; j < this.parent.getRows().length; j++ ) {
+        let data1: ITreeData = records[j];
+        let index: number = getValue('uniqueIDCollection.' + data1.uniqueID + '.index', this.parent);
+        data1.index = index;
+        if (!isNullOrUndefined(data1.parentItem)) {
+          let parentIndex: number = getValue('uniqueIDCollection.' + data1.parentItem.uniqueID + '.index', this.parent);
+          data1.parentItem.index = parentIndex;
+        }
+      }
+      for (let k: number = 0; k < this.parent.getRows().length; k++) {
+        let data2: ITreeData = records[k];
+        let index: number = data2.index;
+        let level: number = data2.level;
+        let row: Element = rows[k];
+        if (!isNullOrUndefined(data2.parentItem)) {
+          index = getValue('uniqueIDCollection.' + data2.parentItem.uniqueID + '.index', this.parent);
+        }
+        for (let l: number = 0; l < row.classList.length; l++) {
+          let value: string = row.classList[l];
+          let remove: RegExp = /e-gridrowindex/i;
+          let result: RegExpMatchArray = value.match(remove);
+          if (result != null) {
+           removeClass([row], value);
+          }
+        }
+        addClass([row], 'e-gridrowindex' + index + 'level' + level);
       }
     }
     private beginAdd(args?: SaveEventArgs): void {
@@ -354,6 +398,7 @@ export class Edit {
         if (args.requestType === 'add') {
             this.selectedIndex = this.parent.grid.selectedRowIndex;
             this.addRowIndex = this.parent.grid.selectedRowIndex > -1 ? this.parent.grid.selectedRowIndex : 0;
+            this.addRowRecord = this.parent.getSelectedRecords()[0];
         }
         args = this.beginAddEdit(args);
         // if (args.requestType === 'save' &&
@@ -397,9 +442,12 @@ export class Edit {
           if (this.parent.editSettings.newRowPosition !== 'Top') {
               if (this.parent.editSettings.newRowPosition === 'Above') {
                   position = 'before';
+                  index = currentData[this.addRowIndex].index;
               } else if (this.parent.editSettings.newRowPosition === 'Below') {
                   position = 'after';
-                  index += findChildrenRecords(currentData[this.addRowIndex]).length;
+                  let childRecordCount: number = findChildrenRecords(currentData[this.addRowIndex]).length;
+                  let currentDataIndex: number = currentData[this.addRowIndex].index;
+                  index = (childRecordCount > 0) ? ( currentDataIndex + childRecordCount) : (currentDataIndex);
               } else if (this.parent.editSettings.newRowPosition === 'Child') {
                   position = 'after';
                   if (this.selectedIndex > -1) {
@@ -407,7 +455,9 @@ export class Edit {
                     value.parentUniqueID = value.parentItem.uniqueID;
                     delete value.parentItem.childRecords; delete value.parentItem[this.parent.childMapping];
                   }
-                  index += findChildrenRecords(currentData[this.addRowIndex]).length;
+                  let childRecordCount1: number = findChildrenRecords(currentData[this.addRowIndex]).length;
+                  let currentDataIndex1: number = currentData[this.addRowIndex].index;
+                  index = (childRecordCount1 > 0) ? ( currentDataIndex1 + childRecordCount1) : (currentDataIndex1);
                   value.level = level + 1;
                   if (this.isSelfReference) {
                       value[this.parent.parentIdMapping] = idMapping;
@@ -486,6 +536,14 @@ export class Edit {
     public destroyForm(): void {
       this.parent.grid.editModule.destroyForm();
   }
+
+  private contentready (e: { rows: Row<Column>[], args?: NotifyArgs }): void {
+    if (!isNullOrUndefined(e.args.requestType)
+    && (e.args.requestType.toString() === 'delete' || e.args.requestType.toString() === 'save')) {
+      this.updateIndex(this.parent.grid.dataSource, this.parent.getRows(), this.parent.getCurrentViewRecords());
+    }
+  }
+
     //   private beforeBatchAdd(e: BeforeBatchAddArgs): void {
       //     this.selectedIndex = this.parent.grid.selectedRowIndex ;
       //     this.addRowIndex = this.selectedIndex > -1 ? this.selectedIndex : 0;

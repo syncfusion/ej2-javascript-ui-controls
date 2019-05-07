@@ -117,6 +117,7 @@ export class VirtualScroll {
     }
 
     private update(mHdr: HTMLElement, mCont: HTMLElement, top: number, left: number, e: Event): void {
+        this.parent.isScrolling = true;
         if (this.direction === 'vertical') {
             let rowValues: number = this.parent.dataSource.valueAxis === 'row' ? this.parent.dataSource.values.length : 1;
             let exactSize: number = (this.parent.pageSettings.rowSize * rowValues * this.parent.gridSettings.rowHeight);

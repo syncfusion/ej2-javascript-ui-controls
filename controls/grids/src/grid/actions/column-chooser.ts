@@ -8,8 +8,8 @@ import { ServiceLocator } from '../services/service-locator';
 import { IGrid, IAction, NotifyArgs, EJ2Intance } from '../base/interface';
 import * as events from '../base/constant';
 import { ShowHide } from './show-hide';
-import { Dialog, calculateRelativeBasedPosition } from '@syncfusion/ej2-popups';
-import { createCboxWithWrap, toogleCheckbox, parentsUntil } from '../base/util';
+import { Dialog, calculateRelativeBasedPosition, DialogModel } from '@syncfusion/ej2-popups';
+import { createCboxWithWrap, toogleCheckbox, parentsUntil, removeAddCboxClasses } from '../base/util';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { SearchBox } from '../services/focus-strategy';
 import { Grid } from '../base/grid';
@@ -405,6 +405,7 @@ export class ColumnChooser implements IAction {
         let fltrCol: Column[];
         let okButton: Button;
         let buttonEle: HTMLElement = this.dlgDiv.querySelector('.e-footer-content');
+        this.isInitialOpen = true;
         if (buttonEle) {
             okButton = (buttonEle.querySelector('.e-btn') as EJ2Intance).ej2_instances[0] as Button;
         }
@@ -459,7 +460,12 @@ export class ColumnChooser implements IAction {
         let checkstate: boolean;
         let elem: Element = parentsUntil(e.target as Element, 'e-checkbox-wrapper');
         if (elem) {
+            let selectAll: Element = elem.querySelector('.e-selectall');
+            if (selectAll) {
+                this.updateSelectAll(!elem.querySelector('.e-check'));
+            } else  {
             toogleCheckbox(elem.parentElement);
+            }
             (elem.querySelector('.e-chk-hidden') as HTMLElement).focus();
             if (elem.querySelector('.e-check')) {
                 checkstate = true;
@@ -468,9 +474,44 @@ export class ColumnChooser implements IAction {
             } else {
                 return;
             }
+            this.updateIntermediateBtn();
             let columnUid: string = parentsUntil(elem, 'e-ccheck').getAttribute('uid');
-            this.checkstatecolumn(checkstate, columnUid);
+            let column: Column[] =  this.parent.getColumns();
+            if (columnUid === 'grid-selectAll') {
+                column.forEach((col: Column ) => {
+                    this.checkstatecolumn(checkstate, col.uid);
+                });
+            } else {
+                this.checkstatecolumn(checkstate, columnUid);
+            }
             this.refreshCheckboxButton();
+        }
+    }
+
+    private updateIntermediateBtn(): void {
+        let cnt: number = this.ulElement.children.length - 1;
+        let className: string[] = [];
+        let elem: Element = this.ulElement.children[0].querySelector('.e-frame');
+        let selected: number = this.ulElement.querySelectorAll('.e-check:not(.e-selectall)').length;
+        let btn: Button = (<{ btnObj?: Button }>(this.dlgObj as DialogModel)).btnObj[0];
+        btn.disabled = false;
+        if (cnt === selected) {
+            className = ['e-check'];
+        } else if (selected) {
+            className = ['e-stop'];
+        } else {
+            className = ['e-uncheck'];
+            btn.disabled = true;
+        }
+        btn.dataBind();
+        removeClass([elem], ['e-check', 'e-stop', 'e-uncheck']);
+        addClass([elem], className);
+    }
+
+    private updateSelectAll(checked: boolean): void {
+        let cBoxes: Element[] = [].slice.call(this.ulElement.querySelectorAll('.e-frame'));
+        for (let cBox of cBoxes) {
+            removeAddCboxClasses(cBox, checked);
         }
     }
 
@@ -509,6 +550,16 @@ export class ColumnChooser implements IAction {
 
     private refreshCheckboxList(gdCol: Column[], searchVal?: string): HTMLElement {
         this.ulElement = this.parent.createElement('ul', { className: 'e-ccul-ele e-cc' });
+        let selectAllValue: string = this.l10n.getConstant('SelectAll');
+        let cclist: HTMLElement = this.parent.createElement('li', { className: 'e-cclist e-cc e-cc-selectall' });
+        let selectAll: Element = this.createCheckBox(selectAllValue, false, 'grid-selectAll');
+        if (gdCol.length) {
+            selectAll.querySelector('.e-checkbox-wrapper').firstElementChild.classList.add('e-selectall');
+            selectAll.querySelector('.e-frame').classList.add('e-selectall');
+            this.checkState(selectAll.querySelector('.e-icons'), true);
+            cclist.appendChild(selectAll);
+            this.ulElement.appendChild(cclist);
+            }
         for (let i: number = 0; i < gdCol.length; i++) {
             let columns: Column = (gdCol[i] as Column);
             this.renderCheckbox(columns);
@@ -520,7 +571,7 @@ export class ColumnChooser implements IAction {
         (<HTMLInputElement>this.dlgObj.element.querySelector('.e-cc.e-input')).value = '';
         this.columnChooserSearch('');
         let gridObject: IGrid = this.parent;
-        let currentCheckBoxColls: NodeListOf<Element> = this.dlgObj.element.querySelectorAll('.e-cc-chbox');
+        let currentCheckBoxColls: NodeListOf<Element> = this.dlgObj.element.querySelectorAll('.e-cc-chbox:not(.e-selectall)');
         for (let i: number = 0, itemLen: number = currentCheckBoxColls.length; i < itemLen; i++) {
             let element: HTMLInputElement = currentCheckBoxColls[i] as HTMLInputElement;
             let columnUID: string;
@@ -536,7 +587,6 @@ export class ColumnChooser implements IAction {
                 this.checkState(element.parentElement.querySelector('.e-icons'), false);
             }
         }
-
     }
 
     private checkState(element: Element, state: boolean): void {
@@ -562,6 +612,9 @@ export class ColumnChooser implements IAction {
                 this.createCheckBox(column.headerText, (column.visible && !hideColState) || showColState, column.uid);
             cclist.appendChild(cccheckboxlist);
             this.ulElement.appendChild(cclist);
+        }
+        if (this.isInitialOpen) {
+            this.updateIntermediateBtn();
         }
     }
 

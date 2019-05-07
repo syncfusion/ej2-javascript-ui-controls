@@ -841,6 +841,19 @@ describe('Schedule base module', () => {
             availablity = schObj.isSlotAvailable(new Date(2017, 10, 6, 10, 0), new Date(2017, 10, 6, 11, 0));
             expect(availablity).toEqual(false);
         });
+
+        it('getStartEndTime with valid time format'),() =>{
+            expect(schObj.getStartEndTime('08.30')).toEqual(new Date(new Date().setHours(8,30)));
+        } 
+        it('getStartEndTime with empty value'),() =>{
+            expect(schObj.getStartEndTime('')).toEqual(null);
+        }
+        it('getStartEndTime with null value'),() =>{
+            expect(schObj.getStartEndTime(null)).toEqual(null);
+        }
+        it('getStartEndTime with invalid time format'),() =>{
+            expect(schObj.getStartEndTime('08')).toEqual(new Date());
+        }
     });
 
     describe('CR Issue EJ2-16536 Schedule within hidden element', () => {

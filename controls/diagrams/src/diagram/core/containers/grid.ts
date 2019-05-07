@@ -583,13 +583,19 @@ export class GridPanel extends Container {
     }
 }
 
-/** @private */
+/** 
+ * Defines the behavior of the RowDefinition of node
+ */
 export class RowDefinition {
+    /** returns the height of node */
     public height: number = undefined;
 }
 
-/** @private */
+/** 
+ * Defines the behavior of the ColumnDefinition of node
+ */
 export class ColumnDefinition {
+    /** returns the width of node */
     public width: number = undefined;
 }
 

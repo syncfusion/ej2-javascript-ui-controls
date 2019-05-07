@@ -64,7 +64,7 @@ export class DropDownButtons {
                 switch (item) {
                     case 'formats':
                         targetElement = select('#' + this.parent.getID() + '_' + type + '_Formats', tbElement);
-                        if (isNullOrUndefined(targetElement) ||  targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) { return; }
+                        if (isNullOrUndefined(targetElement) || targetElement.classList.contains(classes.CLS_DROPDOWN_BTN)) { return; }
                         let formatItem: IDropDownItemModel[] = this.parent.format.types.slice();
                         formatItem.forEach((item: IDropDownItemModel): void => {
                             Object.defineProperties((item as object), {
@@ -169,6 +169,8 @@ export class DropDownButtons {
 
     private onPropertyChanged(model: { [key: string]: Object }): void {
         let newProp: RichTextEditorModel = model.newProp;
+        let type: string;
+        let content: string;
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'fontFamily':
@@ -178,15 +180,14 @@ export class DropDownButtons {
                                 case 'default':
                                 case 'width':
                                     let fontItems: IDropDownItemModel[] = this.fontNameDropDown.items;
-                                    let type: string = !isNullOrUndefined(
+                                    type = !isNullOrUndefined(
                                         closest(this.fontNameDropDown.element, '.' + classes.CLS_QUICK_TB)) ?
                                         'quick' : 'toolbar';
                                     let fontNameContent: string = isNullOrUndefined(this.parent.fontFamily.default) ? fontItems[0].text :
                                         this.parent.fontFamily.default;
-                                    let content: string = this.dropdownContent(
+                                    content = this.dropdownContent(
                                         this.parent.fontFamily.width, type,
-                                        ((type === 'quick') ? '' :
-                                            getDropDownValue(fontItems, fontNameContent, 'text', 'text')));
+                                        ((type === 'quick') ? '' : getDropDownValue(fontItems, fontNameContent, 'text', 'text')));
                                     this.fontNameDropDown.setProperties({ content: content });
                                     if (!isNullOrUndefined(this.parent.fontFamily.default)) {
                                         this.getEditNode().style.fontFamily = this.parent.fontFamily.default;
@@ -210,11 +211,11 @@ export class DropDownButtons {
                                 case 'default':
                                 case 'width':
                                     let fontsize: IDropDownItemModel[] = this.fontSizeDropDown.items;
-                                    let type: string = !isNullOrUndefined(
+                                    type = !isNullOrUndefined(
                                         closest(this.fontSizeDropDown.element, '.' + classes.CLS_QUICK_TB)) ? 'quick' : 'toolbar';
                                     let fontSizeContent: string = isNullOrUndefined(this.parent.fontSize.default) ? fontsize[1].text :
                                         this.parent.fontSize.default;
-                                    let content: string = this.dropdownContent(
+                                    content = this.dropdownContent(
                                         this.parent.fontSize.width, type,
                                         getFormattedFontSize(getDropDownValue(
                                             fontsize,
@@ -244,15 +245,13 @@ export class DropDownButtons {
                                 case 'default':
                                 case 'width':
                                     let formatItems: IDropDownItemModel[] = this.formatDropDown.items;
-                                    let type: string = !isNullOrUndefined(
+                                    type = !isNullOrUndefined(
                                         closest(this.formatDropDown.element, '.' + classes.CLS_QUICK_TB)) ? 'quick' : 'toolbar';
                                     let formatContent: string = isNullOrUndefined(this.parent.format.default) ? formatItems[0].text :
                                         this.parent.format.default;
-                                    let content: string = this.dropdownContent(
-                                        this.parent.format.width,
-                                        type,
-                                        ((type === 'quick') ? '' :
-                                            getDropDownValue(formatItems, formatContent, 'text', 'text')));
+                                    content = this.dropdownContent(
+                                        this.parent.format.width, type,
+                                        ((type === 'quick') ? '' : getDropDownValue(formatItems, formatContent, 'text', 'text')));
                                     this.formatDropDown.setProperties({ content: content });
                                     break;
                                 case 'types':

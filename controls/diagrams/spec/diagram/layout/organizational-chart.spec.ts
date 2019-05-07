@@ -404,7 +404,7 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
             expect(bounds.x == -122 && bounds.y == 50 && bounds.width == 1445 && bounds.height == 1290).toBe(true);
-            expect(diagram.nodes[0].offsetX == 420 && diagram.nodes[0].offsetY == 150).toBe(true);
+            expect(diagram.nodes[0].offsetX == 407.5&& diagram.nodes[0].offsetY == 150).toBe(true);
             diagram.getNodeDefaults = reset;
             done();
         });
@@ -460,7 +460,7 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
             expect(bounds.x == -10 && bounds.y == -130 && bounds.width == 1890 && bounds.height == 1020).toBe(true);
-            expect(diagram.nodes[0].offsetX == 90 && diagram.nodes[0].offsetY == 397.5).toBe(true);
+            expect(diagram.nodes[0].offsetX == 90 && diagram.nodes[0].offsetY == 360).toBe(true);
             done();
         });
         it('Checking fixed node - right to left orientation', (done: Function) => {
@@ -470,7 +470,7 @@ describe('Diagram Control', () => {
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
             expect(bounds.x == -1700 && bounds.y == -130
                 && bounds.width == 1890 && bounds.height == 1020).toBe(true);
-            expect(diagram.nodes[0].offsetX == 90 && diagram.nodes[0].offsetY == 397.5).toBe(true);
+                expect(diagram.nodes[0].offsetX == 90 && diagram.nodes[0].offsetY == 360).toBe(true);
             done();
         });
         it('Checking fixed node - bottom to top orientation', (done: Function) => {
@@ -509,7 +509,7 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
             expect(bounds.x == 50 && bounds.y == 50 && bounds.width == 1890 && bounds.height == 1020).toBe(true);
-            expect(diagram.nodes[0].offsetX == 150 && diagram.nodes[0].offsetY == 577.5).toBe(true);
+            expect(diagram.nodes[0].offsetX == 150 && diagram.nodes[0].offsetY == 540).toBe(true);
             done();
         });
         it('Checking Left Top Alignment - Right To Left Orientation', (done: Function) => {
@@ -518,7 +518,7 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
             expect(bounds.x == 50 && bounds.y == 50 && bounds.width == 1890 && bounds.height == 1020).toBe(true);
-            expect(diagram.nodes[0].offsetX == 1840 && diagram.nodes[0].offsetY == 577.5).toBe(true);
+            expect(diagram.nodes[0].offsetX == 1840 && diagram.nodes[0].offsetY == 540).toBe(true);
             done();
         });
         it('Checking Right Bottom Alignment', (done: Function) => {
@@ -547,7 +547,7 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
             expect(bounds.x == -690 && bounds.y == -440 && bounds.width == 1890 && bounds.height == 1020).toBe(true);
-            expect(diagram.nodes[0].offsetX == -590 && diagram.nodes[0].offsetY == 87.5).toBe(true);
+            expect(diagram.nodes[0].offsetX == -590 && diagram.nodes[0].offsetY == 50).toBe(true);
             done();
         });
         it('Checking Right Bottom Alignment - right to left', (done: Function) => {
@@ -556,7 +556,7 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
             expect(bounds.x == -690 && bounds.y == -440 && bounds.width == 1890 && bounds.height == 1020).toBe(true);
-            expect(diagram.nodes[0].offsetX == 1100 && diagram.nodes[0].offsetY == 87.5).toBe(true);
+            expect(diagram.nodes[0].offsetX == 1100 && diagram.nodes[0].offsetY == 50).toBe(true);
             done();
         });
         it('Checking Center Center Alignment', (done: Function) => {
@@ -566,7 +566,7 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
             expect(bounds.x == -345 && bounds.y == -220 && bounds.width == 1890 && bounds.height == 1020).toBe(true);
-            expect(diagram.nodes[0].offsetX == 1445 && diagram.nodes[0].offsetY == 307.5).toBe(true);
+            expect(diagram.nodes[0].offsetX == 1445 && diagram.nodes[0].offsetY == 270).toBe(true);
             done();
         });
         it('Checking Center Center Alignment - Bottom To Top Orientation', (done: Function) => {
@@ -584,7 +584,7 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
             expect(bounds.x == -345 && bounds.y == -220 && bounds.width == 1890 && bounds.height == 1020).toBe(true);
-            expect(diagram.nodes[0].offsetX == -245 && diagram.nodes[0].offsetY == 307.5).toBe(true);
+            expect(diagram.nodes[0].offsetX == -245 && diagram.nodes[0].offsetY == 270).toBe(true);
             done();
         });
         it('Checking Center Center Alignment - Right To Left Orientation', (done: Function) => {
@@ -593,7 +593,7 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
             expect(bounds.x == -345 && bounds.y == -220 && bounds.width == 1890 && bounds.height == 1020).toBe(true);
-            expect(diagram.nodes[0].offsetX == 1445 && diagram.nodes[0].offsetY == 307.5).toBe(true);
+            expect(diagram.nodes[0].offsetX == 1445 && diagram.nodes[0].offsetY == 270).toBe(true);
             done();
         });
         it('Checking multiple roots', (done: Function) => {
@@ -1880,4 +1880,95 @@ describe('Connector Update in Layout Issue', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
+});
+
+describe('OrgChart-Layout Expand collapse issue exception raise issue', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    function nodeDefaults(node: any) {
+        node.annotations[0].style.color = "white";
+        node.width = 120;
+        node.height = 50;
+        node.expandIcon = { shape: 'Minus' };
+        node.collapseIcon = { shape: 'Plus' };
+        return node;
+    }
+
+    //The below method used to define the common settings for connectors.
+    function connectorDefaults(connector: any) {
+        connector.type = 'Orthogonal';
+        connector.targetDecorator = { shape: 'None' };
+        return connector;
+    }
+    beforeAll(() => {
+        ele = createElement('div', { id: 'diagramConnectorUpdateInLayoutIssue' });
+        document.body.appendChild(ele);
+        var data: object[] = [
+            { 'id': 'parent', 'role': 'Board', 'color': '#71AF17' },
+            { 'id': '1', 'role': 'General Manager', 'manager': 'parent', 'color': '#71AF17' },
+            { 'id': '2', 'role': 'Human Resource Manager', 'manager': '1', 'color': '#1859B7' },
+            { 'id': '3', 'role': 'Trainers', 'manager': '2', 'color': '#2E95D8' },
+            { 'id': '4', 'role': 'Recruiting Team', 'manager': '2', 'color': '#2E95D8' },
+            { 'id': '5', 'role': 'Finance Asst. Manager', 'manager': '2', 'color': '#2E95D8' },
+            { 'id': '6', 'role': 'Design Manager', 'manager': '1', 'color': '#1859B7' },
+            { 'id': '7', 'role': 'Design Supervisor', 'manager': '6', 'color': '#2E95D8' },
+            { 'id': '8', 'role': 'Development Supervisor', 'manager': '6', 'color': '#2E95D8' },
+            { 'id': '9', 'role': 'Drafting Supervisor', 'manager': '6', 'color': '#2E95D8' },
+            { 'id': '11', 'role': 'Assistant General Manager', 'manager': '1', 'color': '#71AF17' },
+        ];
+        let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
+        diagram = new Diagram({
+            width: "1000px",
+            height: "600px",
+            // bind the data to diagram and map the columns.
+            dataSourceSettings: {
+                id: 'id', parentId: 'manager', dataManager: items,
+                doBinding: function (node: any, data: any) {
+                    node.id = data.role,
+                        // You will get the employee information in data argument and bind that value directly to node's built-in properties for customization.
+                        node.annotations = [
+                            { content: data.role },
+                        ];
+                    node.style = { fill: data.color };
+                }
+            },
+            layout: {
+                // set the layout type and alignment
+                type: 'OrganizationalChart',
+                orientation: 'TopToBottom',
+                horizontalSpacing: 50, verticalSpacing: 50,
+                getLayoutInfo: function (node: any, options: any) {
+                    // define the assistants in the organization and leaf level nodes alignment.
+                    if (node.data.role === 'General Manager') {
+                        options.assistants.push(options.children[2]);
+                        options.children.splice(2, 1);
+                    }
+                    if (!options.hasSubTree) {
+                        options.orientation = 'Horizontal';
+                        options.type = 'Center';
+                    }
+                }
+            },
+            getNodeDefaults: nodeDefaults,
+            getConnectorDefaults: connectorDefaults
+        });
+        diagram.appendTo('#diagramConnectorUpdateInLayoutIssue');
+    });
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('OrgChart-Layout Expand collapse issue exception raise issue', (done: Function) => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.clickEvent(diagramCanvas, diagram.nodes[0].offsetX, diagram.nodes[0].offsetY);
+        mouseEvents.mouseMoveEvent(diagramCanvas, diagram.nodes[1].wrapper.children[2].offsetX + diagram.element.offsetLeft, diagram.nodes[1].wrapper.children[2].offsetY);
+        mouseEvents.mouseMoveEvent(diagramCanvas, diagram.nodes[1].wrapper.children[2].offsetX + diagram.element.offsetLeft + 2, diagram.nodes[1].wrapper.children[2].offsetY)
+        mouseEvents.clickEvent(diagramCanvas, diagram.nodes[1].wrapper.children[2].offsetX + diagram.element.offsetLeft, diagram.nodes[1].wrapper.children[2].offsetY);
+        diagram.animationComplete = () => {
+            expect(diagram.nodes[2].visible === false).toBe(true);
+            done();
+        };
+    });
+
 });

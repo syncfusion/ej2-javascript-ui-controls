@@ -92,12 +92,12 @@ let menuObj: Menu = new Menu(menuOptions, '#menu');
 
 if (Browser.isDevice) {
     document.body.classList.add('e-bigger');
-} else {
-    menuObj.animationSettings.effect = 'SlideDown';
 }
-
 let checkBoxObj: CheckBox = new CheckBox({ label: 'Enable Touch Mode', checked: Browser.isDevice ? true : false, change: onChange });
 checkBoxObj.appendTo('#touchMode');
+
+let hamburgerCHKObj: CheckBox = new CheckBox({ label: 'Hamburger Mode', checked: menuObj.hamburgerMode, change: onModeChange });
+hamburgerCHKObj.appendTo('#hamburgerMode');
 
 document.getElementById('material').onclick = (e: Event) => {
     document.body.classList.remove('darkBG');
@@ -155,4 +155,9 @@ function onChange(args: ChangeEventArgs): void {
     } else {
         menuObj.cssClass = '';
     }
+}
+
+function onModeChange(args: ChangeEventArgs): void {
+    menuObj.hamburgerMode = args.checked;
+    menuObj.showItemOnClick = args.checked;
 }

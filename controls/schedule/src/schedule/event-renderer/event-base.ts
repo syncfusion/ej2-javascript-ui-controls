@@ -253,9 +253,10 @@ export class EventBase {
                 app.isSpanned = true;
                 data.push(app);
                 start = end;
-                if ((new Date(start.getTime()).setHours(0, 0, 0, 0) === new Date(eventEndTime.getTime()).setHours(0, 0, 0, 0))
+                if ((util.resetTime(new Date(start.getTime())).getTime() === util.resetTime(new Date(eventEndTime.getTime())).getTime())
                     && !(end.getTime() === eventEndTime.getTime())) {
-                    end = new Date(new Date(start.getTime()).setHours(eventEndTime.getHours(), eventEndTime.getMinutes()));
+                    end = new Date(start.getTime());
+                    end = new Date(end.setHours(eventEndTime.getHours(), eventEndTime.getMinutes(), eventEndTime.getSeconds()));
                 } else {
                     end = util.addDays(util.resetTime(new Date(start.getTime())), 1);
                 }

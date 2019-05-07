@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.44 (2019-05-07)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- Adding a new record or Deleting an existing record is working fine with the sorted data.
+
 ## 17.1.41 (2019-04-16)
 
 ### TreeGrid

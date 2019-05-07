@@ -8,7 +8,8 @@ import { NodeConstraints } from '../../../src/diagram/enum/enum';
 import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 import { ConnectorModel } from '../../../src';
-Diagram.Inject(BpmnDiagrams);
+import { HierarchicalTree, } from '../../../src/diagram/index';
+Diagram.Inject(BpmnDiagrams,HierarchicalTree);
 
 /**
  * BPMN shapes -  Message, DataSource, Group
@@ -406,5 +407,366 @@ describe('Diagram Control', () => {
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
+    });
+    describe('Child is not positioned properly when calling doLayout() method', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let connectors: ConnectorModel[] = [
+                {
+                    id: 'Connector1',
+                    sourceID: 'node1',
+                    targetID: 'node2',
+                    shape: {
+                        type: 'Bpmn',
+                        flow: 'Sequence',
+                        sequence: 'Default'
+                      },
+                    style: {
+                        strokeDashArray: '2,2'
+                    },
+                    targetDecorator: {
+                        shape: 'None'
+                    },
+                    type: 'Orthogonal',
+                    cornerRadius: 10
+                },
+                {
+                    id: 'Connector2',
+                    sourceID: 'node1',
+                    targetID: 'node3',
+                    style: {
+                        strokeDashArray: '2,2'
+                    },
+                    targetDecorator: {
+                        shape: 'None'
+                    },
+                    type: 'Orthogonal',
+                    cornerRadius: 10
+                },
+                {
+                    id: 'Connector3',
+                    sourceID: 'node2',
+                    targetID: 'node4',
+                    style: {
+                        strokeDashArray: '2,2'
+                    },
+                    targetDecorator: {
+                        shape: 'None'
+                    },
+                    type: 'Orthogonal',
+                    cornerRadius: 10
+                },
+                {
+                    id: 'Connector4',
+                    sourceID: 'node3',
+                    targetID: 'node5',
+                    style: {
+                        strokeDashArray: '2,2'
+                    },
+                    targetDecorator: {
+                        shape: 'None'
+                    },
+                    type: 'Orthogonal',
+                    cornerRadius: 10
+                }
+              ]
+            
+            let nodes: NodeModel[] = [
+                {
+                    id: 'node1',
+                    offsetX: 250,
+                    offsetY: 150,
+                    width: 90,
+                    height: 60,
+                    annotations: [
+                        {
+                            content: 'Activity 1'
+                        }
+                    ],
+                    borderWidth: 4,
+                    shape: {
+                        type: 'Bpmn',
+                        shape: 'Activity',
+                        activity: {
+                            activity: 'Task',
+                            task: {
+                                type: 'Service'
+                            }
+                        }
+                    },
+                    style: {
+                        fill: '#d8ecdc',
+                        strokeColor: '#78BE83',
+                        strokeWidth: 3,
+                        gradient: {
+                            x1: 0,
+                            y1: 0,
+                            x2: 1,
+                            y2: 1,
+                            stops: [
+                                {
+                                    color: 'white',
+                                    offset: 30,
+                                    opacity: 0.1
+                                },
+                                {
+                                    color: '#d8ecdc',
+                                    offset: 100,
+                                    opacity: 0.1
+                                }
+                            ],
+                            type: 'Linear'
+                        }
+                    }
+                },
+                {
+                    id: 'node2',
+                    offsetX: 400,
+                    offsetY: 100,
+                    width: 90,
+                    height: 60,
+                    borderWidth: 4,
+                    shape: {
+                        type: 'Bpmn',
+                        shape: 'Activity',
+                        activity: {
+                            activity: 'Task',
+                            task: {
+                                type: 'Service'
+                            }
+                        }
+                    },
+                    annotations: [
+                        {
+                            content: "Sample Text",
+                            style: {
+                                textOverflow: 'Clip',
+                                textWrapping: 'WrapWithOverflow',
+                                textAlign: 'Left'
+                            },
+                            height: 50,
+                            width: 80,
+                            margin: { left: 0, top: 0, right: 0, bottom: 0 }
+                        }
+                    ],
+                    style: {
+                        strokeColor: '#778899',
+                        strokeWidth: 3
+                    }
+                },
+                {
+                    id: 'node3',
+                    offsetX: 400,
+                    offsetY: 200,
+                    width: 90,
+                    height: 60,
+                    borderWidth: 4,
+                    shape: {
+                        type: 'Bpmn',
+                        shape: 'Activity',
+                        activity: {
+                            activity: 'Task',
+                            task: {
+                                type: 'Service'
+                            }
+                        }
+                    },
+                    annotations: [
+                        {
+                            content: "Sample Text",
+                            style: {
+                                textOverflow: 'Clip',
+                                textWrapping: 'WrapWithOverflow',
+                                textAlign: 'Left'
+                            },
+                            height: 50,
+                            width: 80,
+                            margin: { left: 0, top: 0, right: 0, bottom: 0 }
+                        }
+                    ],
+                    style: {
+                        strokeColor: '#778899',
+                        strokeWidth: 3
+                    }
+                },
+                {
+                    id: 'node4',
+                    annotations: [
+                        {
+                            content: 'End',
+                            margin: { bottom: -30 }
+                        }
+                    ],
+                    shape: {
+                        type: 'Bpmn',
+                        shape: 'Event',
+                        event: {
+                            event: 'End',
+                            trigger: 'None'
+                        }
+                    },
+                    offsetX: 500,
+                    offsetY: 100,
+                    width: 30,
+                    height: 30,
+                    style: {
+                        strokeColor: '#FF0000',
+                        strokeWidth: 3
+                    }
+                },
+                {
+                    id: 'node5',
+                    annotations: [
+                        {
+                            content: 'End',
+                            margin: { bottom: -30 }
+                        }
+                    ],
+                    shape: {
+                        type: 'Bpmn',
+                        shape: 'Event',
+                        event: {
+                            event: 'End',
+                            trigger: 'None'
+                        }
+                    },
+                    offsetX: 500,
+                    offsetY: 200,
+                    width: 30,
+                    height: 30,
+                    style: {
+                        strokeColor: '#FF0000',
+                        strokeWidth: 3
+                    }
+                }
+            ];
+            
+           
+            diagram = new Diagram({
+                width: '800px', height: '500px', nodes: nodes,
+                connectors:connectors,
+            });
+            diagram.appendTo('#diagram');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Child is not positioned properly when calling doLayout() method', (done: Function) => {
+            diagram.layout.orientation = 'LeftToRight';
+            diagram.layout.orientation = 'LeftToRight';
+            diagram.layout.type = 'HierarchicalTree';
+            diagram.doLayout();
+            diagram.dataBind();
+            let ele = document.getElementById('Connector4_path_groupElement');
+           expect(ele.children[0].getAttribute('d')==='M0,0 L30.76,0 ').toBe(true);
+           let connector = document.getElementById('Connector1_Default_groupElement')
+           expect(connector.children[0].getAttribute('d') === 'M0,0 L23.99,0.8 ').toBe(true);
+            done();
+        });
+        it('memory leak', () => { 
+            profile.sample();
+            let average: any = inMB(profile.averageChange)
+            //Check average change in memory samples to not be over 10MB
+            expect(average).toBeLessThan(10);
+            let memory: any = inMB(getMemoryProfile())
+            //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+            expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+        })
+    });
+
+    describe('Conditional sequence connector is improper when connected with BPMN Service shape', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let connectors: ConnectorModel[] = [
+                {
+                  id: 'connector1', sourceID: 'service', targetID: 'processesTask',
+                   type: 'Orthogonal',
+                }
+              ]
+            
+            let nodes: NodeModel[] = [
+                {
+                    id: 'service', style: { fill: '#6FAAB0' }, width: 95, height: 70,
+                     annotations: [{
+                        id: 'serviceLabel2', content: 'Book hotel', offset: { x: 0.50, y: 0.50 },
+                        style: { color: 'white', }
+                    }],  offsetX:200, offsetY:200
+                },
+                 
+                {
+                    id: 'processesTask', style: { fill: '#F6B53F' }, width: 95, height: 70,
+                    shape: {
+                        type: 'Bpmn', shape: 'Activity', activity: {
+                            activity: 'Task', task: {
+                                type: 'Service',
+                            },
+                        },
+                    }, annotations: [{
+                        id: 'serviceLabel2', content: 'Charge credit card', offset: { x: 0.50, y: 0.60 },
+                        style: { color: 'white' }
+                    }], offsetX:400, offsetY:200
+                }, 
+            ];
+            
+            diagram = new Diagram({
+                width: '800px', height: '500px', nodes: nodes,
+                connectors:connectors,
+              
+            });
+            diagram.appendTo('#diagram');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        function getDefaultSequenceConnector(): ConnectorModel {
+            return {
+              id: 'node1-processesTask',
+              sourceID: 'service',
+              shape: {
+                  type: 'Bpmn',
+                  flow: 'Sequence',
+                  sequence: 'Conditional'
+              },
+              targetID: 'processesTask',
+              cornerRadius: 10,
+              type: 'Orthogonal', 
+            }
+          }
+        it('Conditional sequence connector is improper when connected with BPMN Service shape', (done: Function) => {
+            let node1 =   diagram.getObject('service');  
+            diagram.remove(diagram.connectors[0]);
+            diagram.add(getDefaultSequenceConnector()); 
+            diagram.dataBind();
+            let ele = document.getElementById('TaskprocessesTask_groupElement')
+            expect(ele.children[0].getAttribute('width')==="95").toBe(true);
+            let ele2 = document.getElementById('node1-processesTaskBpmn_groupElement')
+           expect(ele2.children[0].getAttribute('transform')==='rotate(0,248,200.5)translate(248,200.5)').toBe(true);
+ done();
+        });
     });
 });

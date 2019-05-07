@@ -389,9 +389,7 @@ export class Month extends ViewBase implements IRenderer {
         this.parent.trigger(event.renderCell, args);
         return ntd;
     }
-    public getContentAreaElement(): HTMLElement {
-        return this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
-    }
+
     private renderDateHeaderElement(data: TdData, ntd: Element): void {
         if (this.parent.currentView === 'TimelineMonth') {
             return;

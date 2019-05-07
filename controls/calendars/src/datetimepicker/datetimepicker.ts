@@ -1376,6 +1376,7 @@ export class DateTimePicker extends DatePicker {
         this.currentDate = this.value ? this.value : new Date();
         this.valueWithMinutes = this.value;
         this.previousDate = this.value;
-        this.previousElementValue = this.inputElement.value;
+        this.previousElementValue = this.previousElementValue = (isNullOrUndefined(this.inputValueCopy)) ? '' :
+            this.getFormattedValue(this.inputValueCopy);
     }
 }

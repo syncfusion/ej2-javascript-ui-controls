@@ -102,7 +102,7 @@ describe('Diagram Control', () => {
                     }, {
                         id: 'polygon', width: 248, height: 90, offsetX: 400, offsetY: 200,
                         shape: { type: 'Basic', shape: 'Polygon', points: [{ x: 35, y: 0 }, { x: 65, y: 0 }, { x: 100, y: 35 }, { x: 100, y: 65 }, { x: 65, y: 100 }, { x: 35, y: 100 }, { x: 0, y: 65 }, { x: 0, y: 35 }] },
-                        annotations: [{ content: '[{ x: 35, y: 0 }, { x: 65, y: 0 }, { x: 100, y: 35 }, { x: 100, y: 65 }, { x: 65, y: 100 }, { x: 35, y: 100 }, { x: 0, y: 65 }, { x: 0, y: 35 }]' }],
+                        annotations: [{id: 'label4', content: '[{ x: 35, y: 0 }, { x: 65, y: 0 }, { x: 100, y: 35 }, { x: 100, y: 65 }, { x: 65, y: 100 }, { x: 35, y: 100 }, { x: 0, y: 65 }, { x: 0, y: 35 }]' }],
                     }
                 ];
                 diagram = new Diagram({
@@ -117,8 +117,7 @@ describe('Diagram Control', () => {
                 ele.remove();
             });
             it('Checking Saving the diagram using prevent default', (done: Function) => {
-                
-                let sampleData: string = '{"width":1000,"height":1000,"nodes":[{"shape":{"type":"Basic"},"id":"NewIdea","width":150,"height":60,"offsetX":300,"offsetY":60,"annotations":[{"id":"label1","content":"New idea identified"}],"ports":[{"id":"port1","style":{"fill":"blue"},"visibility":1}],"zIndex":0},{"shape":{"type":"Flow","shape":"Process"},"id":"Meeting","width":150,"height":60,"offsetX":300,"offsetY":155,"style":{"gradient":{"type":"Radial","stops":[{"color":"#00555b"},{"color":"#37909A","offset":90}],"id":"Meeting_content_radial","cx":0,"cy":0,"r":50,"fx":0,"fy":0}},"annotations":[{"id":"label2","content":"Meeting with board"}],"zIndex":1},{"shape":{"type":"Text","content":"abc"},"id":"BoardDecision","width":150,"height":110,"offsetX":300,"offsetY":280,"annotations":[{"id":"label3","content":"Board decides whether to proceed","margin":{"left":25,"right":25},"style":{"whiteSpace":"PreserveAll"}}],"zIndex":2},{"shape":{"type":"Basic","shape":"Polygon","points":[{"x":35},{"x":65},{"x":100,"y":35},{"x":100,"y":65},{"x":65,"y":100},{"x":35,"y":100},{"y":65},{"y":35}]},"id":"polygon","width":248,"height":90,"offsetX":400,"offsetY":200,"annotations":[{"content":"[{ x: 35, y: 0 }, { x: 65, y: 0 }, { x: 100, y: 35 }, { x: 100, y: 65 }, { x: 65, y: 100 }, { x: 35, y: 100 }, { x: 0, y: 65 }, { x: 0, y: 35 }]","id":"0annotation"}],"zIndex":3}],"serializationSettings":{"preventDefaults":true},"scrollSettings":{"viewPortWidth":1000,"viewPortHeight":1000}}';
+                let sampleData = '{"width":1000,"height":1000,"nodes":[{"shape":{"type":"Basic"},"id":"NewIdea","width":150,"height":60,"offsetX":300,"offsetY":60,"annotations":[{"id":"label1","content":"New idea identified"}],"ports":[{"id":"port1","style":{"fill":"blue"},"visibility":1}],"zIndex":0},{"shape":{"type":"Flow","shape":"Process"},"id":"Meeting","width":150,"height":60,"offsetX":300,"offsetY":155,"style":{"gradient":{"type":"Radial","stops":[{"color":"#00555b"},{"color":"#37909A","offset":90}],"id":"Meeting_content_radial","cx":0,"cy":0,"r":50,"fx":0,"fy":0}},"annotations":[{"id":"label2","content":"Meeting with board"}],"zIndex":1},{"shape":{"type":"Text","content":"abc"},"id":"BoardDecision","width":150,"height":110,"offsetX":300,"offsetY":280,"annotations":[{"id":"label3","content":"Board decides whether to proceed","margin":{"left":25,"right":25},"style":{"whiteSpace":"PreserveAll"}}],"zIndex":2},{"shape":{"type":"Basic","shape":"Polygon","points":[{"x":35},{"x":65},{"x":100,"y":35},{"x":100,"y":65},{"x":65,"y":100},{"x":35,"y":100},{"y":65},{"y":35}]},"id":"polygon","width":248,"height":90,"offsetX":400,"offsetY":200,"annotations":[{"id":"label4","content":"[{ x: 35, y: 0 }, { x: 65, y: 0 }, { x: 100, y: 35 }, { x: 100, y: 65 }, { x: 65, y: 100 }, { x: 35, y: 100 }, { x: 0, y: 65 }, { x: 0, y: 35 }]"}],"zIndex":3}],"serializationSettings":{"preventDefaults":true},"scrollSettings":{"viewPortWidth":1000,"viewPortHeight":1000}}';
                 savedata = diagram.saveDiagram();
                 expect((sampleData.replace(/\s/g, "")) === (savedata.replace(/\s/g, ""))).toBe(true);
                 done();
@@ -559,7 +558,7 @@ describe('Diagram Control', () => {
                         shape: {
                             type: 'SwimLane',
                             header: {
-                                annotation: { content: 'ONLINE PURCHASE STATUS' },
+                                annotation: { id: '1', content: 'ONLINE PURCHASE STATUS' },
                                 height: 50, style: { fill: darkColor, fontSize: 11 },
                                 orientation: 'Horizontal',
                             },
@@ -567,7 +566,7 @@ describe('Diagram Control', () => {
                                 {
                                     id: 'stackCanvas1',
                                     header: {
-                                        annotation: { content: 'CUSTOMER' }, width: 50,
+                                        annotation: { id: '2', content: 'CUSTOMER' }, width: 50,
                                         style: { fill: darkColor, fontSize: 11 }
                                     },
                                     style: { fill: lightColor },
@@ -578,6 +577,7 @@ describe('Diagram Control', () => {
                                             shape: { type: 'Path', data: pathData },
                                             annotations: [
                                                 {
+                                                    id: 'annotation1',
                                                     content: 'ORDER',
                                                     style: { fontSize: 11 }
                                                 }
@@ -590,20 +590,29 @@ describe('Diagram Control', () => {
                                 {
                                     id: 'stackCanvas2',
                                     header: {
-                                        annotation: { content: 'ONLINE' }, width: 50,
+                                        annotation: {
+                                            id: '3',
+                                            content: 'ONLINE'
+                                        }, width: 50,
                                         style: { fill: darkColor, fontSize: 11 }
                                     },
                                     style: { fill: lightColor }, height: 100,
                                     children: [
                                         {
                                             id: 'selectItemaddcart',
-                                            annotations: [{ content: 'Add cart' }],
+                                            annotations: [{
+                                                    id: 'annotation2',
+                                                    content: 'Add cart'
+                                                }],
                                             margin: { left: 190, top: 20 },
                                             height: 40, width: 100
                                         },
                                         {
                                             id: 'paymentondebitcreditcard',
-                                            annotations: [{ content: 'Payment' }],
+                                            annotations: [{
+                                                    id: 'annotation3',
+                                                    content: 'Payment'
+                                                }],
                                             margin: { left: 350, top: 20 },
                                             height: 40, width: 100
                                         }
@@ -612,7 +621,10 @@ describe('Diagram Control', () => {
                                 {
                                     id: 'stackCanvas3',
                                     header: {
-                                        annotation: { content: 'SHOP' }, width: 50,
+                                        annotation: {
+                                            id: '4',
+                                            content: 'SHOP'
+                                        }, width: 50,
                                         style: { fill: darkColor, fontSize: 11 }
                                     },
                                     style: { fill: lightColor },
@@ -620,13 +632,19 @@ describe('Diagram Control', () => {
                                     children: [
                                         {
                                             id: 'getmaildetailaboutorder',
-                                            annotations: [{ content: 'Get mail' }],
+                                            annotations: [{
+                                                    id: 'annotation4',
+                                                    content: 'Get mail'
+                                                }],
                                             margin: { left: 190, top: 20 },
                                             height: 40, width: 100
                                         },
                                         {
                                             id: 'pakingitem',
-                                            annotations: [{ content: 'Paking item' }],
+                                            annotations: [{
+                                                    id: 'annotation5',
+                                                    content: 'Paking item'
+                                                }],
                                             margin: { left: 350, top: 20 },
                                             height: 40, width: 100
                                         }
@@ -635,7 +653,10 @@ describe('Diagram Control', () => {
                                 {
                                     id: 'stackCanvas4',
                                     header: {
-                                        annotation: { content: 'DELIVERY' }, width: 50,
+                                        annotation: {
+                                            id: '5',
+                                            content: 'DELIVERY'
+                                        }, width: 50,
                                         style: { fill: darkColor, fontSize: 11 }
                                     },
                                     style: { fill: lightColor },
@@ -643,20 +664,29 @@ describe('Diagram Control', () => {
                                     children: [
                                         {
                                             id: 'sendcourieraboutaddress',
-                                            annotations: [{ content: 'Send Courier' }],
+                                            annotations: [{
+                                                    id: 'annotation6',
+                                                    content: 'Send Courier'
+                                                }],
                                             margin: { left: 190, top: 20 },
                                             height: 40, width: 100
                                         },
                                         {
                                             id: 'deliveryonthataddress',
-                                            annotations: [{ content: 'Delivery' }],
+                                            annotations: [{
+                                                    id: 'annotation7',
+                                                    content: 'Delivery'
+                                                }],
                                             margin: { left: 350, top: 20 },
                                             height: 40, width: 100
                                         },
                                         {
                                             id: 'getitItem',
                                             shape: { type: 'Path', data: pathData },
-                                            annotations: [{ content: 'GET IT ITEM', style: { fontSize: 11 } }],
+                                            annotations: [{
+                                                    id: 'annotation7',
+                                                    content: 'GET IT ITEM', style: { fontSize: 11 }
+                                                }],
                                             margin: { left: 500, top: 20 },
                                             height: 40, width: 100
                                         }
@@ -666,11 +696,20 @@ describe('Diagram Control', () => {
                             phases: [
                                 {
                                     id: 'phase1', offset: 170,
-                                    header: { content: { content: 'Phase' } }
+                                    header: {
+                                        id: 'phase1',
+                                        content: {
+                                            id: 'phase1',
+                                            content: 'Phase'
+                                        }
+                                    }
                                 },
                                 {
                                     id: 'phase2', offset: 450,
-                                    header: { content: { content: 'Phase' } }
+                                    header: {
+                                        id: 'phase2',
+                                        content: { content: 'Phase' }
+                                    }
                                 },
                             ],
                             phaseSize: 20,
@@ -692,7 +731,7 @@ describe('Diagram Control', () => {
                 ele.remove();
             });
             it('Checking Saving the diagram using prevent default', (done: Function) => {
-                let sampleData: string = '{"width":1000,"height":1000,"nodes":[{"shape":{"type":"SwimLane","header":{"style":{"fill":"#C7D4DF","fontSize":11,"gradient":{"type":"None"}},"annotation":{"content":"ONLINE PURCHASE STATUS"}},"lanes":[{"id":"stackCanvas1","header":{"style":{"fill":"#C7D4DF","fontSize":11},"annotation":{"content":"CUSTOMER"},"id":"swimlanestackCanvas1_0_header"},"style":{"fill":"#f5f5f5"},"children":[{"shape":{"type":"Path","data":"M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z"},"id":"Order","annotations":[{"content":"ORDER","style":{"fontSize":11},"id":"0annotation"}],"margin":{"left":70,"top":20},"height":40,"width":100,"offsetX":205,"offsetY":145,"zIndex":16,"wrapper":{"actualSize":{"width":100,"height":40},"offsetX":205,"offsetY":145},"parentId":"swimlanestackCanvas10"}]},{"id":"stackCanvas2","header":{"style":{"fill":"#C7D4DF","fontSize":11},"annotation":{"content":"ONLINE"},"id":"swimlanestackCanvas2_0_header"},"style":{"fill":"#f5f5f5"},"children":[{"shape":{"type":"Basic"},"id":"selectItemaddcart","annotations":[{"content":"Add cart","id":"0annotation"}],"margin":{"left":20,"top":20},"height":40,"width":100,"offsetX":345,"offsetY":245,"zIndex":17,"wrapper":{"actualSize":{"width":100,"height":40},"offsetX":345,"offsetY":245},"parentId":"swimlanestackCanvas21"},{"shape":{"type":"Basic"},"id":"paymentondebitcreditcard","annotations":[{"content":"Payment","id":"0annotation"}],"margin":{"left":180,"top":20},"height":40,"width":100,"offsetX":505,"offsetY":245,"zIndex":18,"wrapper":{"actualSize":{"width":100,"height":40},"offsetX":505,"offsetY":245},"parentId":"swimlanestackCanvas21"}]},{"id":"stackCanvas3","header":{"style":{"fill":"#C7D4DF","fontSize":11},"annotation":{"content":"SHOP"},"id":"swimlanestackCanvas3_0_header"},"style":{"fill":"#f5f5f5"},"children":[{"shape":{"type":"Basic"},"id":"getmaildetailaboutorder","annotations":[{"content":"Get mail","id":"0annotation"}],"margin":{"left":20,"top":20},"height":40,"width":100,"offsetX":345,"offsetY":345,"zIndex":19,"wrapper":{"actualSize":{"width":100,"height":40},"offsetX":345,"offsetY":345},"parentId":"swimlanestackCanvas31"},{"shape":{"type":"Basic"},"id":"pakingitem","annotations":[{"content":"Paking item","id":"0annotation"}],"margin":{"left":180,"top":20},"height":40,"width":100,"offsetX":505,"offsetY":345,"zIndex":20,"wrapper":{"actualSize":{"width":100,"height":40},"offsetX":505,"offsetY":345},"parentId":"swimlanestackCanvas31"}]},{"id":"stackCanvas4","header":{"style":{"fill":"#C7D4DF","fontSize":11},"annotation":{"content":"DELIVERY"},"id":"swimlanestackCanvas4_0_header"},"style":{"fill":"#f5f5f5"},"children":[{"shape":{"type":"Basic"},"id":"sendcourieraboutaddress","annotations":[{"content":"Send Courier","id":"0annotation"}],"margin":{"left":20,"top":20},"height":40,"width":100,"offsetX":345,"offsetY":445,"zIndex":21,"wrapper":{"actualSize":{"width":100,"height":40},"offsetX":345,"offsetY":445},"parentId":"swimlanestackCanvas41"},{"shape":{"type":"Basic"},"id":"deliveryonthataddress","annotations":[{"content":"Delivery","id":"0annotation"}],"margin":{"left":180,"top":20},"height":40,"width":100,"offsetX":505,"offsetY":445,"zIndex":22,"wrapper":{"actualSize":{"width":100,"height":40},"offsetX":505,"offsetY":445},"parentId":"swimlanestackCanvas41"},{"shape":{"type":"Path","data":"M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z"},"id":"getitItem","annotations":[{"content":"GET IT ITEM","style":{"fontSize":11},"id":"0annotation"}],"margin":{"left":330,"top":20},"height":40,"width":100,"offsetX":655,"offsetY":445,"zIndex":23,"wrapper":{"actualSize":{"width":100,"height":40},"offsetX":655,"offsetY":445},"parentId":"swimlanestackCanvas41"}]}],"phases":[{"id":"phase1","offset":190,"header":{"id":"swimlanephase1_header"},"style":{"fill":"transparent"}},{"id":"phase2","offset":670,"header":{"id":"swimlanephase2_header"},"style":{"fill":"transparent"}}],"orientation":"Horizontal"},"id":"swimlane","offsetX":420,"offsetY":270,"height":470,"width":670,"zIndex":0,"container":{"type":"Grid","orientation":"Horizontal"},"constraints":22018030}],"serializationSettings":{"preventDefaults":true},"scrollSettings":{"viewPortWidth":1000,"viewPortHeight":1000}}';
+                let sampleData = '{"width":1000,"height":1000,"nodes":[{"shape":{"type":"SwimLane","header":{"style":{"fill":"#C7D4DF","fontSize":11,"gradient":{"type":"None"}},"annotation":{"id":"1","content":"ONLINE PURCHASE STATUS"}},"lanes":[{"id":"stackCanvas1","header":{"style":{"fill":"#C7D4DF","fontSize":11},"annotation":{"id":"2","content":"CUSTOMER"},"id":"swimlanestackCanvas1_0_header"},"style":{"fill":"#f5f5f5"},"children":[{"shape":{"type":"Path","data":"M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z"},"id":"Order","annotations":[{"id":"annotation1","content":"ORDER","style":{"fontSize":11}}],"margin":{"left":70,"top":20},"height":40,"width":100,"offsetX":205,"offsetY":145,"zIndex":16,"wrapper":{"actualSize":{"width":100,"height":40},"offsetX":205,"offsetY":145},"parentId":"swimlanestackCanvas10"}]},{"id":"stackCanvas2","header":{"style":{"fill":"#C7D4DF","fontSize":11},"annotation":{"id":"3","content":"ONLINE"},"id":"swimlanestackCanvas2_0_header"},"style":{"fill":"#f5f5f5"},"children":[{"shape":{"type":"Basic"},"id":"selectItemaddcart","annotations":[{"id":"annotation2","content":"Add cart"}],"margin":{"left":20,"top":20},"height":40,"width":100,"offsetX":345,"offsetY":245,"zIndex":17,"wrapper":{"actualSize":{"width":100,"height":40},"offsetX":345,"offsetY":245},"parentId":"swimlanestackCanvas21"},{"shape":{"type":"Basic"},"id":"paymentondebitcreditcard","annotations":[{"id":"annotation3","content":"Payment"}],"margin":{"left":180,"top":20},"height":40,"width":100,"offsetX":505,"offsetY":245,"zIndex":18,"wrapper":{"actualSize":{"width":100,"height":40},"offsetX":505,"offsetY":245},"parentId":"swimlanestackCanvas21"}]},{"id":"stackCanvas3","header":{"style":{"fill":"#C7D4DF","fontSize":11},"annotation":{"id":"4","content":"SHOP"},"id":"swimlanestackCanvas3_0_header"},"style":{"fill":"#f5f5f5"},"children":[{"shape":{"type":"Basic"},"id":"getmaildetailaboutorder","annotations":[{"id":"annotation4","content":"Get mail"}],"margin":{"left":20,"top":20},"height":40,"width":100,"offsetX":345,"offsetY":345,"zIndex":19,"wrapper":{"actualSize":{"width":100,"height":40},"offsetX":345,"offsetY":345},"parentId":"swimlanestackCanvas31"},{"shape":{"type":"Basic"},"id":"pakingitem","annotations":[{"id":"annotation5","content":"Paking item"}],"margin":{"left":180,"top":20},"height":40,"width":100,"offsetX":505,"offsetY":345,"zIndex":20,"wrapper":{"actualSize":{"width":100,"height":40},"offsetX":505,"offsetY":345},"parentId":"swimlanestackCanvas31"}]},{"id":"stackCanvas4","header":{"style":{"fill":"#C7D4DF","fontSize":11},"annotation":{"id":"5","content":"DELIVERY"},"id":"swimlanestackCanvas4_0_header"},"style":{"fill":"#f5f5f5"},"children":[{"shape":{"type":"Basic"},"id":"sendcourieraboutaddress","annotations":[{"id":"annotation6","content":"Send Courier"}],"margin":{"left":20,"top":20},"height":40,"width":100,"offsetX":345,"offsetY":445,"zIndex":21,"wrapper":{"actualSize":{"width":100,"height":40},"offsetX":345,"offsetY":445},"parentId":"swimlanestackCanvas41"},{"shape":{"type":"Basic"},"id":"deliveryonthataddress","annotations":[{"id":"annotation7","content":"Delivery"}],"margin":{"left":180,"top":20},"height":40,"width":100,"offsetX":505,"offsetY":445,"zIndex":22,"wrapper":{"actualSize":{"width":100,"height":40},"offsetX":505,"offsetY":445},"parentId":"swimlanestackCanvas41"},{"shape":{"type":"Path","data":"M 120 24.9999 C 120 38.8072 109.642 50 96.8653 50 L 23.135 50 C 10.3578 50 0 38.8072 0 24.9999 L 0 24.9999 C0 11.1928 10.3578 0 23.135 0 L 96.8653 0 C 109.642 0 120 11.1928 120 24.9999 Z"},"id":"getitItem","annotations":[{"id":"annotation7","content":"GET IT ITEM","style":{"fontSize":11}}],"margin":{"left":330,"top":20},"height":40,"width":100,"offsetX":655,"offsetY":445,"zIndex":23,"wrapper":{"actualSize":{"width":100,"height":40},"offsetX":655,"offsetY":445},"parentId":"swimlanestackCanvas41"}]}],"phases":[{"id":"phase1","offset":190,"header":{"annotation":{"id":"phase1"},"id":"swimlanephase1_header"},"style":{"fill":"transparent"}},{"id":"phase2","offset":670,"header":{"annotation":{"id":"phase2"},"id":"swimlanephase2_header"},"style":{"fill":"transparent"}}],"orientation":"Horizontal"},"id":"swimlane","offsetX":420,"offsetY":270,"height":470,"width":670,"zIndex":0,"container":{"type":"Grid","orientation":"Horizontal"},"constraints":22018030}],"serializationSettings":{"preventDefaults":true},"scrollSettings":{"viewPortWidth":1000,"viewPortHeight":1000}}';
                 savedata = diagram.saveDiagram();
                 expect((sampleData.replace(/\s/g, "")) === (savedata.replace(/\s/g, ""))).toBe(true);
                 done();

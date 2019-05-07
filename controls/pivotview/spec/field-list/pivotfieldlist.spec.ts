@@ -1331,7 +1331,7 @@ describe('PivotFieldList spec', () => {
                 let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-right-axis-fields');
                 let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
                 expect(pivotButtons.length).toBeGreaterThan(0);
-                expect((pivotButtons[0]).querySelector('.e-sort').classList.contains('e-disable')).not.toBeTruthy;
+                expect((pivotButtons[0]).querySelector('.e-icons').classList.contains('e-disable')).toBeTruthy;
             });
             it('enable enableSorting on dataSource', (done: Function) => {
                 fieldListObj.dataSource = {
@@ -5200,6 +5200,179 @@ describe('PivotFieldList spec', () => {
             });
         });
     });
+
+    describe('Pivot Field List Sort None Appearance', () => {
+        describe('Check Sort Actions', () => {
+            let fieldListObj: PivotFieldList;
+            let elem: HTMLElement = createElement('div', { id: 'PivotFieldList', styles: 'height:400px;width:60%' });
+            afterAll(() => {
+                if (fieldListObj) {
+                    fieldListObj.destroy();
+                }
+                remove(elem);
+            });
+            beforeAll((done: Function) => {
+                if (document.getElementById(elem.id)) {
+                    remove(document.getElementById(elem.id));
+                }
+                document.body.appendChild(elem);
+                let dataBound: EmitType<Object> = () => { done(); };
+                fieldListObj = new PivotFieldList(
+                    {
+                        dataSource: {
+                            data: pivot_dataset as IDataSet[],
+                            expandAll: false,
+                            enableSorting: true,
+                            sortSettings: [{ name: 'company', order: 'None' },{ name: 'state', order: 'Ascending' },{ name: 'name', order: 'Descending' }],
+                            filterSettings: [{ name: 'name', type: 'Include', items: ['Knight Wooten'] },
+                            { name: 'company', type: 'Exclude', items: ['NIPAZ'] },
+                            { name: 'gender', type: 'Include', items: ['male'] }],
+                            rows: [{ name: 'company' }, { name: 'state' }],
+                            columns: [{ name: 'name' }],
+                            values: [{ name: 'balance' }, { name: 'quantity' }], filters: [{ name: 'gender' }]
+                        },
+                        renderMode: 'Fixed',
+                        dataBound: dataBound
+                    });
+                fieldListObj.appendTo('#PivotFieldList');
+            });
+            it('check sort icon disabled', () => {
+                let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-right-axis-fields');
+                let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                expect((pivotButtons[0]).querySelector('.e-icons').classList.contains('e-disable')).not.toBeTruthy;
+            });
+            it('sort ascending order field', () => {
+                let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-right-axis-fields');
+                let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                ((pivotButtons[0]).querySelector('.e-sort') as HTMLElement).click();
+                expect((pivotButtons[0]).querySelector('.e-sort')).toBeTruthy;
+            });
+            it('check descending order field', () => {
+                let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-right-axis-fields');
+                let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                ((pivotButtons[0]).querySelector('.e-sort') as HTMLElement).click();
+                ((pivotButtons[0]).querySelector('.e-sort') as HTMLElement).click();
+                expect((pivotButtons[0]).querySelector('.e-descend')).toBeTruthy;
+            });
+            it('Sort descending order field', () => {
+                let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+                let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                ((pivotButtons[1]) as HTMLElement).click();
+                expect((pivotButtons[1]).querySelector('.e-descend')).toBeTruthy;
+            });
+            it('check ascending order field', () => {
+                let leftAxisPanel: HTMLElement = fieldListObj.axisTableModule.axisTable.querySelector('.e-left-axis-fields');
+                let pivotButtons: HTMLElement[] = [].slice.call(leftAxisPanel.querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                ((pivotButtons[1]) as HTMLElement).click();
+                ((pivotButtons[1]).querySelector('.e-sort') as HTMLElement).click();
+                expect((pivotButtons[1]).querySelector('.e-sort')).toBeTruthy;
+            });
+            it('fieldlist obj sort none', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    fieldListObj.dataSource.sortSettings = [{ name: 'company', order: 'None' }];
+                    expect(document.querySelectorAll('.e-pivot-button')[1].querySelectorAll('.e-sort')).toBeFalsy;
+                    done();
+                }, 1000);
+            });
+            it('fieldlist obj sort asc', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    fieldListObj.dataSource.sortSettings = [{ name: 'company', order: 'Ascending' }];
+                    expect(document.querySelectorAll('.e-pivot-button')[1].querySelectorAll('.e-sort')).toBeTruthy;
+                    done();
+                }, 1000);
+            });
+            it('fieldlist obj sort desc', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    fieldListObj.dataSource.sortSettings = [{ name: 'company', order: 'Descending' }];
+                    expect(document.querySelectorAll('.e-pivot-button')[1].querySelectorAll('.e-sort')).toBeTruthy;
+                    done();
+                }, 1000);
+            });
+            it('fieldlist obj sort desc', function (done) {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                let pivotButtons: HTMLElement[] = document.querySelectorAll('.e-pivot-button') as any;
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                (document.querySelector('.e-pivot-button') as HTMLElement).click();
+                ((pivotButtons[1]) as HTMLElement).click();
+                ((pivotButtons[2]).querySelector('.e-sort') as HTMLElement).click();
+                ((pivotButtons[3]).querySelector('.e-sort') as HTMLElement).click();
+                setTimeout(function () {
+                    fieldListObj.dataSource.sortSettings = [{ name: 'company', order: 'Descending' }];
+                    expect(document.querySelectorAll('.e-pivot-button')[1].querySelectorAll('.e-descend')).toBeTruthy;
+                    done();
+                }, 1000);
+            });
+        });
+    });
+
+    describe('Exclude Fields from fieldlist', () => {
+        let fieldListObj: PivotFieldList;
+        let pivotCommon: PivotCommon;
+        let elem: HTMLElement = createElement('div', { id: 'PivotFieldList', styles: 'height:400px;width:60%' });
+        afterAll(() => {
+            if (fieldListObj) {
+                fieldListObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll(() => {
+            if (document.getElementById(elem.id)) {
+                remove(document.getElementById(elem.id));
+            }
+            document.body.appendChild(elem);
+            fieldListObj = new PivotFieldList(
+                {
+                    dataSource: {
+                        data: pivot_dataset as IDataSet[],
+                        expandAll: false,
+                        enableSorting: true,
+                        excludeFields: ['index','_id','guid','pno','phone','email','advance'],
+                        sortSettings: [{ name: 'company', order: 'Descending' }],
+                        calculatedFieldSettings: [
+                            { name: 'price', formula: '(("Sum(balance)"*10^3+"Count(quantity)")/100)+"Sum(balance)"' },
+                            { name: 'total', formula: '"Sum(balance)"+"Sum(quantity)"' }],
+                        rows: [{ name: 'product' }],
+                        columns: [{ name: 'gender' }],
+                        values: [{ name: 'balance' }, { name: 'price', type: 'CalculatedField' },
+                        { name: 'quantity' }],
+                        filters: [{ name: 'eyeColor' }, { name: 'product' }, { name: 'isActive' }, { name: 'state' }, { name: 'pno' }, { name: 'gender' }]
+                    },
+                    renderMode: 'Fixed',
+                });
+            fieldListObj.appendTo('#PivotFieldList');
+            pivotCommon = fieldListObj.pivotCommon;
+        });
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 1000);
+        });
+        it('exclude fields ui check',(done: Function)=>{
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect((fieldListObj.element.querySelector('.e-list-parent') as HTMLElement).children.length).toBe(13);
+                fieldListObj.dataSource.excludeFields = [];
+                done();
+            }, 2000);
+        });
+        it('exclude fields null and ui check',(done: Function)=>{
+            fieldListObj.dataSource.excludeFields = [];
+            fieldListObj.refresh();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                expect((fieldListObj.element.querySelector('.e-list-parent') as HTMLElement).children.length).toBe(20);
+                done();
+            }, 2000);
+        });
+
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange);

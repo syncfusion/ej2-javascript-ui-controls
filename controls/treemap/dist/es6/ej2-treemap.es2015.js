@@ -318,7 +318,7 @@ __decorate$1([
 class LeafItemSettings extends ChildProperty {
 }
 __decorate$1([
-    Property('#808080')
+    Property(null)
 ], LeafItemSettings.prototype, "fill", void 0);
 __decorate$1([
     Property(false)
@@ -440,7 +440,7 @@ __decorate$1([
     Complex({}, Border)
 ], LevelSettings.prototype, "border", void 0);
 __decorate$1([
-    Property('#808080')
+    Property(null)
 ], LevelSettings.prototype, "fill", void 0);
 __decorate$1([
     Property(false)
@@ -1957,9 +1957,9 @@ class LayoutPanel {
         else {
             for (let i = 0; i < parentData.length; i++) {
                 if (parentData[i]['levelOrderName'] === item['levelOrderName'].split('#')[0]) {
-                    itemFill = treemap.palette.length > 0 ? treemap.palette[i % treemap.palette.length] :
-                        !isNullOrUndefined(treemap.colorValuePath) ?
-                            parentData[i]['data'][treemap.colorValuePath] : itemFill;
+                    itemFill = !isNullOrUndefined(itemFill) ? itemFill : !isNullOrUndefined(treemap.colorValuePath) ?
+                        parentData[i]['data'][treemap.colorValuePath] : treemap.palette.length > 0 ?
+                        treemap.palette[i % treemap.palette.length] : '#808080';
                 }
             }
         }

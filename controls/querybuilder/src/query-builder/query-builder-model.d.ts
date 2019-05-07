@@ -61,6 +61,12 @@ export interface ColumnsModel {
      */
     step?: number;
 
+    /**
+     * Specifies the default value for columns.
+     * @default null
+     */
+    value?:  string[] | number[] | string | number | boolean | Date;
+
 }
 
 /**
@@ -247,6 +253,13 @@ export interface QueryBuilderModel extends ComponentModel{
      * @default 'auto'
      */
     width?: string;
+
+    /**
+     * If match case is set to true, the grid filters the records with exact match. 
+     * if false, it filters case insensitive records (uppercase and lowercase letters treated the same).
+     * @default false
+     */
+    matchCase?: boolean;
 
     /**
      * Defines rules in the QueryBuilder.

@@ -1065,6 +1065,7 @@ export class Connector extends NodeBase implements IElement {
         }
         if (((this.shape as BpmnFlow).sequence) === 'Conditional') {
             this.targetDecorator.shape = 'Arrow'; this.sourceDecorator.shape = 'Diamond';
+            (pathseq as DiagramElement).id = this.id + this.shape.type;
             this.sourceDecorator.style.fill = 'white'; this.targetDecorator.style.fill = 'black';
             this.sourceDecorator.width = 20; this.sourceDecorator.height = 10;
         }

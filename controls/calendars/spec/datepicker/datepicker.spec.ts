@@ -2991,6 +2991,32 @@ describe('Datepicker', () => {
             expect((<any>document.getElementById('datepicker')).value === '').toBe(true);
             datepicker = null;
         });
+        it('Input value reset case_1 ', () => {
+            datepicker = new DatePicker({ });
+            datepicker.appendTo('#datepicker');
+            (<any>document.getElementById("form-element")).reset();
+            datepicker.dataBind();
+            expect(datepicker.previousElementValue === "").toBe(true);
+        });
+        it('Input value reset case_2 ', () => {
+            datepicker = new DatePicker({
+                value: new Date("2/12/2018")
+            });
+            datepicker.appendTo('#datepicker');
+            (<any>document.getElementById("form-element")).reset();
+            datepicker.dataBind();
+            expect(datepicker.previousElementValue === "2/12/2018").toBe(true);
+        });
+        it('Input value reset case_3 ', () => {
+            datepicker = new DatePicker({
+                value: new Date("2/12/2018"),
+                format: "yyyy/MMM/dd"
+            });
+            datepicker.appendTo('#datepicker');
+            (<any>document.getElementById("form-element")).reset();
+            datepicker.dataBind();
+            expect(datepicker.previousElementValue === "2018/Feb/12").toBe(true);
+        });
     });
 	describe('Form element', () => {
         let datepicker: any;

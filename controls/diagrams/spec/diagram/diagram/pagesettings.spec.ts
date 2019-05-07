@@ -1,6 +1,6 @@
 import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
-import { DiagramTools } from '../../../src/diagram/enum/enum';
+import { DiagramTools, NodeConstraints } from '../../../src/diagram/enum/enum';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
@@ -539,5 +539,71 @@ describe('PageSettings boundary constraints', () => {
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
+    });
+    describe('Boundary Constraints rotate angle issue', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+    
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+            let node: NodeModel = {
+                id: "node1",
+                offsetX: 875,
+                offsetY: 100,
+                width: 44,
+                height: 140,
+                pivot: { x: 0.5, y: 0.5 },
+                shape: {
+                    type: 'Native',
+                    content: '<svg width="22" height="70" xmlns="http://www.w3.org/2000/svg"><ellipse fill="none" stroke-width="1.5" cx="11.00001" cy="27.206965" id="svg_3" rx="10.187688" ry="10.187688" stroke="#0f0f00"/><ellipse fill="none" stroke-width="1.5" cx="11.00001" cy="40.902413" id="svg_1" rx="10.187688" ry="10.187688" stroke="#0f0f00"/><line stroke="#0f0f00" fill="none" stroke-width="1.5" fill-opacity="null" x1="11.15" y1="0" x2="11.15" y2="16.764379" id="svg_10" stroke-linejoin="null" stroke-linecap="null"/><line stroke="#0f0f00" fill="none" stroke-width="1.5" fill-opacity="null" x1="11.15" y1="51" x2="11.15" y2="70" id="svg_6" stroke-linejoin="null" stroke-linecap="null"/></svg>'
+                },
+    
+                constraints: NodeConstraints.Default | NodeConstraints.AspectRatio
+            };
+            diagram = new Diagram({
+                width: '900', height: '900', nodes: [node], //connectors: connectors,
+    
+                pageSettings: {
+                    background: {
+                        color: "gray",
+                    },
+                    width: 900,
+                    height: 900,
+                    // Sets the BoundaryConstraints to page
+                    boundaryConstraints: 'Diagram',
+    
+                }
+            });
+            diagram.appendTo('#diagram');
+        });
+    
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+    
+        it('Boundary Constraints rotate angle issue', (done: Function) => {
+    
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            let mouseEvents: MouseEvents = new MouseEvents();
+            mouseEvents.clickEvent(diagramCanvas, 875, 100);
+            mouseEvents.mouseDownEvent(diagramCanvas, 875, 100);
+            mouseEvents.mouseMoveEvent(diagramCanvas, 875 + 10, 100);
+            mouseEvents.mouseLeaveEvent(diagramCanvas);
+            var node = diagram.nodes[0];
+            node.rotateAngle = 90;
+            diagram.dataBind();
+            expect(node.rotateAngle === 0).toBe(true)
+            done()
+    
+        });
+    
     });
 });

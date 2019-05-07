@@ -6,6 +6,18 @@ import { Property, ChildProperty, EmitType, Event } from '@syncfusion/ej2-base';
 export interface GridSettingsModel {
 
     /**
+     * Defines the content height of Grid.
+     * @default 'auto'
+     */
+    height?: number | string;
+
+    /**
+     * Defines the content width of Grid.
+     * @default 'auto'
+     */
+    width?: number | string;
+
+    /**
      * Defines the mode of grid lines. The available modes are,
      * * `Both`: Displays both horizontal and vertical grid lines.
      * * `None`: No grid lines are displayed.

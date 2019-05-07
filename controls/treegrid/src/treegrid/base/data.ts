@@ -3,7 +3,7 @@ import { DataManager, Query, Group, DataUtil, QueryOptions, ReturnOption } from 
 import { ITreeData, RowExpandedEventArgs } from './interface';
 import { TreeGrid } from './treegrid';
 import { showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
-import { getObject, BeforeDataBoundArgs, getUid } from '@syncfusion/ej2-grids';
+import { getObject, BeforeDataBoundArgs, getUid, NotifyArgs } from '@syncfusion/ej2-grids';
 import { isRemoteData, isOffline } from '../utils';
 import * as events from './constant';
 import { Sort } from '../actions/sort';
@@ -301,7 +301,22 @@ public isRemote(): boolean {
     let isExport: boolean = getObject('isExport', args);
     let expresults: Object = getObject('expresults', args);
     let exportType: string = getObject('exportType', args);
-    let dataObj: Object;
+    let dataObj: Object; let actionArgs: NotifyArgs = getObject('actionArgs', args);
+    let requestType: string = getObject('requestType', args);
+    let actionData: Object = getObject('data', args); let action: string = getObject('action', args);
+    if ((!isNullOrUndefined(actionArgs) && Object.keys(actionArgs).length) || requestType === 'save') {
+      requestType = requestType ? requestType : actionArgs.requestType.toString();
+      actionData = actionData ? actionData : getObject('data', actionArgs);
+      action = action ? action : getObject('action', actionArgs);
+      if (action === 'add') {
+        this.parent.grid.currentViewData = args.result;
+      }
+      if (this.parent.isLocalData) {
+        if ((requestType === 'delete' || requestType === 'save')) {
+          this.parent.notify(events.crudAction, { value: actionData, action: action || requestType });
+        }
+      }
+    }
     if (isExport && !isNullOrUndefined(expresults)) {
       dataObj = expresults;
     } else {
@@ -345,8 +360,7 @@ public isRemote(): boolean {
         results = this.parent.summaryModule.calculateSummaryValue(summaryQuery, this.parent.flatData, true);
     }
     if (this.parent.grid.sortSettings.columns.length > 0 || this.isSortAction) {
-      this.isSortAction = false;
-      let parentData: Object;
+      this.isSortAction = false; let parentData: Object;
       let action: string = 'action'; let collpasedIndexes: number[] = [];
       parentData = this.parent.parentData;
       let sortedData: Object[];

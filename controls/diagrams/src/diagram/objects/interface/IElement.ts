@@ -352,7 +352,6 @@ export interface StackEntryObject {
 }
 /**
  * IExpandStateChangeEventArgs notifies when the icon is changed
- * @private
  */
 export interface IExpandStateChangeEventArgs {
     /** returns node that is being changed the icon */

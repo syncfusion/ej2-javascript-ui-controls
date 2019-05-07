@@ -3,13 +3,14 @@ import { createGrid, destroy } from '../base/treegridutil.spec';
 import { sampleData, selfEditData } from '../base/datasource.spec';
 import { Edit } from '../../src/treegrid/actions/edit';
 import { Toolbar } from '../../src/treegrid/actions/toolbar';
+import { Sort } from '../../src/treegrid/actions/sort';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 
 
 /**
  * Grid Row Edit spec 
  */
-TreeGrid.Inject(Edit, Toolbar);
+TreeGrid.Inject(Edit, Toolbar, Sort);
 describe('Edit module', () => {
   beforeAll(() => {
     const isDef = (o: any) => o !== undefined && o !== null;
@@ -1731,7 +1732,137 @@ describe('Edit module', () => {
       destroy(gridObj);
     });
   });
- 
+  describe('Add new row as child collapsed rows', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    let rows: Element[];
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            height: 300,
+            editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+
+            treeColumnIndex: 1,
+            toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+              columns: [
+              {
+                field: 'taskID', headerText: 'Task ID', textAlign: 'Right',
+                width: 90, isPrimaryKey: true
+            },
+            { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220},
+            { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130,
+                format: 'yMd' },
+            {
+                field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100,
+            }
+              ]
+        },
+        done
+      );
+    });
+    it('Add new row as child collapsed rows- Add row - child', (done: Function) => {
+      actionComplete = (args?: any): void => {
+        if (args.requestType === 'add') {
+          expect(args.row.rowIndex == 20).toBe(true);
+          done();
+        }
+      };
+      gridObj.actionComplete = actionComplete;
+      (gridObj.getRows()[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+      gridObj.grid.selectRow(12);
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+    });
+    it('Add new row as child collapsed rows- Add record - child', (done: Function) => {
+      actionComplete = (args?: any): void => {
+        if (args.requestType === 'save') {
+          expect(gridObj.getRows().length == 37).toBe(true);
+          expect(gridObj.dataSource[2].subtasks[0].childRecords[1].taskID == 133).toBe(true);
+          done();
+        }
+      };
+      gridObj.actionComplete = actionComplete;
+      let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
+      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = 133;
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });      
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+  describe('Add new row as child collapsed rows after delete', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    let rows: Element[];
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            height: 300,
+            editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+            treeColumnIndex: 1,
+            toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+              columns: [
+              {
+                field: 'taskID', headerText: 'Task ID', textAlign: 'Right',
+                width: 90, isPrimaryKey: true
+            },
+            { field: 'taskName', headerText: 'Task Name', editType: 'stringedit', width: 220},
+            { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 130,
+                format: 'yMd' },
+            {
+                field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 100,
+            }
+              ]
+        },
+        done
+      );
+    });
+    it('Add new row as child collapsed rows after delete- Delete row - child', (done: Function) => {
+      actionComplete = (args?: any): void => {
+        if (args.requestType === 'delete') {
+          expect(gridObj.getRows().length == 35).toBe(true);
+          expect(gridObj.dataSource[2].subtasks[0].childRecords[0].childRecords[0].taskName == "Development Task 2").toBe(true);
+          done();
+        }
+      };
+      gridObj.actionComplete = actionComplete;
+      (gridObj.getRows()[0].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+      gridObj.grid.selectRow(14);
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_delete' } });
+    });
+    it('Add new row as child collapsed rows after delete- Add row - child', (done: Function) => {
+      actionComplete = (args?: any): void => {
+        if (args.requestType === 'add') {
+          expect(args.row.rowIndex == 19).toBe(true);
+          done();
+        }
+      };
+      gridObj.actionComplete = actionComplete;
+      gridObj.grid.selectRow(12);
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+    });
+    it('Add new row as child collapsed rows- Add record - child', (done: Function) => {
+      actionComplete = (args?: any): void => {
+        if (args.requestType === 'save') {
+          expect(gridObj.getRows().length == 36).toBe(true);
+          expect(gridObj.dataSource[2].subtasks[0].childRecords[1].taskID == 133).toBe(true);
+          done();
+        }
+      };
+      gridObj.actionComplete = actionComplete;
+      let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
+      (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = 133;
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+      
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+  
   describe('Editing - Addrecord through method', () => {
     let gridObj: TreeGrid;
     let actionComplete: () => void;
@@ -1779,6 +1910,62 @@ describe('Edit module', () => {
       }
       gridObj.actionComplete = actionComplete;
       gridObj.addRecord({taskID:124, taskName: 'Above record'}, 1, 'Above');
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('Editing with Sorting', () => {
+    let gridObj: TreeGrid;
+    let actionBegin: () => void;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+            dataSource: sampleData,
+            childMapping: 'subtasks',
+            editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true, newRowPosition: 'Child' },
+            allowSorting: true,
+            sortSettings: {columns: [{field: 'taskName', direction: 'Ascending'}]},
+            treeColumnIndex: 1,
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+              columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+              { field: 'taskName', headerText: 'Task Name' },
+              { field: 'progress', headerText: 'Progress' },
+              { field: 'startDate', headerText: 'Start Date' }
+              ]
+        },
+        done
+      );
+    });
+    it('delete row - after sorting', (done: Function) => {
+      gridObj.selectRow(1);
+      actionComplete = (args?: any): void => {
+        let cells: NodeListOf<Element> = gridObj.grid.getRows()[1].querySelectorAll('.e-rowcell');
+        expect(cells[0].textContent === '10' ).toBeTruthy();
+        expect(cells[1].textContent === 'Design Documentation').toBeTruthy();
+        done();
+      };
+      gridObj.actionComplete = actionComplete;
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_delete' } });
+    });
+    it('add row as child - after sorting', (done: Function) => {
+      gridObj.selectRow(1);
+      actionComplete = (args?: any): void => {
+        let formEle: HTMLFormElement = gridObj.grid.editModule.formObj.element;
+        (formEle.querySelector('#' + gridObj.grid.element.id + 'taskID') as any).value = '121';
+        (formEle.querySelector('#' + gridObj.grid.element.id + 'taskName') as any).value = 'child1';
+        if(args.requestType === 'save'){
+          expect(gridObj.getRows().length).toBe(36);
+          expect(gridObj.dataSource[1].subtasks[3].childRecords[0].taskID === 121).toBe(true);
+          expect(gridObj.dataSource[1].subtasks[3].childRecords[0].taskName === 'child1').toBe(true);
+          done();
+        } 
+      };
+      gridObj.actionComplete = actionComplete;
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
     });
     afterAll(() => {
       destroy(gridObj);

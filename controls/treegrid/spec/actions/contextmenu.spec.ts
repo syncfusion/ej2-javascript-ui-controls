@@ -4,7 +4,8 @@ import { sampleData } from '../base/datasource.spec';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ContextMenu } from '../../src/treegrid/actions/context-menu';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
-import { CellSaveEventArgs,  } from '../../src';
+import { CellSaveEventArgs  } from '../../src';
+import { CellEditArgs } from '@syncfusion/ej2-grids';
 
 /**
  * Grid base spec 
@@ -247,6 +248,185 @@ describe('ContextMenu module', () => {
       destroy(gridObj);
     });
   });
+  describe('Check whether Edit Record is hidden in Edit Mode set as Cell', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: (args: CellSaveEventArgs) => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          allowExcelExport: true,
+          allowPdfExport: true,
+          allowSorting: true,
+          childMapping: 'subtasks',
+          allowPaging: true,
+          pageSettings: { pageSize: 10 },
+          treeColumnIndex: 1,
+          editSettings: { allowAdding: true, allowDeleting: true, allowEditing: true, mode: 'Cell' },
+          contextMenuItems: ['SortAscending', 'SortDescending',
+               'Edit', 'Delete', 'Save', 'Cancel',
+              'PdfExport', 'ExcelExport', 'CsvExport', 'FirstPage', 'PrevPage',
+              'LastPage', 'NextPage', "AddRow"],
+              toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+          columns: [
+              { field: 'taskID', headerText: 'Task ID', width: 80, isPrimaryKey: true, textAlign: 'Right', editType: 'numericedit' },
+              { field: 'taskName', headerText: 'Task Name', width: 190 },
+              { field: 'startDate', headerText: 'Start Date', format: 'yMd', width: 90,
+                  editType: 'datepickeredit', textAlign: 'Right' },
+              { field: 'endDate', headerText: 'End Date', format: 'yMd', width: 90, editType: 'datepickeredit', textAlign: 'Right' },
+              { field: 'duration', headerText: 'Duration', width: 85, textAlign: 'Right', editType: 'numericedit',
+                   edit: {params: {format: 'n'}} },
+              { field: 'priority', headerText: 'Priority', width: 80 }
+          ],
+        },
+        done
+      );
+    });
+    it('Check whether Edit Record is hidden in Edit Mode set as Cell', () => {
+      gridObj.selectRow(2);
+      (gridObj.grid.contextMenuModule as any).eventArgs =  { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
+      let e: Object = {
+        event: (gridObj.grid.contextMenuModule as any).eventArgs,
+        items: gridObj.grid.contextMenuModule.contextMenu.items,
+        parentItem: document.querySelector('tr'), element: document.getElementById(gridObj.element.id + '_gridcontrol_cmenu')
+      };
+      (gridObj.grid.contextMenuModule as any).contextMenuBeforeOpen(e);
+      (gridObj.grid.contextMenuModule as any).contextMenuOpen();
+      let editRecord: HTMLElement = document.getElementById(gridObj.element.id + '_gridcontrol_cmenu')
+      .querySelector('#' + gridObj.element.id + '_gridcontrol_cmenu_Edit');
+      expect(editRecord.style.display).toBe('none');
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+  describe('Save after cell editing', () => {
+    let gridObj: TreeGrid;
+    let actionBegin: () => void;
+    let actionComplete: (args: CellSaveEventArgs) => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          allowExcelExport: true,
+          allowPdfExport: true,
+          allowSorting: true,
+          childMapping: 'subtasks',
+          allowPaging: true,
+          pageSettings: { pageSize: 10 },
+          treeColumnIndex: 1,
+          editSettings: { allowAdding: true, allowDeleting: true, allowEditing: true, mode: 'Cell' },
+          toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+          contextMenuItems: ['SortAscending', 'SortDescending',
+          'Edit', 'Delete', 'Save', 'Cancel',
+         'PdfExport', 'ExcelExport', 'CsvExport', 'FirstPage', 'PrevPage',
+         'LastPage', 'NextPage'],
+         columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+              { field: 'taskName', headerText: 'Task Name' },
+              { field: 'progress', headerText: 'Progress' },
+              { field: 'startDate', headerText: 'Start Date' }
+              ]
+        },
+        done
+      );
+    });
+    it('record double click', (done: Function) => {
+      gridObj.cellEdit = (args?: CellEditArgs): void => {
+        expect(args.columnName).toBe('taskName');
+        done();
+      };
+      let event: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+      gridObj.getCellFromIndex(2, 1).dispatchEvent(event);
+    });
+    it('Save the cell edited record with contextmenu save', (done: Function) => {
+      debugger;
+      gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'test';
+      gridObj.selectRow(2);
+      actionComplete = (args: CellSaveEventArgs): void => {
+        if(args.type === 'save'){
+          expect(gridObj.getRows()[2].querySelectorAll('td')[1].innerText == "test").toBe(true);
+        }
+        done();
+       }
+      (gridObj.grid.contextMenuModule as any).eventArgs =  { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
+      let e: Object = {
+        event: (gridObj.grid.contextMenuModule as any).eventArgs,
+        items: gridObj.grid.contextMenuModule.contextMenu.items,
+        parentItem: document.querySelector('tr'), element: document.getElementById(gridObj.element.id + '_gridcontrol_cmenu')
+      };
+      (gridObj.grid.contextMenuModule as any).contextMenuBeforeOpen(e);
+      (gridObj.grid.contextMenuModule as any).contextMenuOpen();
+      gridObj.actionComplete = actionComplete;
+      document.getElementById(gridObj.element.id + '_gridcontrol_cmenu_Save').click();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+      });
+    });
+    describe('Cancel after cell editing', () => {
+      let gridObj: TreeGrid;
+      let actionBegin: () => void;
+      let actionComplete: (args: CellSaveEventArgs) => void;
+      beforeAll((done: Function) => {
+        gridObj = createGrid(
+          {
+            dataSource: sampleData,
+            allowExcelExport: true,
+            allowPdfExport: true,
+            allowSorting: true,
+            childMapping: 'subtasks',
+            allowPaging: true,
+            pageSettings: { pageSize: 10 },
+            treeColumnIndex: 1,
+            editSettings: { allowAdding: true, allowDeleting: true, allowEditing: true, mode: 'Cell' },
+            toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+            contextMenuItems: ['SortAscending', 'SortDescending',
+            'Edit', 'Delete', 'Save', 'Cancel',
+           'PdfExport', 'ExcelExport', 'CsvExport', 'FirstPage', 'PrevPage',
+           'LastPage', 'NextPage'],
+           columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+                { field: 'taskName', headerText: 'Task Name' },
+                { field: 'progress', headerText: 'Progress' },
+                { field: 'startDate', headerText: 'Start Date' }
+                ]
+          },
+          done
+        );
+      });
+      it('record double click', (done: Function) => {
+        gridObj.cellEdit = (args?: CellEditArgs): void => {
+          expect(args.columnName).toBe('taskName');
+          done();
+        };
+        let event: MouseEvent = new MouseEvent('dblclick', {
+          'view': window,
+          'bubbles': true,
+          'cancelable': true
+        });
+        gridObj.getCellFromIndex(2, 1).dispatchEvent(event);
+      });
+      it('Cancel the cell edited record with contextmenu cancel', () => {
+        gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'test';
+        gridObj.selectRow(2);
+        (gridObj.grid.contextMenuModule as any).eventArgs =  { target: gridObj.getContentTable().querySelectorAll('tr')[2] };
+        let e: Object = {
+          event: (gridObj.grid.contextMenuModule as any).eventArgs,
+          items: gridObj.grid.contextMenuModule.contextMenu.items,
+          parentItem: document.querySelector('tr'), element: document.getElementById(gridObj.element.id + '_gridcontrol_cmenu')
+        };
+        (gridObj.grid.contextMenuModule as any).contextMenuBeforeOpen(e);
+        (gridObj.grid.contextMenuModule as any).contextMenuOpen();
+        document.getElementById(gridObj.element.id + '_gridcontrol_cmenu_Cancel').click();
+        expect(gridObj.getRows()[2].querySelectorAll('td')[1].innerText == "Plan budget").toBe(true);
+      });
+      afterAll(() => {
+          destroy(gridObj);
+        });
+      });
 
   it('memory leak', () => {
     profile.sample();

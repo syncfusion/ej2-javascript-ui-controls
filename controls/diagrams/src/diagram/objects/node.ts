@@ -852,10 +852,11 @@ export class BpmnSubEvent extends ChildProperty<BpmnSubEvent> {
     public getClassName(): string {
         return 'BpmnSubEvent';
     }
-
 }
 
-
+/**
+ * Defines the behavior of the BpmnTransactionSubProcess
+ */
 export class BpmnTransactionSubProcess extends ChildProperty<BpmnTransactionSubProcess> {
     /**
      * Defines the size and position of the success port
@@ -2569,7 +2570,6 @@ export class SwimLane extends Shape {
 /**
  * Defines the behavior of container
  */
-/** @private */
 export class ChildContainer {
     /**
      * Defines the type of the container

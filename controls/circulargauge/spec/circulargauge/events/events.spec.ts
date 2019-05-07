@@ -93,6 +93,17 @@ describe('Circular-Gauge Control', () => {
             gauge.axes[0].labelStyle.useRangeColor = true;
             gauge.refresh();
         });
+        it('Checking label cancel in axisLabel event', (done: Function) => {
+            gauge.axisLabelRender =  (args: IAxisLabelRenderEventArgs) => {
+                args.cancel = true;
+            };
+            gauge.loaded = (args: ILoadedEventArgs): void => {
+                svg = document.getElementById('container_Axis_0_Label_0');
+                expect(svg === null).toBe(true);
+                done();
+            };
+            gauge.refresh();
+        });
         it('Checking Annotation Event', (done: Function) => {
             gauge.annotationRender = (args: IAnnotationRenderEventArgs) => {
                 args.annotation.content = '<div><span style="font-size:20px; color:#424242; font-family:Regular">65 MPH</span></div>';

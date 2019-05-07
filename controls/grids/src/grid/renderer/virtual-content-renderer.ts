@@ -67,6 +67,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     }
 
     private scrollListener(scrollArgs: ScrollArg): void {
+        if (this.parent.enablePersistence) {
+            this.parent.scrollPosition = scrollArgs.offset;
+        }
         if (this.preventEvent || this.parent.isDestroyed) { this.preventEvent = false; return; }
         this.isFocused = this.content === closest(document.activeElement, '.e-content') || this.content === document.activeElement;
         let info: SentinelType = scrollArgs.sentinel;
@@ -294,6 +297,16 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         this.actions.forEach((event: string) => this.parent[action](`${event}-begin`, this.onActionBegin, this));
         let fn: Function = () => {
             this.observer.observe((scrollArgs: ScrollArg) => this.scrollListener(scrollArgs), this.onEntered());
+            let gObj: IGrid = this.parent;
+            if (gObj.enablePersistence && gObj.scrollPosition) {
+                this.content.scrollTop = gObj.scrollPosition.top;
+                let scrollValues: ScrollArg = { direction: 'down', sentinel: this.observer.sentinelInfo.down,
+                    offset: gObj.scrollPosition, focusElement: gObj.element };
+                this.scrollListener(scrollValues);
+                if (gObj.enableColumnVirtualization) {
+                    this.content.scrollLeft = gObj.scrollPosition.left;
+                }
+            }
             this.parent.off(contentReady, fn);
         };
         this.parent.on(contentReady, fn, this);

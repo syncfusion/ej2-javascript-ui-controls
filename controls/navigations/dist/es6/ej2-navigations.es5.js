@@ -1135,6 +1135,11 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             wrapper.classList.add(RTL);
         }
         wrapper.appendChild(this.element);
+        if (this.isMenu && this.hamburgerMode) {
+            if (!this.target) {
+                this.createHeaderContainer(wrapper);
+            }
+        }
     };
     MenuBase.prototype.renderItems = function () {
         if (!this.items.length) {
@@ -1157,17 +1162,24 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             var targetElems = selectAll(this.target);
             for (var i = 0, len = targetElems.length; i < len; i++) {
                 target = targetElems[i];
-                if (Browser.isIos) {
-                    new Touch(target, { tapHold: this.touchHandler.bind(this) });
+                if (this.isMenu) {
+                    EventHandler.add(target, 'click', this.menuHeaderClickHandler, this);
                 }
                 else {
-                    EventHandler.add(target, 'contextmenu', this.cmenuHandler, this);
+                    if (Browser.isIos) {
+                        new Touch(target, { tapHold: this.touchHandler.bind(this) });
+                    }
+                    else {
+                        EventHandler.add(target, 'contextmenu', this.cmenuHandler, this);
+                    }
                 }
             }
             this.targetElement = target;
-            for (var _i = 0, _a = getScrollableParent(this.targetElement); _i < _a.length; _i++) {
-                var parent_1 = _a[_i];
-                EventHandler.add(parent_1, 'scroll', this.scrollHandler, this);
+            if (!this.isMenu) {
+                for (var _i = 0, _a = getScrollableParent(this.targetElement); _i < _a.length; _i++) {
+                    var parent_1 = _a[_i];
+                    EventHandler.add(parent_1, 'scroll', this.scrollHandler, this);
+                }
             }
         }
         if (!Browser.isDevice) {
@@ -1200,15 +1212,23 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         });
     };
     MenuBase.prototype.mouseDownHandler = function (e) {
+        var isValidLI = false;
+        if (this.isMenu && !this.showItemOnClick) {
+            var cul = this.getUlByNavIdx();
+            if (cul) {
+                isValidLI = Array.prototype.indexOf.call(cul.children, e.target.closest('li')) > -1;
+            }
+        }
         if (closest(e.target, '.e-' + this.getModuleName() + '-wrapper') !== this.getWrapper()
-            && !closest(e.target, '.e-' + this.getModuleName() + '-popup')) {
-            this.closeMenu(this.navIdx.length, e);
+            && (!closest(e.target, '.e-' + this.getModuleName() + '-popup') || isValidLI)) {
+            this.closeMenu(this.isMenu ? null : this.navIdx.length, e);
         }
     };
     MenuBase.prototype.keyBoardHandler = function (e) {
         var actionName = '';
         var trgt = e.target;
-        var actionNeeded = this.isMenu && !this.element.classList.contains('e-vertical') && this.navIdx.length < 1;
+        var actionNeeded = this.isMenu && !this.hamburgerMode && !this.element.classList.contains('e-vertical')
+            && this.navIdx.length < 1;
         e.preventDefault();
         if (this.enableScrolling && e.keyCode === 13 && trgt.classList.contains('e-scroll-nav')) {
             this.removeLIStateByClass([FOCUSED, SELECTED], [closest(trgt, '.e-' + this.getModuleName() + '-wrapper')]);
@@ -1261,7 +1281,12 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 this.leftEscKeyHandler(e);
                 break;
             case ENTER:
-                this.rightEnterKeyHandler(e);
+                if (this.hamburgerMode && trgt.tagName === 'SPAN' && trgt.classList.contains('e-menu-icon')) {
+                    this.menuHeaderClickHandler(e);
+                }
+                else {
+                    this.rightEnterKeyHandler(e);
+                }
                 break;
             case ESCAPE:
                 this.leftEscKeyHandler(e);
@@ -1426,6 +1451,9 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 if (!beforeCloseArgs.cancel) {
                     if (this.isMenu) {
                         popupEle = closest(ul, '.' + POPUP);
+                        if (this.hamburgerMode) {
+                            popupEle.parentElement.style.minHeight = '';
+                        }
                         this.unWireKeyboardEvent(popupEle);
                         this.destroyScrollObj(getInstance(popupEle.children[0], VScroll), popupEle.children[0]);
                         popupObj = getInstance(popupEle, Popup);
@@ -1478,7 +1506,6 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         return canOpen;
     };
     MenuBase.prototype.openMenu = function (li, item, top, left, e, target) {
-        var _this = this;
         if (top === void 0) { top = 0; }
         if (left === void 0) { left = 0; }
         if (e === void 0) { e = null; }
@@ -1504,40 +1531,37 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 popupWrapper = this.createElement('div', {
                     className: 'e-' + this.getModuleName() + '-wrapper ' + POPUP, id: li.id + '-menu-popup'
                 });
-                document.body.appendChild(popupWrapper);
-                var isNestedOrVerticalMenu = this.element.classList.contains('e-vertical') || this.navIdx.length !== 1;
-                popupObj = new Popup(popupWrapper, {
-                    relateTo: li,
-                    collision: { X: isNestedOrVerticalMenu || this.enableRtl ? 'none' : 'flip', Y: 'fit' },
-                    position: isNestedOrVerticalMenu ? { X: 'right', Y: 'top' } : { X: 'left', Y: 'bottom' },
-                    targetType: 'relative',
-                    enableRtl: this.enableRtl,
-                    content: ul,
-                    open: function () {
-                        var scrollEle = select('.e-menu-vscroll', popupObj.element);
-                        if (scrollEle) {
-                            scrollEle.style.height = 'inherit';
-                            scrollEle.style.maxHeight = '';
-                        }
-                        var ul = select('.e-ul', popupObj.element);
-                        popupObj.element.style.maxHeight = '';
-                        ul.focus();
-                        _this.triggerOpen(ul);
-                    }
-                });
-                if (this.cssClass) {
-                    addClass([popupWrapper], this.cssClass.split(' '));
+                if (this.hamburgerMode) {
+                    top = li.offsetHeight;
+                    li.appendChild(popupWrapper);
                 }
-                popupObj.hide();
+                else {
+                    document.body.appendChild(popupWrapper);
+                }
+                var isNestedOrVerticalMenu = this.element.classList.contains('e-vertical') || this.navIdx.length !== 1;
+                popupObj = this.generatePopup(popupWrapper, ul, li, isNestedOrVerticalMenu);
+                if (this.hamburgerMode) {
+                    this.calculateIndentSize(ul, li);
+                }
+                else {
+                    if (this.cssClass) {
+                        addClass([popupWrapper], this.cssClass.split(' '));
+                    }
+                    popupObj.hide();
+                }
                 eventArgs = this.triggerBeforeOpen(li, ul, item, e, 0, 0);
-                top = eventArgs.top;
-                left = eventArgs.left;
+                if (!this.hamburgerMode) {
+                    top = eventArgs.top;
+                    left = eventArgs.left;
+                }
                 popupWrapper.style.display = 'block';
-                popupWrapper.style.maxHeight = popupWrapper.getBoundingClientRect().height + 'px';
-                this.addScrolling(popupWrapper, ul, 'vscroll', popupWrapper.offsetHeight, ul.offsetHeight);
-                this.checkScrollOffset(e);
+                if (!this.hamburgerMode) {
+                    popupWrapper.style.maxHeight = popupWrapper.getBoundingClientRect().height + 'px';
+                    this.addScrolling(popupWrapper, ul, 'vscroll', popupWrapper.offsetHeight, ul.offsetHeight);
+                    this.checkScrollOffset(e);
+                }
                 var collide = void 0;
-                if (!left && !top) {
+                if (!this.hamburgerMode && !left && !top) {
                     popupObj.refreshPosition(li, true);
                     left = parseInt(popupWrapper.style.left, 10);
                     top = parseInt(popupWrapper.style.top, 10);
@@ -1586,19 +1610,104 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             if (this.isMenu) {
-                this.wireKeyboardEvent(popupWrapper);
-                rippleEffect(popupWrapper, { selector: '.' + ITEM });
-                popupWrapper.style.left = left + 'px';
-                popupWrapper.style.top = top + 'px';
-                var animationOptions = this.animationSettings.effect !== 'None' ? {
-                    name: this.animationSettings.effect, duration: this.animationSettings.duration,
-                    timingFunction: this.animationSettings.easing
-                } : null;
-                popupObj.show(animationOptions, li);
+                if (this.hamburgerMode) {
+                    popupWrapper.style.top = top + 'px';
+                    popupWrapper.style.left = 0 + 'px';
+                    this.toggleAnimation(popupWrapper);
+                }
+                else {
+                    this.wireKeyboardEvent(popupWrapper);
+                    rippleEffect(popupWrapper, { selector: '.' + ITEM });
+                    popupWrapper.style.left = left + 'px';
+                    popupWrapper.style.top = top + 'px';
+                    var animationOptions = this.animationSettings.effect !== 'None' ? {
+                        name: this.animationSettings.effect, duration: this.animationSettings.duration,
+                        timingFunction: this.animationSettings.easing
+                    } : null;
+                    popupObj.show(animationOptions, li);
+                }
             }
             else {
                 this.setPosition(li, ul, top, left);
                 this.toggleAnimation(ul);
+            }
+        }
+    };
+    MenuBase.prototype.calculateIndentSize = function (ul, li) {
+        var liStyle = getComputedStyle(li);
+        var liIndent = parseInt(liStyle.textIndent, 10);
+        if (this.navIdx.length < 2 && !li.classList.contains('e-blankicon')) {
+            liIndent *= 2;
+        }
+        else {
+            liIndent += (liIndent / 4);
+        }
+        ul.style.textIndent = liIndent + 'px';
+        var blankIconElem = ul.querySelectorAll('.e-blankicon');
+        if (blankIconElem && blankIconElem.length) {
+            var menuIconElem = ul.querySelector('.e-menu-icon');
+            var menuIconElemStyle = getComputedStyle(menuIconElem);
+            var blankIconIndent_1 = (parseInt(menuIconElemStyle.marginRight, 10) + menuIconElem.offsetWidth + liIndent);
+            blankIconElem.forEach(function (element) { return element.style.textIndent = blankIconIndent_1 + 'px'; });
+        }
+    };
+    MenuBase.prototype.generatePopup = function (popupWrapper, ul, li, isNestedOrVerticalMenu) {
+        var _this = this;
+        var popupObj = new Popup(popupWrapper, {
+            actionOnScroll: this.hamburgerMode ? 'none' : 'reposition',
+            relateTo: li,
+            collision: this.hamburgerMode ? { X: 'none', Y: 'none' } : { X: isNestedOrVerticalMenu ||
+                    this.enableRtl ? 'none' : 'flip', Y: 'fit' },
+            position: (isNestedOrVerticalMenu && !this.hamburgerMode) ? { X: 'right', Y: 'top' } : { X: 'left', Y: 'bottom' },
+            targetType: 'relative',
+            enableRtl: this.enableRtl,
+            content: ul,
+            open: function () {
+                var scrollEle = select('.e-menu-vscroll', popupObj.element);
+                if (scrollEle) {
+                    scrollEle.style.height = 'inherit';
+                    scrollEle.style.maxHeight = '';
+                }
+                var ul = select('.e-ul', popupObj.element);
+                popupObj.element.style.maxHeight = '';
+                ul.focus();
+                _this.triggerOpen(ul);
+            }
+        });
+        return popupObj;
+    };
+    MenuBase.prototype.createHeaderContainer = function (wrapper) {
+        wrapper = wrapper || this.getWrapper();
+        var spanElem = this.createElement('span', { className: 'e-' + this.getModuleName() + '-header' });
+        var spanTitle = this.createElement('span', {
+            className: 'e-' + this.getModuleName() + '-title', innerHTML: this.title
+        });
+        var spanIcon = this.createElement('span', {
+            className: 'e-icons e-' + this.getModuleName() + '-icon', attrs: { 'tabindex': '0' }
+        });
+        spanElem.appendChild(spanTitle);
+        spanElem.appendChild(spanIcon);
+        wrapper.insertBefore(spanElem, this.element);
+    };
+    MenuBase.prototype.openHamburgerMenu = function (e) {
+        if (this.hamburgerMode) {
+            var eventArgs = void 0;
+            eventArgs = this.triggerBeforeOpen(null, this.element, null, e, 0, 0);
+            if (!eventArgs.cancel) {
+                this.element.classList.remove('e-hide-menu');
+                this.triggerOpen(this.element);
+            }
+        }
+    };
+    MenuBase.prototype.closeHamburgerMenu = function (e) {
+        if (this.hamburgerMode) {
+            var beforeCloseArgs = void 0;
+            beforeCloseArgs = { element: this.element, parentItem: null, event: e, items: this.items, cancel: false };
+            this.trigger('beforeClose', beforeCloseArgs);
+            if (!beforeCloseArgs.cancel) {
+                this.closeMenu(null, e);
+                this.element.classList.add('e-hide-menu');
+                this.trigger('onClose', { element: this.element, parentItem: null, items: this.items });
             }
         }
     };
@@ -1775,7 +1884,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             }
         }
         if (this.isMenu) {
-            if ((trgt.parentElement !== wrapper && !closest(trgt, '.e-' + this.getModuleName() + '-popup'))
+            if (!this.showItemOnClick && (trgt.parentElement !== wrapper && !closest(trgt, '.e-' + this.getModuleName() + '-popup'))
                 && (!cli || (cli && !this.getIndex(cli.id, true).length))) {
                 this.removeLIStateByClass([FOCUSED, SELECTED], [wrapper]);
                 if (this.navIdx.length) {
@@ -1827,6 +1936,9 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             }
         }
         return false;
+    };
+    MenuBase.prototype.menuHeaderClickHandler = function (e) {
+        this.element.classList.contains('e-hide-menu') ? this.openHamburgerMenu(e) : this.closeHamburgerMenu(e);
     };
     MenuBase.prototype.clickHandler = function (e) {
         if (this.isTapHold) {
@@ -1899,12 +2011,17 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             else {
-                if (this.isMenu && trgt.tagName === 'DIV' && this.navIdx.length && closest(trgt, '.e-menu-vscroll')) {
-                    var popupEle = closest(trgt, '.' + POPUP);
-                    var cIdx = Array.prototype.indexOf.call(this.getPopups(), popupEle) + 1;
-                    if (cIdx < this.navIdx.length) {
-                        this.closeMenu(cIdx + 1, e);
-                        this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]);
+                if (this.isMenu) {
+                    if (trgt.tagName === 'DIV' && this.navIdx.length && closest(trgt, '.e-menu-vscroll')) {
+                        var popupEle = closest(trgt, '.' + POPUP);
+                        var cIdx = Array.prototype.indexOf.call(this.getPopups(), popupEle) + 1;
+                        if (cIdx < this.navIdx.length) {
+                            this.closeMenu(cIdx + 1, e);
+                            this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]);
+                        }
+                    }
+                    if (trgt.tagName === 'SPAN' && trgt.classList.contains('e-menu-icon')) {
+                        this.menuHeaderClickHandler(e);
                     }
                 }
                 else {
@@ -2086,19 +2203,26 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             var targetElems = selectAll(targetSelctor);
             for (var i = 0, len = targetElems.length; i < len; i++) {
                 target = targetElems[i];
-                if (Browser.isIos) {
-                    touchModule = getInstance(target, Touch);
-                    if (touchModule) {
-                        touchModule.destroy();
-                    }
+                if (this.isMenu) {
+                    EventHandler.remove(target, 'click', this.menuHeaderClickHandler);
                 }
                 else {
-                    EventHandler.remove(target, 'contextmenu', this.cmenuHandler);
+                    if (Browser.isIos) {
+                        touchModule = getInstance(target, Touch);
+                        if (touchModule) {
+                            touchModule.destroy();
+                        }
+                    }
+                    else {
+                        EventHandler.remove(target, 'contextmenu', this.cmenuHandler);
+                    }
                 }
             }
-            for (var _i = 0, _a = getScrollableParent(this.targetElement); _i < _a.length; _i++) {
-                var parent_2 = _a[_i];
-                EventHandler.remove(parent_2, 'scroll', this.scrollHandler);
+            if (!this.isMenu) {
+                for (var _i = 0, _a = getScrollableParent(this.targetElement); _i < _a.length; _i++) {
+                    var parent_2 = _a[_i];
+                    EventHandler.remove(parent_2, 'scroll', this.scrollHandler);
+                }
             }
         }
         if (!Browser.isDevice) {
@@ -2118,6 +2242,8 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
     MenuBase.prototype.toggleAnimation = function (ul, isMenuOpen) {
         var _this = this;
         if (isMenuOpen === void 0) { isMenuOpen = true; }
+        var pUlHeight;
+        var pElement;
         if (this.animationSettings.effect === 'None' || !isMenuOpen) {
             this.end(ul, isMenuOpen);
         }
@@ -2127,11 +2253,35 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 duration: this.animationSettings.duration,
                 timingFunction: this.animationSettings.easing,
                 begin: function (options) {
-                    options.element.style.display = 'block';
-                    options.element.style.maxHeight = options.element.getBoundingClientRect().height + 'px';
+                    if (_this.hamburgerMode) {
+                        pElement = options.element.parentElement;
+                        options.element.style.position = 'absolute';
+                        pUlHeight = pElement.offsetHeight;
+                        options.element.style.maxHeight = options.element.offsetHeight + 'px';
+                        pElement.style.maxHeight = '';
+                    }
+                    else {
+                        options.element.style.display = 'block';
+                        options.element.style.maxHeight = options.element.getBoundingClientRect().height + 'px';
+                    }
+                },
+                progress: function (options) {
+                    if (_this.hamburgerMode) {
+                        pElement.style.minHeight = (pUlHeight + options.element.offsetHeight) + 'px';
+                    }
                 },
                 end: function (options) {
-                    _this.end(options.element, isMenuOpen);
+                    if (_this.hamburgerMode) {
+                        options.element.style.position = '';
+                        options.element.style.maxHeight = '';
+                        pElement.style.minHeight = '';
+                        options.element.style.top = 0 + 'px';
+                        options.element.children[0].focus();
+                        _this.triggerOpen(options.element.children[0]);
+                    }
+                    else {
+                        _this.end(options.element, isMenuOpen);
+                    }
                 }
             });
         }
@@ -5675,6 +5825,7 @@ var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, 
 /// <reference path='../common/menu-base-model.d.ts'/>
 var VMENU = 'e-vertical';
 var SCROLLABLE = 'e-scrollable';
+var HAMBURGER = 'e-hamburger';
 /**
  * The Menu is a graphical user interface that serve as navigation headers for your application or site.
  * ```html
@@ -5733,11 +5884,20 @@ var Menu = /** @__PURE__ @class */ (function (_super) {
         attributes(this.element, { 'role': 'menubar', 'tabindex': '0' });
         if (this.orientation === 'Vertical') {
             this.element.classList.add(VMENU);
+            if (this.hamburgerMode && !this.target) {
+                this.element.previousElementSibling.classList.add(VMENU);
+            }
             this.element.setAttribute('aria-orientation', 'vertical');
         }
         else {
             if (Browser.isDevice && !this.enableScrolling) {
                 this.element.parentElement.classList.add(SCROLLABLE);
+            }
+        }
+        if (this.hamburgerMode) {
+            this.element.parentElement.classList.add(HAMBURGER);
+            if (this.orientation === 'Horizontal') {
+                this.element.classList.add('e-hide-menu');
             }
         }
     };
@@ -5762,16 +5922,74 @@ var Menu = /** @__PURE__ @class */ (function (_super) {
                 case 'orientation':
                     if (newProp.orientation === 'Vertical') {
                         this.element.classList.add(VMENU);
+                        if (this.hamburgerMode) {
+                            if (!this.target) {
+                                this.element.previousElementSibling.classList.add(VMENU);
+                            }
+                            this.element.classList.remove('e-hide-menu');
+                        }
                         this.element.setAttribute('aria-orientation', 'vertical');
                     }
                     else {
                         this.element.classList.remove(VMENU);
+                        if (this.hamburgerMode) {
+                            if (!this.target) {
+                                this.element.previousElementSibling.classList.remove(VMENU);
+                            }
+                            this.element.classList.add('e-hide-menu');
+                        }
                         this.element.removeAttribute('aria-orientation');
                     }
                     break;
                 case 'items':
                     if (!Object.keys(oldProp.items).length) {
                         this.updateMenuItems(newProp.items);
+                    }
+                    break;
+                case 'hamburgerMode':
+                    if (!this.element.previousElementSibling) {
+                        _super.prototype.createHeaderContainer.call(this);
+                    }
+                    if (newProp.hamburgerMode) {
+                        this.element.parentElement.classList.add(HAMBURGER);
+                    }
+                    else {
+                        this.element.parentElement.classList.remove(HAMBURGER);
+                    }
+                    if (this.orientation === 'Vertical') {
+                        if (!this.target) {
+                            this.element.previousElementSibling.classList.add(VMENU);
+                        }
+                        this.element.classList.remove('e-hide-menu');
+                    }
+                    else {
+                        if (this.target) {
+                            this.element.previousElementSibling.classList.add(VMENU);
+                        }
+                        else {
+                            this.element.previousElementSibling.classList.remove(VMENU);
+                        }
+                        this.element.classList[newProp.hamburgerMode ? 'add' : 'remove']('e-hide-menu');
+                    }
+                    break;
+                case 'title':
+                    if (this.hamburgerMode && this.element.previousElementSibling) {
+                        this.element.previousElementSibling.querySelector('.e-menu-title').innerHTML = newProp.title;
+                    }
+                    break;
+                case 'target':
+                    if (this.hamburgerMode) {
+                        this.unWireEvents(oldProp.target);
+                        this.wireEvents();
+                        if (this.orientation === 'Horizontal') {
+                            if (!newProp.target) {
+                                if (!this.element.previousElementSibling) {
+                                    _super.prototype.createHeaderContainer.call(this);
+                                }
+                            }
+                            this.element.previousElementSibling.classList.add(VMENU);
+                            this.element.classList.add('e-hide-menu');
+                        }
                     }
                     break;
             }
@@ -5798,6 +6016,20 @@ var Menu = /** @__PURE__ @class */ (function (_super) {
             this.items.push(item);
         }
     };
+    /**
+     * This method is used to open the Menu in hamburger mode.
+     * @method open
+     * @returns void
+     */
+    Menu.prototype.open = function () {
+        _super.prototype.openHamburgerMenu.call(this);
+    };
+    /**
+     * Closes the Menu if it is opened in hamburger mode.
+     */
+    Menu.prototype.close = function () {
+        _super.prototype.closeHamburgerMenu.call(this);
+    };
     __decorate$6([
         Property('Horizontal')
     ], Menu.prototype, "orientation", void 0);
@@ -5807,6 +6039,12 @@ var Menu = /** @__PURE__ @class */ (function (_super) {
     __decorate$6([
         Property(false)
     ], Menu.prototype, "enableScrolling", void 0);
+    __decorate$6([
+        Property(false)
+    ], Menu.prototype, "hamburgerMode", void 0);
+    __decorate$6([
+        Property('Menu')
+    ], Menu.prototype, "title", void 0);
     __decorate$6([
         Complex({}, FieldSettings)
     ], Menu.prototype, "fields", void 0);

@@ -78,7 +78,7 @@ export class Agenda extends ViewBase implements IRenderer {
         let agendaDate: Date = util.resetTime(this.parent.selectedDate);
         let tBody: Element = this.parent.getContentTable();
         tBody.innerHTML = '';
-        this.renderContent(tBody, agendaDate);
+        this.renderInitialContent(tBody, agendaDate);
         this.agendaBase.wireEventActions();
         let contentArea: HTMLElement = closest(tBody, '.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
         contentArea.scrollTop = 1;
@@ -97,21 +97,35 @@ export class Agenda extends ViewBase implements IRenderer {
         this.parent.eventsProcessed = this.parent.eventsProcessed.concat(this.agendaBase.processAgendaEvents(processedData));
     }
 
-    public renderContent(tBody: Element, agendaDate: Date): void {
-        let fieldMapping: EventFieldsMapping = this.parent.eventFields;
+    private renderInitialContent(tBody: Element, agendaDate: Date): void {
+        let emptyTBody: Element = createElement('tbody');
         let firstDate: Date = new Date(agendaDate.getTime());
-        let lastDate: Date = (!this.parent.activeViewOptions.allowVirtualScrolling) ?
-            util.addDays(firstDate, this.parent.agendaDaysCount) : this.getEndDateFromStartDate(firstDate);
-        let isObject: Object[] = this.appointmentFiltering(firstDate, lastDate);
-        if (isObject.length === 0 && this.parent.activeViewOptions.allowVirtualScrolling) {
-            lastDate = firstDate; firstDate = new Date(this.minDate.getTime());
-            isObject = this.appointmentFiltering(firstDate, lastDate);
-            if (isObject.length === 0) {
-                firstDate = lastDate; lastDate = new Date(this.maxDate.getTime());
-                isObject = this.appointmentFiltering(firstDate, lastDate);
+        let lastDate: Date = (this.parent.activeViewOptions.allowVirtualScrolling && this.parent.hideEmptyAgendaDays) ?
+            this.getEndDateFromStartDate(firstDate) : util.addDays(firstDate, this.parent.agendaDaysCount);
+        this.renderContent(emptyTBody, firstDate, lastDate);
+        append([].slice.call(emptyTBody.childNodes), tBody);
+        // Initial rendering, to load previous date events upto scroll bar enable
+        if (this.parent.activeViewOptions.allowVirtualScrolling && this.parent.hideEmptyAgendaDays && this.parent.eventsData.length > 0) {
+            let contentArea: HTMLElement = this.getContentAreaElement();
+            while (contentArea.offsetWidth <= contentArea.clientWidth) {
+                let emptyTBody: Element = createElement('tbody');
+                lastDate = firstDate;
+                firstDate = util.addDays(lastDate, - this.parent.agendaDaysCount);
+                this.renderContent(emptyTBody, firstDate, lastDate);
+                prepend([].slice.call(emptyTBody.childNodes), tBody);
+                if (firstDate <= this.minDate) { break; }
             }
         }
-        if (isObject.length > 0 && this.parent.activeViewOptions.allowVirtualScrolling) {
+        if (tBody.childNodes.length <= 0) {
+            this.agendaBase.renderEmptyContent(tBody, agendaDate);
+        }
+    }
+
+    public renderContent(tBody: Element, agendaDate: Date, lastDate: Date): void {
+        let fieldMapping: EventFieldsMapping = this.parent.eventFields;
+        let firstDate: Date = new Date(agendaDate.getTime());
+        let isObject: Object[] = this.appointmentFiltering(firstDate, lastDate);
+        if (isObject.length > 0 && this.parent.activeViewOptions.allowVirtualScrolling && this.parent.hideEmptyAgendaDays) {
             let appoint: { [key: string]: Object }[] = <{ [key: string]: Object }[]>isObject;
             agendaDate = appoint[0][fieldMapping.startTime] as Date;
             agendaDate = new Date(new Date(agendaDate.getTime()).setHours(0, 0, 0, 0));
@@ -119,8 +133,6 @@ export class Agenda extends ViewBase implements IRenderer {
         }
         let endDate: Date;
         if (!this.parent.hideEmptyAgendaDays || (this.parent.agendaDaysCount > 0 && isObject.length > 0)) {
-            let noOfDays: number = (!this.parent.hideEmptyAgendaDays || !this.parent.activeViewOptions.allowVirtualScrolling ||
-                this.parent.agendaDaysCount < isObject.length) ? this.parent.agendaDaysCount : isObject.length;
             if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
                 let date: Date = agendaDate;
                 if (!this.parent.activeViewOptions.group.byDate) {
@@ -133,7 +145,7 @@ export class Agenda extends ViewBase implements IRenderer {
                 }
                 this.agendaBase.calculateResourceTableElement(tBody, this.parent.agendaDaysCount, date);
             } else {
-                for (let day: number = 0; day < noOfDays; day++) {
+                for (let day: number = 0; day < this.parent.agendaDaysCount; day++) {
                     let filterData: { [key: string]: Object }[] = [];
                     filterData = this.appointmentFiltering(agendaDate) as { [key: string]: Object }[];
                     let nTr: Element = this.agendaBase.createTableRowElement(agendaDate, 'data');
@@ -162,9 +174,6 @@ export class Agenda extends ViewBase implements IRenderer {
                 }
             }
             endDate = new Date(agendaDate.getTime() - util.MS_PER_DAY);
-        } else {
-            this.agendaBase.renderEmptyContent(tBody, agendaDate);
-            endDate = util.addDays(agendaDate, this.parent.agendaDaysCount - 1);
         }
         this.agendaDates = { start: firstDate, end: endDate };
     }
@@ -206,7 +215,7 @@ export class Agenda extends ViewBase implements IRenderer {
             filterDate = this.getPreviousNextDate(util.addDays(scrollDate, -1), direction);
             filterData = this.appointmentFiltering(filterDate.start, filterDate.end);
             if (filterData.length > 0 || !this.parent.hideEmptyAgendaDays) {
-                this.renderContent(emptyTBody, filterDate.start);
+                this.renderContent(emptyTBody, filterDate.start, filterDate.end);
                 prepend([].slice.call(emptyTBody.childNodes), tBody);
                 this.agendaBase.wireEventActions();
                 for (let s: number = 0, element: HTMLCollection = tBody.children; s < element.length; s++) {
@@ -223,7 +232,7 @@ export class Agenda extends ViewBase implements IRenderer {
             filterDate = this.getPreviousNextDate(util.addDays(scrollDate, 1), direction);
             filterData = this.appointmentFiltering(filterDate.start, filterDate.end);
             if (filterData.length > 0 || !this.parent.hideEmptyAgendaDays) {
-                this.renderContent(emptyTBody, filterDate.start);
+                this.renderContent(emptyTBody, filterDate.start, filterDate.end);
                 append([].slice.call(emptyTBody.childNodes), tBody);
                 this.agendaBase.wireEventActions();
                 this.updateHeaderText(scrollDate);

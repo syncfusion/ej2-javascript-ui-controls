@@ -14,6 +14,20 @@ import { PivotContextMenuItem } from '../../common/base/enum';
 export class GridSettings extends ChildProperty<GridSettings> {
 
     /**
+     * Defines the content height of Grid.
+     * @default 'auto'
+     */
+    @Property('auto')
+    public height: number | string;
+
+    /**
+     * Defines the content width of Grid.
+     * @default 'auto'
+     */
+    @Property('auto')
+    public width: number | string;
+
+    /**
      * Defines the mode of grid lines. The available modes are,
      * * `Both`: Displays both horizontal and vertical grid lines.
      * * `None`: No grid lines are displayed.

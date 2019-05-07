@@ -3079,7 +3079,8 @@ let DatePicker = class DatePicker extends Calendar {
     restoreValue() {
         this.currentDate = this.value ? this.value : new Date();
         this.previousDate = this.value;
-        this.previousElementValue = this.inputElement.value;
+        this.previousElementValue = (isNullOrUndefined(this.inputValueCopy)) ? '' :
+            this.globalize.formatDate(this.inputValueCopy, { format: this.formatString, type: 'dateTime', skeleton: 'yMd' });
     }
     inputChangeHandler(e) {
         e.stopPropagation();
@@ -6701,6 +6702,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         }
     }
     applyFunction(eve) {
+        let isValueChanged = false;
         eve.preventDefault();
         if (this.closeEventArgs && this.closeEventArgs.cancel) {
             this.startValue = this.popupWrapper.querySelector('.e-start-date') &&
@@ -6723,12 +6725,19 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
             this.previousEndValue = new Date(+this.endValue);
             this.previousEleValue = this.inputElement.value;
             Input.setValue(this.rangeArgs(eve).text, this.inputElement, this.floatLabelType, this.showClearButton);
+            if (+this.initStartDate !== +this.startValue || +this.initEndDate !== +this.endValue) {
+                isValueChanged = true;
+            }
             this.changeTrigger(eve);
             this.hide(eve ? eve : null);
             this.errorClass();
         }
         else {
             this.hide(eve ? eve : null);
+        }
+        if (!(closest(eve.target, '.' + INPUTCONTAINER$1))
+            && (!isValueChanged)) {
+            this.focusOut();
         }
         if (!this.isMobile) {
             this.isKeyPopup = false;
@@ -11595,7 +11604,8 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         this.currentDate = this.value ? this.value : new Date();
         this.valueWithMinutes = this.value;
         this.previousDate = this.value;
-        this.previousElementValue = this.inputElement.value;
+        this.previousElementValue = this.previousElementValue = (isNullOrUndefined(this.inputValueCopy)) ? '' :
+            this.getFormattedValue(this.inputValueCopy);
     }
 };
 __decorate$4([

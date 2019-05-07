@@ -4534,6 +4534,11 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
     HeaderRender.prototype.renderPanel = function () {
         var div = this.parent.createElement('div', { className: 'e-gridheader' });
         var innerDiv = this.parent.createElement('div', { className: 'e-headercontent' });
+        var column = this.parent.columns;
+        var stackedHdr = column.some(function (column) { return column.columns !== undefined; });
+        if (stackedHdr) {
+            div.classList.add('e-stackedheader');
+        }
         div.appendChild(innerDiv);
         this.setPanel(div);
         this.parent.element.appendChild(div);
@@ -11181,14 +11186,14 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
     Grid.prototype.getPersistData = function () {
         var _this = this;
         var keyEntity = ['pageSettings', 'sortSettings',
-            'filterSettings', 'groupSettings', 'columns', 'searchSettings', 'selectedRowIndex'];
+            'filterSettings', 'groupSettings', 'columns', 'searchSettings', 'selectedRowIndex', 'scrollPosition'];
         var ignoreOnPersist = {
             pageSettings: ['template', 'pageSizes', 'enableQueryString', 'totalRecordsCount', 'pageCount'],
             filterSettings: ['type', 'mode', 'showFilterBarStatus', 'immediateModeDelay', 'ignoreAccent'],
             groupSettings: ['showDropArea', 'showToggleButton', 'showGroupedColumn', 'showUngroupButton',
                 'disablePageWiseAggregates', 'hideCaptionCount'],
             searchSettings: ['fields', 'operator', 'ignoreCase'],
-            sortSettings: [], columns: [], selectedRowIndex: []
+            sortSettings: [], columns: [], selectedRowIndex: [], scrollPosition: []
         };
         keyEntity.forEach(function (value) {
             var currentObject = _this[value];
@@ -13529,6 +13534,9 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         var data = window.localStorage.getItem(this.getModuleName() + this.element.id);
         if (!(isNullOrUndefined(data) || (data === ''))) {
             var dataObj = JSON.parse(data);
+            if (this.enableVirtualization) {
+                dataObj.pageSettings.currentPage = 1;
+            }
             var keys = Object.keys(dataObj);
             this.isProtectedOnChange = true;
             for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
@@ -21807,6 +21815,9 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         this.virtualEle.adjustTable(0, 0);
     };
     VirtualContentRenderer.prototype.scrollListener = function (scrollArgs) {
+        if (this.parent.enablePersistence) {
+            this.parent.scrollPosition = scrollArgs.offset;
+        }
         if (this.preventEvent || this.parent.isDestroyed) {
             this.preventEvent = false;
             return;
@@ -22029,6 +22040,16 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         this.actions.forEach(function (event) { return _this.parent[action](event + "-begin", _this.onActionBegin, _this); });
         var fn = function () {
             _this.observer.observe(function (scrollArgs) { return _this.scrollListener(scrollArgs); }, _this.onEntered());
+            var gObj = _this.parent;
+            if (gObj.enablePersistence && gObj.scrollPosition) {
+                _this.content.scrollTop = gObj.scrollPosition.top;
+                var scrollValues = { direction: 'down', sentinel: _this.observer.sentinelInfo.down,
+                    offset: gObj.scrollPosition, focusElement: gObj.element };
+                _this.scrollListener(scrollValues);
+                if (gObj.enableColumnVirtualization) {
+                    _this.content.scrollLeft = gObj.scrollPosition.left;
+                }
+            }
             _this.parent.off(contentReady, fn);
         };
         this.parent.on(contentReady, fn, this);
@@ -25598,6 +25619,7 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
         var fltrCol;
         var okButton;
         var buttonEle = this.dlgDiv.querySelector('.e-footer-content');
+        this.isInitialOpen = true;
         if (buttonEle) {
             okButton = buttonEle.querySelector('.e-btn').ej2_instances[0];
         }
@@ -25653,10 +25675,17 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
         this.searchBoxObj.unWireEvent();
     };
     ColumnChooser.prototype.checkBoxClickHandler = function (e) {
+        var _this = this;
         var checkstate;
         var elem = parentsUntil(e.target, 'e-checkbox-wrapper');
         if (elem) {
-            toogleCheckbox(elem.parentElement);
+            var selectAll = elem.querySelector('.e-selectall');
+            if (selectAll) {
+                this.updateSelectAll(!elem.querySelector('.e-check'));
+            }
+            else {
+                toogleCheckbox(elem.parentElement);
+            }
             elem.querySelector('.e-chk-hidden').focus();
             if (elem.querySelector('.e-check')) {
                 checkstate = true;
@@ -25667,9 +25696,46 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
             else {
                 return;
             }
+            this.updateIntermediateBtn();
             var columnUid = parentsUntil(elem, 'e-ccheck').getAttribute('uid');
-            this.checkstatecolumn(checkstate, columnUid);
+            var column = this.parent.getColumns();
+            if (columnUid === 'grid-selectAll') {
+                column.forEach(function (col) {
+                    _this.checkstatecolumn(checkstate, col.uid);
+                });
+            }
+            else {
+                this.checkstatecolumn(checkstate, columnUid);
+            }
             this.refreshCheckboxButton();
+        }
+    };
+    ColumnChooser.prototype.updateIntermediateBtn = function () {
+        var cnt = this.ulElement.children.length - 1;
+        var className = [];
+        var elem = this.ulElement.children[0].querySelector('.e-frame');
+        var selected = this.ulElement.querySelectorAll('.e-check:not(.e-selectall)').length;
+        var btn = this.dlgObj.btnObj[0];
+        btn.disabled = false;
+        if (cnt === selected) {
+            className = ['e-check'];
+        }
+        else if (selected) {
+            className = ['e-stop'];
+        }
+        else {
+            className = ['e-uncheck'];
+            btn.disabled = true;
+        }
+        btn.dataBind();
+        removeClass([elem], ['e-check', 'e-stop', 'e-uncheck']);
+        addClass([elem], className);
+    };
+    ColumnChooser.prototype.updateSelectAll = function (checked) {
+        var cBoxes = [].slice.call(this.ulElement.querySelectorAll('.e-frame'));
+        for (var _i = 0, cBoxes_1 = cBoxes; _i < cBoxes_1.length; _i++) {
+            var cBox = cBoxes_1[_i];
+            removeAddCboxClasses(cBox, checked);
         }
     };
     ColumnChooser.prototype.refreshCheckboxButton = function () {
@@ -25706,6 +25772,16 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
     };
     ColumnChooser.prototype.refreshCheckboxList = function (gdCol, searchVal) {
         this.ulElement = this.parent.createElement('ul', { className: 'e-ccul-ele e-cc' });
+        var selectAllValue = this.l10n.getConstant('SelectAll');
+        var cclist = this.parent.createElement('li', { className: 'e-cclist e-cc e-cc-selectall' });
+        var selectAll = this.createCheckBox(selectAllValue, false, 'grid-selectAll');
+        if (gdCol.length) {
+            selectAll.querySelector('.e-checkbox-wrapper').firstElementChild.classList.add('e-selectall');
+            selectAll.querySelector('.e-frame').classList.add('e-selectall');
+            this.checkState(selectAll.querySelector('.e-icons'), true);
+            cclist.appendChild(selectAll);
+            this.ulElement.appendChild(cclist);
+        }
         for (var i = 0; i < gdCol.length; i++) {
             var columns = gdCol[i];
             this.renderCheckbox(columns);
@@ -25716,7 +25792,7 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
         this.dlgObj.element.querySelector('.e-cc.e-input').value = '';
         this.columnChooserSearch('');
         var gridObject = this.parent;
-        var currentCheckBoxColls = this.dlgObj.element.querySelectorAll('.e-cc-chbox');
+        var currentCheckBoxColls = this.dlgObj.element.querySelectorAll('.e-cc-chbox:not(.e-selectall)');
         for (var i = 0, itemLen = currentCheckBoxColls.length; i < itemLen; i++) {
             var element = currentCheckBoxColls[i];
             var columnUID = void 0;
@@ -25756,6 +25832,9 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
             var cccheckboxlist = this.createCheckBox(column.headerText, (column.visible && !hideColState) || showColState, column.uid);
             cclist.appendChild(cccheckboxlist);
             this.ulElement.appendChild(cclist);
+        }
+        if (this.isInitialOpen) {
+            this.updateIntermediateBtn();
         }
     };
     ColumnChooser.prototype.columnChooserManualSearch = function (e) {
@@ -26966,7 +27045,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
                 var format = col.format;
                 style.numberFormat = !isNullOrUndefined(format.format) ? format.format : format.skeleton;
                 if (!isNullOrUndefined(format.type)) {
-                    style.type = format.type;
+                    style.type = format.type.toLowerCase();
                 }
             }
             else {
@@ -29141,7 +29220,9 @@ var FreezeRender = /** @__PURE__ @class */ (function (_super) {
                 fRows = fHdr.querySelector(wrapMode === 'Content' ? 'tbody' : 'thead').querySelectorAll('tr');
                 mRows = mHdr.querySelector(wrapMode === 'Content' ? 'tbody' : 'thead').querySelectorAll('tr');
             }
-            this.setWrapHeight(fRows, mRows, obj.isModeChg, false, this.colDepth > 1);
+            if (!this.parent.getHeaderContent().querySelectorAll('.e-stackedheadercell').length) {
+                this.setWrapHeight(fRows, mRows, obj.isModeChg, false, this.colDepth > 1);
+            }
             this.refreshStackedHdrHgt();
         }
     };

@@ -6,7 +6,12 @@
 
     @at-root {
       & ul {
-        background-color: inherit;
+        @if $skin-name == 'bootstrap4' {
+          background-color: $cmenu-ul-bgcolor;
+        }
+        @else {
+          background-color: inherit;
+        }
         color: $menu-color;
 
         &.e-menu {
@@ -211,6 +216,14 @@
 
       &:active {
         background: $cmenu-li-selection-bgcolor;
+      }
+    }
+
+    & .e-menu-header {
+      color: $menu-color;
+
+      & .e-menu-icon {
+        color: $submenu-color;
       }
     }
   }

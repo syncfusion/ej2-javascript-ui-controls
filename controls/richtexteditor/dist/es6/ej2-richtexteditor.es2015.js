@@ -2009,6 +2009,8 @@ class DropDownButtons {
     }
     onPropertyChanged(model) {
         let newProp = model.newProp;
+        let type;
+        let content;
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'fontFamily':
@@ -2018,12 +2020,11 @@ class DropDownButtons {
                                 case 'default':
                                 case 'width':
                                     let fontItems = this.fontNameDropDown.items;
-                                    let type = !isNullOrUndefined(closest(this.fontNameDropDown.element, '.' + CLS_QUICK_TB)) ?
+                                    type = !isNullOrUndefined(closest(this.fontNameDropDown.element, '.' + CLS_QUICK_TB)) ?
                                         'quick' : 'toolbar';
                                     let fontNameContent = isNullOrUndefined(this.parent.fontFamily.default) ? fontItems[0].text :
                                         this.parent.fontFamily.default;
-                                    let content = this.dropdownContent(this.parent.fontFamily.width, type, ((type === 'quick') ? '' :
-                                        getDropDownValue(fontItems, fontNameContent, 'text', 'text')));
+                                    content = this.dropdownContent(this.parent.fontFamily.width, type, ((type === 'quick') ? '' : getDropDownValue(fontItems, fontNameContent, 'text', 'text')));
                                     this.fontNameDropDown.setProperties({ content: content });
                                     if (!isNullOrUndefined(this.parent.fontFamily.default)) {
                                         this.getEditNode().style.fontFamily = this.parent.fontFamily.default;
@@ -2048,10 +2049,10 @@ class DropDownButtons {
                                 case 'default':
                                 case 'width':
                                     let fontsize = this.fontSizeDropDown.items;
-                                    let type = !isNullOrUndefined(closest(this.fontSizeDropDown.element, '.' + CLS_QUICK_TB)) ? 'quick' : 'toolbar';
+                                    type = !isNullOrUndefined(closest(this.fontSizeDropDown.element, '.' + CLS_QUICK_TB)) ? 'quick' : 'toolbar';
                                     let fontSizeContent = isNullOrUndefined(this.parent.fontSize.default) ? fontsize[1].text :
                                         this.parent.fontSize.default;
-                                    let content = this.dropdownContent(this.parent.fontSize.width, type, getFormattedFontSize(getDropDownValue(fontsize, fontSizeContent.replace(/\s/g, ''), 'value', 'text')));
+                                    content = this.dropdownContent(this.parent.fontSize.width, type, getFormattedFontSize(getDropDownValue(fontsize, fontSizeContent.replace(/\s/g, ''), 'value', 'text')));
                                     this.fontSizeDropDown.setProperties({ content: content });
                                     if (!isNullOrUndefined(this.parent.fontSize.default)) {
                                         this.getEditNode().style.fontSize = this.parent.fontSize.default;
@@ -2076,11 +2077,10 @@ class DropDownButtons {
                                 case 'default':
                                 case 'width':
                                     let formatItems = this.formatDropDown.items;
-                                    let type = !isNullOrUndefined(closest(this.formatDropDown.element, '.' + CLS_QUICK_TB)) ? 'quick' : 'toolbar';
+                                    type = !isNullOrUndefined(closest(this.formatDropDown.element, '.' + CLS_QUICK_TB)) ? 'quick' : 'toolbar';
                                     let formatContent = isNullOrUndefined(this.parent.format.default) ? formatItems[0].text :
                                         this.parent.format.default;
-                                    let content = this.dropdownContent(this.parent.format.width, type, ((type === 'quick') ? '' :
-                                        getDropDownValue(formatItems, formatContent, 'text', 'text')));
+                                    content = this.dropdownContent(this.parent.format.width, type, ((type === 'quick') ? '' : getDropDownValue(formatItems, formatContent, 'text', 'text')));
                                     this.formatDropDown.setProperties({ content: content });
                                     break;
                                 case 'types':
@@ -3079,16 +3079,18 @@ class ColorPickerInput {
         this.initializeInstance();
         let suffixID = args.containerType;
         let tbElement = args.container;
+        let targetID;
+        let options;
         templateItems.forEach((item) => {
             if (getIndex(item, args.items) !== -1) {
                 switch (item) {
                     case 'fontcolor':
-                        let targetID = this.parent.getID() + '_' + suffixID + '_FontColor_Target';
+                        targetID = this.parent.getID() + '_' + suffixID + '_FontColor_Target';
                         let fontNode = this.parent.createElement('input');
                         fontNode.id = targetID;
                         fontNode.classList.add(CLS_FONT_COLOR_TARGET);
                         document.body.appendChild(fontNode);
-                        let args = {
+                        options = {
                             cssClass: this.tools[item.toLocaleLowerCase()].icon
                                 + ' ' + CLS_RTE_ELEMENTS + ' ' + CLS_ICONS,
                             value: this.tools[item.toLocaleLowerCase()].value,
@@ -3097,8 +3099,8 @@ class ColorPickerInput {
                             element: select('#' + this.parent.getID() + '_' + suffixID + '_FontColor', tbElement),
                             target: ('#' + targetID)
                         };
-                        this.fontColorPicker = this.toolbarRenderer.renderColorPicker(args, 'fontcolor');
-                        this.fontColorDropDown = this.toolbarRenderer.renderColorPickerDropDown(args, 'fontcolor', this.fontColorPicker);
+                        this.fontColorPicker = this.toolbarRenderer.renderColorPicker(options, 'fontcolor');
+                        this.fontColorDropDown = this.toolbarRenderer.renderColorPickerDropDown(options, 'fontcolor', this.fontColorPicker);
                         break;
                     case 'backgroundcolor':
                         targetID = this.parent.getID() + '_' + suffixID + '_BackgroundColor_Target';
@@ -3106,7 +3108,7 @@ class ColorPickerInput {
                         backNode.id = targetID;
                         backNode.classList.add(CLS_BACKGROUND_COLOR_TARGET);
                         document.body.appendChild(backNode);
-                        args = {
+                        options = {
                             cssClass: this.tools[item.toLocaleLowerCase()].icon
                                 + ' ' + CLS_RTE_ELEMENTS + ' ' + CLS_ICONS,
                             value: this.tools[item.toLocaleLowerCase()].value,
@@ -3115,8 +3117,8 @@ class ColorPickerInput {
                             element: select('#' + this.parent.getID() + '_' + suffixID + '_BackgroundColor', tbElement),
                             target: ('#' + targetID)
                         };
-                        this.backgroundColorPicker = this.toolbarRenderer.renderColorPicker(args, 'backgroundcolor');
-                        this.backgroundColorDropDown = this.toolbarRenderer.renderColorPickerDropDown(args, 'backgroundcolor', this.backgroundColorPicker);
+                        this.backgroundColorPicker = this.toolbarRenderer.renderColorPicker(options, 'backgroundcolor');
+                        this.backgroundColorDropDown = this.toolbarRenderer.renderColorPickerDropDown(options, 'backgroundcolor', this.backgroundColorPicker);
                         break;
                 }
             }
@@ -3167,6 +3169,7 @@ class ColorPickerInput {
     }
     onPropertyChanged(model) {
         let newProp = model.newProp;
+        let element;
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'fontColor':
@@ -3175,7 +3178,7 @@ class ColorPickerInput {
                             switch (font) {
                                 case 'default':
                                     this.fontColorPicker.setProperties({ value: newProp.fontColor.default });
-                                    let element = this.fontColorDropDown.element;
+                                    element = this.fontColorDropDown.element;
                                     let fontBorder = element.querySelector('.' + this.tools['fontcolor'].icon);
                                     fontBorder.style.borderBottomColor = newProp.fontColor.default;
                                     break;
@@ -3201,7 +3204,7 @@ class ColorPickerInput {
                             switch (background) {
                                 case 'default':
                                     this.backgroundColorPicker.setProperties({ value: newProp.backgroundColor.default });
-                                    let element = this.backgroundColorDropDown.element;
+                                    element = this.backgroundColorDropDown.element;
                                     let backgroundBorder = element.querySelector('.' + this.tools['backgroundcolor'].icon);
                                     backgroundBorder.style.borderBottomColor = newProp.backgroundColor.default;
                                     break;

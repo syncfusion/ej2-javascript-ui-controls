@@ -2403,6 +2403,32 @@ describe('Form element', () => {
         expect((<any>document.getElementById('datetimepicker')).value === '').toBe(true);
         datetime = null;
     });
+    it('Input value reset case', () => {
+        datetime = new DateTimePicker({ });
+        datetime.appendTo('#datetimepicker');
+        (<any>document.getElementById("form-element")).reset();
+        datetime.dataBind();
+        expect(datetime.previousElementValue === "").toBe(true);
+    });
+    it('Input value reset case_2', () => {
+        datetime = new DateTimePicker({ 
+            value: new Date('2/12/2018 2:00 AM')
+        });
+        datetime.appendTo('#datetimepicker');
+        (<any>document.getElementById("form-element")).reset();
+        datetime.dataBind();
+        expect(datetime.previousElementValue === "2/12/2018 2:00 AM").toBe(true);
+    });
+    it('Input value reset case_3', () => {
+        datetime = new DateTimePicker({ 
+            value: new Date('2/12/2018 2:00 AM'),
+            format: "yyyy/MMM/dd HH:mm"
+        });
+        datetime.appendTo('#datetimepicker');
+        (<any>document.getElementById("form-element")).reset();
+        datetime.dataBind();
+        expect(datetime.previousElementValue === "2018/Feb/12 02:00").toBe(true);
+    });
 });
 
 describe('Islamic ', () => {

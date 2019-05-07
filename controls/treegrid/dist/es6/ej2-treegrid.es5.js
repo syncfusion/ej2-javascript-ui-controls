@@ -1419,6 +1419,23 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
         var expresults = getObject('expresults', args);
         var exportType = getObject('exportType', args);
         var dataObj;
+        var actionArgs = getObject('actionArgs', args);
+        var requestType = getObject('requestType', args);
+        var actionData = getObject('data', args);
+        var action = getObject('action', args);
+        if ((!isNullOrUndefined(actionArgs) && Object.keys(actionArgs).length) || requestType === 'save') {
+            requestType = requestType ? requestType : actionArgs.requestType.toString();
+            actionData = actionData ? actionData : getObject('data', actionArgs);
+            action = action ? action : getObject('action', actionArgs);
+            if (action === 'add') {
+                this.parent.grid.currentViewData = args.result;
+            }
+            if (this.parent.isLocalData) {
+                if ((requestType === 'delete' || requestType === 'save')) {
+                    this.parent.notify(crudAction, { value: actionData, action: action || requestType });
+                }
+            }
+        }
         if (isExport && !isNullOrUndefined(expresults)) {
             dataObj = expresults;
         }
@@ -2028,11 +2045,15 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'ctrlShiftUpArrow':
                     var collapsetarget = e.target;
-                    this.expandCollapseRequest(collapsetarget.querySelector('.e-icons'));
+                    var collapsecolumn = collapsetarget.closest('.e-rowcell');
+                    var collapserow = collapsecolumn.closest('tr');
+                    this.expandCollapseRequest(collapserow.querySelector('.e-treegridexpand'));
                     break;
                 case 'ctrlShiftDownArrow':
                     var expandtarget = e.target;
-                    this.expandCollapseRequest(expandtarget.querySelector('.e-icons'));
+                    var expandcolumn = expandtarget.closest('.e-rowcell');
+                    var expandrow = expandcolumn.closest('tr');
+                    this.expandCollapseRequest(expandrow.querySelector('.e-treegridcollapse'));
                     break;
                 case 'downArrow':
                     var target = e.target.parentElement;
@@ -2322,6 +2343,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.grid.contextMenuItems = getActualProperties(this.getContextMenu());
         this.grid.columnMenuItems = getActualProperties(this.columnMenuItems);
         this.grid.editSettings = this.getGridEditSettings();
+        this.grid.rowTemplate = getActualProperties(this.rowTemplate);
     };
     TreeGrid.prototype.triggerEvents = function (args) {
         this.trigger(getObject('name', args), args);
@@ -2423,6 +2445,13 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     TreeGrid.prototype.extendedGridEditEvents = function () {
         var _this = this;
         this.grid.cellSave = function (args) {
+            if (_this.grid.isContextMenuOpen()) {
+                var contextitems = void 0;
+                contextitems = _this.grid.contextMenuModule.contextMenu.element.getElementsByClassName('e-selected')[0];
+                if ((isNullOrUndefined(contextitems) || contextitems.id !== _this.element.id + '_gridcontrol_cmenu_Save')) {
+                    args.cancel = true;
+                }
+            }
             _this.trigger(cellSave, args);
             if (!args.cancel) {
                 _this.notify(cellSave, args);
@@ -2489,9 +2518,6 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                 _this.notify('setColumnIndex', {});
             }
             if (_this.isLocalData) {
-                if ((args.requestType === 'delete' || args.requestType === 'save')) {
-                    _this.notify(crudAction, { value: args.data, action: args.action || args.requestType });
-                }
                 if (args.requestType === 'add' && (_this.editSettings.newRowPosition !== 'Top' && _this.editSettings.newRowPosition !== 'Bottom')) {
                     _this.notify(beginAdd, args);
                 }
@@ -2510,6 +2536,11 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                 setValue('isPrinting', this.isPrinting, args);
             }
             treeGrid.renderModule.RowModifier(args);
+            if (treeGrid.rowTemplate) {
+                var rcell = args.row.cells[treeGrid.treeColumnIndex];
+                var arg = { data: args.data, row: args.row, cell: rcell, column: this.getColumns()[treeGrid.treeColumnIndex] };
+                this.queryCellInfo(arg);
+            }
         };
         this.grid.queryCellInfo = function (args) {
             if (isNullOrUndefined(this.isPrinting)) {
@@ -2767,6 +2798,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'gridLines':
                     this.grid.gridLines = this.gridLines;
+                    break;
+                case 'rowTemplate':
+                    this.grid.rowTemplate = getActualProperties(this.rowTemplate);
                     break;
                 case 'rowHeight':
                     this.grid.rowHeight = this.rowHeight;
@@ -3293,13 +3327,13 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * @hidden
      */
     TreeGrid.prototype.expandCollapseRequest = function (target) {
-        var rowInfo = this.grid.getRowInfo(target);
-        var record = rowInfo.rowData;
+        var rowInfo = target.closest('.e-treerowcell').parentElement;
+        var record = this.getCurrentViewRecords()[rowInfo.rowIndex];
         if (target.classList.contains('e-treegridexpand')) {
-            this.collapseRow(rowInfo.row, record);
+            this.collapseRow(rowInfo, record);
         }
         else {
-            this.expandRow(rowInfo.row, record);
+            this.expandRow(rowInfo, record);
         }
     };
     /**
@@ -3746,6 +3780,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property()
     ], TreeGrid.prototype, "columnMenuItems", void 0);
+    __decorate([
+        Property()
+    ], TreeGrid.prototype, "rowTemplate", void 0);
     __decorate([
         Property(null)
     ], TreeGrid.prototype, "rowHeight", void 0);
@@ -4939,6 +4976,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
     };
     ContextMenu$$1.prototype.contextMenuOpen = function (args) {
         var addRow = args.element.querySelector('#' + this.parent.element.id + '_gridcontrol_cmenu_AddRow');
+        var editRecord = args.element.querySelector('#' + this.parent.element.id + '_gridcontrol_cmenu_Edit');
         if (addRow) {
             if (this.parent.grid.editSettings.allowAdding === false) {
                 addRow.style.display = 'none';
@@ -4946,6 +4984,9 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
             else {
                 addRow.style.display = 'block';
             }
+        }
+        if (this.parent.editSettings.mode === 'Cell' && !(isNullOrUndefined(editRecord)) && !(editRecord.classList.contains('e-menu-hide'))) {
+            editRecord.style.display = 'none';
         }
     };
     ContextMenu$$1.prototype.contextMenuClick = function (args) {
@@ -4980,12 +5021,9 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
     return ContextMenu$$1;
 }());
 
-function editAction(details, control, isSelfReference, addRowIndex, selectedIndex, columnName) {
+function editAction(details, control, isSelfReference, addRowIndex, selectedIndex, columnName, addRowRecord) {
     var value = details.value;
     var action = details.action;
-    if (action === 'save') {
-        action = 'edit';
-    }
     var i;
     var j;
     var key = control.grid.getPrimaryKeyFieldNames()[0];
@@ -4996,7 +5034,7 @@ function editAction(details, control, isSelfReference, addRowIndex, selectedInde
     var isSkip = false;
     var currentViewRecords = control.grid.getCurrentViewRecords();
     if (action === 'add') {
-        var addAct = addAction(details, treeData, control, isSelfReference, addRowIndex, selectedIndex);
+        var addAct = addAction(details, treeData, control, isSelfReference, addRowIndex, selectedIndex, addRowRecord);
         value = addAct.value;
         isSkip = addAct.isSkip;
     }
@@ -5088,7 +5126,7 @@ function editAction(details, control, isSelfReference, addRowIndex, selectedInde
         }
     }
 }
-function addAction(details, treeData, control, isSelfReference, addRowIndex, selectedIndex) {
+function addAction(details, treeData, control, isSelfReference, addRowIndex, selectedIndex, addRowRecord) {
     var value;
     var isSkip = false;
     var currentViewRecords = control.grid.getCurrentViewRecords();
@@ -5104,11 +5142,21 @@ function addAction(details, treeData, control, isSelfReference, addRowIndex, sel
             isSkip = true;
             break;
         case 'Above':
-            value = currentViewRecords[addRowIndex + 1];
+            if (!isNullOrUndefined(addRowRecord)) {
+                value = addRowRecord;
+            }
+            else {
+                value = currentViewRecords[addRowIndex + 1];
+            }
             break;
         case 'Below':
         case 'Child':
-            value = currentViewRecords[addRowIndex];
+            if (!isNullOrUndefined(addRowRecord)) {
+                value = addRowRecord;
+            }
+            else {
+                value = currentViewRecords[addRowIndex];
+            }
             if (selectedIndex === -1) {
                 treeData.unshift(value);
                 isSkip = true;
@@ -5181,7 +5229,17 @@ function updateParentRow(key, record, action, control, isSelfReference, child) {
     if (action === 'add') {
         record.expanded = true;
         record.hasChildRecords = true;
-        var childRecords = child ? child : currentRecords[index + 1];
+        if (control.sortSettings.columns.length && isNullOrUndefined(child)) {
+            child = currentRecords.filter(function (e) {
+                if (e.parentUniqueID === record.uniqueID) {
+                    return e;
+                }
+                else {
+                    return null;
+                }
+            });
+        }
+        var childRecords = child ? child instanceof Array ? child[0] : child : currentRecords[index + 1];
         if (!record.hasOwnProperty('childRecords')) {
             record.childRecords = [];
         }
@@ -5241,6 +5299,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         this.parent.on(cellSave, this.cellSave, this);
         this.parent.on(batchCancel, this.batchCancel, this);
         this.parent.grid.on(keyPressed, this.keyPressed, this);
+        this.parent.grid.on('content-ready', this.contentready, this);
         this.parent.on(cellEdit, this.cellEdit, this);
         this.parent.grid.on(doubleTap, this.recordDoubleClick, this);
         this.parent.on('savePreviousRowPosition', this.savePreviousRowPosition, this);
@@ -5279,6 +5338,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         this.parent.off(cellSave, this.cellSave);
         this.parent.off(batchCancel, this.batchCancel);
         this.parent.grid.off(keyPressed, this.keyPressed);
+        this.parent.grid.off('content-ready', this.contentready);
         this.parent.off(cellEdit, this.cellEdit);
         this.parent.grid.off(doubleTap, this.recordDoubleClick);
         this.parent.off('savePreviousRowPosition', this.savePreviousRowPosition);
@@ -5367,9 +5427,11 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
     };
     Edit$$1.prototype.batchCancel = function (e) {
         if (this.parent.editSettings.mode === 'Cell') {
+            var cellDetails = getValue('editModule.cellDetails', this.parent.grid.editModule);
+            var selectRowIndex = cellDetails.rowIndex;
             this.parent.renderModule.cellRender({
-                data: this.parent.grid.getSelectedRecords()[0],
-                cell: this.parent.grid.getSelectedRows()[0].cells[this.parent.treeColumnIndex],
+                data: cellDetails.rowData,
+                cell: this.parent.getRows()[selectRowIndex].cells[this.parent.treeColumnIndex],
                 column: this.parent.grid.getColumns()[this.parent.treeColumnIndex]
             });
             this.updateGridEditMode('Normal');
@@ -5431,7 +5493,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                 this.enableToolbarItems('save');
                 removeClass([row], ['e-editedrow', 'e-batchrow']);
                 removeClass(row.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
-                editAction({ value: args.rowData, action: 'edit' }, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, args.columnName);
+                editAction({ value: args.rowData, action: 'edit' }, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, args.columnName, this.addRowRecord);
                 var saveArgs = {
                     type: 'save', column: this.parent.getColumnByField(args.columnName), data: args.rowData,
                     previousData: args.previousValue, row: row, target: args.cell
@@ -5448,10 +5510,48 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         this.parent.grid.getRowsObject()[rowIndex].data = args.rowData;
     };
     Edit$$1.prototype.crudAction = function (details, columnName) {
-        editAction(details, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, columnName);
+        editAction(details, this.parent, this.isSelfReference, this.addRowIndex, this.selectedIndex, columnName, this.addRowRecord);
+        this.parent.parentData = [];
+        var data = this.parent.grid.dataSource;
+        for (var i = 0; i < this.parent.grid.dataSource.length; i++) {
+            data[i].index = i;
+            setValue('uniqueIDCollection.' + data[i].uniqueID + '.index', i, this.parent);
+            if (!data[i].level) {
+                this.parent.parentData.push(data[i]);
+            }
+        }
         if (details.action === 'add' && this.previousNewRowPosition != null) {
             this.parent.setProperties({ editSettings: { newRowPosition: this.previousNewRowPosition } }, true);
             this.previousNewRowPosition = null;
+        }
+    };
+    Edit$$1.prototype.updateIndex = function (data, rows, records) {
+        for (var j = 0; j < this.parent.getRows().length; j++) {
+            var data1 = records[j];
+            var index = getValue('uniqueIDCollection.' + data1.uniqueID + '.index', this.parent);
+            data1.index = index;
+            if (!isNullOrUndefined(data1.parentItem)) {
+                var parentIndex = getValue('uniqueIDCollection.' + data1.parentItem.uniqueID + '.index', this.parent);
+                data1.parentItem.index = parentIndex;
+            }
+        }
+        for (var k = 0; k < this.parent.getRows().length; k++) {
+            var data2 = records[k];
+            var index = data2.index;
+            var level = data2.level;
+            var row = rows[k];
+            if (!isNullOrUndefined(data2.parentItem)) {
+                index = getValue('uniqueIDCollection.' + data2.parentItem.uniqueID + '.index', this.parent);
+            }
+            for (var l = 0; l < row.classList.length; l++) {
+                var value = row.classList[l];
+                var remove = /e-gridrowindex/i;
+                var result = value.match(remove);
+                if (result != null) {
+                    removeClass([row], value);
+                }
+            }
+            addClass([row], 'e-gridrowindex' + index + 'level' + level);
         }
     };
     Edit$$1.prototype.beginAdd = function (args) {
@@ -5538,6 +5638,7 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
         if (args.requestType === 'add') {
             this.selectedIndex = this.parent.grid.selectedRowIndex;
             this.addRowIndex = this.parent.grid.selectedRowIndex > -1 ? this.parent.grid.selectedRowIndex : 0;
+            this.addRowRecord = this.parent.getSelectedRecords()[0];
         }
         args = this.beginAddEdit(args);
         // if (args.requestType === 'save' &&
@@ -5584,10 +5685,13 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
             if (this.parent.editSettings.newRowPosition !== 'Top') {
                 if (this.parent.editSettings.newRowPosition === 'Above') {
                     position = 'before';
+                    index = currentData[this.addRowIndex].index;
                 }
                 else if (this.parent.editSettings.newRowPosition === 'Below') {
                     position = 'after';
-                    index += findChildrenRecords(currentData[this.addRowIndex]).length;
+                    var childRecordCount = findChildrenRecords(currentData[this.addRowIndex]).length;
+                    var currentDataIndex = currentData[this.addRowIndex].index;
+                    index = (childRecordCount > 0) ? (currentDataIndex + childRecordCount) : (currentDataIndex);
                 }
                 else if (this.parent.editSettings.newRowPosition === 'Child') {
                     position = 'after';
@@ -5597,7 +5701,9 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
                         delete value.parentItem.childRecords;
                         delete value.parentItem[this.parent.childMapping];
                     }
-                    index += findChildrenRecords(currentData[this.addRowIndex]).length;
+                    var childRecordCount1 = findChildrenRecords(currentData[this.addRowIndex]).length;
+                    var currentDataIndex1 = currentData[this.addRowIndex].index;
+                    index = (childRecordCount1 > 0) ? (currentDataIndex1 + childRecordCount1) : (currentDataIndex1);
                     value.level = level + 1;
                     if (this.isSelfReference) {
                         value[this.parent.parentIdMapping] = idMapping;
@@ -5673,6 +5779,12 @@ var Edit$1 = /** @__PURE__ @class */ (function () {
      */
     Edit$$1.prototype.destroyForm = function () {
         this.parent.grid.editModule.destroyForm();
+    };
+    Edit$$1.prototype.contentready = function (e) {
+        if (!isNullOrUndefined(e.args.requestType)
+            && (e.args.requestType.toString() === 'delete' || e.args.requestType.toString() === 'save')) {
+            this.updateIndex(this.parent.grid.dataSource, this.parent.getRows(), this.parent.getCurrentViewRecords());
+        }
     };
     return Edit$$1;
 }());

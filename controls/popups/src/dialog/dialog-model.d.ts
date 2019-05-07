@@ -164,7 +164,7 @@ export interface DialogModel extends ComponentModel{
      * 
      * @default ''
      */
-    footerTemplate?: string;
+    footerTemplate?: HTMLElement | string;
 
     /**
      * Specifies the value whether the dialog component can be dragged by the end-user.

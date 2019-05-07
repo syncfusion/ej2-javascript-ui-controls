@@ -1992,7 +1992,13 @@ let Dialog = class Dialog extends Component {
         }
     }
     setTemplate(template, toElement) {
-        let templateFn = compile(template);
+        let templateFn;
+        if (!isNullOrUndefined(template.outerHTML)) {
+            templateFn = compile(template.outerHTML);
+        }
+        else {
+            templateFn = compile(template);
+        }
         let fromElements = [];
         for (let item of templateFn({})) {
             fromElements.push(item);

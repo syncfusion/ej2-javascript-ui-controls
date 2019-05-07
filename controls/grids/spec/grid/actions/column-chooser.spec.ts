@@ -13,6 +13,8 @@ import { createGrid, destroy } from '../base/specutil.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { DetailRow } from '../../../src/grid/actions/detail-row';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { removeClass } from '@syncfusion/ej2-base';
+
 
 Grid.Inject(Page, Toolbar, ColumnChooser, Freeze, DetailRow);
 describe('Column chooser module', () => {
@@ -508,9 +510,9 @@ describe('Column chooser module', () => {
         it('button disabled', (done: Function) => {           
             setTimeout(() => {
                 gridObj.columnChooserModule.openColumnChooser();
-                let cheEle: any = gridObj.element.querySelectorAll('.e-cc-chbox')[0];
-                let cheEle1: any = gridObj.element.querySelectorAll('.e-cc-chbox')[1];
-                let cheEle2: any = gridObj.element.querySelectorAll('.e-cc-chbox')[2];
+                let cheEle: any = gridObj.element.querySelectorAll('.e-cc-chbox')[1];
+                let cheEle1: any = gridObj.element.querySelectorAll('.e-cc-chbox')[2];
+                let cheEle2: any = gridObj.element.querySelectorAll('.e-cc-chbox')[3];
                 cheEle.click();
                 cheEle1.click();
                 cheEle2.click();
@@ -586,4 +588,54 @@ describe('Column chooser module', () => {
         });
     });
     
+
+    describe('Select all added in column chooser =>', function () {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid({
+                dataSource: data,
+                allowPaging: true,
+                showColumnChooser: true,
+                toolbar: ['ColumnChooser'],
+                actionComplete: actionComplete,
+                pageSettings: { pageSizes: true, pageSize: 5 },
+                columns: [{ field: 'OrderID', type: 'number', isPrimaryKey: true },
+                    { field: 'CustomerID', type: 'string' },
+                    { field: 'Freight', format: 'C2', type: 'number', allowFiltering: false },
+                ],
+            }, done);
+        });
+
+        it('Update select all- uncheck', function () {
+            (gridObj.columnChooserModule as any).openColumnChooser();
+            (gridObj.columnChooserModule as any).updateSelectAll(false);
+            expect(gridObj.element.querySelectorAll('.e-uncheck.e-selectall').length).toBe(1);
+            expect((gridObj.columnChooserModule as any).ulElement.querySelectorAll('.e-uncheck').length).toBe(4);
+            expect((gridObj.columnChooserModule as any).ulElement.querySelectorAll('.e-check').length).toBe(0);
+            (gridObj.columnChooserModule as any).updateIntermediateBtn();
+            let btn: Button = (gridObj.element.querySelector('.e-footer-content').querySelector('.e-btn') as EJ2Intance).ej2_instances[0] as Button;
+            expect(btn.disabled).toBe(true);
+        });
+        
+        it('Update select all- check', function () {
+            (gridObj.columnChooserModule as any).updateSelectAll(true);
+            expect(gridObj.element.querySelectorAll('.e-check.e-selectall').length).toBe(1);
+            expect((gridObj.columnChooserModule as any).ulElement.querySelectorAll('.e-uncheck').length).toBe(0);
+            expect((gridObj.columnChooserModule as any).ulElement.querySelectorAll('.e-check').length).toBe(4);
+
+        });
+
+        it('Update intermediate button', function () {
+            (gridObj.columnChooserModule as any).ulElement.querySelectorAll('.e-check')[1].classList.remove('e-check');
+            (gridObj.columnChooserModule as any).updateIntermediateBtn();
+            expect(gridObj.element.querySelectorAll('.e-stop.e-selectall').length).toBe(1);
+        });
+        
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
+
 });

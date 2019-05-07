@@ -268,7 +268,7 @@ export class AxisLayoutPanel {
                 ));
             }
         }
-        let lastLabel: number = axis.visibleLabels[axis.visibleLabels.length - 1].value;
+        let lastLabel: number = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value : null;
         let maxVal: number = axis.visibleRange.max;
         if ( lastLabel !== maxVal && axis.showLastLabel === true) {
             argsData = {

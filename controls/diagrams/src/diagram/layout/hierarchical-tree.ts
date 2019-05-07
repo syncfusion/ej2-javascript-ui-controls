@@ -148,6 +148,7 @@ export class HierarchicalTree {
         return new Rect(x, y, node.actualSize.width, node.actualSize.height);
     }
 
+
     private updateTree(layout: ILayout, x: number, y: number, shape: INode, level?: number, prev?: INode, dontupdate?: boolean): Bounds {
         let dimensions: Dimensions;
         let info: LayoutInfo = {};
@@ -196,7 +197,7 @@ export class HierarchicalTree {
             if (!(info.y && info.y > dimensions.y)) {
                 info.y = dimensions.y;
             }
-            if (!(x && x > info.mid)) {
+            if (info.mid) {
                 x = info.mid;
             }
             if (info.tree.assistants.length) {
@@ -425,7 +426,7 @@ export class HierarchicalTree {
         let left: number;
         let diff: number;
         let intersect: number[];
-        let levelBounds: Bounds;
+        let levelBounds: Bounds = { x: 0, y: 0, right: 0, bottom: 0 };
         for (i = 0; i < info.tree.assistants.length; i++) {
             asst = layout.graphNodes[info.tree.assistants[i]];
             //Arrange assistants at both left and right sides of parent(like alternate layout)
@@ -1516,10 +1517,9 @@ export class HierarchicalTree {
         let i: number;
         let child: INode;
         let width: number; let height: number; let offsetX: number; let offsetY: number;
-        width = node.actualSize.width;
-        height = node.actualSize.height;
-
-        if (!node.excludeFromLayout) {
+        if (node && !node.excludeFromLayout) {
+            width = node.actualSize.width;
+            height = node.actualSize.height;
             offsetX = layout.anchorX;
             offsetY = layout.anchorY;
             /*Performance - instead of checking conditions for every node, we can make the layout related
@@ -1635,5 +1635,3 @@ interface MultipleRowInfo {
     dimensions?: Dimensions;
     level?: number;
 }
-
-

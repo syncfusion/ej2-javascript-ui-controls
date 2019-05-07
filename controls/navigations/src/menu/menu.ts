@@ -9,6 +9,8 @@ const VMENU: string = 'e-vertical';
 
 const SCROLLABLE: string = 'e-scrollable';
 
+const HAMBURGER: string = 'e-hamburger';
+
 /**
  * Specifies the option for orientation mode of Menu. By default, component rendered in Horizontal orientation mode.
  */
@@ -53,6 +55,20 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
      */
     @Property(false)
     public enableScrolling: boolean;
+
+    /**
+     * Specifies whether to enable / disable the hamburger mode in Menu.
+     * @default false
+     */
+    @Property(false)
+    public hamburgerMode: boolean;
+
+    /**
+     * Specifies the title text for hamburger mode in Menu.
+     * @default 'Menu'
+     */
+    @Property('Menu')
+    public title: string;
 
     /**
      * Specifies mapping fields from the dataSource.
@@ -105,10 +121,19 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
         attributes(this.element, <{ [key: string]: string }>{ 'role': 'menubar', 'tabindex': '0' });
         if (this.orientation === 'Vertical') {
             this.element.classList.add(VMENU);
+            if (this.hamburgerMode && !this.target) {
+                this.element.previousElementSibling.classList.add(VMENU);
+            }
             this.element.setAttribute('aria-orientation', 'vertical');
         } else {
             if (Browser.isDevice && !this.enableScrolling) {
                 this.element.parentElement.classList.add(SCROLLABLE);
+            }
+        }
+        if (this.hamburgerMode) {
+            this.element.parentElement.classList.add(HAMBURGER);
+            if (this.orientation === 'Horizontal') {
+                this.element.classList.add('e-hide-menu');
             }
         }
     }
@@ -134,15 +159,64 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
                 case 'orientation':
                 if (newProp.orientation === 'Vertical') {
                     this.element.classList.add(VMENU);
+                    if (this.hamburgerMode) {
+                        if (!this.target) { this.element.previousElementSibling.classList.add(VMENU); }
+                        this.element.classList.remove('e-hide-menu');
+                    }
                     this.element.setAttribute('aria-orientation', 'vertical');
                 } else {
                     this.element.classList.remove(VMENU);
+                    if (this.hamburgerMode) {
+                        if (!this.target) { this.element.previousElementSibling.classList.remove(VMENU); }
+                        this.element.classList.add('e-hide-menu');
+                    }
                     this.element.removeAttribute('aria-orientation');
                 }
                 break;
                 case 'items':
                     if (!Object.keys(oldProp.items).length) { this.updateMenuItems(newProp.items); }
                     break;
+                case 'hamburgerMode':
+                    if (!this.element.previousElementSibling) {
+                        super.createHeaderContainer();
+                    }
+                    if (newProp.hamburgerMode) {
+                        this.element.parentElement.classList.add(HAMBURGER);
+                    } else {
+                        this.element.parentElement.classList.remove(HAMBURGER);
+                    }
+                    if (this.orientation === 'Vertical') {
+                        if (!this.target) { this.element.previousElementSibling.classList.add(VMENU); }
+                        this.element.classList.remove('e-hide-menu');
+                    } else {
+                        if (this.target) {
+                            this.element.previousElementSibling.classList.add(VMENU);
+                        } else {
+                            this.element.previousElementSibling.classList.remove(VMENU);
+                        }
+                        this.element.classList[newProp.hamburgerMode ? 'add' : 'remove']('e-hide-menu');
+                    }
+                    break;
+                case 'title':
+                    if (this.hamburgerMode && this.element.previousElementSibling) {
+                        this.element.previousElementSibling.querySelector('.e-menu-title').innerHTML = newProp.title;
+                    }
+                break;
+                case 'target':
+                    if (this.hamburgerMode) {
+                        this.unWireEvents(oldProp.target);
+                        this.wireEvents();
+                        if (this.orientation === 'Horizontal') {
+                            if (!newProp.target) {
+                                if (!this.element.previousElementSibling) {
+                                    super.createHeaderContainer();
+                                }
+                            }
+                            this.element.previousElementSibling.classList.add(VMENU);
+                            this.element.classList.add('e-hide-menu');
+                        }
+                    }
+                break;
             }
         }
         super.onPropertyChanged(newProp, oldProp);
@@ -166,5 +240,21 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
         } else {
             (<MenuItemModel[]>this.items).push(item);
         }
+    }
+
+    /**
+     * This method is used to open the Menu in hamburger mode.
+     * @method open
+     * @returns void
+     */
+    public open(): void {
+        super.openHamburgerMenu();
+    }
+
+    /**
+     * Closes the Menu if it is opened in hamburger mode.
+     */
+    public close(): void {
+        super.closeHamburgerMenu();
     }
 }

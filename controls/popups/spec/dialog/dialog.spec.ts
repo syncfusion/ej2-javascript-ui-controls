@@ -910,6 +910,24 @@ describe('Dialog Control', () => {
             document.body.innerHTML = '';
         });
 
+        it('Property change testing for footerTemplate as HTML element and string', () => {
+            let ele: HTMLElement = createElement('div', { id: 'dialogFooter' });
+            document.body.appendChild(ele);
+            let footerTemplateContent: HTMLElement = createElement('div', {id: 'test'});
+            footerTemplateContent.innerHTML = 'Footer Template content';
+            document.body.appendChild(footerTemplateContent);
+            dialog = new Dialog({ header: "New Dialog",content: "New content updated successfully" }, '#dialogFooter');
+            let element: HTMLElement = document.getElementById('dialogFooter');
+            dialog.footerTemplate = document.getElementById('test');
+            dialog.dataBind();
+            expect(document.getElementById('dialogFooter').querySelectorAll('.e-footer-content').length).toBe(1);
+            dialog.footerTemplate = "Footer template content";
+            dialog.dataBind();
+            expect(document.getElementById('dialogFooter').querySelectorAll('.e-footer-content').length).toBe(1);
+            dialog.destroy();
+            document.body.innerHTML = '';
+        });
+
         it('notify property changes testing combination of showCloseIcon and cssClass property', () => {
             let ele: HTMLElement = createElement('div', { id: 'dialogCtrl7' });
             document.body.appendChild(ele);

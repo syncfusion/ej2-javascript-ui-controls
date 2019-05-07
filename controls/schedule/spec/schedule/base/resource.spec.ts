@@ -307,9 +307,12 @@ describe('Schedule Resources', () => {
     describe('Multiple resource without group rendering in setmodel', () => {
         let schObj: Schedule;
         let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-        beforeAll(() => {
+        beforeAll((done: Function) => {
+            let dataBound: EmitType<Object> = () => { done(); };
             document.body.appendChild(elem);
-            schObj = new Schedule({ width: '100%', height: '550px', selectedDate: new Date(2017, 10, 1) });
+            schObj = new Schedule({
+                width: '100%', height: '550px', selectedDate: new Date(2017, 10, 1), dataBound: dataBound
+            });
             schObj.appendTo('#Schedule');
         });
         afterAll(() => {

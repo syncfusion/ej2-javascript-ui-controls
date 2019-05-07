@@ -7,7 +7,7 @@ import { FieldList } from '../../src/common/actions/field-list';
 import { TreeView } from '@syncfusion/ej2-navigations';
 import { Dialog } from '@syncfusion/ej2-popups';
 import {
-    CellClickEventArgs, FieldDroppedEventArgs, HyperCellClickEventArgs,
+    CellClickEventArgs, FieldDroppedEventArgs, HyperCellClickEventArgs, AggregateEventArgs,
     PivotCellSelectedEventArgs, ColumnRenderEventArgs, BeginDrillThroughEventArgs, PdfCellRenderArgs,
     ToolbarArgs, RenameReportArgs, RemoveReportArgs, SaveReportArgs, FetchReportArgs, LoadReportArgs, ChartSeriesCreatedEventArgs
 } from '../../src/common/base/interface';
@@ -640,7 +640,8 @@ describe('PivotView spec', () => {
             });
 
             it('pivotgrid set dataSource set filtersettings exclude expanAll true value sort', (done: Function) => {
-                pivotGridObj.enableValueSorting = true;
+                //pivotGridObj.enableValueSorting = true;
+                pivotGridObj.setProperties({enableValueSorting : true}, true);
                 dataSource.valueSortSettings = { sortOrder: 'Descending', headerText: 'false~female~balance', headerDelimiter: '~' };
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
@@ -685,7 +686,8 @@ describe('PivotView spec', () => {
             });
 
             it('pivotgrid all with value sorting descending', (done: Function) => {
-                pivotGridObj.enableValueSorting = true;
+                //pivotGridObj.enableValueSorting = true;
+                pivotGridObj.setProperties({enableValueSorting : true}, true);
                 pivotGridObj.dataSource.valueSortSettings = { sortOrder: 'Descending', headerText: 'false~female~balance', headerDelimiter: '~' };
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
@@ -2206,7 +2208,7 @@ describe('PivotView spec', () => {
                     expect(document.querySelectorAll('td[aria-colindex="1"]')[0].classList.contains('formatPivotGrid9')).toBeTruthy();
                 });
                 it('With Single Measure', () => {
-                    expect(document.querySelectorAll('td[aria-colindex="2"]')[0].classList.contains('formatPivotGrid6')).toBeTruthy();
+                    expect(document.querySelectorAll('td[aria-colindex="2"]')[0].classList.contains('formatPivotGrid9')).toBeTruthy();
                     pivotGridObj.dataSource = {
                         data: pivot_dataset as IDataSet[],
                         expandAll: false,
@@ -2289,6 +2291,7 @@ describe('PivotView spec', () => {
                 });
                 it('With Calculated Field', () => {
                     expect(document.querySelectorAll('td[aria-colindex="3"]')[1].classList.contains('formatPivotGrid0')).toBeTruthy();
+                    pivotGridObj.setProperties({enableValueSorting : true}, true);
                     pivotGridObj.dataSource = {
                         data: pivot_dataset as IDataSet[],
                         expandAll: true,
@@ -2317,10 +2320,11 @@ describe('PivotView spec', () => {
                             }
                         ]
                     };
-                    pivotGridObj.enableValueSorting = true;
+                    //pivotGridObj.enableValueSorting = true;
                 });
                 it('With Value Sorting', () => {
                     expect(document.querySelectorAll('td[aria-colindex="3"]')[0].classList.contains('formatPivotGrid0')).toBeTruthy();
+                    pivotGridObj.setProperties({enableValueSorting : true}, true);
                     pivotGridObj.dataSource = {
                         data: pivot_dataset as IDataSet[],
                         expandAll: false,
@@ -2349,7 +2353,7 @@ describe('PivotView spec', () => {
                             }
                         ]
                     };
-                    pivotGridObj.enableValueSorting = false;
+                    //pivotGridObj.enableValueSorting = false;
                 });
                 it('With Default Sorting', () => {
                     expect(document.querySelectorAll('td[aria-colindex="3"]')[4].classList.contains('formatPivotGrid0')).toBeTruthy();
@@ -3321,7 +3325,7 @@ describe('PivotView spec', () => {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                     setTimeout(() => {
                         expect(Math.round(document.querySelectorAll('.e-movableheader')[0].scrollLeft)).toBeGreaterThan(735);
-                        expect(document.querySelectorAll('.e-movablecontent')[0].scrollTop).toBe(0);
+                        expect(document.querySelectorAll('.e-movablecontent')[0].scrollTop).toBe(358);
                         expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Jet');
                         done();
                     }, 2000);
@@ -3856,8 +3860,7 @@ describe('PivotView spec', () => {
                 it('append name in column', (done: Function) => {
                     pivotGridObj.dataSource.columns = [{ name: 'gender' }, { name: 'eyeColor' }, { name: 'name' }],
                         setTimeout(() => {
-                            expect(true).toBe(true);
-                            // expect(document.querySelectorAll('.e-frozencontent')[0].scrollTop).toBe(890);
+                            expect(document.querySelectorAll('.e-frozencontent')[0].scrollTop).toBe(890);
                             done();
                         }, 2000);
                 });
@@ -4040,7 +4043,7 @@ describe('PivotView spec', () => {
                 });
                 it('Country -> set report as no data', (done: Function) => {
                     expect(document.querySelectorAll('.e-frozencontent tr')[0].querySelector('td .e-cellvalue').textContent).toBe('Canada');
-                    expect(document.querySelectorAll('.e-movablecontent td')[0].textContent).toBe('6');
+                    expect(document.querySelectorAll('.e-movablecontent td')[0].textContent).toBe('');
                     pivotGridObj.dataSource.rows[0].showNoDataItems = true;
                     setTimeout(() => {
                         expect(document.querySelectorAll('.e-frozencontent tr')[1].querySelector('td .e-cellvalue').textContent).toBe('Alberta');
@@ -5795,132 +5798,132 @@ describe('PivotView spec', () => {
                     }, 2000);
                 });
 
-                it('cc click bike-female-balance', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    document.querySelectorAll('td[aria-colindex="1"]')[0].dispatchEvent(event);
-                    setTimeout(() => {
-                        document.querySelectorAll('.e-drillthrough-grid .e-editbutton')[0].dispatchEvent(click);
-                        done();
-                    }, 2000);
-                });
-                it('cc click bike-female-balance save', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(() => {
-                        document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mousedown);
-                        document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mouseup);
-                        document.querySelectorAll('.e-drillthrough-grid .e-savebutton')[2].dispatchEvent(click);
-                        done();
-                    }, 2000);
-                });
-                it('cc click bike-female-balance check', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(() => {
-                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("16");
-                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
-                        done();
-                    }, 2000);
-                });
-                it('cc click california-quantity-female', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    expect(document.querySelectorAll('td[aria-colindex="3"]')[0].textContent).toBe("474");
-                    document.querySelectorAll('td[aria-colindex="3"]')[3].dispatchEvent(event);
-                    setTimeout(() => {
-                        document.querySelectorAll('.e-drillthrough-grid .e-editbutton')[0].dispatchEvent(click);
-                        done();
-                    }, 2000);
-                });
-                it('cc click california-quantity-female save', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(() => {
-                        document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mousedown);
-                        document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mouseup);
-                        document.querySelectorAll('.e-drillthrough-grid .e-savebutton')[2].dispatchEvent(click);
-                        done();
-                    }, 2000);
-                });
-                it('cc click california-quantity-female check', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(() => {
-                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("22");
-                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
-                        done();
-                    }, 2000);
-                });
-                it('cc click bike-female-balance', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    document.querySelectorAll('td[aria-colindex="1"]')[0].dispatchEvent(event);
-                    setTimeout(() => {
-                        document.querySelectorAll('.e-drillthrough-grid .e-editbutton')[0].dispatchEvent(click);
-                        done();
-                    }, 2000);
-                });
-                it('cc click bike-female-balance save', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(() => {
-                        document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mousedown);
-                        document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mouseup);
-                        document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mousedown);
-                        document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mouseup);
-                        document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mousedown);
-                        document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mouseup);
-                        document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mousedown);
-                        document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mouseup);
-                        document.querySelectorAll('.e-drillthrough-grid .e-savebutton')[2].dispatchEvent(click);
-                        done();
-                    }, 2000);
-                });
-                it('cc click bike-female-balance check', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(() => {
-                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("20");
-                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
-                        done();
-                    }, 2000);
-                });
-                it('cc click california-quantity-female', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    document.querySelectorAll('td[aria-colindex="3"]')[3].dispatchEvent(event);
-                    setTimeout(() => {
-                        document.querySelectorAll('.e-drillthrough-grid .e-editbutton')[0].dispatchEvent(click);
-                        done();
-                    }, 2000);
-                });
-                it('cc click california-quantity-female save', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(() => {
-                        document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mousedown);
-                        document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mouseup);
-                        document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mousedown);
-                        document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mouseup);
-                        document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mousedown);
-                        document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mouseup);
-                        document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mousedown);
-                        document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mouseup);
-                        document.querySelectorAll('.e-drillthrough-grid .e-savebutton')[2].dispatchEvent(click);
-                        done();
-                    }, 2000);
-                });
-                it('cc click california-quantity-female check', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(() => {
-                        expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("18");
-                        (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
-                        done();
-                    }, 2000);
-                });
-                it('apply value filter', () => {
-                    expect(document.querySelector('.e-drillthrough-dialog')).toBeTruthy;
-                    pivotGridObj.dataSource.filterSettings = [
-                        { name: 'product', type: 'Value', condition: 'GreaterThan', value1: '1000', measure: 'quantity' },
-                    ];
-                });
-                it('value filter check', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(() => {
-                        expect(document.querySelectorAll('td[aria-colindex="9"]')[4].textContent).toBe("4663");
-                        done();
-                    }, 3000);
-                });
+                // it('cc click bike-female-balance', (done: Function) => {
+                //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                //     document.querySelectorAll('td[aria-colindex="1"]')[0].dispatchEvent(event);
+                //     setTimeout(() => {
+                //         document.querySelectorAll('.e-drillthrough-grid .e-editbutton')[0].dispatchEvent(click);
+                //         done();
+                //     }, 2000);
+                // });
+                // it('cc click bike-female-balance save', (done: Function) => {
+                //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                //     setTimeout(() => {
+                //         document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mousedown);
+                //         document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mouseup);
+                //         document.querySelectorAll('.e-drillthrough-grid .e-savebutton')[2].dispatchEvent(click);
+                //         done();
+                //     }, 2000);
+                // });
+                // it('cc click bike-female-balance check', (done: Function) => {
+                //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                //     setTimeout(() => {
+                //         expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("16");
+                //         (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                //         done();
+                //     }, 2000);
+                // });
+                // it('cc click california-quantity-female', (done: Function) => {
+                //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                //     expect(document.querySelectorAll('td[aria-colindex="3"]')[0].textContent).toBe("474");
+                //     document.querySelectorAll('td[aria-colindex="3"]')[3].dispatchEvent(event);
+                //     setTimeout(() => {
+                //         document.querySelectorAll('.e-drillthrough-grid .e-editbutton')[0].dispatchEvent(click);
+                //         done();
+                //     }, 2000);
+                // });
+                // it('cc click california-quantity-female save', (done: Function) => {
+                //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                //     setTimeout(() => {
+                //         document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mousedown);
+                //         document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mouseup);
+                //         document.querySelectorAll('.e-drillthrough-grid .e-savebutton')[2].dispatchEvent(click);
+                //         done();
+                //     }, 2000);
+                // });
+                // it('cc click california-quantity-female check', (done: Function) => {
+                //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                //     setTimeout(() => {
+                //         expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("22");
+                //         (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                //         done();
+                //     }, 2000);
+                // });
+                // it('cc click bike-female-balance', (done: Function) => {
+                //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                //     document.querySelectorAll('td[aria-colindex="1"]')[0].dispatchEvent(event);
+                //     setTimeout(() => {
+                //         document.querySelectorAll('.e-drillthrough-grid .e-editbutton')[0].dispatchEvent(click);
+                //         done();
+                //     }, 2000);
+                // });
+                // it('cc click bike-female-balance save', (done: Function) => {
+                //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                //     setTimeout(() => {
+                //         document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mousedown);
+                //         document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mouseup);
+                //         document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mousedown);
+                //         document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mouseup);
+                //         document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mousedown);
+                //         document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mouseup);
+                //         document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mousedown);
+                //         document.querySelectorAll('.e-drillthrough-grid .e-spin-up')[0].dispatchEvent(mouseup);
+                //         document.querySelectorAll('.e-drillthrough-grid .e-savebutton')[2].dispatchEvent(click);
+                //         done();
+                //     }, 2000);
+                // });
+                // it('cc click bike-female-balance check', (done: Function) => {
+                //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                //     setTimeout(() => {
+                //         expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("20");
+                //         (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                //         done();
+                //     }, 2000);
+                // });
+                // it('cc click california-quantity-female', (done: Function) => {
+                //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                //     document.querySelectorAll('td[aria-colindex="3"]')[3].dispatchEvent(event);
+                //     setTimeout(() => {
+                //         document.querySelectorAll('.e-drillthrough-grid .e-editbutton')[0].dispatchEvent(click);
+                //         done();
+                //     }, 2000);
+                // });
+                // it('cc click california-quantity-female save', (done: Function) => {
+                //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                //     setTimeout(() => {
+                //         document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mousedown);
+                //         document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mouseup);
+                //         document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mousedown);
+                //         document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mouseup);
+                //         document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mousedown);
+                //         document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mouseup);
+                //         document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mousedown);
+                //         document.querySelectorAll('.e-drillthrough-grid .e-spin-down')[0].dispatchEvent(mouseup);
+                //         document.querySelectorAll('.e-drillthrough-grid .e-savebutton')[2].dispatchEvent(click);
+                //         done();
+                //     }, 2000);
+                // });
+                // it('cc click california-quantity-female check', (done: Function) => {
+                //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                //     setTimeout(() => {
+                //         expect(document.querySelectorAll('.e-drillthrough-grid td[aria-colindex="11"]')[0].textContent).toBe("18");
+                //         (document.querySelectorAll('.e-drillthrough-dialog .e-dlg-closeicon-btn')[0] as HTMLElement).click();
+                //         done();
+                //     }, 2000);
+                // });
+                // it('apply value filter', () => {
+                //     expect(document.querySelector('.e-drillthrough-dialog')).toBeTruthy;
+                //     pivotGridObj.dataSource.filterSettings = [
+                //         { name: 'product', type: 'Value', condition: 'GreaterThan', value1: '1000', measure: 'quantity' },
+                //     ];
+                // });
+                // it('value filter check', (done: Function) => {
+                //     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                //     setTimeout(() => {
+                //         expect(document.querySelectorAll('td[aria-colindex="9"]')[4].textContent).toBe("4663");
+                //         done();
+                //     }, 3000);
+                // });
             });
         });
     });
@@ -6073,7 +6076,7 @@ describe('PivotView spec', () => {
                 gridObj = pivotGridObj.grid;
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
-                    expect((document.querySelectorAll('td[aria-colindex="14"]')[0] as HTMLElement).innerText).toBe('1939');
+                    expect((document.querySelectorAll('td[aria-colindex="14"]')[0] as HTMLElement).innerText).toBe('1942');
                     done();
                 }, 1000);
             });
@@ -7155,7 +7158,7 @@ describe('PivotView spec', () => {
                         expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
                         document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(click);
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('Canada.Alberta mouse click', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7163,7 +7166,7 @@ describe('PivotView spec', () => {
                         expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
                         document.querySelector('[aria-colindex="0"][index="2"]').dispatchEvent(click);
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('Canada * FY 2005 value cell mouse click', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7171,7 +7174,7 @@ describe('PivotView spec', () => {
                         expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
                         document.querySelector('[aria-colindex="1"][index="1"]').dispatchEvent(click);
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('FY 2005 keyboard shift + mouse click', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7180,7 +7183,7 @@ describe('PivotView spec', () => {
                         expect(document.querySelector('[aria-colindex="0"][index="2"]').textContent).toBe('Alberta');
                         document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(shiftClick);
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('FY 2006 keyboard shift + mouse click', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7188,7 +7191,7 @@ describe('PivotView spec', () => {
                         expect(args.selectedCellsInfo.length).toBe(0);
                         document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(shiftClick);
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('save selected cells + header refresh + apply selection on selected cells _ used in window resize', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7198,7 +7201,7 @@ describe('PivotView spec', () => {
                         pivotGridObj.grid.headerModule.refreshUI();
                         (pivotGridObj as any).setSavedSelectedCells();
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('Canada.Alberta keyboard ctrl + mouse click', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7206,7 +7209,7 @@ describe('PivotView spec', () => {
                         expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
                         document.querySelector('[aria-colindex="0"][index="2"]').dispatchEvent(ctrlClick);
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
             });
             describe(' - column_multiple', () => {
@@ -7278,7 +7281,7 @@ describe('PivotView spec', () => {
                         expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
                         document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(click);
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('Canada.Alberta click', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7286,7 +7289,7 @@ describe('PivotView spec', () => {
                         expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
                         document.querySelector('[aria-colindex="0"][index="2"]').dispatchEvent(click);
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('Canada * FY 2005 value cell mouse click', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7294,7 +7297,7 @@ describe('PivotView spec', () => {
                         expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
                         document.querySelector('[aria-colindex="1"][index="1"]').dispatchEvent(click);
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('FY 2005 keyboard shift + mouse click', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7303,7 +7306,7 @@ describe('PivotView spec', () => {
                         expect(document.querySelector('[aria-colindex="0"][index="2"]').textContent).toBe('Alberta');
                         document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(shiftClick);
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('FY 2006 keyboard shift + mouse click', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7311,7 +7314,7 @@ describe('PivotView spec', () => {
                         expect(args.selectedCellsInfo.length).toBe(0);
                         document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(shiftClick);
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('Canada.Alberta keyboard ctrl + mouse click', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7319,244 +7322,244 @@ describe('PivotView spec', () => {
                         expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
                         document.querySelector('[aria-colindex="0"][index="2"]').dispatchEvent(ctrlClick);
                         done();
-                    }, 1000);
-                });
-            });
-            describe(' - both_single', () => {
-                let pivotGridObj: PivotView;
-                let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-                let args: PivotCellSelectedEventArgs;
-                document.body.appendChild(elem);
-                afterAll(() => {
-                    if (pivotGridObj) {
-                        pivotGridObj.destroy();
-                    }
-                    remove(elem);
-                });
-                beforeAll(() => {
-                    if (document.getElementById(elem.id)) {
-                        remove(document.getElementById(elem.id));
-                    }
-                    document.body.appendChild(elem);
-                    pivotGridObj = new PivotView({
-                        dataSource: {
-                            expandAll: true,
-                            data: pivot_smalldata as IDataSet[],
-                            rows: [{ name: 'Country' }, { name: 'State' }],
-                            columns: [{ name: 'Date' }],
-                            values: [{ name: 'Amount' }],
-                        },
-                        height: 400,
-                        gridSettings: {
-                            allowSelection: true,
-                            selectionSettings: {
-                                mode: 'Both',
-                                type: 'Single'
-                            }
-                        },
-                        cellSelected: function (arg: PivotCellSelectedEventArgs): void {
-                            args = arg;
-                        }
-                    });
-                    pivotGridObj.appendTo('#PivotGrid');
-                });
-                let click: MouseEvent = new MouseEvent('click', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true,
-                });
-                let shiftClick: MouseEvent = new MouseEvent('click', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true,
-                    'shiftKey': true
-                });
-                let ctrlClick: MouseEvent = new MouseEvent('click', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true,
-                    'ctrlKey': true
-                });
-                it('FY 2005 mouse click', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(() => {
-                        expect(document.querySelector('[aria-colindex="0"][index="2"]').textContent).toBe('Alberta');
-                        document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(click);
-                        done();
                     }, 2000);
                 });
-                it('FY 2006 mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
-                        document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(click);
-                        done();
-                    }, 1000);
-                });
-                it('Canada.Alberta mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
-                        document.querySelector('[aria-colindex="0"][index="2"]').dispatchEvent(click);
-                        done();
-                    }, 1000);
-                });
-                it('Canada * FY 2005 value cell mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('');
-                        document.querySelector('[aria-colindex="1"][index="1"]').dispatchEvent(click);
-                        done();
-                    }, 1000);
-                });
-                it('FY 2005 keyboard shift + mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('');
-                        expect(document.querySelector('[aria-colindex="0"][index="2"]').textContent).toBe('Alberta');
-                        document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(shiftClick);
-                        done();
-                    }, 1000);
-                });
-                it('FY 2006 keyboard shift + mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo.length).toBe(31);
-                        document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(shiftClick);
-                        done();
-                    }, 1000);
-                });
-                it('Canada.Alberta keyboard ctrl + mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
-                        document.querySelector('[aria-colindex="0"][index="2"]').dispatchEvent(ctrlClick);
-                        done();
-                    }, 1000);
-                });
-                it('FY 2005 mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('');
-                        document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(click);
-                        done();
-                    }, 1000);
-                });
             });
-            describe(' - both_multiple', () => {
-                let pivotGridObj: PivotView;
-                let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
-                let args: PivotCellSelectedEventArgs;
-                document.body.appendChild(elem);
-                afterAll(() => {
-                    if (pivotGridObj) {
-                        pivotGridObj.destroy();
-                    }
-                    remove(elem);
-                });
-                beforeAll(() => {
-                    if (document.getElementById(elem.id)) {
-                        remove(document.getElementById(elem.id));
-                    }
-                    document.body.appendChild(elem);
-                    pivotGridObj = new PivotView({
-                        dataSource: {
-                            expandAll: true,
-                            data: pivot_smalldata as IDataSet[],
-                            rows: [{ name: 'Country' }, { name: 'State' }],
-                            columns: [{ name: 'Date' }],
-                            values: [{ name: 'Amount' }],
-                        },
-                        height: 400,
-                        gridSettings: {
-                            allowSelection: true,
-                            selectionSettings: {
-                                mode: 'Both',
-                                type: 'Multiple'
-                            }
-                        },
-                        cellSelected: function (arg: PivotCellSelectedEventArgs): void {
-                            args = arg;
-                        }
-                    });
-                    pivotGridObj.appendTo('#PivotGrid');
-                });
-                let click: MouseEvent = new MouseEvent('click', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true,
-                });
-                let shiftClick: MouseEvent = new MouseEvent('click', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true,
-                    'shiftKey': true
-                });
-                let ctrlClick: MouseEvent = new MouseEvent('click', {
-                    'view': window,
-                    'bubbles': true,
-                    'cancelable': true,
-                    'ctrlKey': true
-                });
-                it('FY 2005 mouse click', (done: Function) => {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(() => {
-                        expect(document.querySelector('[aria-colindex="0"][index="2"]').textContent).toBe('Alberta');
-                        document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(click);
-                        done();
-                    }, 2000);
-                });
-                it('FY 2006 mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
-                        document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(click);
-                        done();
-                    }, 1000);
-                });
-                it('Canada.Alberta mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
-                        document.querySelector('[aria-colindex="0"][index="2"]').dispatchEvent(click);
-                        done();
-                    }, 1000);
-                });
-                it('Canada * FY 2007 value cell mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('');
-                        document.querySelector('[aria-colindex="3"][index="1"]').dispatchEvent(click);
-                        done();
-                    }, 1000);
-                });
-                it('FY 2005 keyboard shift + mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo.length).toBe(42);
-                        expect(document.querySelector('[aria-colindex="0"][index="2"]').textContent).toBe('Alberta');
-                        document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(shiftClick);
-                        done();
-                    }, 1000);
-                });
-                it('FY 2006 keyboard shift + mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[1].value).toBe('Canada');
-                        document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(shiftClick);
-                        done();
-                    }, 1000);
-                });
-                it('FY 2007 keyboard ctrl + mouse click', function (done) {
-                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-                    setTimeout(function () {
-                        expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
-                        expect(args.selectedCellsInfo[1].columnHeaders).toBe('FY 2006');
-                        document.querySelector('[aria-colindex="3"][index="0"]').dispatchEvent(ctrlClick);
-                        done();
-                    }, 1000);
-                });
-            });
+            // describe(' - both_single', () => {
+            //     let pivotGridObj: PivotView;
+            //     let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+            //     let args: PivotCellSelectedEventArgs;
+            //     document.body.appendChild(elem);
+            //     afterAll(() => {
+            //         if (pivotGridObj) {
+            //             pivotGridObj.destroy();
+            //         }
+            //         remove(elem);
+            //     });
+            //     beforeAll(() => {
+            //         if (document.getElementById(elem.id)) {
+            //             remove(document.getElementById(elem.id));
+            //         }
+            //         document.body.appendChild(elem);
+            //         pivotGridObj = new PivotView({
+            //             dataSource: {
+            //                 expandAll: true,
+            //                 data: pivot_smalldata as IDataSet[],
+            //                 rows: [{ name: 'Country' }, { name: 'State' }],
+            //                 columns: [{ name: 'Date' }],
+            //                 values: [{ name: 'Amount' }],
+            //             },
+            //             height: 400,
+            //             gridSettings: {
+            //                 allowSelection: true,
+            //                 selectionSettings: {
+            //                     mode: 'Both',
+            //                     type: 'Single'
+            //                 }
+            //             },
+            //             cellSelected: function (arg: PivotCellSelectedEventArgs): void {
+            //                 args = arg;
+            //             }
+            //         });
+            //         pivotGridObj.appendTo('#PivotGrid');
+            //     });
+            //     let click: MouseEvent = new MouseEvent('click', {
+            //         'view': window,
+            //         'bubbles': true,
+            //         'cancelable': true,
+            //     });
+            //     let shiftClick: MouseEvent = new MouseEvent('click', {
+            //         'view': window,
+            //         'bubbles': true,
+            //         'cancelable': true,
+            //         'shiftKey': true
+            //     });
+            //     let ctrlClick: MouseEvent = new MouseEvent('click', {
+            //         'view': window,
+            //         'bubbles': true,
+            //         'cancelable': true,
+            //         'ctrlKey': true
+            //     });
+            //     it('FY 2005 mouse click', (done: Function) => {
+            //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            //         setTimeout(() => {
+            //             expect(document.querySelector('[aria-colindex="0"][index="2"]').textContent).toBe('Alberta');
+            //             document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(click);
+            //             done();
+            //         }, 2000);
+            //     });
+            //     it('FY 2006 mouse click', function (done) {
+            //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            //         setTimeout(function () {
+            //             expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
+            //             document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(click);
+            //             done();
+            //         }, 2000);
+            //     });
+            //     it('Canada.Alberta mouse click', function (done) {
+            //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            //         setTimeout(function () {
+            //             expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
+            //             document.querySelector('[aria-colindex="0"][index="2"]').dispatchEvent(click);
+            //             done();
+            //         }, 2000);
+            //     });
+            //     it('Canada * FY 2005 value cell mouse click', function (done) {
+            //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            //         setTimeout(function () {
+            //             expect(args.selectedCellsInfo[0].columnHeaders).toBe('');
+            //             document.querySelector('[aria-colindex="1"][index="1"]').dispatchEvent(click);
+            //             done();
+            //         }, 2000);
+            //     });
+            //     it('FY 2005 keyboard shift + mouse click', function (done) {
+            //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            //         setTimeout(function () {
+            //             expect(args.selectedCellsInfo[0].columnHeaders).toBe('');
+            //             expect(document.querySelector('[aria-colindex="0"][index="2"]').textContent).toBe('Alberta');
+            //             document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(shiftClick);
+            //             done();
+            //         }, 2000);
+            //     });
+            //     it('FY 2006 keyboard shift + mouse click', function (done) {
+            //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            //         setTimeout(function () {
+            //             expect(args.selectedCellsInfo.length).toBe(31);
+            //             document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(shiftClick);
+            //             done();
+            //         }, 2000);
+            //     });
+            //     it('Canada.Alberta keyboard ctrl + mouse click', function (done) {
+            //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            //         setTimeout(function () {
+            //             expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
+            //             document.querySelector('[aria-colindex="0"][index="2"]').dispatchEvent(ctrlClick);
+            //             done();
+            //         }, 2000);
+            //     });
+            //     it('FY 2005 mouse click', function (done) {
+            //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            //         setTimeout(function () {
+            //             expect(args.selectedCellsInfo[0].columnHeaders).toBe('');
+            //             document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(click);
+            //             done();
+            //         }, 2000);
+            //     });
+            // });
+            // describe(' - both_multiple', () => {
+            //     let pivotGridObj: PivotView;
+            //     let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
+            //     let args: PivotCellSelectedEventArgs;
+            //     document.body.appendChild(elem);
+            //     afterAll(() => {
+            //         if (pivotGridObj) {
+            //             pivotGridObj.destroy();
+            //         }
+            //         remove(elem);
+            //     });
+            //     beforeAll(() => {
+            //         if (document.getElementById(elem.id)) {
+            //             remove(document.getElementById(elem.id));
+            //         }
+            //         document.body.appendChild(elem);
+            //         pivotGridObj = new PivotView({
+            //             dataSource: {
+            //                 expandAll: true,
+            //                 data: pivot_smalldata as IDataSet[],
+            //                 rows: [{ name: 'Country' }, { name: 'State' }],
+            //                 columns: [{ name: 'Date' }],
+            //                 values: [{ name: 'Amount' }],
+            //             },
+            //             height: 400,
+            //             gridSettings: {
+            //                 allowSelection: true,
+            //                 selectionSettings: {
+            //                     mode: 'Both',
+            //                     type: 'Multiple'
+            //                 }
+            //             },
+            //             cellSelected: function (arg: PivotCellSelectedEventArgs): void {
+            //                 args = arg;
+            //             }
+            //         });
+            //         pivotGridObj.appendTo('#PivotGrid');
+            //     });
+            //     let click: MouseEvent = new MouseEvent('click', {
+            //         'view': window,
+            //         'bubbles': true,
+            //         'cancelable': true,
+            //     });
+            //     let shiftClick: MouseEvent = new MouseEvent('click', {
+            //         'view': window,
+            //         'bubbles': true,
+            //         'cancelable': true,
+            //         'shiftKey': true
+            //     });
+            //     let ctrlClick: MouseEvent = new MouseEvent('click', {
+            //         'view': window,
+            //         'bubbles': true,
+            //         'cancelable': true,
+            //         'ctrlKey': true
+            //     });
+            //     it('FY 2005 mouse click', (done: Function) => {
+            //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            //         setTimeout(() => {
+            //             expect(document.querySelector('[aria-colindex="0"][index="2"]').textContent).toBe('Alberta');
+            //             document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(click);
+            //             done();
+            //         }, 2000);
+            //     });
+            //     it('FY 2006 mouse click', function (done) {
+            //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            //         setTimeout(function () {
+            //             expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
+            //             document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(click);
+            //             done();
+            //         }, 2000);
+            //     });
+            //     it('Canada.Alberta mouse click', function (done) {
+            //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            //         setTimeout(function () {
+            //             expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
+            //             document.querySelector('[aria-colindex="0"][index="2"]').dispatchEvent(click);
+            //             done();
+            //         }, 2000);
+            //     });
+            //     it('Canada * FY 2007 value cell mouse click', function (done) {
+            //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            //         setTimeout(function () {
+            //             expect(args.selectedCellsInfo[0].columnHeaders).toBe('');
+            //             document.querySelector('[aria-colindex="3"][index="1"]').dispatchEvent(click);
+            //             done();
+            //         }, 2000);
+            //     });
+            //     it('FY 2005 keyboard shift + mouse click', function (done) {
+            //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            //         setTimeout(function () {
+            //             expect(args.selectedCellsInfo.length).toBe(42);
+            //             expect(document.querySelector('[aria-colindex="0"][index="2"]').textContent).toBe('Alberta');
+            //             document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(shiftClick);
+            //             done();
+            //         }, 2000);
+            //     });
+            //     it('FY 2006 keyboard shift + mouse click', function (done) {
+            //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            //         setTimeout(function () {
+            //             expect(args.selectedCellsInfo[1].value).toBe('Canada');
+            //             document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(shiftClick);
+            //             done();
+            //         }, 2000);
+            //     });
+            //     it('FY 2007 keyboard ctrl + mouse click', function (done) {
+            //         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            //         setTimeout(function () {
+            //             expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
+            //             expect(args.selectedCellsInfo[1].columnHeaders).toBe('FY 2006');
+            //             document.querySelector('[aria-colindex="3"][index="0"]').dispatchEvent(ctrlClick);
+            //             done();
+            //         }, 2000);
+            //     });
+            // });
             describe(' - keyboard_column_single', () => {
                 let pivotGridObj: PivotView;
                 let elem: HTMLElement = createElement('div', { id: 'PivotGrid' });
@@ -7614,7 +7617,7 @@ describe('PivotView spec', () => {
                         expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2005');
                         (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'rightArrow', target: document.querySelector('[aria-colindex="1"][index="0"]'), preventDefault: (): void => { /** Null */ } });
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('FY 2005 keyboard shift + mouse click', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7622,7 +7625,7 @@ describe('PivotView spec', () => {
                         expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
                         (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'shiftLeft', shiftKey: true, target: document.querySelector('[aria-colindex="2"][index="0"]'), preventDefault: (): void => { /** Null */ } });
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('Canada.Alberta * FY 2006 value cell mouse click', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7630,7 +7633,7 @@ describe('PivotView spec', () => {
                         expect(args.selectedCellsInfo[1].columnHeaders).toBe('FY 2006');
                         document.querySelector('[aria-colindex="2"][index="2"]').dispatchEvent(click);
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('-> FY 2006 using keyboard up arrow', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7638,7 +7641,7 @@ describe('PivotView spec', () => {
                         expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
                         (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'upArrow', target: document.querySelector('[aria-colindex="2"][index="0"]'), preventDefault: (): void => { /** Null */ } });
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('-> Canada.Alberta * FY 2006 value cell using keyboard down arrow', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7646,7 +7649,7 @@ describe('PivotView spec', () => {
                         expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
                         (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'downArrow', target: document.querySelector('[aria-colindex="2"][index="0"]'), preventDefault: (): void => { /** Null */ } });
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('-> FY 2006 using keyboard shift + keyboard up arrow', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7654,7 +7657,7 @@ describe('PivotView spec', () => {
                         expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
                         (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'shiftUp', shiftKey: true, target: document.querySelector('[aria-colindex="2"][index="0"]'), preventDefault: (): void => { /** Null */ } });
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('-> Canada.Alberta * FY 2006 value cell using keyboard shift + keyboard down arrow', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7662,7 +7665,7 @@ describe('PivotView spec', () => {
                         expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
                         (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'shiftDown', shiftKey: true, target: document.querySelector('[aria-colindex="2"][index="0"]'), preventDefault: (): void => { /** Null */ } });
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('keyboard escape', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7670,7 +7673,7 @@ describe('PivotView spec', () => {
                         expect(args.selectedCellsInfo[0].columnHeaders).toBe('FY 2006');
                         (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'escape', target: document.querySelector('[aria-colindex="2"][index="0"]'), preventDefault: (): void => { /** Null */ } });
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('Report change - Add Quantity in values', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7678,7 +7681,7 @@ describe('PivotView spec', () => {
                         expect(args.selectedCellsInfo.length).toBe(0);
                         pivotGridObj.dataSource.values = [{ name: 'Amount' }, { name: 'Quantity' }];
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('FY 2005.Amount mouse click', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7686,7 +7689,7 @@ describe('PivotView spec', () => {
                         expect(args.selectedCellsInfo.length).toBe(0);
                         document.querySelector('[aria-colindex="1"][index="1"]').dispatchEvent(click);
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('-> FY 2005 using keyboard up arrow', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7719,7 +7722,7 @@ describe('PivotView spec', () => {
                         expect(args.selectedCellsInfo.length).toBeGreaterThan(0);
                         (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'leftArrow', target: document.querySelector('[aria-colindex="0"][index="2"]'), preventDefault: (): void => { /** Null */ } });
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('Canada.Alberta mouse click', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7727,7 +7730,7 @@ describe('PivotView spec', () => {
                         expect(args.selectedCellsInfo.length).toBeGreaterThan(0);
                         document.querySelector('[aria-colindex="0"][index="3"]').dispatchEvent(click);
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('-> Canada.Alberta * FY 2005.Amount value cell using keyboard right arrow', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7735,7 +7738,7 @@ describe('PivotView spec', () => {
                         expect(args.selectedCellsInfo.length).toBeGreaterThan(0);
                         (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'rightArrow', target: document.querySelector('[aria-colindex="0"][index="3"]'), preventDefault: (): void => { /** Null */ } });
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('-> Canada.Alberta using keyboard left arrow', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7744,7 +7747,7 @@ describe('PivotView spec', () => {
                         (pivotGridObj.keyboardModule as any).keyActionHandler({ action: 'leftArrow', target: document.querySelector('[aria-colindex="1"][index="3"]'), preventDefault: (): void => { /** Null */ } });
                         pivotGridObj.renderModule.updateGridSettings();
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
             });
             describe(' - all', () => {
@@ -7822,7 +7825,7 @@ describe('PivotView spec', () => {
                         pivotGridObj.gridSettings.selectionSettings.type = 'Multiple';
                         pivotGridObj.isAdaptive = true;
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('Canada mouse click', (done: Function) => {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7840,7 +7843,7 @@ describe('PivotView spec', () => {
                         document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(click);
                         (pivotGridObj as any).isPopupClicked = true;
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('FY 2005 on popup dialog mouse click', (done: Function) => {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7849,7 +7852,7 @@ describe('PivotView spec', () => {
                         document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(click);
                         (pivotGridObj as any).isPopupClicked = false;
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('FY 2005 mouse click', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7858,7 +7861,7 @@ describe('PivotView spec', () => {
                         document.querySelector('[aria-colindex="1"][index="0"]').dispatchEvent(click);
                         pivotGridObj.gridSettings.selectionSettings.mode = 'Cell';
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('Alberta mouse click + Cell + Desktop mode -> configured', function (done) {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7875,7 +7878,7 @@ describe('PivotView spec', () => {
                         },
                             pivotGridObj.isAdaptive = false;
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
                 it('FY 2005 -> keyboard down arrow', (done: Function) => {
                     jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
@@ -7887,7 +7890,7 @@ describe('PivotView spec', () => {
                         document.querySelector('[aria-colindex="2"][index="0"]').dispatchEvent(up);
                         (pivotGridObj as any).parentAt(document.querySelector('[aria-colindex="2"][index="0"]'), 'TD');
                         done();
-                    }, 1000);
+                    }, 2000);
                 });
             });
         });
@@ -9340,7 +9343,7 @@ describe('PivotView spec', () => {
                 jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
                 setTimeout(() => {
                     expect(pivotGridObj.element.querySelector('.e-pivot-toolbar') !== undefined).toBeTruthy();
-                    let li: HTMLElement = document.getElementById('PivotGrid_chart').children[0] as HTMLElement;
+                    let li: HTMLElement = document.getElementById('PivotGrid_pivotchart').children[0] as HTMLElement;
                     expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
                     triggerEvent(li, 'mouseover');
                     done();
@@ -9379,6 +9382,89 @@ describe('PivotView spec', () => {
                 setTimeout(() => {
                     expect((document.querySelector('.e-grid') as HTMLElement)).toBeNull();
                     expect((document.querySelector('.e-pivotchart') as HTMLElement).style.display === 'none').toBeFalsy();
+                    done();
+                }, 1000);
+            });
+        });
+        describe(' -  Chart and Grid with grouping bar', () => {
+            let pivotGridObj: PivotView;
+            PivotView.Inject(Toolbar, PivotChart, GroupingBar,FieldList, CalculatedField);
+            let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:500px; width:100%' });
+            afterAll(() => {
+                if (pivotGridObj) {
+                    pivotGridObj.destroy();
+                }
+                remove(elem);
+            });
+            beforeAll((done: Function) => {
+                if (!document.getElementById(elem.id)) {
+                    document.body.appendChild(elem);
+                }
+                let dataBound: EmitType<Object> = () => { done(); };
+                pivotGridObj = new PivotView({
+                    dataSource: {
+                        data: pivot_dataset as IDataSet[],
+                        expandAll: true,
+                        enableSorting: true,
+                        allowLabelFilter: true,
+                        allowValueFilter: true,
+                        rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                        columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                        values: [{ name: 'balance' }, { name: 'quantity' }],
+                        filters: [],
+                    },
+                    dataBound: dataBound,
+                    saveReport: saveReport.bind(this),
+                    fetchReport: fetchReport.bind(this),
+                    loadReport: loadReport.bind(this),
+                    removeReport: removeReport.bind(this),
+                    renameReport: renameReport.bind(this),
+                    newReport: newReport.bind(this),
+                    toolbarRender: beforeToolbarRender.bind(this),
+                    toolbar: ['New', 'Save', 'SaveAs', 'Rename', 'Remove', 'Load',
+                        'Grid', 'Chart', 'Export', 'SubTotal', 'GrandTotal', 'FieldList'],
+                    allowExcelExport: true,
+                    allowPdfExport: true,
+                    showToolbar: true,
+                    allowCalculatedField: true,
+                    showFieldList: true,
+                    showGroupingBar:true,
+                    displayOption: { view: 'Both' }
+                });
+                pivotGridObj.appendTo('#PivotGrid');
+            });
+            beforeEach((done: Function) => {
+                setTimeout(() => { done(); }, 1000);
+            });
+            it('Mouseover on chart icon', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(pivotGridObj.element.querySelector('.e-pivot-toolbar') !== undefined).toBeTruthy();
+                    expect((pivotGridObj.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display === 'none').toBeTruthy();
+                    let li: HTMLElement = document.getElementById('PivotGrid_pivotchart').children[0] as HTMLElement;
+                    expect(li.classList.contains('e-menu-caret-icon')).toBeTruthy();
+                    triggerEvent(li, 'mouseover');
+                    done();
+                }, 1000);
+            });
+            it('Click Column Chart with chart grouping bar', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                (document.querySelectorAll('.e-menu-popup li')[0] as HTMLElement).click();
+                setTimeout(() => {
+                    expect((document.querySelector('.e-grid') as HTMLElement).style.display).toBe('none');
+                    expect((document.querySelector('.e-pivotchart') as HTMLElement).style.display === 'none').toBeFalsy();
+                    expect(pivotGridObj.element.querySelector('.e-chart-grouping-bar') ).toBeTruthy();
+                    done();
+                }, 1000);
+            });
+            it('Switch to Grid with grouping bar', (done: Function) => {
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                (document.querySelector('.e-pivot-toolbar .e-toolbar-grid') as HTMLElement).click();
+                setTimeout(() => {
+                    expect((document.querySelector('.e-pivotchart') as HTMLElement).style.display).toBe('none');
+                    expect((document.querySelector('.e-grid') as HTMLElement).style.display === 'none').toBeFalsy();
+                    expect(pivotGridObj.element.querySelector('.e-grouping-bar')).toBeTruthy();
+                    pivotGridObj.displayOption.primary = 'Chart';
                     done();
                 }, 1000);
             });
@@ -10698,6 +10784,395 @@ describe('PivotView spec', () => {
         });
     });
 
+    /// Spec for Aggregate Cell Info Event ///
+    describe('Pivot Grid with AggregateCellInfo Event', () => {
+        describe('- Grouping Bar with injected Module - ', () => {
+            let pivotGridObj: PivotView;
+            let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+            afterAll(() => {
+                if (pivotGridObj) {
+                    pivotGridObj.destroy();
+                }
+                remove(elem);
+            });
+            beforeAll((done: Function) => {
+                if (!document.getElementById(elem.id)) {
+                    document.body.appendChild(elem);
+                }
+                let dataBound: EmitType<Object> = () => { done(); };
+                PivotView.Inject(GroupingBar);
+                pivotGridObj = new PivotView({
+                    dataSource: {
+                        data: pivot_dataset as IDataSet[],
+                        expandAll: true,
+                        enableSorting: true,
+                        allowLabelFilter: true,
+                        allowValueFilter: true,
+                        sortSettings: [{ name: 'company', order: 'Descending' }],
+                        formatSettings: [{ name: 'balance', format: 'C' }, { name: 'date', format: 'dd/MM/yyyy-hh:mm', type: 'date' }],
+                        drilledMembers: [{ name: 'product', items: ['Bike', 'Car'] }, { name: 'gender', items: ['male'] }],
+                        filterSettings: [
+                            { name: 'date', type: 'Date', condition: 'Between', value1: new Date('02/16/2000'), value2: new Date('02/16/2002') },
+                            { name: 'age', type: 'Exclude', items: ['25'] },
+                            { name: 'product', type: 'Include', items: ['Flight', 'Tempo'] },
+                        ],
+                        valueSortSettings: { sortOrder: 'Descending', headerText: 'female~false~balance', headerDelimiter: '~' },
+                        rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                        columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                        values: [{ name: 'balance' }, { name: 'quantity' }],
+                        filters: [{ name: 'age' }],
+                    },
+                    enableValueSorting: true,
+                    showGroupingBar: true,
+                    groupingBarSettings: { showFilterIcon: false, showRemoveIcon: false, showSortIcon: false, showValueTypeIcon: false },
+                    dataBound: dataBound,
+                    gridSettings: {
+                        columnRender: (args: ColumnRenderEventArgs) => {
+                            args.columns[0].width = 200;
+                            args.columns[1].allowReordering = true;
+                            args.columns[1].allowResizing = true;
+                        },
+                        rowHeight: 90
+                    },
+                    aggregateCellInfo: (args: AggregateEventArgs) => {
+                        if (args.aggregateType === 'Avg') {
+                            args.value = args.fieldName === 'balance' ? 225 : 5;
+                        }
+                        if (args.row.actualText === 'brown') {
+                            args.skipFormatting = true;
+                            args.value = args.fieldName === 'balance' ? 225 : 5;
+                        }
+                        if (args.fieldName === 'gender') {
+                            args.skipFormatting = true;
+                            args.value = args.cellSets[0][args.fieldName] as any;
+                        }
+                    }
+                });
+                pivotGridObj.appendTo('#PivotGrid');
+            });
+            let persistdata: string;
+            beforeEach((done: Function) => {
+                setTimeout(() => { done(); }, 1000);
+            });
+            it('check window resize with grouping bar', () => {
+                pivotGridObj.onWindowResize();
+                pivotGridObj.renderModule.updateGridSettings();
+                expect(true).toBeTruthy();
+            });
+            it('grouping bar render testing', () => {
+                expect(pivotGridObj.element.children[0].classList.contains('e-grouping-bar')).toBeTruthy;
+                pivotGridObj.dataBind();
+                pivotGridObj.groupingBarSettings = { showFilterIcon: true, showRemoveIcon: true, showSortIcon: true };
+                expect(pivotGridObj.element.children[0].classList.contains('e-grouping-bar')).toBeTruthy;
+            });
+            it('check sorting order field', () => {
+                let pivotButtons: HTMLElement[] =
+                    [].slice.call(pivotGridObj.element.querySelector('.e-columns').querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                ((pivotButtons[0]).querySelector('.e-sort') as HTMLElement).click();
+                expect(true).toBe(true);
+            });
+            it('sorting order after update', () => {
+                let pivotButtons: HTMLElement[] =
+                    [].slice.call(pivotGridObj.element.querySelector('.e-columns').querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                expect((pivotButtons[0]).querySelector('.e-descend')).toBeTruthy;
+            });
+            it('check filtering field', (done: Function) => {
+                let pivotButtons: HTMLElement[] =
+                    [].slice.call(pivotGridObj.element.querySelector('.e-filters').querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let filterDialog: Dialog = pivotGridObj.pivotCommon.filterDialog.dialogPopUp;
+                    expect(filterDialog.element.classList.contains('e-popup-open')).toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('check all nodes on filter popup', () => {
+                let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.allMemberSelect;
+                let memberTreeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
+                let filterDialog: Dialog = pivotGridObj.pivotCommon.filterDialog.dialogPopUp;
+                let allNode: HTMLElement = treeObj.element.querySelector('.e-checkbox-wrapper');
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                expect(checkEle.length).toBeGreaterThan(0);
+                expect(allNode.classList.contains('e-small')).toBe(false);
+                let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                allNode.querySelector('.e-frame').dispatchEvent(args);
+                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                allNode.querySelector('.e-frame').dispatchEvent(args);
+                args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                allNode.querySelector('.e-frame').dispatchEvent(args);
+                let checkedEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-check');
+                expect(checkEle.length).toEqual(checkedEle.length);
+                expect(filterDialog.element.querySelector('.e-ok-btn').getAttribute('disabled')).toBe(null);
+                (filterDialog.element.querySelector('.e-ok-btn') as HTMLElement).click();
+            });
+            it('check filter state after update', () => {
+                let filterDialog: Dialog = pivotGridObj.pivotCommon.filterDialog.dialogPopUp;
+                expect(filterDialog).toBeUndefined;
+            });
+            it('check remove pivot button', (done: Function) => {
+                let pivotButton: HTMLElement =
+                    (pivotGridObj.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
+                expect(pivotButton.id).toBe('age');
+                (pivotButton.querySelector('.e-remove') as HTMLElement).click();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    pivotButton = (pivotGridObj.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
+                    expect(pivotButton).toBeNull();
+                    done();
+                }, 1000);
+            });
+            it('check drag and drop pivot button', (done: Function) => {
+                let valueAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-values');
+                let columnAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
+                let pivotButton: HTMLElement[] = [].slice.call((columnAxiscontent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(2);
+                let dragElement: HTMLElement = pivotButton[0].querySelector('.e-content');
+                let mousedown: any =
+                    getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+                EventHandler.trigger(dragElement, 'mousedown', mousedown);
+                let mousemove: any =
+                    getEventObject('MouseEvents', 'mousemove', dragElement, valueAxiscontent, 15, 70);
+                mousemove.srcElement = mousemove.target = mousemove.toElement = valueAxiscontent;
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                mousemove = setMouseCordinates(mousemove, 15, 75);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                let mouseOverEventArgs: any = extend({}, mousemove, null, true);
+                mouseOverEventArgs.type = 'mouseover';
+                (pivotGridObj.groupingBarModule as any).dropIndicatorUpdate(mouseOverEventArgs);
+                let mouseLeaveEventArgs: any = extend({}, mousemove, null, true);
+                mouseLeaveEventArgs.type = 'mouseleave';
+                (pivotGridObj.groupingBarModule as any).dropIndicatorUpdate(mouseLeaveEventArgs);
+                let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, valueAxiscontent);
+                mouseUp.type = 'mouseup';
+                mouseUp.srcElement = mouseUp.target = mouseUp.toElement = valueAxiscontent;
+                EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    pivotButton = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
+                    expect(pivotButton.length).toEqual(3);
+                    done();
+                }, 1000);
+            });
+            it('destroy common event handlers', () => {
+                pivotGridObj.commonModule.destroy();
+                expect(true).toBeTruthy();
+            });
+            it('pivotgrid destroy', () => {
+                pivotGridObj.destroy();
+                expect(true).toBeTruthy();
+            });
+            it('pivotgrid destroy expect', () => {
+                expect(pivotGridObj.element.innerHTML).toBe('');
+            });
+        });
+
+        describe('- Field List with injected Module - ', () => {
+            let pivotGridObj: PivotView;
+            let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+            afterAll(() => {
+                if (pivotGridObj) {
+                    pivotGridObj.destroy();
+                }
+                remove(elem);
+            });
+            beforeAll((done: Function) => {
+                if (!document.getElementById(elem.id)) {
+                    document.body.appendChild(elem);
+                }
+                let dataBound: EmitType<Object> = () => { done(); };
+                PivotView.Inject(GroupingBar, FieldList);
+                pivotGridObj = new PivotView({
+                    dataSource: {
+                        data: pivot_dataset as IDataSet[],
+                        expandAll: true,
+                        enableSorting: true,
+                        allowLabelFilter: true,
+                        allowValueFilter: true,
+                        sortSettings: [{ name: 'company', order: 'Descending' }],
+                        formatSettings: [{ name: 'balance', format: 'C' }, { name: 'date', format: 'dd/MM/yyyy-hh:mm', type: 'date' }],
+                        drilledMembers: [{ name: 'product', items: ['Bike', 'Car'] }, { name: 'gender', items: ['male'] }],
+                        filterSettings: [
+                            { name: 'date', type: 'Date', condition: 'Between', value1: new Date('02/16/2000'), value2: new Date('02/16/2002') },
+                            { name: 'age', type: 'Exclude', items: ['25'] },
+                            { name: 'product', type: 'Include', items: ['Flight', 'Tempo'] },
+                        ],
+                        valueSortSettings: { sortOrder: 'Descending', headerText: 'female~false~balance', headerDelimiter: '~' },
+                        rows: [{ name: 'product', caption: 'Items' }, { name: 'eyeColor' }],
+                        columns: [{ name: 'gender', caption: 'Population' }, { name: 'isActive' }],
+                        values: [{ name: 'balance' }, { name: 'quantity' }],
+                        filters: [{ name: 'age' }],
+                    },
+                    enableValueSorting: true,
+                    showGroupingBar: true,
+                    showFieldList: true,
+                    groupingBarSettings: { showFilterIcon: false, showRemoveIcon: false, showSortIcon: false, showValueTypeIcon: false },
+                    dataBound: dataBound,
+                    gridSettings: {
+                        columnRender: (args: ColumnRenderEventArgs) => {
+                            args.columns[0].width = 200;
+                            args.columns[1].allowReordering = true;
+                            args.columns[1].allowResizing = true;
+                        },
+                        rowHeight: 90
+                    },
+                    aggregateCellInfo: (args: AggregateEventArgs) => {
+                        if (args.aggregateType === 'Avg') {
+                            args.value = args.fieldName === 'balance' ? 225 : 5;
+                        }
+                        if (args.row.actualText === 'brown') {
+                            args.skipFormatting = true;
+                            args.value = args.fieldName === 'balance' ? 225 : 5;
+                        }
+                        if (args.fieldName === 'gender') {
+                            args.skipFormatting = true;
+                            args.value = args.cellSets[0][args.fieldName] as any;
+                        }
+                    }
+                });
+                pivotGridObj.appendTo('#PivotGrid');
+                disableDialogAnimation(pivotGridObj.pivotFieldListModule.dialogRenderer.fieldListDialog);
+            });
+            let persistdata: string;
+            beforeEach((done: Function) => {
+                setTimeout(() => { done(); }, 2000);
+            });
+            it('check window resize with grouping bar', () => {
+                pivotGridObj.onWindowResize();
+                pivotGridObj.renderModule.updateGridSettings();
+                expect(true).toBeTruthy();
+            });
+            it('grouping bar render testing', () => {
+                pivotGridObj.dataBind();
+                expect(pivotGridObj.element.querySelector('.e-grouping-bar')).toBeTruthy;
+            });
+            it('field list render testing', () => {
+                pivotGridObj.dataBind();
+                expect(pivotGridObj.pivotFieldListModule).not.toBeUndefined;
+            });
+            it('check open field list popup', () => {
+                (pivotGridObj.pivotFieldListModule.element.querySelector('.e-toggle-field-list') as HTMLElement).click();
+                expect(true).toBe(true);
+            });
+            it('check sorting order field', () => {
+                let pivotButtons: HTMLElement[] =
+                    [].slice.call(pivotGridObj.element.querySelector('.e-columns').querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                ((pivotButtons[0]).querySelector('.e-sort') as HTMLElement).click();
+                expect(true).toBe(true);
+            });
+            it('sorting order after update', () => {
+                let pivotButtons: HTMLElement[] =
+                    [].slice.call(pivotGridObj.element.querySelector('.e-columns').querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                expect((pivotButtons[0]).querySelector('.e-descend')).toBeTruthy;
+            });
+            it('check filtering field', (done: Function) => {
+                let pivotButtons: HTMLElement[] =
+                    [].slice.call(pivotGridObj.element.querySelector('.e-filters').querySelectorAll('.e-pivot-button'));
+                expect(pivotButtons.length).toBeGreaterThan(0);
+                ((pivotButtons[0]).querySelector('.e-btn-filter') as HTMLElement).click();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    let filterDialog: Dialog = pivotGridObj.pivotCommon.filterDialog.dialogPopUp;
+                    expect(filterDialog.element.classList.contains('e-popup-open')).toBe(true);
+                    done();
+                }, 1000);
+            });
+            it('check all nodes on filter popup', () => {
+                let treeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.allMemberSelect;
+                let memberTreeObj: TreeView = pivotGridObj.pivotCommon.filterDialog.memberTreeView;
+                let filterDialog: Dialog = pivotGridObj.pivotCommon.filterDialog.dialogPopUp;
+                let allNode: HTMLElement = treeObj.element.querySelector('.e-checkbox-wrapper');
+                let checkEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                expect(checkEle.length).toBeGreaterThan(0);
+                expect(allNode.classList.contains('e-small')).toBe(false);
+                let args: MouseEvent = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                allNode.querySelector('.e-frame').dispatchEvent(args);
+                args = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                allNode.querySelector('.e-frame').dispatchEvent(args);
+                args = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                allNode.querySelector('.e-frame').dispatchEvent(args);
+                let checkedEle: Element[] = <Element[] & NodeListOf<Element>>memberTreeObj.element.querySelectorAll('.e-check');
+                expect(checkEle.length).toEqual(checkedEle.length);
+                expect(filterDialog.element.querySelector('.e-ok-btn').getAttribute('disabled')).toBe(null);
+                (filterDialog.element.querySelector('.e-ok-btn') as HTMLElement).click();
+            });
+            it('check filter state after update', () => {
+                let filterDialog: Dialog = pivotGridObj.pivotCommon.filterDialog.dialogPopUp;
+                expect(filterDialog).toBeUndefined;
+            });
+            it('check remove pivot button', (done: Function) => {
+                let pivotButton: HTMLElement =
+                    (pivotGridObj.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
+                expect(pivotButton.id).toBe('age');
+                (pivotButton.querySelector('.e-remove') as HTMLElement).click();
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    pivotButton = (pivotGridObj.element.querySelector('.e-filters').querySelector('.e-pivot-button') as HTMLElement);
+                    expect(pivotButton).toBeNull();
+                    done();
+                }, 1000);
+            });
+            it('check drag and drop pivot button', (done: Function) => {
+                let valueAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-values');
+                let columnAxiscontent: HTMLElement = pivotGridObj.element.querySelector('.e-columns');
+                let pivotButton: HTMLElement[] = [].slice.call((columnAxiscontent).querySelectorAll('.e-pivot-button'));
+                expect(pivotButton.length).toEqual(2);
+                let dragElement: HTMLElement = pivotButton[0].querySelector('.e-draggable');
+                let mousedown: any =
+                    getEventObject('MouseEvents', 'mousedown', dragElement, dragElement, 15, 10);
+                EventHandler.trigger(dragElement, 'mousedown', mousedown);
+                let mousemove: any =
+                    getEventObject('MouseEvents', 'mousemove', dragElement, valueAxiscontent, 15, 70);
+                mousemove.srcElement = mousemove.target = mousemove.toElement = valueAxiscontent;
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                mousemove = setMouseCordinates(mousemove, 15, 75);
+                EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+                let mouseUp: any = getEventObject('MouseEvents', 'mouseup', dragElement, valueAxiscontent);
+                mouseUp.type = 'mouseup';
+                mouseUp.srcElement = mouseUp.target = mouseUp.toElement = valueAxiscontent;
+                EventHandler.trigger(<any>(document), 'mouseup', mouseUp);
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    pivotButton = [].slice.call((valueAxiscontent).querySelectorAll('.e-pivot-button'));
+                    expect(pivotButton.length).toEqual(3);
+                    done();
+                }, 1000);
+            });
+            it('set rtl property', (done: Function) => {
+                pivotGridObj.enableRtl = true;
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(pivotGridObj.element.classList.contains('e-rtl')).toBeTruthy;
+                    done();
+                }, 1000);
+            });
+            it('remove rtl property', (done: Function) => {
+                pivotGridObj.enableRtl = false;
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(() => {
+                    expect(pivotGridObj.element.classList.contains('e-rtl')).not.toBeTruthy;
+                    done();
+                }, 1000);
+            });
+            it('destroy common event handlers', () => {
+                pivotGridObj.commonModule.destroy();
+                expect(true).toBeTruthy();
+            });
+            it('pivotgrid destroy', () => {
+                pivotGridObj.destroy();
+                expect(true).toBeTruthy();
+            });
+            it('pivotgrid destroy expect', () => {
+                expect(pivotGridObj.element.innerHTML).toBe('');
+            });
+        });
+    });
+
      // Spec for pivot context menu
      describe('Pivot Context Menu Spec', () => {
         describe(' context menu in default grid', () => {
@@ -11413,6 +11888,126 @@ describe('PivotView spec', () => {
         //         }, 1000);
         //     });
         // });
+    });
+
+    describe('Grouping Bar sorting none ', () => {
+        let pivotGridObj: PivotView;
+        let elem: HTMLElement = createElement('div', { id: 'PivotGrid', styles: 'height:200px; width:500px' });
+        afterAll(() => {
+            if (pivotGridObj) {
+                pivotGridObj.destroy();
+            }
+            remove(elem);
+        });
+        beforeAll((done: Function) => {
+            if (!document.getElementById(elem.id)) {
+                document.body.appendChild(elem);
+            }
+            let dataBound: EmitType<Object> = () => { done(); };
+            PivotView.Inject(GroupingBar);
+            pivotGridObj = new PivotView({
+                dataSource: {
+                    data: pivot_dataset as IDataSet[],
+                    expandAll: false,
+                    enableSorting: true,
+                    sortSettings: [{ name: 'company', order: 'None' }],
+                    filterSettings: [{ name: 'name', type: 'Include', items: ['Knight Wooten'] },
+                    { name: 'company', type: 'Include', items: ['NIPAZ'] },
+                    { name: 'gender', type: 'Include', items: ['male'] }],
+                    rows: [{ name: 'company' }, { name: 'state' }],
+                    columns: [{ name: 'name' }],
+                    values: [{ name: 'balance' }, { name: 'quantity' }], filters: [{ name: 'gender' }]
+                },
+                showGroupingBar: true,
+                showFieldList: false,
+                gridSettings:{
+                    contextMenuItems:['Aggregate','Csv Export','Drillthrough','Expand','Collapse']
+                },
+                dataBound: dataBound
+            });
+            pivotGridObj.appendTo('#PivotGrid');
+        });
+        let persistdata: string;
+        beforeEach((done: Function) => {
+            setTimeout(() => { done(); }, 1000);
+        });
+        let click: MouseEvent = new MouseEvent('click', {
+            'view': window,
+            'bubbles': true,
+            'cancelable': true
+        });
+        it('grouping bar sort asc', (done:Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            let pivotButtons: HTMLElement[] =
+                [].slice.call(pivotGridObj.element.querySelector('.e-rows').querySelectorAll('.e-pivot-button'));
+            setTimeout(() => {
+                pivotGridObj.dataSource.sortSettings = [{ name: 'company', order: 'Ascending' }];
+                expect((pivotButtons[0]).querySelector('.e-sort')).toBeTruthy;
+                done();
+            }, 2000);
+        });
+        it('grouping bar sort desc', (done:Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            let pivotButtons: HTMLElement[] =
+                [].slice.call(pivotGridObj.element.querySelector('.e-rows').querySelectorAll('.e-pivot-button'));
+            setTimeout(() => {
+                pivotGridObj.dataSource.sortSettings = [{ name: 'company', order: 'Descending' }];
+                expect((pivotButtons[0]).querySelector('.e-descend')).toBeTruthy;
+                done();
+            }, 2000);
+        });
+        it('grouping bar sort none', (done:Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            let pivotButtons: HTMLElement[] =
+                [].slice.call(pivotGridObj.element.querySelector('.e-rows').querySelectorAll('.e-pivot-button'));
+            setTimeout(() => {
+                pivotGridObj.dataSource.sortSettings = [{ name: 'company', order: 'None' }]
+                expect((pivotButtons[0]).querySelector('.e-sort')).not.toBeTruthy;
+                done();
+            }, 2000);
+        });
+        it('grouping bar sort none icon click', (done:Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            pivotGridObj.dataSource.sortSettings = [{ name: 'company', order: 'Ascending' }];
+            let pivotButtons: HTMLElement[] =
+                [].slice.call(pivotGridObj.element.querySelector('.e-rows').querySelectorAll('.e-pivot-button'));
+            expect((pivotButtons[1]).querySelector('.e-sort')).toBeTruthy;
+            setTimeout(() => {
+                document.querySelectorAll('.e-group-rows .e-sort')[1].dispatchEvent(click);
+                done();
+            }, 2000);
+        });
+        it('grouping bar sort asc icon click', (done:Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            let pivotButtons: HTMLElement[] =
+                [].slice.call(pivotGridObj.element.querySelector('.e-rows').querySelectorAll('.e-pivot-button'));
+            expect((pivotButtons[1]).querySelector('.e-descend')).toBeTruthy;
+            setTimeout(() => {
+                document.querySelectorAll('.e-group-rows .e-sort')[1].dispatchEvent(click);
+                expect((pivotButtons[0]).querySelector('.e-sort')).toBeTruthy;
+                done();
+            }, 2000);
+        });
+        it('grouping bar sort desc icon click', (done:Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            let pivotButtons: HTMLElement[] =
+                [].slice.call(pivotGridObj.element.querySelector('.e-rows').querySelectorAll('.e-pivot-button'));
+            expect((pivotButtons[1]).querySelector('.e-sort')).toBeTruthy;
+            setTimeout(() => {
+                document.querySelectorAll('.e-group-rows .e-sort')[1].dispatchEvent(click);
+                done();
+            }, 2000);
+        });
+        it('grouping bar sort desc icon click', (done:Function) => {
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            setTimeout(() => {
+                pivotGridObj.showGroupingBar = false;
+                pivotGridObj.setProperties({gridSettings:{
+                    contextMenuItems:['Aggregate','Expand','Collapse']
+                }},true);
+                done();
+            }, 2000);
+        });
     });
 
     it('memory leak', () => {

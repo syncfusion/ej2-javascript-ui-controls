@@ -366,6 +366,13 @@ export class DrillOptions extends ChildProperty<DrillOptions> implements IDrillO
      */
     @Property()
     public items: string[];
+
+    /**
+     * It allows to set the delimiter.
+     */
+    @Property()
+    public delimiter: string;
+
 }
 
 /** 
@@ -437,6 +444,13 @@ export class DataSource extends ChildProperty<DataSource> implements IDataOption
      */
     @Collection<FieldOptionsModel[]>([], FieldOptions)
     public filters: FieldOptionsModel[];
+
+    /**
+     * It allows to hide fields from fieldlist.
+     * @default []
+     */
+    @Property([])
+    public excludeFields: string[];
 
     /**
      * It allows to set the expanded state of headers.

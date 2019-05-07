@@ -5,13 +5,13 @@ import { Reorder, headerRefreshed, CellSelectEventArgs, RowSelectEventArgs } fro
 import { Grid, Resize, ColumnModel, Column, ExcelExport, PdfExport, ContextMenu, ResizeArgs, Freeze } from '@syncfusion/ej2-grids';
 import { PdfHeaderQueryCellInfoEventArgs, ExcelQueryCellInfoEventArgs, PdfQueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
 import { ExcelHeaderQueryCellInfoEventArgs, HeaderCellInfoEventArgs, Selection, RowDeselectEventArgs } from '@syncfusion/ej2-grids';
-import { CellDeselectEventArgs, QueryCellInfoEventArgs } from '@syncfusion/ej2-grids';
+import { CellDeselectEventArgs, CellSelectingEventArgs } from '@syncfusion/ej2-grids';
 import { createElement, setStyleAttribute, remove, isNullOrUndefined, EventHandler, append } from '@syncfusion/ej2-base';
 import * as cls from '../../common/base/css-constant';
 import * as events from '../../common/base/constant';
 import { DataBoundEventArgs, BeforeOpenCloseMenuEventArgs, MenuEventArgs  } from '@syncfusion/ej2-navigations';
 import { GridSettingsModel } from '../model/gridsettings-model';
-import { HyperCellClickEventArgs, PivotCellSelectedEventArgs } from '../../common/base/interface';
+import { HyperCellClickEventArgs, PivotCellSelectedEventArgs, QueryCellInfoEventArgs } from '../../common/base/interface';
 import { AggregateMenu } from '../../common/popups/aggregate-menu';
 import { SummaryTypes } from '../../base/types';
 
@@ -73,15 +73,18 @@ export class Render {
             /* tslint:enable */
             this.parent.grid.notify('datasource-modified', {});
             this.parent.grid.refreshColumns();
+            if (this.parent.showGroupingBar && this.parent.groupingBarModule &&
+                this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
+                this.parent.groupingBarModule.setGridRowWidth();
+            }
             let e: HTMLElement = this.parent.element.querySelector('.e-movablecontent') as HTMLElement;
             e.querySelector('colGroup').innerHTML =
                 this.parent.grid.getHeaderContent().querySelector('.e-movableheader').querySelector('colgroup').innerHTML;
             this.parent.grid.width = this.calculateGridWidth();
-            if (this.parent.height > (this.engine.valueContent.length * this.gridSettings.rowHeight)) {
-                this.parent.grid.height = 'auto';
-            } else {
-                this.parent.grid.height = this.parent.height;
+            if (!this.parent.isScrolling) {
+                this.parent.grid.height = this.calculateGridHeight();
             }
+            this.parent.isScrolling = false;
         } else {
             this.parent.element.innerHTML = '';
             this.bindGrid(this.parent, (this.engine.isEmptyData ? true : false));
@@ -121,8 +124,7 @@ export class Render {
             frozenRows: 0,
             dataSource: isEmpty ? this.frameEmptyData() : this.frameDataSource('value'),
             columns: isEmpty ? this.frameEmptyColumns() : this.frameStackedHeaders(),
-            height: ((this.engine && (parent.height > (this.engine.valueContent.length * this.gridSettings.rowHeight)))
-                || isEmpty) ? 'auto' : parent.height,
+            height: isEmpty ? 'auto' : this.calculateGridHeight(),
             width: isEmpty ? this.parent.width : this.calculateGridWidth(),
             locale: parent.locale,
             enableRtl: parent.enableRtl,
@@ -186,6 +188,10 @@ export class Render {
             this.parent.renderModule.selected();
             this.parent.trigger(events.selected, args);
         }
+    }
+
+    private cellSelecting(args: CellSelectingEventArgs): void {
+        this.parent.trigger(events.cellSelecting, args);
     }
 
     private cellDeselected(args: CellDeselectEventArgs): void {
@@ -562,6 +568,8 @@ export class Render {
         this.parent.grid.printMode = this.gridSettings.printMode;
         this.parent.grid.rowHeight = this.gridSettings.rowHeight;
         this.parent.grid.gridLines = this.gridSettings.gridLines;
+        this.parent.grid.height = this.gridSettings.height;
+        this.parent.grid.width = this.gridSettings.width;
         this.clearColumnSelection();
     }
 
@@ -574,27 +582,30 @@ export class Render {
     }
 
     private appendValueSortIcon(cell: IAxisSet, tCell: HTMLElement, rCnt: number, cCnt: number): HTMLElement {
-        let vSort: IValueSortSettings = this.parent.dataSource.valueSortSettings;
-        let len: number = (cell.type === 'grand sum' && this.parent.dataSource.values.length === 1 && !this.parent.dataSource.alwaysShowValueHeader) ? 0 :
-            (this.parent.dataSource.values.length > 1 || this.parent.dataSource.alwaysShowValueHeader) ? (this.parent.engineModule.headerContent.length - 1) :
-                this.parent.dataSource.columns.length === 0 ? 0 : (this.parent.engineModule.headerContent.length - 1);
-        let lock: boolean = (vSort && vSort.headerText) ? cell.valueSort.levelName === vSort.headerText : cCnt === vSort.columnIndex;
-        if (vSort !== undefined && lock && rCnt === len && this.parent.dataSource.valueAxis === 'column') {
-            if (tCell.querySelector('.e-sortfilterdiv')) {
-                tCell.querySelector('.e-sortfilterdiv').classList.add(vSort.sortOrder === 'Descending' ? 'e-descending' : 'e-ascending');
-                tCell.querySelector('.e-sortfilterdiv').classList.add(vSort.sortOrder === 'Descending' ?
-                    'e-icon-descending' : 'e-icon-ascending');
-            } else {
-                tCell.appendChild(createElement('div', {
-                    className: (vSort.sortOrder === 'Descending' ?
-                        'e-icon-descending e-icons e-descending e-sortfilterdiv' : 'e-icon-ascending e-icons e-ascending e-sortfilterdiv'),
-                }));
+        if (this.parent.enableValueSorting) {
+            let vSort: IValueSortSettings = this.parent.dataSource.valueSortSettings;
+            let len: number = (cell.type === 'grand sum' && this.parent.dataSource.values.length === 1 && !this.parent.dataSource.alwaysShowValueHeader) ? 0 :
+                (this.parent.dataSource.values.length > 1 || this.parent.dataSource.alwaysShowValueHeader) ? (this.parent.engineModule.headerContent.length - 1) :
+                    this.parent.dataSource.columns.length === 0 ? 0 : (this.parent.engineModule.headerContent.length - 1);
+            let lock: boolean = (vSort && vSort.headerText) ? cell.valueSort.levelName === vSort.headerText : cCnt === vSort.columnIndex;
+            if (vSort !== undefined && lock && rCnt === len && this.parent.dataSource.valueAxis === 'column') {
+                if (tCell.querySelector('.e-sortfilterdiv')) {
+                    tCell.querySelector('.e-sortfilterdiv').classList.add(vSort.sortOrder === 'Descending' ? 'e-descending' : 'e-ascending');
+                    tCell.querySelector('.e-sortfilterdiv').classList.add(vSort.sortOrder === 'Descending' ?
+                        'e-icon-descending' : 'e-icon-ascending');
+                } else {
+                    tCell.appendChild(createElement('div', {
+                        className: (vSort.sortOrder === 'Descending' ?
+                            'e-icon-descending e-icons e-descending e-sortfilterdiv' : 'e-icon-ascending e-icons e-ascending e-sortfilterdiv'),
+                    }));
+                }
+                if (!isNullOrUndefined(cell.hasChild) && cell.type !== 'grand sum' && tCell.querySelector('.e-expand') &&
+                    (tCell.querySelector('.e-icon-descending') || tCell.querySelector('.e-icon-ascending'))) {
+                    let element: HTMLElement = (tCell.querySelector('.e-icon-descending') || tCell.querySelector('.e-icon-ascending')) as HTMLElement;
+                    setStyleAttribute(element, { 'padding-top': '12px' });
+                }
             }
-            if (!isNullOrUndefined(cell.hasChild) && cell.type !== 'grand sum' && tCell.querySelector('.e-expand') &&
-                (tCell.querySelector('.e-icon-descending') || tCell.querySelector('.e-icon-ascending'))) {
-                let element: HTMLElement = (tCell.querySelector('.e-icon-descending') || tCell.querySelector('.e-icon-ascending')) as HTMLElement;
-                setStyleAttribute(element, { 'padding-top': '12px' });
-            }
+            // return tCell;
         }
         return tCell;
     }
@@ -635,7 +646,7 @@ export class Render {
     }
 
     private onSelect(): void {
-        let pivotArgs: PivotCellSelectedEventArgs = { selectedCellsInfo: [], pivotValues: this.parent.pivotValues };
+        let pivotArgs: PivotCellSelectedEventArgs = { selectedCellsInfo: [], pivotValues: this.parent.pivotValues, currentCell: null };
         let selectedElements: any = this.parent.element.querySelectorAll('.' + cls.CELL_SELECTED_BGCOLOR + ',.' + cls.SELECTED_BGCOLOR);
         for (let element of selectedElements) {
             let colIndex: number = Number(element.getAttribute('aria-colindex'));
@@ -727,17 +738,19 @@ export class Render {
                     innerHTML: (this.parent.isRowCellHyperlink || cell.enableHyperlink ? '<a  data-url="' + localizedText + '" class="e-hyperlinkcell ' + customClass + '">' + localizedText + '</a>' : localizedText)
                 }));
                 let vSort: IValueSortSettings = this.parent.pivotView.dataSource.valueSortSettings;
-                if (vSort && vSort.headerText && this.parent.dataSource.valueAxis === 'row'
-                    && (this.parent.pivotValues[Number(tCell.getAttribute('index'))][0] as IAxisSet).valueSort.levelName) {
-                    if ((this.parent.pivotValues[Number(tCell.getAttribute('index'))][0] as IAxisSet).valueSort.levelName
-                        === vSort.headerText) {
-                        let style: string = (tCell.querySelector('.e-expand') || tCell.querySelector('.e-collapse')) ? 'padding-top: 18px' :
-                            'padding-top: 12px';
-                        tCell.appendChild(createElement('div', {
-                            className: (vSort.sortOrder === 'Descending' ?
-                                'e-icon-descending e-icons e-descending e-sortfilterdiv' : 'e-icon-ascending e-icons e-ascending e-sortfilterdiv'),
-                            styles: style
-                        }));
+                if (this.parent.enableValueSorting) {
+                    if (vSort && vSort.headerText && this.parent.dataSource.valueAxis === 'row'
+                        && (this.parent.pivotValues[Number(tCell.getAttribute('index'))][0] as IAxisSet).valueSort.levelName) {
+                        if ((this.parent.pivotValues[Number(tCell.getAttribute('index'))][0] as IAxisSet).valueSort.levelName
+                            === vSort.headerText) {
+                            let style: string = (tCell.querySelector('.e-expand') || tCell.querySelector('.e-collapse')) ? 'padding-top: 18px' :
+                                'padding-top: 12px';
+                            tCell.appendChild(createElement('div', {
+                                className: (vSort.sortOrder === 'Descending' ?
+                                    'e-icon-descending e-icons e-descending e-sortfilterdiv' : 'e-icon-ascending e-icons e-ascending e-sortfilterdiv'),
+                                styles: style
+                            }));
+                        }
                     }
                 }
             } else {
@@ -764,6 +777,7 @@ export class Render {
             this.unWireEvents(tCell);
             this.wireEvents(tCell);
         }
+        args.pivotview = this.parent;
         this.parent.trigger(events.queryCellInfo, args);
     }
 
@@ -926,9 +940,9 @@ export class Render {
         let parWidth: number = isNaN(this.parent.width as number) ? (this.parent.width.toString().indexOf('%') > -1 ?
             ((parseFloat(this.parent.width.toString()) / 100) * this.parent.element.offsetWidth) : this.parent.element.offsetWidth) :
             Number(this.parent.width);
-        parWidth = parWidth - (this.gridSettings.columnWidth > this.resColWidth ? this.gridSettings.columnWidth : this.resColWidth);
+        parWidth = parWidth - (this.gridSettings.columnWidth > this.resColWidth ? this.gridSettings.columnWidth : this.resColWidth) - (colCount);
         colCount = colCount - 1;
-        let colWidth: number = (colCount * this.gridSettings.columnWidth + 78) < parWidth ? (parWidth / colCount) : this.gridSettings.columnWidth;
+        let colWidth: number = (colCount * this.gridSettings.columnWidth) < parWidth ? (parWidth / colCount) : this.gridSettings.columnWidth;
         return colWidth;
     }
 
@@ -936,16 +950,48 @@ export class Render {
         let parWidth: number = isNaN(this.parent.width as number) ? (this.parent.width.toString().indexOf('%') > -1 ?
             ((parseFloat(this.parent.width.toString()) / 100) * this.parent.element.offsetWidth) : this.parent.element.offsetWidth) :
             Number(this.parent.width);
-        let colWidth: number = (colCount * this.gridSettings.columnWidth + 78) < parWidth ? (parWidth / colCount) : this.gridSettings.columnWidth;
+        colCount = colCount - 1;
+        parWidth = parWidth - (this.gridSettings.columnWidth > this.resColWidth ? this.gridSettings.columnWidth : this.resColWidth) - (colCount);
+        let colWidth: number = (colCount * this.gridSettings.columnWidth) < parWidth ? (parWidth / colCount) : this.gridSettings.columnWidth;
         return colWidth;
     }
 
     public calculateGridWidth(): number | string {
         let parWidth: number | string = this.parent.width;
-        if (this.parent.width === 'auto' && this.parent.element.offsetWidth < this.parent.totColWidth) {
-            parWidth = this.parent.element.offsetWidth;
+        if (this.gridSettings.width === 'auto') {
+            if (this.parent.width === 'auto' && this.parent.element.offsetWidth < this.parent.totColWidth) {
+                parWidth = this.parent.element.offsetWidth;
+            }
+        } else {
+            parWidth = this.gridSettings.width;
         }
         return parWidth;
+    }
+
+    /** @hidden */
+    public calculateGridHeight(): number | string {
+        let gridHeight: number | string = this.parent.height;
+        if (this.parent.element.querySelector('.' + cls.GRID_HEADER) as HTMLElement) {
+        let parHeight: number = this.parent.getHeightAsNumber();
+        if (this.gridSettings.height === 'auto' && parHeight) {
+            let rowColHeight: number = (this.parent.element.querySelector('.' + cls.GRID_HEADER) as HTMLElement).offsetHeight;
+            let gBarHeight: number = rowColHeight + (this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS) ?
+                (this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS) as HTMLElement).offsetHeight : 0);
+            let toolBarHeight: number = this.parent.element.querySelector('.' + cls.GRID_TOOLBAR) ? 42 : 0;
+            gridHeight = parHeight - (gBarHeight + toolBarHeight) - 5;
+            if (gridHeight > (this.engine.valueContent.length * this.gridSettings.rowHeight)) {
+                if (this.parent.enableVirtualization && this.engine.rowCount > this.engine.valueContent.length) {
+                    gridHeight = ((this.engine.valueContent.length > 1 ?
+                        (this.engine.valueContent.length - 1) : 1) * this.gridSettings.rowHeight);
+                } else {
+                    gridHeight = 'auto';
+                }
+            }
+        } else {
+            gridHeight = this.gridSettings.height;
+        }
+        }
+        return gridHeight < this.parent.gridSettings.rowHeight ? this.parent.gridSettings.rowHeight : gridHeight;
     }
 
     public frameStackedHeaders(): ColumnModel[] {

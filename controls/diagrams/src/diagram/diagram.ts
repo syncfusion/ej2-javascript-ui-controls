@@ -3221,6 +3221,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 let connector: Connector = connectors[conn] as Connector;
                 let points: PointModel[] = this.getPoints(connector);
                 updateConnector(connector, points);
+                if (connector.shape.type === 'Bpmn' && (connector.shape as BpmnFlowModel).sequence === 'Default') {
+                    this.commandHandler.updatePathElementOffset(connector);
+                }
                 connector.wrapper.measure(new Size(undefined, undefined));
                 connector.wrapper.arrange(connector.wrapper.desiredSize);
                 this.updateConnectorAnnotation(connector);

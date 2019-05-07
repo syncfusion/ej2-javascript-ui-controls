@@ -545,7 +545,8 @@ export class DatePicker extends Calendar implements IInput {
     protected restoreValue(): void {
         this.currentDate = this.value ? this.value : new Date();
         this.previousDate = this.value;
-        this.previousElementValue = this.inputElement.value;
+        this.previousElementValue = (isNullOrUndefined(this.inputValueCopy)) ? '' :
+            this.globalize.formatDate(this.inputValueCopy, { format: this.formatString, type: 'dateTime', skeleton: 'yMd' });
     }
     private inputChangeHandler(e: MouseEvent): void {
         e.stopPropagation();

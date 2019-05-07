@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 17.1.44 (2019-05-07)
+
+### TreeMap
+
+#### Bug Fixes
+
+- #I234615 - The issue with value from the "fill" property is not applied when we have both the "fill" and "colorValuePath" APIs has been fixed.
+
 ## 17.1.42 (2019-04-23)
 
 ### TreeMap

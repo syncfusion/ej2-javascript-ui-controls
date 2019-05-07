@@ -5265,6 +5265,7 @@ describe('MultiSelect', () => {
                 expect(true).toBe(false);            
             listObj.destroy();
         });
+
     });
     describe('EJ2-22723 - Multiselect selected value not updated', () => {
         let listObj: MultiSelect;
@@ -5504,12 +5505,11 @@ describe('MultiSelect', () => {
                 element.remove();
             }
         });
-        it('remove Value selection', (done) => {
+        it('remove Value selection', () => {
             listObj.change = (): void => {
                 expect(listObj.value.length).toBe(0);
                 expect((<any>listObj).inputElement.placeholder).toBe('Choose Option');
                 expect((<any>listObj).searchWrapper.classList.contains('e-zero-size')).toBe(false);
-                done();
             }
             listObj.focus = (): void => {
                 let closeELe: HTMLElement = document.querySelector('.e-chips .e-chips-close');

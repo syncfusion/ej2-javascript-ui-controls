@@ -365,21 +365,38 @@ export class DiagramElement {
 
 }
 
-/** @private */
+/**
+ * Interface for a class corners
+ */
 export interface Corners {
+    /** returns the top left point of canvas corner */
     topLeft: PointModel;
+    /** returns the top center point of canvas corner */
     topCenter: PointModel;
+    /** returns the top right point of canvas corner */
     topRight: PointModel;
+    /** returns the middle left point of canvas corner */
     middleLeft: PointModel;
+    /** returns the center point of canvas corner */
     center: PointModel;
+    /** returns the middle left point of canvas corner */
     middleRight: PointModel;
+    /** returns the bottom left point of canvas corner */
     bottomLeft: PointModel;
+    /** returns the bottom center point of canvas corner */
     bottomCenter: PointModel;
+    /** returns the bottom right point of canvas corner */
     bottomRight: PointModel;
+    /** returns left position of canvas corner */
     left: number;
+    /** returns right position of canvas corner */
     right: number;
+    /** returns top position of canvas corner */
     top: number;
+    /** returns bottom position of canvas corner */
     bottom: number;
+    /** returns width of canvas */
     width: number;
+    /** returns height of canvas */
     height: number;
 }

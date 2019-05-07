@@ -2695,7 +2695,12 @@
         white-space: normal;
         word-wrap: break-word;
       }
+
+      & .e-stackedheader .e-columnheader .e-stackedheadercelldiv,
+      & .e-stackedheader .e-columnheader .e-headercelldiv {
+        max-height: $grid-rowcell-wrap-max-height;
     }
+  }
 
     &.e-wrap .e-columnheader .e-headercelldiv,
     & .e-columnheader.e-wrap .e-headercelldiv {
@@ -2726,6 +2731,11 @@
     & .e-stackedheadercelldiv {
       overflow: hidden;
       text-overflow: ellipsis;
+    }
+
+    & .e-stackedheader .e-columnheader.e-wrap .e-headercelldiv,
+    & .e-stackedheader .e-columnheader.e-wrap .e-stackedheadercelldiv {
+      max-height: $grid-rowcell-wrap-max-height;
     }
 
     & .e-columnheader.e-wrap .e-sortfilterdiv,

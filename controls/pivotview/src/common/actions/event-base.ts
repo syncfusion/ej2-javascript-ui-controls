@@ -29,28 +29,59 @@ export class EventBase {
      * @hidden
      */
     public updateSorting(args: Event): void {
-        if (this.parent.filterDialog.dialogPopUp) {
-            this.parent.filterDialog.dialogPopUp.close();
-        }
-        let target: HTMLElement = args.target as HTMLElement;
-        let fieldName: string = target.parentElement.id;
-        let isDescending: boolean = target.classList.contains(cls.SORT_DESCEND_CLASS);
-        let sortObj: ISort = this.getSortItemByName(fieldName);
-        if (!isNullOrUndefined(sortObj)) {
-            for (let i: number = 0; i < this.parent.dataSource.sortSettings.length; i++) {
-                if (this.parent.dataSource.sortSettings[i].name === fieldName) {
-                    this.parent.dataSource.sortSettings.splice(i, 1);
-                    break;
-                }
+        if (!((args.target as HTMLElement).classList.contains(cls.FILTER_COMMON_CLASS)) &&
+        !((args.target as HTMLElement).classList.contains(cls.REMOVE_CLASS))) {
+            if (this.parent.filterDialog.dialogPopUp) {
+                this.parent.filterDialog.dialogPopUp.close();
             }
-            let newSortObj: ISort = { name: fieldName, order: isDescending ? 'Ascending' : 'Descending' };
-            this.parent.dataSource.sortSettings.push(newSortObj);
-        } else {
-            let newSortObj: ISort = { name: fieldName, order: isDescending ? 'Ascending' : 'Descending' };
-            this.parent.dataSource.sortSettings.push(newSortObj);
+            let target: HTMLElement = args.target as HTMLElement;
+            let fieldName: string;
+            let checkisDescending: HTMLElement[];
+            let isDescending: boolean;
+            if (target.id) {
+                fieldName = target.id;
+                checkisDescending = [].slice.call(target.querySelectorAll('.' + cls.SORT_DESCEND_CLASS)) as HTMLElement[];
+            } else {
+                fieldName = target.parentElement.id;
+                checkisDescending = [].slice.call(target.parentElement.querySelectorAll('.' + cls.SORT_DESCEND_CLASS)) as HTMLElement[];
+            }
+            if (checkisDescending.length === 0) {
+                isDescending = false;
+            } else {
+                isDescending = true;
+            }
+            //isDescending = (target.querySelectorAll(cls.SORT_DESCEND_CLASS));
+            let sortObj: ISort = this.getSortItemByName(fieldName);
+            if (!isNullOrUndefined(sortObj)) {
+                for (let i: number = 0; i < this.parent.dataSource.sortSettings.length; i++) {
+                    if (this.parent.dataSource.sortSettings[i].name === fieldName) {
+                        this.parent.dataSource.sortSettings.splice(i, 1);
+                        break;
+                    }
+                }
+                let newSortObj: ISort = { name: fieldName, order: isDescending ? 'Ascending' : 'Descending' };
+                // let newSortObj: ISort = { name: fieldName, order: isNone ? 'Ascending' : isDescending ? 'None' : 'Descending' };
+                this.parent.dataSource.sortSettings.push(newSortObj);
+            } else {
+                let newSortObj: ISort = { name: fieldName, order: isDescending ? 'Ascending' : 'Descending' };
+                //let newSortObj: ISort = { name: fieldName, order: isNone ? 'Ascending' : isDescending ? 'None' : 'Descending'  };
+                this.parent.dataSource.sortSettings.push(newSortObj);
+            }
+            this.parent.control.lastSortInfo = this.parent.dataSource.sortSettings[this.parent.dataSource.sortSettings.length - 1];
+            isDescending ? removeClass([target], cls.SORT_DESCEND_CLASS) : addClass([target], cls.SORT_DESCEND_CLASS);
+            // if (isDescending) {
+            //     removeClass([target], cls.SORT_DESCEND_CLASS);
+            //     addClass([target], cls.SORTING);
+            // } else if (!isDescending && !isNone) {
+            //     addClass([target], cls.SORT_DESCEND_CLASS);
+            // } else if (isNone) {
+            //     removeClass([target], cls.SORTING);
+            // } else if (!isNone) {
+            //     removeClass([target], cls.SORT_DESCEND_CLASS);
+            //     removeClass([target], cls.SORTING);
+            //    //addClass([target], cls.SORT_CLASS);
+            // }
         }
-        this.parent.control.lastSortInfo = this.parent.dataSource.sortSettings[this.parent.dataSource.sortSettings.length - 1];
-        isDescending ? removeClass([target], cls.SORT_DESCEND_CLASS) : addClass([target], cls.SORT_DESCEND_CLASS);
     }
 
     /**

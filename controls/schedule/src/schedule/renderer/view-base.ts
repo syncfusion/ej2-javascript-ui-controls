@@ -182,16 +182,14 @@ export class ViewBase {
         return addDays(this.renderDates[this.renderDates.length - 1], 1);
     }
     public getStartHour(): Date {
-        let startHour: Date = this.parent.globalize.parseDate(
-            this.parent.activeViewOptions.startHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        let startHour: Date = this.parent.getStartEndTime(this.parent.activeViewOptions.startHour);
         if (isNullOrUndefined(startHour)) {
             startHour = new Date(2000, 0, 0, 0);
         }
         return startHour;
     }
     public getEndHour(): Date {
-        let endHour: Date = this.parent.globalize.parseDate(
-            this.parent.activeViewOptions.endHour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        let endHour: Date = this.parent.getStartEndTime(this.parent.activeViewOptions.endHour);
         if (isNullOrUndefined(endHour)) {
             endHour = new Date(2000, 0, 0, 0);
         }
@@ -405,5 +403,9 @@ export class ViewBase {
     public resetColWidth(): void {
         let colElements: HTMLElement[] = this.getColElements();
         colElements.forEach((col: HTMLElement) => col.style.width = '');
+    }
+
+    public getContentAreaElement(): HTMLElement {
+        return this.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement;
     }
 }

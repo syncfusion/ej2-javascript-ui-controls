@@ -301,7 +301,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * @default ''
      */
     @Property('')
-    public footerTemplate: string;
+    public footerTemplate: HTMLElement | string;
     /**
      * Specifies the value whether the dialog component can be dragged by the end-user.
      * The dialog allows to drag by selecting the header and dragging it for re-position the dialog.
@@ -840,8 +840,13 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
     }
 
-    private setTemplate(template: string, toElement: HTMLElement): void {
-        let templateFn: Function = compile(template);
+    private setTemplate(template: string | HTMLElement, toElement: HTMLElement): void {
+        let templateFn: Function;
+        if (!isNullOrUndefined((<HTMLElement>template).outerHTML)) {
+            templateFn = compile((<HTMLElement>template).outerHTML);
+        } else {
+            templateFn = compile(template as string);
+        }
         let fromElements: HTMLElement[] = [];
         for (let item of templateFn({})) {
             fromElements.push(item);

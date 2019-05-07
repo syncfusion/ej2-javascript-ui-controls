@@ -2018,6 +2018,8 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
     };
     DropDownButtons.prototype.onPropertyChanged = function (model) {
         var newProp = model.newProp;
+        var type;
+        var content;
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
             switch (prop) {
@@ -2029,12 +2031,11 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
                                 case 'default':
                                 case 'width':
                                     var fontItems = this.fontNameDropDown.items;
-                                    var type = !isNullOrUndefined(closest(this.fontNameDropDown.element, '.' + CLS_QUICK_TB)) ?
+                                    type = !isNullOrUndefined(closest(this.fontNameDropDown.element, '.' + CLS_QUICK_TB)) ?
                                         'quick' : 'toolbar';
                                     var fontNameContent = isNullOrUndefined(this.parent.fontFamily.default) ? fontItems[0].text :
                                         this.parent.fontFamily.default;
-                                    var content = this.dropdownContent(this.parent.fontFamily.width, type, ((type === 'quick') ? '' :
-                                        getDropDownValue(fontItems, fontNameContent, 'text', 'text')));
+                                    content = this.dropdownContent(this.parent.fontFamily.width, type, ((type === 'quick') ? '' : getDropDownValue(fontItems, fontNameContent, 'text', 'text')));
                                     this.fontNameDropDown.setProperties({ content: content });
                                     if (!isNullOrUndefined(this.parent.fontFamily.default)) {
                                         this.getEditNode().style.fontFamily = this.parent.fontFamily.default;
@@ -2060,10 +2061,10 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
                                 case 'default':
                                 case 'width':
                                     var fontsize = this.fontSizeDropDown.items;
-                                    var type = !isNullOrUndefined(closest(this.fontSizeDropDown.element, '.' + CLS_QUICK_TB)) ? 'quick' : 'toolbar';
+                                    type = !isNullOrUndefined(closest(this.fontSizeDropDown.element, '.' + CLS_QUICK_TB)) ? 'quick' : 'toolbar';
                                     var fontSizeContent = isNullOrUndefined(this.parent.fontSize.default) ? fontsize[1].text :
                                         this.parent.fontSize.default;
-                                    var content = this.dropdownContent(this.parent.fontSize.width, type, getFormattedFontSize(getDropDownValue(fontsize, fontSizeContent.replace(/\s/g, ''), 'value', 'text')));
+                                    content = this.dropdownContent(this.parent.fontSize.width, type, getFormattedFontSize(getDropDownValue(fontsize, fontSizeContent.replace(/\s/g, ''), 'value', 'text')));
                                     this.fontSizeDropDown.setProperties({ content: content });
                                     if (!isNullOrUndefined(this.parent.fontSize.default)) {
                                         this.getEditNode().style.fontSize = this.parent.fontSize.default;
@@ -2089,11 +2090,10 @@ var DropDownButtons = /** @__PURE__ @class */ (function () {
                                 case 'default':
                                 case 'width':
                                     var formatItems = this.formatDropDown.items;
-                                    var type = !isNullOrUndefined(closest(this.formatDropDown.element, '.' + CLS_QUICK_TB)) ? 'quick' : 'toolbar';
+                                    type = !isNullOrUndefined(closest(this.formatDropDown.element, '.' + CLS_QUICK_TB)) ? 'quick' : 'toolbar';
                                     var formatContent = isNullOrUndefined(this.parent.format.default) ? formatItems[0].text :
                                         this.parent.format.default;
-                                    var content = this.dropdownContent(this.parent.format.width, type, ((type === 'quick') ? '' :
-                                        getDropDownValue(formatItems, formatContent, 'text', 'text')));
+                                    content = this.dropdownContent(this.parent.format.width, type, ((type === 'quick') ? '' : getDropDownValue(formatItems, formatContent, 'text', 'text')));
                                     this.formatDropDown.setProperties({ content: content });
                                     break;
                                 case 'types':
@@ -3118,16 +3118,18 @@ var ColorPickerInput = /** @__PURE__ @class */ (function () {
         this.initializeInstance();
         var suffixID = args.containerType;
         var tbElement = args.container;
+        var targetID;
+        var options;
         templateItems.forEach(function (item) {
             if (getIndex(item, args.items) !== -1) {
                 switch (item) {
                     case 'fontcolor':
-                        var targetID = _this.parent.getID() + '_' + suffixID + '_FontColor_Target';
+                        targetID = _this.parent.getID() + '_' + suffixID + '_FontColor_Target';
                         var fontNode = _this.parent.createElement('input');
                         fontNode.id = targetID;
                         fontNode.classList.add(CLS_FONT_COLOR_TARGET);
                         document.body.appendChild(fontNode);
-                        var args_1 = {
+                        options = {
                             cssClass: _this.tools[item.toLocaleLowerCase()].icon
                                 + ' ' + CLS_RTE_ELEMENTS + ' ' + CLS_ICONS,
                             value: _this.tools[item.toLocaleLowerCase()].value,
@@ -3136,8 +3138,8 @@ var ColorPickerInput = /** @__PURE__ @class */ (function () {
                             element: select('#' + _this.parent.getID() + '_' + suffixID + '_FontColor', tbElement),
                             target: ('#' + targetID)
                         };
-                        _this.fontColorPicker = _this.toolbarRenderer.renderColorPicker(args_1, 'fontcolor');
-                        _this.fontColorDropDown = _this.toolbarRenderer.renderColorPickerDropDown(args_1, 'fontcolor', _this.fontColorPicker);
+                        _this.fontColorPicker = _this.toolbarRenderer.renderColorPicker(options, 'fontcolor');
+                        _this.fontColorDropDown = _this.toolbarRenderer.renderColorPickerDropDown(options, 'fontcolor', _this.fontColorPicker);
                         break;
                     case 'backgroundcolor':
                         targetID = _this.parent.getID() + '_' + suffixID + '_BackgroundColor_Target';
@@ -3145,7 +3147,7 @@ var ColorPickerInput = /** @__PURE__ @class */ (function () {
                         backNode.id = targetID;
                         backNode.classList.add(CLS_BACKGROUND_COLOR_TARGET);
                         document.body.appendChild(backNode);
-                        args_1 = {
+                        options = {
                             cssClass: _this.tools[item.toLocaleLowerCase()].icon
                                 + ' ' + CLS_RTE_ELEMENTS + ' ' + CLS_ICONS,
                             value: _this.tools[item.toLocaleLowerCase()].value,
@@ -3154,8 +3156,8 @@ var ColorPickerInput = /** @__PURE__ @class */ (function () {
                             element: select('#' + _this.parent.getID() + '_' + suffixID + '_BackgroundColor', tbElement),
                             target: ('#' + targetID)
                         };
-                        _this.backgroundColorPicker = _this.toolbarRenderer.renderColorPicker(args_1, 'backgroundcolor');
-                        _this.backgroundColorDropDown = _this.toolbarRenderer.renderColorPickerDropDown(args_1, 'backgroundcolor', _this.backgroundColorPicker);
+                        _this.backgroundColorPicker = _this.toolbarRenderer.renderColorPicker(options, 'backgroundcolor');
+                        _this.backgroundColorDropDown = _this.toolbarRenderer.renderColorPickerDropDown(options, 'backgroundcolor', _this.backgroundColorPicker);
                         break;
                 }
             }
@@ -3206,6 +3208,7 @@ var ColorPickerInput = /** @__PURE__ @class */ (function () {
     };
     ColorPickerInput.prototype.onPropertyChanged = function (model) {
         var newProp = model.newProp;
+        var element;
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
             switch (prop) {
@@ -3216,7 +3219,7 @@ var ColorPickerInput = /** @__PURE__ @class */ (function () {
                             switch (font) {
                                 case 'default':
                                     this.fontColorPicker.setProperties({ value: newProp.fontColor.default });
-                                    var element = this.fontColorDropDown.element;
+                                    element = this.fontColorDropDown.element;
                                     var fontBorder = element.querySelector('.' + this.tools['fontcolor'].icon);
                                     fontBorder.style.borderBottomColor = newProp.fontColor.default;
                                     break;
@@ -3243,7 +3246,7 @@ var ColorPickerInput = /** @__PURE__ @class */ (function () {
                             switch (background) {
                                 case 'default':
                                     this.backgroundColorPicker.setProperties({ value: newProp.backgroundColor.default });
-                                    var element = this.backgroundColorDropDown.element;
+                                    element = this.backgroundColorDropDown.element;
                                     var backgroundBorder = element.querySelector('.' + this.tools['backgroundcolor'].icon);
                                     backgroundBorder.style.borderBottomColor = newProp.backgroundColor.default;
                                     break;

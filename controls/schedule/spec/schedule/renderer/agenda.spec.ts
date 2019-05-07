@@ -1,10 +1,10 @@
 /**
  * Schedule agenda view spec 
  */
-import { createElement, remove, EmitType, Internationalization, closest } from '@syncfusion/ej2-base';
-import { Schedule, Day, Week, WorkWeek, Month, Agenda } from '../../../src/schedule/index';
-import { triggerScrollEvent } from '../util.spec';
-import { resourceData, generateObject } from '../base/datasource.spec';
+import { createElement, remove, EmitType, closest } from '@syncfusion/ej2-base';
+import { Schedule, ScheduleModel, Day, Week, WorkWeek, Month, Agenda } from '../../../src/schedule/index';
+import { triggerScrollEvent, createSchedule, destroy } from '../util.spec';
+import { resourceData, generateObject, defaultData, cloneDataSource } from '../base/datasource.spec';
 import * as util from '../../../src/schedule/base/util';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
@@ -22,18 +22,21 @@ describe('Agenda View', () => {
         }
     });
 
-    describe('Checking default values', () => {
+    describe('Checking without datasource', () => {
         let schObj: Schedule;
         let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
             let dataBound: EmitType<Object> = () => { done(); };
             document.body.appendChild(elem);
             schObj = new Schedule({
-                height: '500px', currentView: 'Agenda', views: [{ option: 'Agenda', allowVirtualScrolling: true }],
+                height: '500px',
+                currentView: 'Agenda',
+                views: [{ option: 'Agenda', allowVirtualScrolling: true }],
+                selectedDate: new Date(2017, 10, 1),
                 dataBound: dataBound
             });
             schObj.appendTo('#Schedule');
-        });
+        }, 4000);
         afterAll(() => {
             if (schObj) {
                 schObj.destroy();
@@ -58,7 +61,7 @@ describe('Agenda View', () => {
         });
 
         it('Checking selected Date', () => {
-            expect(util.resetTime(schObj.selectedDate)).toEqual(util.resetTime(new Date()));
+            expect(util.resetTime(schObj.selectedDate)).toEqual(util.resetTime(new Date(2017, 10, 1)));
         });
 
         it('Checking Virtual Scrolling default value', () => {
@@ -66,39 +69,17 @@ describe('Agenda View', () => {
         });
 
         it('Checking Header text', () => {
-            let dateStr: string = new Internationalization().formatDate(new Date(), { format: 'MMMM y' });
-            expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual(dateStr);
+            expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 2017');
         });
 
         it('Checking prev next icon disabled', () => {
             expect(schObj.element.querySelector('.e-prev').classList.contains('e-hidden')).toEqual(true);
             expect(schObj.element.querySelector('.e-next').classList.contains('e-hidden')).toEqual(true);
         });
-    });
-
-    describe('Checking without datasource', () => {
-        let schObj: Schedule;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
-        beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
-                height: '500px',
-                currentView: 'Agenda',
-                views: [{ option: 'Agenda', allowVirtualScrolling: true }],
-                selectedDate: new Date(2017, 10, 1),
-                dataBound: dataBound
-            });
-            schObj.appendTo('#Schedule');
-        });
-        afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
-        });
 
         it('Checking Header text', () => {
+            let element: HTMLElement = schObj.element.querySelector('.e-empty-event') as HTMLElement;
+            expect(element.innerHTML).toEqual('No events');
             expect(schObj.element.querySelector('.e-date-range').firstElementChild.textContent).toEqual('November 2017');
             schObj.views = [{ option: 'Day' }, { option: 'Week' }, { option: 'WorkWeek' }, { option: 'Month' },
             { option: 'Agenda', allowVirtualScrolling: false }];
@@ -173,35 +154,19 @@ describe('Agenda View', () => {
         let schObj: Schedule;
         // tslint:disable-next-line:no-any
         let keyModule: any;
-        let elem: HTMLElement = createElement('div', { id: 'Schedule' });
         beforeAll((done: Function) => {
-            let dataBound: EmitType<Object> = () => { done(); };
-            document.body.appendChild(elem);
-            schObj = new Schedule({
+            let schOptions: ScheduleModel = {
                 height: '500px',
                 currentView: 'Agenda',
                 views: [{ option: 'Day' }, { option: 'Agenda', allowVirtualScrolling: true }],
-                selectedDate: new Date(2017, 9, 30),
-                eventSettings: { dataSource: generateObject() },
-                dataBound: dataBound
-            });
+                selectedDate: new Date(2017, 9, 30)
+            };
+            schObj = createSchedule(schOptions, generateObject(), done);
             schObj.appendTo('#Schedule');
             keyModule = schObj.keyboardInteractionModule;
-            schObj.quickPopup.quickPopup.showAnimation = null;
-            schObj.quickPopup.quickPopup.hideAnimation = null;
-            schObj.quickPopup.quickPopup.dataBind();
-            schObj.quickPopup.quickDialog.animationSettings = { effect: 'None' };
-            schObj.quickPopup.quickDialog.dataBind();
-            schObj.quickPopup.quickDialog.hide();
-            schObj.eventWindow.dialogObject.animationSettings = { effect: 'None' };
-            schObj.eventWindow.dialogObject.dataBind();
-            schObj.eventWindow.dialogObject.hide();
         });
         afterAll(() => {
-            if (schObj) {
-                schObj.destroy();
-            }
-            remove(elem);
+            destroy(schObj);
         });
 
         it('Checking list elements', () => {
@@ -296,6 +261,104 @@ describe('Agenda View', () => {
             let firstDateHeader: HTMLElement = schObj.element.querySelector('.e-m-date') as HTMLElement;
             firstDateHeader.click();
             expect(schObj.currentView).toEqual('Day');
+        });
+    });
+
+    describe('Checking Virtual scrolling with events after long days from initial date navigation', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let schOptions: ScheduleModel = {
+                width: '100%',
+                height: '650px',
+                views: [{ option: 'Month' }, { option: 'Agenda', allowVirtualScrolling: true }],
+                selectedDate: new Date(2017, 11, 1),
+                currentView: 'Agenda',
+            };
+            let scheduleDatas: Object[] = [
+                {
+                    Id: 44,
+                    Subject: 'Paris',
+                    StartTime: new Date(2018, 0, 8, 10, 0),
+                    EndTime: new Date(2018, 0, 8, 11, 30),
+                    IsAllDay: false
+                }, {
+                    Id: 45,
+                    Subject: 'Conference - 1',
+                    StartTime: new Date(2018, 2, 8, 22, 0),
+                    EndTime: new Date(2018, 2, 8, 2, 30),
+                    IsAllDay: false
+                }, {
+                    Id: 46,
+                    Subject: 'Conference - 2',
+                    StartTime: new Date(2018, 4, 14, 22, 0),
+                    EndTime: new Date(2018, 4, 15, 0, 0),
+                    IsAllDay: false
+                }, {
+                    Id: 47,
+                    Subject: 'Conference - 3',
+                    StartTime: new Date(2018, 6, 15, 9, 30),
+                    EndTime: new Date(2018, 6, 15, 11, 45),
+                    IsAllDay: false
+                }, {
+                    Id: 48,
+                    Subject: 'Conference - 4',
+                    StartTime: new Date(2018, 8, 15, 10, 30),
+                    EndTime: new Date(2018, 8, 15, 12, 45),
+                    IsAllDay: false
+                }, {
+                    Id: 49,
+                    Subject: 'Travelling',
+                    StartTime: new Date(2018, 10, 15, 11, 30),
+                    EndTime: new Date(2018, 10, 15, 13, 45),
+                    IsAllDay: false
+                }, {
+                    Id: 50,
+                    Subject: 'Vacation',
+                    StartTime: new Date(2019, 0, 16, 10, 0),
+                    EndTime: new Date(2019, 0, 16, 12, 30),
+                    IsAllDay: false
+                }, {
+                    Id: 51,
+                    Subject: 'Conference',
+                    StartTime: new Date(2019, 2, 16, 15, 30),
+                    EndTime: new Date(2019, 2, 16, 18, 45),
+                    IsAllDay: false
+                }, {
+                    Id: 52,
+                    Subject: 'Vacation',
+                    StartTime: new Date(2019, 4, 17, 10, 15),
+                    EndTime: new Date(2019, 4, 17, 14, 45),
+                    IsAllDay: false
+                }, {
+                    Id: 53,
+                    Subject: 'Conference',
+                    StartTime: new Date(2019, 6, 18, 9, 30),
+                    EndTime: new Date(2019, 6, 18, 10, 45),
+                    IsAllDay: false
+                }, {
+                    Id: 54,
+                    Subject: 'Conference-5',
+                    StartTime: new Date(2029, 9, 13, 9, 30),
+                    EndTime: new Date(2029, 9, 13, 10, 45),
+                    IsAllDay: false
+                }];
+            let data: Object[] = cloneDataSource(defaultData).concat(scheduleDatas);
+            schObj = createSchedule(schOptions, data, done);
+            schObj.appendTo('#Schedule');
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('Checking virtual scrolling with hideEmptyAgendaDays', () => {
+            let eventWraps: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-agenda-parent'));
+            expect(eventWraps.length).toEqual(16);
+            let firstEventTd: Element = closest((eventWraps[0] as Element), 'td');
+            expect(parseInt(firstEventTd.getAttribute('data-date'), 10)).toEqual(new Date(2017, 10, 10).getTime());
+            expect(firstEventTd.getAttribute('aria-colindex')).toEqual('-21');
+            let lastEventTd: Element = closest((eventWraps[eventWraps.length - 1] as Element), 'td');
+            expect(parseInt(lastEventTd.getAttribute('data-date'), 10)).toEqual(new Date(2019, 0, 16).getTime());
+            expect(lastEventTd.getAttribute('aria-colindex')).toEqual('411');
         });
     });
 
@@ -926,16 +989,13 @@ describe('Agenda View', () => {
             remove(elem);
         });
 
-        it('Checking workweek view to agenda view', () => {
+        it('Checking workweek view to agenda view', (done: Function) => {
             expect(schObj.element.querySelector('.e-work-week')).toBeTruthy();
-            (schObj.element.querySelector('.e-agenda') as HTMLElement).click();
-            expect(schObj.element.querySelector('.e-agenda-view')).toBeTruthy();
             expect(schObj.getCurrentViewEvents().length).toEqual(5);
-        });
-
-        it('Checking resource rendering with both room and owner levels', (done: Function) => {
-            schObj.dataBind();
+            (schObj.element.querySelector('.e-agenda') as HTMLElement).click();
             let dataBound: (args: Object) => void = (args: Object) => {
+                expect(schObj.element.querySelector('.e-agenda-view')).toBeTruthy();
+                expect(schObj.getCurrentViewEvents().length).toEqual(11);
                 let row1: Element = schObj.element.querySelector('.e-content-wrap').children[0].children[0].children[0];
                 expect(row1.getAttribute('role')).toEqual('row');
                 expect(row1.childElementCount).toEqual(4);
@@ -948,6 +1008,46 @@ describe('Agenda View', () => {
                 done();
             };
             schObj.dataBound = dataBound;
+        });
+    });
+
+    describe('EJ2-26070-Event not rendered properly in agenda view when we give datasource and date format as string', () => {
+        let schObj: Schedule;
+        let datas: Object[] = [{
+            'From': '2020-01-01T00:00:00',
+            'Reason': 'Birthday',
+            'To': '2020-01-02T23:59:59',
+            'Name': 'Wish Luke Hill a happy birthday!',
+            'Pending': false,
+            'Cancelled': false,
+            'AllDay': true
+        }];
+        beforeAll((done: Function) => {
+            let schOptions: ScheduleModel = {
+                height: '500px', selectedDate: new Date(2020, 0, 1),
+                currentView: 'Agenda',
+                eventSettings: {
+                    dataSource: datas,
+                    fields: {
+                        subject: { name: 'Name' },
+                        startTime: { name: 'From' },
+                        endTime: { name: 'To' },
+                        isAllDay: { name: 'AllDay' },
+                        description: { name: 'Reason' }
+                    }
+                }
+            };
+            schObj = createSchedule(schOptions, datas, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('Checking event rendered or not using string datasource', () => {
+            let eventElements: NodeListOf<Element> = schObj.element.querySelectorAll('.e-appointment');
+            expect(eventElements.length).toEqual(2);
+            expect(eventElements[0].querySelector('.e-date-time').textContent).toEqual('All day (Day 1/2)');
+            expect(eventElements[1].querySelector('.e-date-time').textContent).toEqual('12:00 AM - 11:59 PM (Day 2/2)');
         });
     });
 

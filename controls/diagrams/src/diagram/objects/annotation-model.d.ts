@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { TextStyle, Margin } from '../core/appearance';import { Point } from '../primitives/point';import { TextStyleModel, MarginModel } from '../core/appearance-model';import { PointModel } from '../primitives/point-model';import { HorizontalAlignment, VerticalAlignment, AnnotationAlignment, AnnotationTypes, TextDecoration } from '../enum/enum';import { AnnotationConstraints } from '../enum/enum';
+import { Property, Complex, ChildProperty } from '@syncfusion/ej2-base';import { TextStyle, Margin } from '../core/appearance';import { Point } from '../primitives/point';import { TextStyleModel, MarginModel } from '../core/appearance-model';import { PointModel } from '../primitives/point-model';import { HorizontalAlignment, VerticalAlignment, AnnotationAlignment, AnnotationTypes, TextDecoration } from '../enum/enum';import { AnnotationConstraints } from '../enum/enum';import { randomId } from '../utility/base-util';
 
 /**
  * Interface for a class Hyperlink

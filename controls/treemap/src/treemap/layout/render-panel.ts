@@ -591,9 +591,9 @@ export class LayoutPanel {
         } else {
             for (let i: number = 0; i < parentData.length; i++) {
                 if ((parentData[i]['levelOrderName'] as string) === (item['levelOrderName'] as string).split('#')[0]) {
-                    itemFill = treemap.palette.length > 0 ? treemap.palette[i % treemap.palette.length] :
-                        !isNullOrUndefined(treemap.colorValuePath) ?
-                            parentData[i]['data'][treemap.colorValuePath] : itemFill;
+                    itemFill = !isNullOrUndefined(itemFill) ? itemFill : !isNullOrUndefined(treemap.colorValuePath) ?
+                        parentData[i]['data'][treemap.colorValuePath] : treemap.palette.length > 0 ?
+                            treemap.palette[i % treemap.palette.length] : '#808080';
                 }
             }
         }

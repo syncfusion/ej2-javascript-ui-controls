@@ -148,6 +148,11 @@ export class HeaderRender implements IRenderer {
     public renderPanel(): void {
         let div: Element = this.parent.createElement('div', { className: 'e-gridheader' });
         let innerDiv: Element = this.parent.createElement('div', { className: 'e-headercontent' });
+        let column: Column[] = this.parent.columns as Column[];
+        let stackedHdr: boolean = column.some((column: Column) => column.columns !== undefined);
+        if (stackedHdr) {
+            div.classList.add('e-stackedheader');
+        }
         div.appendChild(innerDiv);
         this.setPanel(div);
         this.parent.element.appendChild(div);

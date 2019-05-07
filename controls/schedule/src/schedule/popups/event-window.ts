@@ -843,8 +843,7 @@ export class EventWindow {
         } else {
             startDate = new Date(this.parent.activeCellsData.startTime.getTime());
             if (this.parent.currentView === 'Month' || this.parent.currentView === 'MonthAgenda' || this.parent.activeCellsData.isAllDay) {
-                let startHour: Date = this.parent.globalize.parseDate(
-                    this.parent.workHours.start, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+                let startHour: Date = this.parent.getStartEndTime(this.parent.workHours.start);
                 startDate.setHours(startHour.getHours(), startHour.getMinutes(), startHour.getSeconds());
                 endDate = new Date(startDate.getTime());
                 endDate.setMilliseconds(util.MS_PER_MINUTE * this.getSlotDuration());

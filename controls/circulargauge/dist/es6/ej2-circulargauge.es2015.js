@@ -2140,7 +2140,7 @@ class AxisLayoutPanel {
                 axis.visibleLabels.push(new VisibleLabels(argsData.text, i));
             }
         }
-        let lastLabel = axis.visibleLabels[axis.visibleLabels.length - 1].value;
+        let lastLabel = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value : null;
         let maxVal = axis.visibleRange.max;
         if (lastLabel !== maxVal && axis.showLastLabel === true) {
             argsData = {

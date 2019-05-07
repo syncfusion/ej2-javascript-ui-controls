@@ -2052,7 +2052,13 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Dialog.prototype.setTemplate = function (template, toElement) {
-        var templateFn = compile(template);
+        var templateFn;
+        if (!isNullOrUndefined(template.outerHTML)) {
+            templateFn = compile(template.outerHTML);
+        }
+        else {
+            templateFn = compile(template);
+        }
         var fromElements = [];
         for (var _i = 0, _a = templateFn({}); _i < _a.length; _i++) {
             var item = _a[_i];

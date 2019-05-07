@@ -220,7 +220,7 @@ describe('ListBox', () => {
         });
 
         it('Value', () => {
-            listObj = new ListBox({ dataSource: data,  selectionSettings: { showCheckbox: true, showSelectAll: true }, value: ['JAVA', 'C#','C++','NET','Oracle'] }, elem);       
+            listObj = new ListBox({ dataSource: data, selectionSettings: { showCheckbox: true, showSelectAll: true }, value: ['JAVA', 'C#', 'C++', 'NET', 'Oracle'] }, elem);
             let ele: any = listObj.list.getElementsByClassName('e-selectall-parent')[0];
             let liEle: any = listObj.list.getElementsByClassName('e-list-item');
             expect(liEle[0].getElementsByClassName('e-frame')[0].classList).toContain('e-check');
@@ -233,6 +233,21 @@ describe('ListBox', () => {
             expect(ele.getElementsByClassName('e-frame')[0].classList).not.toContain('e-check');
             expect(ele.innerText).toEqual('Select All');
             expect(listObj.getSelectedItems().length).toEqual(1);
+        });
+
+        it('selectionSettings', () => {
+            listObj = new ListBox({ dataSource: data, selectionSettings: { showCheckbox: true, showSelectAll: true } }, elem);
+            var ele = listObj.list.getElementsByClassName('e-selectall-parent');
+            expect(listObj.list.childElementCount).toEqual(4);
+            expect(ele.length).toEqual(1);
+            listObj.selectionSettings.showSelectAll = false;
+            listObj.dataBind();
+            expect(listObj.list.childElementCount).toEqual(3);
+            expect(ele.length).toEqual(0);
+            listObj.selectionSettings.showSelectAll = true;
+            listObj.dataBind();
+            expect(listObj.list.childElementCount).toEqual(4);
+            expect(ele.length).toEqual(1);
         });
     });
 

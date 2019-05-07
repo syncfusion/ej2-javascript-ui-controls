@@ -276,6 +276,7 @@ export class PivotButton implements IAction {
     }
     private createSortOption(pivotButton: HTMLElement, fieldName: string): Element {
         let sortCLass: string;
+        let spanElement: Element;
         if (!this.parent.allowDeferLayoutUpdate) {
             sortCLass = this.parent.engineModule.fieldList[fieldName].sort === 'Descending' ? cls.SORT_DESCEND_CLASS : '';
         } else {
@@ -286,10 +287,18 @@ export class PivotButton implements IAction {
                 }
             }
         }
-        let spanElement: Element = createElement('span', {
-            attrs: { 'tabindex': '-1', 'aria-disabled': 'false' },
-            className: cls.ICON + ' ' + cls.SORT_CLASS + ' ' + sortCLass
-        });
+        if (this.parent.engineModule.fieldList[fieldName].sort === 'None') {
+            spanElement = createElement('span', {
+                attrs: { 'tabindex': '-1', 'aria-disabled': 'false' },
+                className: cls.ICON
+            });
+        }
+        else {
+            spanElement = createElement('span', {
+                attrs: { 'tabindex': '-1', 'aria-disabled': 'false' },
+                className: cls.ICON + ' ' + cls.SORT_CLASS + ' ' + sortCLass
+            });
+        }
         if (this.parent.dataSource.enableSorting) {
             removeClass([spanElement], cls.ICON_DISABLE);
         } else {
@@ -430,14 +439,30 @@ export class PivotButton implements IAction {
         return isDropped;
     }
     private updateSorting(args: MouseEventArgs): void {
-        if (((this.parent.getModuleName() === 'pivotview' && (this.parent as PivotView).enableValueSorting) ||
-            (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).pivotGridModule !== undefined &&
-                (this.parent as PivotFieldList).pivotGridModule.enableValueSorting)) &&
-            (args.target as HTMLElement).parentElement.parentElement.getAttribute('data-tag').split(':')[0] === 'rows') {
-            this.parent.setProperties({ dataSource: { valueSortSettings: { headerText: '' } } }, true);
+        if (this.parent instanceof PivotFieldList || (this.parent as PivotView).groupingBarSettings.showSortIcon) {
+            if (((this.parent.getModuleName() === 'pivotview' && (this.parent as PivotView).enableValueSorting) ||
+                (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).pivotGridModule !== undefined &&
+                    (this.parent as PivotFieldList).pivotGridModule.enableValueSorting))) {
+                        if((this.parent as PivotView).enableValueSorting || (this.parent as PivotFieldList).pivotGridModule.enableValueSorting) {
+                            if ((args.target as HTMLElement).classList.contains('e-pivot-button')) {
+                                if((args.target as HTMLElement).parentElement.getAttribute('data-tag').split(':')[0] === 'rows') {
+                                    this.parent.setProperties({ dataSource: { valueSortSettings: { headerText: '' } } }, true);
+                                }
+                            } else {
+                                if((args.target as HTMLElement).parentElement.parentElement.getAttribute('data-tag').split(':')[0] === 'rows') {
+                                    this.parent.setProperties({ dataSource: { valueSortSettings: { headerText: '' } } }, true);
+                                }
+                            }
+                        }
+            }
+            this.parent.pivotCommon.eventBase.updateSorting(args);
+            if (!this.parent.allowDeferLayoutUpdate) {
+                this.updateDataSource(true);
+            }
+            if (this.parent instanceof PivotFieldList) {
+                this.axisField.render();
+            }
         }
-        this.parent.pivotCommon.eventBase.updateSorting(args);
-        this.updateDataSource(true);
     }
     private updateDataSource(isRefreshGrid?: boolean): void {
         if (!this.parent.allowDeferLayoutUpdate || this.parent.getModuleName() === 'pivotview') {
@@ -667,7 +692,7 @@ export class PivotButton implements IAction {
     private wireEvent(element: Element, axis: string): void {
         EventHandler.add(element, 'mouseover', this.updateDropIndicator, this);
         if (['filters', 'values'].indexOf(axis) === -1) {
-            EventHandler.add(element.querySelector('.' + cls.SORT_CLASS), 'click', this.updateSorting, this);
+            EventHandler.add(element.querySelector('.' + cls.PIVOT_BUTTON_CLASS), 'click', this.updateSorting, this);
         }
         if (axis !== 'values') {
             EventHandler.add(element.querySelector('.' + cls.FILTER_COMMON_CLASS), 'click', this.updateFiltering, this);
@@ -680,7 +705,7 @@ export class PivotButton implements IAction {
     private unWireEvent(element: Element, axis: string): void {
         EventHandler.remove(element, 'mouseover', this.updateDropIndicator);
         if (['filters', 'values'].indexOf(axis) === -1) {
-            EventHandler.remove(element.querySelector('.' + cls.SORT_CLASS), 'click', this.updateSorting);
+            EventHandler.remove(element.querySelector('.' + cls.PIVOT_BUTTON_CLASS), 'click', this.updateSorting);
         }
         if (axis !== 'values') {
             EventHandler.remove(element.querySelector('.' + cls.FILTER_COMMON_CLASS), 'click', this.updateFiltering);

@@ -3,11 +3,12 @@ import { Diagram } from '../../../src/diagram/diagram';
 import { NodeModel } from '../../../src/diagram/objects/node-model';
 import { AnnotationModel, HyperlinkModel, ShapeAnnotationModel } from '../../../src/diagram/objects/annotation-model';
 import { Node } from '../../../src/diagram/objects/node';
-import { HorizontalAlignment, VerticalAlignment, AnnotationConstraints } from '../../../src/diagram/enum/enum';
+import { HorizontalAlignment, VerticalAlignment, AnnotationConstraints, SnapConstraints } from '../../../src/diagram/enum/enum';
 import { MouseEvents } from './../interaction/mouseevents.spec';
 import { ConnectorModel, PathModel, BasicShapeModel } from '../../../src';
+import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
-
+Diagram.Inject(UndoRedo);
 /**
  * Annotations - Alignments
  */
@@ -638,5 +639,76 @@ describe('Diagram Control', () => {
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
+    });
+
+    describe('Undo/redo not working for node annotation fontSize changed at runtime', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        let mouseEvents: MouseEvents = new MouseEvents();
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram4' });
+            document.body.appendChild(ele);
+            let nodes: NodeModel[] = [
+                {
+                    id: 'industry', width: 130, height: 50, offsetX: 400, offsetY: 200,
+                    annotations: [{ content: 'Shape Annotation', constraints: AnnotationConstraints.Interaction }]
+                }
+            ];
+
+            let connectors: ConnectorModel[] = [
+                {
+                    id: 'connector1', sourcePoint: { x: 100, y: 100 }, targetPoint: { x: 200, y: 200 },
+                    annotations: [{ content: 'Path Annotation', constraints: AnnotationConstraints.Interaction }]
+                }
+            ];
+            diagram = new Diagram({
+                width: '800px', height: '500px', nodes: nodes,
+                snapSettings: { constraints: SnapConstraints.None },
+                getNodeDefaults: function (node: NodeModel) {
+                    var obj = {
+                        width: 130, height: 50, style: { fill: '#D5EDED', strokeColor: '#7DCFC9', strokeWidth: 1 },
+                        shape: { cornerRadius: 5 }
+                    };
+                    return obj;
+                },
+            });
+
+            diagram.appendTo('#diagram4');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Undo/redo not working for node annotation fontSize changed at runtime', (done: Function) => {
+            diagram.add({
+                height: 60,
+                offsetX: 300, offsetY: 400,
+                shape: { type: 'Flow', shape: 'Terminator' }, annotations: [{
+                    content: 'Runtime Node'
+                }]
+            })
+            diagram.dataBind()
+            let annotation = diagram.nodes[1].annotations[0]
+            annotation.style.fontSize = 20;
+            diagram.dataBind();
+            let e = document.getElementById(diagram.nodes[1].id + '_groupElement')
+            expect(e.children[2].children[1].getAttribute('style') === 'font-style: normal; font-weight: normal; font-size: 20px; font-family: Arial;').toBe(true);
+           
+            diagram.undo();
+            expect(e.children[2].children[1].getAttribute('style') === 'font-style: normal; font-weight: normal; font-size: 12px; font-family: Arial;').toBe(true);
+            
+            done();
+        });
+        
     });
 });

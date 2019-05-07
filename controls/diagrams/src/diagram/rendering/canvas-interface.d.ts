@@ -94,16 +94,26 @@ export interface TextAttributes extends BaseAttributes {
     wrapBounds: TextBounds;
     childNodes: SubTextElement[];
 }
-/** @private */
+/**
+ * Defines the properties of sub text element
+ */
 export interface SubTextElement {
+    /** returns the text from sub text element */
     text: string;
+    /** returns the start position, where the text element to be rendered */
     x: number;
+    /** returns the left position, where text to be rendered  */
     dy: number;
+    /** returns the width of the sub text element  */
     width: number;
 }
-/** @private */
+/**
+ * Defines the properties of text bounds
+ */
 export interface TextBounds {
+    /** returns the start position, where the text element is rendered  */
     x: number;
+    /** returns the width of the sub text element  */
     width: number;
 }
 /** @private */

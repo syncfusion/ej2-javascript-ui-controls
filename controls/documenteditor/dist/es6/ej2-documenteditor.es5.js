@@ -16299,9 +16299,11 @@ var Layout = /** @__PURE__ @class */ (function () {
                 if (!isNullOrUndefined(fieldCode) && fieldCode.toLowerCase().match('numpages')) {
                     var textElement = fieldBegin.fieldSeparator.nextNode;
                     if (!isNullOrUndefined(textElement)) {
+                        var prevPageNum = textElement.text;
                         textElement.text = this.viewer.pages.length.toString();
                         var paragraph = fieldBegin.line.paragraph;
-                        if (!isNullOrUndefined(paragraph.bodyWidget) && !isNullOrUndefined(paragraph.bodyWidget.page)) {
+                        if (!isNullOrUndefined(paragraph.bodyWidget) && !isNullOrUndefined(paragraph.bodyWidget.page)
+                            && prevPageNum !== textElement.text) {
                             var lineIndex = paragraph.childWidgets.indexOf(fieldBegin.line);
                             var elementIndex = fieldBegin.line.children.indexOf(textElement);
                             this.reLayoutParagraph(paragraph, lineIndex, elementIndex);

@@ -284,7 +284,9 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         let newProperty: { [key: string]: string; } = <{ [key: string]: string; }>new Object();
         let oldProperty: { [key: string]: string; } = <{ [key: string]: string; }>new Object();
         // tslint:disable-next-line:no-function-constructor-with-string-args
-        let propName: Function = new Function('prop', 'return prop');
+        let propName: Function = (prop: string) => {
+            return prop;
+        };
         newProperty[propName(prop)] = (newProp as { [key: string]: string; })[propName(prop)];
         oldProperty[propName(prop)] = (oldProp as { [key: string]: string; })[propName(prop)];
         let data: { [key: string]: Object; } = <{ [key: string]: Object; }>new Object();

@@ -540,3 +540,5 @@ export const CONTEXT_CSV_ID: string = '#csv';
 export const CONTEXT_EXPORT_ID: string = '#exporting';
 /** @hidden */
 export const CONTEXT_AGGREGATE_ID: string = '#aggregate';
+/** @hidden */
+export const GRID_GROUPING_BAR_CLASS: string = 'e-pivot-grouping-bar';

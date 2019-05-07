@@ -1,6 +1,7 @@
 import { Grid, ContextMenu as cmenu, ContextMenuOpenEventArgs } from '@syncfusion/ej2-grids';
 import { TreeGrid } from '../base';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 /**
  * ContextMenu Module for TreeGrid 
  * @hidden
@@ -31,12 +32,16 @@ export class ContextMenu {
       }
     private  contextMenuOpen(args: ContextMenuOpenEventArgs): void {
       let addRow: HTMLElement = args.element.querySelector('#' + this.parent.element.id + '_gridcontrol_cmenu_AddRow');
+      let editRecord: HTMLElement = args.element.querySelector('#' + this.parent.element.id + '_gridcontrol_cmenu_Edit');
       if (addRow) {
         if (this.parent.grid.editSettings.allowAdding === false) {
           addRow.style.display = 'none';
         } else {
           addRow.style.display = 'block';
         }
+      }
+      if (this.parent.editSettings.mode === 'Cell' && !(isNullOrUndefined(editRecord)) && !(editRecord.classList.contains('e-menu-hide'))) {
+        editRecord.style.display = 'none';
       }
     }
     private contextMenuClick(args: MenuEventArgs): void {

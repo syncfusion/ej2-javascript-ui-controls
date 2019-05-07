@@ -256,7 +256,7 @@ describe('Diagram Control', () => {
             mouseEvents.clickEvent(diagramCanvas, 350, 250);
             mouseEvents.dblclickEvent(diagramCanvas, 350, 200);
             mouseEvents.clickEvent(diagramCanvas, 420, 300);
-            let innerHtmlTextElement = document.getElementById('node1_0annotation_text');
+            let innerHtmlTextElement = document.getElementById('node1_'+diagram.nodes[0].annotations[0].id+'_text');
             expect(innerHtmlTextElement.innerHTML === '<tspan x="0" y="10.8">Node1</tspan>').toBe(true);
             done();
         });

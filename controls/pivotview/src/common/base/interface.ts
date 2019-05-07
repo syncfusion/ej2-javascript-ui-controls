@@ -1,11 +1,15 @@
 import { IPivotValues, IDataOptions, PivotEngine, IFieldListOptions, IFieldOptions, IAxisSet, IDataSet } from '../../base/engine';
+import { IDrilledItem } from '../../base/engine';
 import { Mode, SelectionMode, PdfBorderStyle } from '../base/enum';
 import { L10n } from '@syncfusion/ej2-base';
 import { Grid, ExcelStyle, CellSelectionMode, SelectionType, CheckboxSelectionType } from '@syncfusion/ej2-grids';
+import { Column } from '@syncfusion/ej2-grids';
+import { CellSelectingEventArgs } from '@syncfusion/ej2-grids';
 import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell } from '@syncfusion/ej2-pdf-export';
 import { SeriesModel } from '@syncfusion/ej2-charts';
 import { ItemModel } from '@syncfusion/ej2-navigations';
 import { SummaryTypes } from '../../base/types';
+import { PivotView } from '../../pivotview';
 
 /**
  * Interface
@@ -157,10 +161,20 @@ export interface CellSelectedObject {
     measure: string;
 }
 
-export interface PivotCellSelectedEventArgs {
+export interface PivotCellSelectedEventArgs extends CellSelectingEventArgs {
     /** Defines the selected cells objects. */
     selectedCellsInfo?: CellSelectedObject[];
     pivotValues?: IPivotValues;
+    currentTarget?: Element;
+    cancel?: boolean;
+    target?: Element;
+    isCellClick?: boolean;
+    data?: IAxisSet;
+}
+
+export interface DrillArgs {
+    drillInfo?: IDrilledItem;
+    pivotview?: PivotView;
 }
 
 export interface PivotColumn {
@@ -408,4 +422,23 @@ export interface AggregateEventArgs {
     columnCellType?: string;
     aggregateType?: SummaryTypes;
     skipFormatting?: boolean;
+}
+
+export interface QueryCellInfoEventArgs  {
+     /** Defines the row data associated with this cell. */
+     data?: Object;
+     /** Defines the cell element. */
+     cell?: Element;
+     /** Defines the column object associated with this cell. */
+     column?: Column;
+     /** Defines the no. of columns to be spanned */
+     colSpan?: number;
+     /** Defines the no. of rows to be spanned */
+     rowSpan?: number;
+     /** Defines the current action. */
+     requestType?: string;
+     /** Define the foreignKey row data associated with this column */
+     foreignKeyData?: Object;
+     /** Define the pivot component object */
+     pivotview?: PivotView;
 }

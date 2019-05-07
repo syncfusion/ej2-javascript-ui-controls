@@ -2336,3 +2336,29 @@ describe('this.value checking', () => {
         
     });
 });
+describe('Masked Textbox without mask', function () {
+    let maskBox: any;
+    beforeEach(function () {
+        maskBox = undefined;
+        let ele: HTMLElement = createElement('input', { id: 'mask1' });
+        document.body.appendChild(ele);
+    });
+    afterEach(function () {
+        if (maskBox) {
+            maskBox.destroy();
+        }
+        document.body.innerHTML = '';
+    });
+    it('Characters equivalence testing', function () {
+        maskBox = new MaskedTextBox({});
+        maskBox.appendTo('#mask1');
+        let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
+        input.selectionStart = input.selectionEnd = 0;
+        input.value = '1'
+        for (let i = 0; i < 100; i++) {
+            input.value = input.value + i;
+        }
+        expect(input.value).toBe('10123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899');
+        expect(maskBox.getMaskedValue()).toBe('10123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495051525354555657585960616263646566676869707172737475767778798081828384858687888990919293949596979899');
+    });
+});

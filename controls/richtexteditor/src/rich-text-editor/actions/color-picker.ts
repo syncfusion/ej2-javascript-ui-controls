@@ -44,16 +44,18 @@ export class ColorPickerInput {
         this.initializeInstance();
         let suffixID: string = args.containerType;
         let tbElement: HTMLElement = args.container;
+        let targetID: string;
+        let options: IColorPickerModel;
         templateItems.forEach((item: string) => {
             if (getIndex(item, args.items) !== -1) {
                 switch (item) {
                     case 'fontcolor':
-                        let targetID: string = this.parent.getID() + '_' + suffixID + '_FontColor_Target';
+                        targetID = this.parent.getID() + '_' + suffixID + '_FontColor_Target';
                         let fontNode: HTMLInputElement = this.parent.createElement('input') as HTMLInputElement;
                         fontNode.id = targetID;
                         fontNode.classList.add(classes.CLS_FONT_COLOR_TARGET);
                         document.body.appendChild(fontNode);
-                        let args: IColorPickerModel = {
+                        options = {
                             cssClass: this.tools[item.toLocaleLowerCase() as ToolbarItems].icon
                                 + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_ICONS,
                             value: this.tools[item.toLocaleLowerCase() as ToolbarItems].value,
@@ -62,8 +64,8 @@ export class ColorPickerInput {
                             element: select('#' + this.parent.getID() + '_' + suffixID + '_FontColor', tbElement),
                             target: ('#' + targetID)
                         } as IColorPickerModel;
-                        this.fontColorPicker = this.toolbarRenderer.renderColorPicker(args, 'fontcolor');
-                        this.fontColorDropDown = this.toolbarRenderer.renderColorPickerDropDown(args, 'fontcolor', this.fontColorPicker);
+                        this.fontColorPicker = this.toolbarRenderer.renderColorPicker(options, 'fontcolor');
+                        this.fontColorDropDown = this.toolbarRenderer.renderColorPickerDropDown(options, 'fontcolor', this.fontColorPicker);
                         break;
                     case 'backgroundcolor':
                         targetID = this.parent.getID() + '_' + suffixID + '_BackgroundColor_Target';
@@ -71,7 +73,7 @@ export class ColorPickerInput {
                         backNode.id = targetID;
                         backNode.classList.add(classes.CLS_BACKGROUND_COLOR_TARGET);
                         document.body.appendChild(backNode);
-                        args = {
+                        options = {
                             cssClass: this.tools[item.toLocaleLowerCase() as ToolbarItems].icon
                                 + ' ' + classes.CLS_RTE_ELEMENTS + ' ' + classes.CLS_ICONS,
                             value: this.tools[item.toLocaleLowerCase() as ToolbarItems].value,
@@ -80,9 +82,9 @@ export class ColorPickerInput {
                             element: select('#' + this.parent.getID() + '_' + suffixID + '_BackgroundColor', tbElement),
                             target: ('#' + targetID)
                         } as IColorPickerModel;
-                        this.backgroundColorPicker = this.toolbarRenderer.renderColorPicker(args, 'backgroundcolor');
+                        this.backgroundColorPicker = this.toolbarRenderer.renderColorPicker(options, 'backgroundcolor');
                         this.backgroundColorDropDown = this.toolbarRenderer.renderColorPickerDropDown(
-                            args,
+                            options,
                             'backgroundcolor',
                             this.backgroundColorPicker);
                         break;
@@ -132,6 +134,7 @@ export class ColorPickerInput {
 
     private onPropertyChanged(model: { [key: string]: Object }): void {
         let newProp: RichTextEditorModel = model.newProp;
+        let element: HTMLElement;
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'fontColor':
@@ -140,7 +143,7 @@ export class ColorPickerInput {
                             switch (font) {
                                 case 'default':
                                     this.fontColorPicker.setProperties({ value: newProp.fontColor.default });
-                                    let element: HTMLElement = <HTMLElement>this.fontColorDropDown.element;
+                                    element = <HTMLElement>this.fontColorDropDown.element;
                                     let fontBorder: HTMLElement = element.querySelector('.' + this.tools['fontcolor' as ToolbarItems].icon);
                                     fontBorder.style.borderBottomColor = newProp.fontColor.default;
                                     break;
@@ -166,7 +169,7 @@ export class ColorPickerInput {
                             switch (background) {
                                 case 'default':
                                     this.backgroundColorPicker.setProperties({ value: newProp.backgroundColor.default });
-                                    let element: HTMLElement = <HTMLElement>this.backgroundColorDropDown.element;
+                                    element = <HTMLElement>this.backgroundColorDropDown.element;
                                     let backgroundBorder: HTMLElement = element.querySelector(
                                         '.' + this.tools['backgroundcolor' as ToolbarItems].icon);
                                     backgroundBorder.style.borderBottomColor = newProp.backgroundColor.default;

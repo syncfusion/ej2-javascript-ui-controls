@@ -4,6 +4,14 @@
 
 ## [Unreleased]
 
+## 17.1.44 (2019-05-07)
+
+### CircularGauge
+
+#### Bug Fixes
+
+- #I234531 - The issue with rendering circular gauge when setting cancel argument to true in the "axisLabelRender" event has been fixed.
+
 ## 17.1.43 (2019-04-30)
 
 ### CircularGauge

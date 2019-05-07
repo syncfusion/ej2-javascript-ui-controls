@@ -8284,6 +8284,32 @@ describe('DateRangePicker', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
+    describe('DateRangePicker', function () {
+        let daterangepicker:any;
+        beforeEach(function () {
+            let ele: HTMLElement = createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+        });
+        afterEach(function () {
+            if (daterangepicker) {
+                daterangepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('focus event checking on document click when the calendar is open test case', function () {
+            daterangepicker = new DateRangePicker();
+            daterangepicker.appendTo('#date');
+            let e ={
+                preventDefault : () => {},
+                target:document.getElementById('date')
+            };
+            document.getElementsByClassName(' e-input-group-icon e-range-icon e-icons')[0].dispatchEvent(clickEvent);
+            expect(daterangepicker.popupObj != null).toBe(true);
+            e.target = document.getElementsByTagName('body')[0];
+            daterangepicker.documentHandler(e);
+            expect(daterangepicker.inputWrapper.container.classList.contains('e-input-focus')).toBe(false);
+        });
+    });
 });
 interface CalendarElement {
     leftCalTitle: HTMLElement;

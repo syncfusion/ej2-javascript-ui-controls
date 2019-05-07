@@ -205,6 +205,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private animation: Animation = new Animation({});
     private isTapHold: boolean = false;
     protected isMenu: boolean;
+    protected hamburgerMode: boolean;
+    protected title: string;
     private rippleFn: Function;
 
     /**
@@ -410,6 +412,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             wrapper.classList.add(RTL);
         }
         wrapper.appendChild(this.element);
+        if (this.isMenu && this.hamburgerMode) {
+            if (!this.target) {
+                this.createHeaderContainer(wrapper);
+            }
+        }
     }
 
     private renderItems(): void {
@@ -434,15 +441,21 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             let targetElems: HTMLElement[] = selectAll(this.target);
             for (let i: number = 0, len: number = targetElems.length; i < len; i++) {
                 target = targetElems[i];
-                if (Browser.isIos) {
-                    new Touch(target, { tapHold: this.touchHandler.bind(this) });
+                if (this.isMenu) {
+                    EventHandler.add(target, 'click', this.menuHeaderClickHandler, this);
                 } else {
-                    EventHandler.add(target, 'contextmenu', this.cmenuHandler, this);
+                    if (Browser.isIos) {
+                        new Touch(target, { tapHold: this.touchHandler.bind(this) });
+                    } else {
+                        EventHandler.add(target, 'contextmenu', this.cmenuHandler, this);
+                    }
                 }
             }
             this.targetElement = target;
-            for (let parent of getScrollableParent(this.targetElement)) {
-                EventHandler.add(parent, 'scroll', this.scrollHandler, this);
+            if (!this.isMenu) {
+                for (let parent of getScrollableParent(this.targetElement)) {
+                    EventHandler.add(parent, 'scroll', this.scrollHandler, this);
+                }
             }
         }
         if (!Browser.isDevice) {
@@ -477,16 +490,24 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private mouseDownHandler(e: MouseEvent): void {
+        let isValidLI: boolean = false;
+        if (this.isMenu && !this.showItemOnClick) {
+            let cul: Element = this.getUlByNavIdx();
+            if (cul) {
+                isValidLI = Array.prototype.indexOf.call(cul.children, (e.target as HTMLElement).closest('li')) > -1;
+            }
+        }
         if (closest(e.target as Element, '.e-' + this.getModuleName() + '-wrapper') !== this.getWrapper()
-            && !closest(e.target as Element, '.e-' + this.getModuleName() + '-popup')) {
-            this.closeMenu(this.navIdx.length, e);
+            && (!closest(e.target as Element, '.e-' + this.getModuleName() + '-popup') || isValidLI)) {
+            this.closeMenu(this.isMenu ? null : this.navIdx.length, e);
         }
     }
 
     private keyBoardHandler(e: KeyboardEventArgs): void {
         let actionName: string = '';
         let trgt: Element = e.target as Element;
-        let actionNeeded: boolean = this.isMenu && !this.element.classList.contains('e-vertical') && this.navIdx.length < 1;
+        let actionNeeded: boolean = this.isMenu && !this.hamburgerMode && !this.element.classList.contains('e-vertical')
+            && this.navIdx.length < 1;
         e.preventDefault();
         if (this.enableScrolling && e.keyCode ===  13 && trgt.classList.contains('e-scroll-nav')) {
             this.removeLIStateByClass([FOCUSED, SELECTED], [closest(trgt, '.e-' + this.getModuleName() + '-wrapper')]);
@@ -538,7 +559,11 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 this.leftEscKeyHandler(e);
                 break;
             case ENTER:
-                this.rightEnterKeyHandler(e);
+                if (this.hamburgerMode && trgt.tagName === 'SPAN' && trgt.classList.contains('e-menu-icon')) {
+                    this.menuHeaderClickHandler(e);
+                } else {
+                    this.rightEnterKeyHandler(e);
+                }
                 break;
             case ESCAPE:
                 this.leftEscKeyHandler(e);
@@ -634,7 +659,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 }
             }
         }
-    }
+        }
 
     private leftEscKeyHandler(e: KeyboardEventArgs): void {
         if (this.navIdx.length) {
@@ -704,6 +729,9 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 if (!beforeCloseArgs.cancel) {
                     if (this.isMenu) {
                         popupEle = closest(ul, '.' + POPUP) as HTMLElement;
+                        if (this.hamburgerMode) {
+                            popupEle.parentElement.style.minHeight = '';
+                        }
                         this.unWireKeyboardEvent(popupEle);
                         this.destroyScrollObj(getInstance(popupEle.children[0] as HTMLElement, VScroll) as VScroll, popupEle.children[0]);
                         popupObj = getInstance(popupEle, Popup) as Popup;
@@ -778,38 +806,32 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             if (this.isMenu) {
                 popupWrapper = this.createElement('div', {
                     className: 'e-' + this.getModuleName() + '-wrapper ' + POPUP, id: li.id + '-menu-popup' });
-                document.body.appendChild(popupWrapper);
-                let isNestedOrVerticalMenu: boolean = this.element.classList.contains('e-vertical') || this.navIdx.length !== 1;
-                popupObj = new Popup(popupWrapper, {
-                    relateTo: li as HTMLElement,
-                    collision: { X: isNestedOrVerticalMenu || this.enableRtl ? 'none' : 'flip', Y: 'fit' },
-                    position: isNestedOrVerticalMenu ? { X: 'right', Y: 'top' } : { X: 'left', Y: 'bottom' },
-                    targetType: 'relative',
-                    enableRtl: this.enableRtl,
-                    content: ul,
-                    open: (): void => {
-                            let scrollEle: HTMLElement = select('.e-menu-vscroll', popupObj.element) as HTMLElement;
-                            if (scrollEle) {
-                                scrollEle.style.height = 'inherit';
-                                scrollEle.style.maxHeight = '';
-                            }
-                            let ul: HTMLElement = select('.e-ul', popupObj.element) as HTMLElement;
-                            popupObj.element.style.maxHeight = '';
-                            ul.focus();
-                            this.triggerOpen(ul);
-                        }
-                });
-                if (this.cssClass) {
-                    addClass([popupWrapper], this.cssClass.split(' '));
+                if (this.hamburgerMode) {
+                    top = (li as HTMLElement).offsetHeight;
+                    li.appendChild(popupWrapper);
+                } else {
+                    document.body.appendChild(popupWrapper);
                 }
-                popupObj.hide();
+                let isNestedOrVerticalMenu: boolean = this.element.classList.contains('e-vertical') || this.navIdx.length !== 1;
+                popupObj = this.generatePopup(popupWrapper, ul, li as HTMLElement, isNestedOrVerticalMenu);
+                if (this.hamburgerMode) {
+                    this.calculateIndentSize(ul, li);
+                } else {
+                    if (this.cssClass) {
+                        addClass([popupWrapper], this.cssClass.split(' '));
+                    }
+                    popupObj.hide();
+                }
                 eventArgs = this.triggerBeforeOpen(li, ul, item, e, 0, 0);
-                top = eventArgs.top; left = eventArgs.left;
-                popupWrapper.style.display = 'block'; popupWrapper.style.maxHeight = popupWrapper.getBoundingClientRect().height + 'px';
-                this.addScrolling(popupWrapper, ul, 'vscroll', popupWrapper.offsetHeight, ul.offsetHeight);
-                this.checkScrollOffset(e);
+                if (!this.hamburgerMode) { top = eventArgs.top; left = eventArgs.left; }
+                popupWrapper.style.display = 'block';
+                if (!this.hamburgerMode) {
+                    popupWrapper.style.maxHeight = popupWrapper.getBoundingClientRect().height + 'px';
+                    this.addScrolling(popupWrapper, ul, 'vscroll', popupWrapper.offsetHeight, ul.offsetHeight);
+                    this.checkScrollOffset(e);
+                }
                 let collide: string[];
-                if (!left && !top) {
+                if (!this.hamburgerMode && !left && !top) {
                     popupObj.refreshPosition(li as HTMLElement, true);
                     left = parseInt(popupWrapper.style.left, 10); top = parseInt(popupWrapper.style.top, 10);
                     if (this.enableRtl) {
@@ -832,8 +854,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 }
                 popupWrapper.style.display = '';
             } else {
-                ul.style.zIndex = this.element.style.zIndex;
-                wrapper.appendChild(ul);
+                ul.style.zIndex = this.element.style.zIndex; wrapper.appendChild(ul);
                 eventArgs = this.triggerBeforeOpen(li, ul, item, e, top, left);
                 top = eventArgs.top; left = eventArgs.left;
             }
@@ -848,16 +869,99 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             this.navIdx.pop();
         } else {
             if (this.isMenu) {
-                this.wireKeyboardEvent(popupWrapper); rippleEffect(popupWrapper, { selector: '.' + ITEM });
-                popupWrapper.style.left = left + 'px'; popupWrapper.style.top = top + 'px';
-                let animationOptions: AnimationModel = this.animationSettings.effect !== 'None' ? {
-                    name: this.animationSettings.effect, duration: this.animationSettings.duration,
-                    timingFunction: this.animationSettings.easing
-                } : null;
-                popupObj.show(animationOptions, li as HTMLElement);
-            } else {
-                this.setPosition(li, ul, top, left);
-                this.toggleAnimation(ul);
+                if (this.hamburgerMode) {
+                    popupWrapper.style.top = top + 'px'; popupWrapper.style.left = 0 + 'px';
+                    this.toggleAnimation(popupWrapper);
+                } else {
+                    this.wireKeyboardEvent(popupWrapper);
+                    rippleEffect(popupWrapper, { selector: '.' + ITEM });
+                    popupWrapper.style.left = left + 'px'; popupWrapper.style.top = top + 'px';
+                    let animationOptions: AnimationModel = this.animationSettings.effect !== 'None' ? {
+                        name: this.animationSettings.effect, duration: this.animationSettings.duration,
+                        timingFunction: this.animationSettings.easing
+                    } : null;
+                    popupObj.show(animationOptions, li as HTMLElement);
+                }
+            } else { this.setPosition(li, ul, top, left); this.toggleAnimation(ul); }
+        }
+    }
+
+    private calculateIndentSize(ul: HTMLElement, li: Element): void {
+        let liStyle: CSSStyleDeclaration = getComputedStyle(li);
+        let liIndent: number = parseInt(liStyle.textIndent, 10);
+        if (this.navIdx.length < 2 && !li.classList.contains('e-blankicon')) {
+            liIndent *= 2;
+        } else {
+            liIndent += (liIndent / 4);
+        }
+        ul.style.textIndent = liIndent + 'px';
+        let blankIconElem: NodeList = ul.querySelectorAll('.e-blankicon');
+        if (blankIconElem && blankIconElem.length) {
+            let menuIconElem: HTMLElement = ul.querySelector('.e-menu-icon');
+            let menuIconElemStyle: CSSStyleDeclaration = getComputedStyle(menuIconElem);
+            let blankIconIndent: number = (parseInt(menuIconElemStyle.marginRight, 10) + menuIconElem.offsetWidth + liIndent);
+            blankIconElem.forEach((element: HTMLElement) => element.style.textIndent = blankIconIndent + 'px');
+        }
+    }
+
+    private generatePopup(
+        popupWrapper: HTMLElement, ul: HTMLElement, li: HTMLElement, isNestedOrVerticalMenu: boolean): Popup {
+        let popupObj: Popup = new Popup(popupWrapper, {
+            actionOnScroll: this.hamburgerMode ? 'none' : 'reposition',
+            relateTo: li,
+            collision: this.hamburgerMode ? { X: 'none', Y: 'none' } : { X: isNestedOrVerticalMenu ||
+                this.enableRtl ? 'none' : 'flip', Y: 'fit' },
+            position: (isNestedOrVerticalMenu && !this.hamburgerMode) ? { X: 'right', Y: 'top' } : { X: 'left', Y: 'bottom' },
+            targetType: 'relative',
+            enableRtl: this.enableRtl,
+            content: ul,
+            open: (): void => {
+                    let scrollEle: HTMLElement = select('.e-menu-vscroll', popupObj.element) as HTMLElement;
+                    if (scrollEle) {
+                        scrollEle.style.height = 'inherit';
+                        scrollEle.style.maxHeight = '';
+                    }
+                    let ul: HTMLElement = select('.e-ul', popupObj.element) as HTMLElement;
+                    popupObj.element.style.maxHeight = '';
+                    ul.focus();
+                    this.triggerOpen(ul);
+                }
+        });
+        return popupObj;
+    }
+
+    protected createHeaderContainer(wrapper?: Element): void {
+        wrapper = wrapper || this.getWrapper();
+        let spanElem: HTMLElement = this.createElement('span', { className: 'e-' + this.getModuleName() + '-header' });
+        let spanTitle: HTMLElement = this.createElement('span', {
+            className: 'e-' + this.getModuleName() + '-title', innerHTML: this.title });
+        let spanIcon: HTMLElement = this.createElement('span', {
+            className: 'e-icons e-' + this.getModuleName() + '-icon', attrs: { 'tabindex': '0' } });
+        spanElem.appendChild(spanTitle);
+        spanElem.appendChild(spanIcon);
+        wrapper.insertBefore(spanElem, this.element);
+    }
+
+    protected openHamburgerMenu(e?: MouseEvent | KeyboardEvent) : void {
+        if (this.hamburgerMode) {
+            let eventArgs: BeforeOpenCloseMenuEventArgs;
+            eventArgs = this.triggerBeforeOpen(null, this.element, null, e, 0, 0);
+            if (!eventArgs.cancel) {
+                this.element.classList.remove('e-hide-menu');
+                this.triggerOpen(this.element);
+            }
+        }
+    }
+
+    protected closeHamburgerMenu(e?: MouseEvent | KeyboardEvent) : void {
+        if (this.hamburgerMode) {
+            let beforeCloseArgs: BeforeOpenCloseMenuEventArgs;
+            beforeCloseArgs = { element: this.element, parentItem: null, event: e, items: this.items, cancel: false };
+            this.trigger('beforeClose', beforeCloseArgs);
+            if (!beforeCloseArgs.cancel) {
+                this.closeMenu(null, e);
+                this.element.classList.add('e-hide-menu');
+                this.trigger('onClose', { element: this.element, parentItem: null, items: this.items });
             }
         }
     }
@@ -1038,7 +1142,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             }
         }
         if (this.isMenu) {
-            if ((trgt.parentElement !== wrapper && !closest(trgt, '.e-' + this.getModuleName() + '-popup'))
+            if (!this.showItemOnClick && (trgt.parentElement !== wrapper && !closest(trgt, '.e-' + this.getModuleName() + '-popup'))
                 && (!cli || (cli && !this.getIndex(cli.id, true).length))) {
                 this.removeLIStateByClass([FOCUSED, SELECTED], [wrapper]);
                 if (this.navIdx.length) {
@@ -1089,6 +1193,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             }
         }
         return false;
+    }
+
+    private menuHeaderClickHandler(e: MouseEvent | KeyboardEvent): void {
+        this.element.classList.contains('e-hide-menu') ? this.openHamburgerMenu(e) : this.closeHamburgerMenu(e);
     }
 
     private clickHandler(e: MouseEvent): void {
@@ -1159,12 +1267,17 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     }
                 }
             } else {
-                if (this.isMenu && trgt.tagName === 'DIV' && this.navIdx.length && closest(trgt, '.e-menu-vscroll')) {
-                    let popupEle: Element = closest(trgt, '.' + POPUP);
-                    let cIdx: number = Array.prototype.indexOf.call(this.getPopups(), popupEle) + 1;
-                    if (cIdx < this.navIdx.length) {
-                        this.closeMenu(cIdx + 1, e);
-                        this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]);
+                if (this.isMenu) {
+                    if (trgt.tagName === 'DIV' && this.navIdx.length && closest(trgt, '.e-menu-vscroll')) {
+                        let popupEle: Element = closest(trgt, '.' + POPUP);
+                        let cIdx: number = Array.prototype.indexOf.call(this.getPopups(), popupEle) + 1;
+                        if (cIdx < this.navIdx.length) {
+                            this.closeMenu(cIdx + 1, e);
+                            this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]);
+                        }
+                    }
+                    if (trgt.tagName === 'SPAN' && trgt.classList.contains('e-menu-icon')) {
+                        this.menuHeaderClickHandler(e);
                     }
                 } else {
                     if (trgt.tagName !== 'UL' || trgt.parentElement !== wrapper) {
@@ -1344,17 +1457,23 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             let targetElems: HTMLElement[] = selectAll(targetSelctor);
             for (let i: number = 0, len: number = targetElems.length; i < len; i++) {
                 target = targetElems[i];
-                if (Browser.isIos) {
-                    touchModule = getInstance(target, Touch) as Touch;
-                    if (touchModule) {
-                        touchModule.destroy();
-                    }
+                if (this.isMenu) {
+                    EventHandler.remove(target, 'click', this.menuHeaderClickHandler);
                 } else {
-                    EventHandler.remove(target, 'contextmenu', this.cmenuHandler);
+                    if (Browser.isIos) {
+                        touchModule = getInstance(target, Touch) as Touch;
+                        if (touchModule) {
+                            touchModule.destroy();
+                        }
+                    } else {
+                        EventHandler.remove(target, 'contextmenu', this.cmenuHandler);
+                    }
                 }
             }
-            for (let parent of getScrollableParent(this.targetElement)) {
-                EventHandler.remove(parent, 'scroll', this.scrollHandler);
+            if (!this.isMenu) {
+                for (let parent of getScrollableParent(this.targetElement)) {
+                    EventHandler.remove(parent, 'scroll', this.scrollHandler);
+                }
             }
         }
         if (!Browser.isDevice) {
@@ -1374,6 +1493,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private toggleAnimation(ul: HTMLElement, isMenuOpen: boolean = true): void {
+        let pUlHeight: number;
+        let pElement: HTMLElement;
         if (this.animationSettings.effect === 'None' || !isMenuOpen) {
             this.end(ul, isMenuOpen);
         } else {
@@ -1382,11 +1503,33 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 duration: this.animationSettings.duration,
                 timingFunction: this.animationSettings.easing,
                 begin: (options: AnimationOptions) => {
-                    options.element.style.display = 'block';
-                    options.element.style.maxHeight = options.element.getBoundingClientRect().height + 'px';
+                    if (this.hamburgerMode) {
+                        pElement = options.element.parentElement;
+                        options.element.style.position = 'absolute';
+                        pUlHeight = pElement.offsetHeight;
+                        options.element.style.maxHeight = options.element.offsetHeight + 'px';
+                        pElement.style.maxHeight = '';
+                    } else {
+                        options.element.style.display = 'block';
+                        options.element.style.maxHeight = options.element.getBoundingClientRect().height + 'px';
+                    }
+                },
+                progress: (options: AnimationOptions) => {
+                    if (this.hamburgerMode) {
+                        pElement.style.minHeight = (pUlHeight + options.element.offsetHeight) + 'px';
+                    }
                 },
                 end: (options: AnimationOptions) => {
-                    this.end(options.element, isMenuOpen);
+                    if (this.hamburgerMode) {
+                        options.element.style.position = '';
+                        options.element.style.maxHeight = '';
+                        pElement.style.minHeight = '';
+                        options.element.style.top = 0 + 'px';
+                        (options.element.children[0] as HTMLElement).focus();
+                        this.triggerOpen(options.element.children[0] as HTMLElement);
+                    } else {
+                        this.end(options.element, isMenuOpen);
+                    }
                 }
             });
         }

@@ -889,7 +889,7 @@ export class ExcelExport {
                 let format: DateFormatOptions = col.format;
                 style.numberFormat = !isNullOrUndefined(format.format) ? format.format : format.skeleton;
                 if (!isNullOrUndefined(format.type)) {
-                    style.type = format.type;
+                    style.type = format.type.toLowerCase();
                 }
             } else {
                 style.numberFormat = col.format;

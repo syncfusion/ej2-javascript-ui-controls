@@ -67,12 +67,12 @@ export interface MaskedTextBoxModel extends ComponentModel{
 
     /**
      * Sets a value that masks the MaskedTextBox to allow/validate the user input.
-     * * Mask allows <b><a href="../../maskedtextbox/mask-configuration.html#standard-mask-elements" target="_blank">standard mask elements
-     * </a></b>, <b><a href="../../maskedtextbox/mask-configuration.html#custom-characters" target="_blank">custom characters</a></b> and
-     * <b><a href="../../maskedtextbox/mask-configuration.html#regular-expression" target="_blank">regular expression</a></b> as mask
+     * * Mask allows <b><a href="../../maskedtextbox/mask-configuration/#standard-mask-elements" target="_blank">standard mask elements
+     * </a></b>, <b><a href="../../maskedtextbox/mask-configuration/#custom-characters" target="_blank">custom characters</a></b> and
+     * <b><a href="../../maskedtextbox/mask-configuration/#regular-expression" target="_blank">regular expression</a></b> as mask
      * elements.
      * For more information on mask, refer to
-     * [mask](../../maskedtextbox/mask-configuration#standard-mask-elements/).
+     * [mask](../../maskedtextbox/mask-configuration/#standard-mask-elements).
      * * If the mask value is empty, the MaskedTextBox will behave as an input element with text type.
      * @default null
      */
@@ -82,7 +82,7 @@ export interface MaskedTextBoxModel extends ComponentModel{
      * Gets or sets a value that will be shown as a prompting symbol for the masked value.
      * The symbol used to show input positions in the MaskedTextBox.
      * For more information on prompt-character, refer to
-     * [prompt-character](../../maskedtextbox/mask-configuration#prompt-character/).
+     * [prompt-character](../../maskedtextbox/mask-configuration/#prompt-character).
      * @default '_'
      */
     promptChar?: string;

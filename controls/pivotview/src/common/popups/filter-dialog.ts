@@ -1,7 +1,7 @@
 import { createElement, removeClass, addClass, remove, isNullOrUndefined, setStyleAttribute } from '@syncfusion/ej2-base';
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
-import { TreeView, NodeCheckEventArgs, Tab, TabItemModel, EJ2Instance } from '@syncfusion/ej2-navigations';
+import { TreeView, NodeCheckEventArgs, Tab, TabItemModel, EJ2Instance, NodeClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Dialog, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
 import { MaskedTextBox, MaskChangeEventArgs, NumericTextBox, ChangeEventArgs as NumericChangeEventArgs } from '@syncfusion/ej2-inputs';
 import { setStyleAndAttributes } from '@syncfusion/ej2-grids';
@@ -177,6 +177,8 @@ export class FilterDialog {
             fields: { dataSource: data, id: 'id', text: 'name', isChecked: 'checkedStatus', },
             showCheckBox: true,
             enableRtl: this.parent.enableRtl,
+            nodeClicked: this.nodeCheck.bind(this),
+            keyPress: this.nodeCheck.bind(this)
         });
         this.allMemberSelect.appendTo(selectAllContainer);
         editorTreeWrapper.appendChild(treeViewContainer);
@@ -184,11 +186,26 @@ export class FilterDialog {
             fields: { dataSource: treeData, id: 'id', text: 'name', isChecked: 'checkedStatus' },
             showCheckBox: true,
             enableRtl: this.parent.enableRtl,
-            nodeChecking: this.validateTreeNode.bind(this)
+            nodeChecking: this.validateTreeNode.bind(this),
+            nodeClicked: this.nodeCheck.bind(this),
+            keyPress: this.nodeCheck.bind(this)
         });
         this.memberTreeView.appendTo(treeViewContainer);
         editorTreeWrapper.appendChild(labelWrapper);
         return editorTreeWrapper;
+    }
+
+    /* tslint:disable:no-any */
+    private nodeCheck(args: NodeClickEventArgs): void {
+        let checkedNode: any = [args.node];
+        if ((args.event.target as HTMLElement).classList.contains('e-fullrow') || (args.event as any).key === 'Enter') {
+            let getNodeDetails: any = this.memberTreeView.getNode(args.node);
+            if (getNodeDetails.isChecked === 'true') {
+                this.memberTreeView.uncheckAll(checkedNode);
+            } else {
+                this.memberTreeView.checkAll(checkedNode);
+            }
+        }
     }
 
     private createTabMenu(treeData: { [key: string]: Object }[], fieldCaption: string, fieldName: string): void {

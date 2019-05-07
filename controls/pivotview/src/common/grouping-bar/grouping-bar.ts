@@ -97,6 +97,7 @@ export class GroupingBar implements IAction {
         this.rightAxisPanel.appendChild(columnAxisPanel);
         this.groupingTable.appendChild(this.leftAxisPanel);
         this.groupingTable.appendChild(this.rightAxisPanel);
+        this.groupingTable.classList.add(cls.GRID_GROUPING_BAR_CLASS);
         let axisPanels: HTMLElement[] = [this.rowPanel, this.columnPanel, this.valuePanel, this.filterPanel];
 
         for (let element of axisPanels) {
@@ -109,6 +110,7 @@ export class GroupingBar implements IAction {
         if (this.parent.displayOption.view !== 'Table' && this.parent.groupingBarSettings.displayMode !== 'Table') {
             this.groupingChartTable = this.groupingTable.cloneNode(true) as HTMLElement;
             this.groupingChartTable.classList.add(cls.CHART_GROUPING_BAR_CLASS);
+            this.groupingChartTable.classList.remove(cls.GRID_GROUPING_BAR_CLASS);
             this.groupingChartTable.querySelector('.' + cls.GROUP_ROW_CLASS).classList.add(cls.GROUP_CHART_ROW);
             this.groupingChartTable.querySelector('.' + cls.GROUP_COLUMN_CLASS).classList.add(cls.GROUP_CHART_COLUMN);
             if (this.parent.chartSettings.enableMultiAxis) {
@@ -126,85 +128,98 @@ export class GroupingBar implements IAction {
         }
     }
     private appendToElement(): void {
-        if (this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
-            /* tslint:disable:no-any */
-            for (let element of this.parent.element.querySelectorAll('.' + cls.GROUPING_BAR_CLASS) as any) {
-                remove(element);
-            }
-        }
-        if (this.groupingChartTable) {
-            if (this.parent.element.querySelector('#' + this.parent.element.id + '_chart')) {
-                setStyleAttribute(this.groupingChartTable, { width: formatUnit(this.parent.chart.width) });
-                this.parent.element.insertBefore(
-                    this.groupingChartTable, this.parent.element.querySelector('#' + this.parent.element.id + '_chart'));
-            } else {
-                this.groupingChartTable = undefined;
-            }
-        }
-        if (this.parent.displayOption.view !== 'Chart' && this.groupingTable) {
-            if (this.parent.isAdaptive) {
-                this.leftAxisPanel.style.minWidth = '180px';
-                this.valuePanel.style.minWidth = '180px';
-            }
-            if (this.parent.firstColWidth) {
-                this.leftAxisPanel.style.minWidth = 'auto';
-                this.valuePanel.style.minWidth = 'auto';
-            }
-            this.filterPanel.removeAttribute('style');
-            this.columnPanel.removeAttribute('style');
-            this.rowPanel.removeAttribute('style');
-            this.filterPanel.removeAttribute('style');
-            let emptyRowCount: number = Object.keys(this.parent.engineModule.headerContent).length;
-            if (emptyRowCount) {
-                let emptyHeader: HTMLElement =
-                    this.parent.element.querySelector('.e-frozenheader').querySelector('.e-columnheader') as HTMLElement;
-                addClass([emptyHeader], 'e-row');
-                emptyHeader.removeAttribute('style');
-                addClass([emptyHeader.querySelector('.e-headercell')], 'e-group-row');
-                emptyHeader.querySelector('.e-group-row').appendChild(this.rowAxisPanel);
-                (emptyHeader.querySelector('.e-group-row').querySelector('.e-headercelldiv') as HTMLElement).style.display = 'none';
-                (emptyHeader.querySelector('.e-group-row').querySelector('.e-sortfilterdiv') as HTMLElement).style.display = 'none';
-            }
-            this.parent.element.insertBefore(this.groupingTable, this.parent.element.querySelector('.' + cls.GRID_CLASS));
-            setStyleAttribute(this.groupingTable, { width: formatUnit(this.parent.grid.width) });
-            this.groupingTable.style.minWidth = '400px';
-            this.parent.axisFieldModule.render();
-            this.setGridRowWidth();
-            let colGroupElement: HTMLElement =
-                this.parent.element.querySelector('.e-frozenheader').querySelector('colgroup').children[0] as HTMLElement;
-            let rightAxisPanelWidth: string = formatUnit(this.groupingTable.offsetWidth - parseInt(colGroupElement.style.width, 10));
-            setStyleAttribute(this.valuePanel, { width: colGroupElement.style.width });
-            setStyleAttribute(this.rightAxisPanel, { width: rightAxisPanelWidth });
-            let rightPanelHeight: number = (this.valuePanel.offsetHeight / 2);
-            if (rightPanelHeight > this.columnPanel.offsetHeight) {
-                setStyleAttribute(this.filterPanel, { height: formatUnit(rightPanelHeight) });
-                setStyleAttribute(this.columnPanel, { height: formatUnit(rightPanelHeight + 1) });
-            }
-            let topLeftHeight: number =
-                (this.parent.element.querySelector('.e-headercontent') as HTMLElement).offsetHeight;
-            setStyleAttribute(this.rowPanel, {
-                height: topLeftHeight + 'px'
-            });
-            if (this.parent.element.querySelector('.e-frozenheader').querySelector('.e-rhandler')) {
-                (this.parent.element.querySelector('.e-frozenheader').querySelector('.e-rhandler') as HTMLElement).style.height =
-                    topLeftHeight + 'px';
-            }
-
-            let colRows: HTMLTableElement[] =
-                [].slice.call(this.parent.element.querySelector('.e-movableheader').querySelector('thead').querySelectorAll('tr'));
-            let columnRows: HTMLTableElement[] = colRows.filter((trCell: HTMLTableElement) => {
-                return (trCell.childNodes.length > 0);
-            });
-            let colHeight: number = topLeftHeight / columnRows.length;
-            for (let element of columnRows) {
-                setStyleAttribute(element, { 'height': colHeight + 'px' });
-                let rowHeader: HTMLElement[] = [].slice.call(element.querySelectorAll('.e-rhandler')) as HTMLElement[];
-                for (let rhElement of rowHeader) {
-                    setStyleAttribute(rhElement, { 'height': colHeight + 'px' });
+        if (this.parent.element.querySelector('.' + cls.GRID_CLASS) || this.parent.element.querySelector('.' + cls.PIVOTCHART)) {
+            if (this.parent.showGroupingBar) {
+                if (this.parent.element.querySelector('.' + cls.GROUPING_BAR_CLASS)) {
+                    /* tslint:disable:no-any */
+                    for (let element of this.parent.element.querySelectorAll('.' + cls.GROUPING_BAR_CLASS) as any) {
+                        remove(element);
+                    }
                 }
+                if (this.groupingChartTable) {
+                    if (this.parent.element.querySelector('#' + this.parent.element.id + '_chart')) {
+                        setStyleAttribute(this.groupingChartTable, { width: formatUnit(this.parent.chart.width) });
+                        this.parent.element.insertBefore(
+                            this.groupingChartTable, this.parent.element.querySelector('#' + this.parent.element.id + '_chart'));
+                    } else {
+                        this.groupingChartTable = undefined;
+                    }
+                }
+                if (this.parent.displayOption.view !== 'Chart' && this.groupingTable) {
+                    if (this.parent.isAdaptive) {
+                        this.leftAxisPanel.style.minWidth = '180px';
+                        this.valuePanel.style.minWidth = '180px';
+                    }
+                    if (this.parent.firstColWidth) {
+                        this.leftAxisPanel.style.minWidth = 'auto';
+                        this.valuePanel.style.minWidth = 'auto';
+                    }
+                    this.filterPanel.removeAttribute('style');
+                    this.columnPanel.removeAttribute('style');
+                    this.rowPanel.removeAttribute('style');
+                    this.filterPanel.removeAttribute('style');
+                    let emptyRowCount: number = Object.keys(this.parent.engineModule.headerContent).length;
+                    if (emptyRowCount) {
+                        let emptyHeader: HTMLElement =
+                            this.parent.element.querySelector('.e-frozenheader').querySelector('.e-columnheader') as HTMLElement;
+                        addClass([emptyHeader], 'e-row');
+                        emptyHeader.removeAttribute('style');
+                        addClass([emptyHeader.querySelector('.e-headercell')], 'e-group-row');
+                        emptyHeader.querySelector('.e-group-row').appendChild(this.rowAxisPanel);
+                        (emptyHeader.querySelector('.e-group-row').querySelector('.e-headercelldiv') as HTMLElement).style.display = 'none';
+                        (emptyHeader.querySelector('.e-group-row').querySelector('.e-sortfilterdiv') as HTMLElement).style.display = 'none';
+                    }
+                    this.parent.element.insertBefore(this.groupingTable, this.parent.element.querySelector('.' + cls.GRID_CLASS));
+                    setStyleAttribute(this.groupingTable, { width: formatUnit(this.parent.grid.width) });
+                    this.groupingTable.style.minWidth = '400px';
+                    this.parent.axisFieldModule.render();
+                    this.setGridRowWidth();
+                    let colGroupElement: HTMLElement =
+                        this.parent.element.querySelector('.e-frozenheader').querySelector('colgroup').children[0] as HTMLElement;
+                    let rightAxisPanelWidth: string =
+                        formatUnit(this.groupingTable.offsetWidth - parseInt(colGroupElement.style.width, 10));
+                    setStyleAttribute(this.valuePanel, { width: colGroupElement.style.width });
+                    setStyleAttribute(this.rightAxisPanel, { width: rightAxisPanelWidth });
+                    let rightPanelHeight: number = (this.valuePanel.offsetHeight / 2);
+                    if (rightPanelHeight > this.columnPanel.offsetHeight) {
+                        setStyleAttribute(this.filterPanel, { height: formatUnit(rightPanelHeight) });
+                        setStyleAttribute(this.columnPanel, { height: formatUnit(rightPanelHeight + 1) });
+                    }
+                    let topLeftHeight: number =
+                        (this.parent.element.querySelector('.e-headercontent') as HTMLElement).offsetHeight;
+                    setStyleAttribute(this.rowPanel, {
+                        height: topLeftHeight + 'px'
+                    });
+                    if (this.parent.element.querySelector('.e-frozenheader').querySelector('.e-rhandler')) {
+                        (this.parent.element.querySelector('.e-frozenheader').querySelector('.e-rhandler') as HTMLElement).style.height =
+                            topLeftHeight + 'px';
+                    }
+
+                    let colRows: HTMLTableElement[] =
+                        [].slice.call(this.parent.element.querySelector('.e-movableheader').querySelector('thead').querySelectorAll('tr'));
+                    let columnRows: HTMLTableElement[] = colRows.filter((trCell: HTMLTableElement) => {
+                        return (trCell.childNodes.length > 0);
+                    });
+                    let colHeight: number = topLeftHeight / columnRows.length;
+                    for (let element of columnRows) {
+                        setStyleAttribute(element, { 'height': colHeight + 'px' });
+                        let rowHeader: HTMLElement[] = [].slice.call(element.querySelectorAll('.e-rhandler')) as HTMLElement[];
+                        for (let rhElement of rowHeader) {
+                            setStyleAttribute(rhElement, { 'height': colHeight + 'px' });
+                        }
+                    }
+                } else {
+                    this.parent.axisFieldModule.render();
+                }
+                if (this.parent.showToolbar && this.parent.displayOption.view === 'Both') {
+                    if (this.parent.currentView === 'Table') {
+                        (this.parent.element.querySelector('.e-chart-grouping-bar') as HTMLElement).style.display = 'none';
+                    } else {
+                        (this.parent.element.querySelector('.e-pivot-grouping-bar') as HTMLElement).style.display = 'none';
+                    }
+                }
+
             }
-        } else {
-            this.parent.axisFieldModule.render();
         }
     }
     /**
@@ -227,6 +242,9 @@ export class GroupingBar implements IAction {
                 this.parent.element.querySelector('.e-frozenheader').querySelector('.e-columnheader') as HTMLElement;
             addClass([emptyRowHeader], 'e-row');
             addClass([emptyRowHeader.querySelector('.e-headercell')], 'e-group-row');
+            setStyleAttribute(this.rowPanel, {
+                height: (this.parent.element.querySelector('.e-headercontent') as HTMLElement).offsetHeight + 'px'
+            });
             emptyRowHeader.querySelector('.e-group-row').appendChild(this.rowAxisPanel);
             setStyleAttribute(emptyRowHeader.querySelector('.e-group-row').querySelector('.e-headercelldiv') as HTMLElement, {
                 display: 'none'

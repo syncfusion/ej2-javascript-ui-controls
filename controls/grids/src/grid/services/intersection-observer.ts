@@ -13,7 +13,7 @@ export class InterSectionObserver {
     private fromWheel: boolean = false;
     private touchMove: boolean = false;
     private options: InterSection = {};
-    private sentinelInfo: SentinelInfo = {
+    public sentinelInfo: SentinelInfo = {
         'up': {
             check: (rect: ClientRect, info: SentinelType) => {
                 let top: number = rect.top - this.containerRect.top;

@@ -413,6 +413,16 @@ public pagerTemplate: string;
      */
     @Property()
     public columnMenuItems: ColumnMenuItem[] | ColumnMenuItemModel[];
+    /**   
+     * The row template that renders customized rows from the given template. 
+     * By default, TreeGrid renders a table row for every data source item.
+     * > * It accepts either [template string](../../common/template-engine.html) or HTML element ID.   
+     * > * The row template must be a table row.  
+     * 
+     * > Check the [`Row Template`](../../treegrid/row) customization.
+     */
+    @Property()
+    public rowTemplate: string;
 
   /**
    * Defines the height of TreeGrid rows.
@@ -1012,11 +1022,15 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
           break;
         case 'ctrlShiftUpArrow':
           let collapsetarget: HTMLElement = <HTMLElement>e.target;
-          this.expandCollapseRequest(<HTMLElement>collapsetarget.querySelector('.e-icons'));
+          let collapsecolumn: HTMLElement = <HTMLElement>collapsetarget.closest('.e-rowcell');
+          let collapserow : HTMLElement = <HTMLElement>collapsecolumn.closest('tr');
+          this.expandCollapseRequest(<HTMLElement>collapserow.querySelector('.e-treegridexpand'));
           break;
         case 'ctrlShiftDownArrow':
           let expandtarget: HTMLElement = <HTMLElement>e.target;
-          this.expandCollapseRequest(<HTMLElement>expandtarget.querySelector('.e-icons'));
+          let expandcolumn: HTMLElement = <HTMLElement>expandtarget.closest('.e-rowcell');
+          let expandrow: HTMLElement = <HTMLElement>expandcolumn.closest('tr');
+          this.expandCollapseRequest(<HTMLElement>expandrow.querySelector('.e-treegridcollapse'));
           break;
           case 'downArrow':
             let target: HTMLElement = (<HTMLTableCellElement>e.target).parentElement;
@@ -1310,6 +1324,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.grid.contextMenuItems = getActualProperties(this.getContextMenu());
     this.grid.columnMenuItems = getActualProperties(this.columnMenuItems);
     this.grid.editSettings = this.getGridEditSettings();
+    this.grid.rowTemplate = getActualProperties(this.rowTemplate);
   }
   private triggerEvents(args?: Object): void {
     this.trigger(getObject('name', args), args);
@@ -1410,6 +1425,13 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
   private extendedGridEditEvents(): void {
 
     this.grid.cellSave = (args: CellSaveArgs): void => {
+      if (this.grid.isContextMenuOpen()) {
+        let contextitems: HTMLElement;
+        contextitems = <HTMLElement>this.grid.contextMenuModule.contextMenu.element.getElementsByClassName('e-selected')[0];
+        if ((isNullOrUndefined(contextitems) || contextitems.id !== this.element.id + '_gridcontrol_cmenu_Save')) {
+          args.cancel = true;
+        }
+      }
       this.trigger(events.cellSave, args);
       if (!args.cancel) {
         this.notify(events.cellSave, args);
@@ -1475,9 +1497,6 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
         this.notify('setColumnIndex', {});
       }
       if (this.isLocalData) {
-        if ((args.requestType === 'delete' || args.requestType === 'save')) {
-          this.notify(events.crudAction, { value: args.data, action: args.action || args.requestType });
-        }
         if (args.requestType === 'add' && (this.editSettings.newRowPosition !== 'Top' && this.editSettings.newRowPosition !== 'Bottom')) {
           this.notify(events.beginAdd, args);
         }
@@ -1495,6 +1514,11 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
         setValue('isPrinting', (<IGrid>this).isPrinting, args);
       }
       treeGrid.renderModule.RowModifier(args);
+      if (treeGrid.rowTemplate) {
+        let rcell: object = (<HTMLTableRowElement>args.row).cells[treeGrid.treeColumnIndex];
+        let arg: object = { data: args.data, row: args.row, cell: rcell, column: this.getColumns()[treeGrid.treeColumnIndex] };
+        this.queryCellInfo(arg);
+      }
     };
     this.grid.queryCellInfo = function (args: QueryCellInfoEventArgs): void {
       if (isNullOrUndefined((<IGrid>this).isPrinting)) {
@@ -1735,6 +1759,9 @@ private getGridEditSettings(): GridEditModel {
           break;
         case 'gridLines':
           this.grid.gridLines = this.gridLines; break;
+        case 'rowTemplate':
+          this.grid.rowTemplate = getActualProperties(this.rowTemplate);
+          break;
         case 'rowHeight':
           this.grid.rowHeight = this.rowHeight; break;
         case 'height':
@@ -2291,12 +2318,12 @@ private getGridEditSettings(): GridEditModel {
    * @hidden
    */
   private expandCollapseRequest(target: HTMLElement): void {
-    let rowInfo: RowInfo = this.grid.getRowInfo(target);
-    let record: ITreeData = <ITreeData>rowInfo.rowData;
+    let rowInfo: HTMLElement = target.closest('.e-treerowcell').parentElement;
+    let record: object = this.getCurrentViewRecords()[(<HTMLTableRowElement>rowInfo).rowIndex];
     if (target.classList.contains('e-treegridexpand')) {
-      this.collapseRow(<HTMLTableRowElement>rowInfo.row, record);
+      this.collapseRow(<HTMLTableRowElement>rowInfo, record);
     } else {
-      this.expandRow(<HTMLTableRowElement>rowInfo.row, record);
+      this.expandRow(<HTMLTableRowElement>rowInfo, record);
     }
   }
   /**

@@ -3,9 +3,10 @@ import { TextStyle, Margin } from '../core/appearance';
 import { Point } from '../primitives/point';
 import { TextStyleModel, MarginModel } from '../core/appearance-model';
 import { PointModel } from '../primitives/point-model';
-import { HyperlinkModel } from '../objects/annotation-model';
+import { HyperlinkModel, AnnotationModel } from '../objects/annotation-model';
 import { HorizontalAlignment, VerticalAlignment, AnnotationAlignment, AnnotationTypes, TextDecoration } from '../enum/enum';
 import { AnnotationConstraints } from '../enum/enum';
+import { randomId } from '../utility/base-util';
 
 /**
  * Defines the hyperlink for the annotations in the nodes/connectors
@@ -213,6 +214,18 @@ export class Annotation extends ChildProperty<Annotation> {
      */
     @Property()
     public addInfo: Object;
+
+    // tslint:disable-next-line:no-any
+    constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
+        super(parent, propName, defaultValue, isArray);
+        if (!(defaultValue as AnnotationModel).id) {
+            if (parent.parentObj && parent.parentObj.propName && parent.parentObj.propName === 'phases') {
+                this.id = parent.parentObj.id;
+            } else {
+                this.id = randomId();
+            }
+        }
+    }
 }
 
 /**

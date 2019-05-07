@@ -24,8 +24,7 @@ export class TimelineViews extends VerticalView {
         this.scrollHeaderLabels(target);
     }
     public scrollToWorkHour(): void {
-        let start: Date =
-            this.parent.globalize.parseDate(this.parent.workHours.start, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        let start: Date = this.parent.getStartEndTime(this.parent.workHours.start);
         let currDateTime: number = this.isWorkDay(this.parent.selectedDate) && this.parent.workHours.highlight &&
             !isNullOrUndefined(start) ? new Date(+this.parent.selectedDate).setHours(start.getHours(), start.getMinutes())
             : new Date(+this.parent.selectedDate).setHours(0, 0, 0, 0);
@@ -36,7 +35,7 @@ export class TimelineViews extends VerticalView {
         }
     }
     public scrollToHour(hour: string): void {
-        let date: Date = this.parent.globalize.parseDate(hour, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        let date: Date = this.parent.getStartEndTime(hour);
         if (isNullOrUndefined(date)) {
             return;
         }
@@ -172,8 +171,8 @@ export class TimelineViews extends VerticalView {
         let resLevel: TdData = this.parent.resourceBase.renderedResources[i];
         let resSHr: string = (resLevel.resourceData[resLevel.resource.startHourField] as string) || this.parent.workHours.start;
         let resEHr: string = (resLevel.resourceData[resLevel.resource.endHourField] as string) || this.parent.workHours.end;
-        tdData.startHour = this.parent.globalize.parseDate(resSHr, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
-        tdData.endHour = this.parent.globalize.parseDate(resEHr, { skeleton: 'Hm', calendar: this.parent.getCalendarMode() });
+        tdData.startHour = this.parent.getStartEndTime(resSHr);
+        tdData.endHour = this.parent.getStartEndTime(resEHr);
         tdData.workDays = (resLevel.resourceData[resLevel.resource.workDaysField] as number[]) || this.parent.workDays;
         tdData.className = resLevel.className;
         tdData.groupIndex = resLevel.groupIndex;

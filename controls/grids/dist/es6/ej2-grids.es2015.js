@@ -4420,6 +4420,11 @@ class HeaderRender {
     renderPanel() {
         let div = this.parent.createElement('div', { className: 'e-gridheader' });
         let innerDiv = this.parent.createElement('div', { className: 'e-headercontent' });
+        let column = this.parent.columns;
+        let stackedHdr = column.some((column) => column.columns !== undefined);
+        if (stackedHdr) {
+            div.classList.add('e-stackedheader');
+        }
         div.appendChild(innerDiv);
         this.setPanel(div);
         this.parent.element.appendChild(div);
@@ -10679,14 +10684,14 @@ let Grid = Grid_1 = class Grid extends Component {
      */
     getPersistData() {
         let keyEntity = ['pageSettings', 'sortSettings',
-            'filterSettings', 'groupSettings', 'columns', 'searchSettings', 'selectedRowIndex'];
+            'filterSettings', 'groupSettings', 'columns', 'searchSettings', 'selectedRowIndex', 'scrollPosition'];
         let ignoreOnPersist = {
             pageSettings: ['template', 'pageSizes', 'enableQueryString', 'totalRecordsCount', 'pageCount'],
             filterSettings: ['type', 'mode', 'showFilterBarStatus', 'immediateModeDelay', 'ignoreAccent'],
             groupSettings: ['showDropArea', 'showToggleButton', 'showGroupedColumn', 'showUngroupButton',
                 'disablePageWiseAggregates', 'hideCaptionCount'],
             searchSettings: ['fields', 'operator', 'ignoreCase'],
-            sortSettings: [], columns: [], selectedRowIndex: []
+            sortSettings: [], columns: [], selectedRowIndex: [], scrollPosition: []
         };
         keyEntity.forEach((value) => {
             let currentObject = this[value];
@@ -13007,6 +13012,9 @@ let Grid = Grid_1 = class Grid extends Component {
         let data = window.localStorage.getItem(this.getModuleName() + this.element.id);
         if (!(isNullOrUndefined(data) || (data === ''))) {
             let dataObj = JSON.parse(data);
+            if (this.enableVirtualization) {
+                dataObj.pageSettings.currentPage = 1;
+            }
             let keys = Object.keys(dataObj);
             this.isProtectedOnChange = true;
             for (let key of keys) {
@@ -21091,6 +21099,9 @@ class VirtualContentRenderer extends ContentRender {
         this.virtualEle.adjustTable(0, 0);
     }
     scrollListener(scrollArgs) {
+        if (this.parent.enablePersistence) {
+            this.parent.scrollPosition = scrollArgs.offset;
+        }
         if (this.preventEvent || this.parent.isDestroyed) {
             this.preventEvent = false;
             return;
@@ -21309,6 +21320,16 @@ class VirtualContentRenderer extends ContentRender {
         this.actions.forEach((event) => this.parent[action](`${event}-begin`, this.onActionBegin, this));
         let fn = () => {
             this.observer.observe((scrollArgs) => this.scrollListener(scrollArgs), this.onEntered());
+            let gObj = this.parent;
+            if (gObj.enablePersistence && gObj.scrollPosition) {
+                this.content.scrollTop = gObj.scrollPosition.top;
+                let scrollValues = { direction: 'down', sentinel: this.observer.sentinelInfo.down,
+                    offset: gObj.scrollPosition, focusElement: gObj.element };
+                this.scrollListener(scrollValues);
+                if (gObj.enableColumnVirtualization) {
+                    this.content.scrollLeft = gObj.scrollPosition.left;
+                }
+            }
             this.parent.off(contentReady, fn);
         };
         this.parent.on(contentReady, fn, this);
@@ -24805,6 +24826,7 @@ class ColumnChooser {
         let fltrCol;
         let okButton;
         let buttonEle = this.dlgDiv.querySelector('.e-footer-content');
+        this.isInitialOpen = true;
         if (buttonEle) {
             okButton = buttonEle.querySelector('.e-btn').ej2_instances[0];
         }
@@ -24863,7 +24885,13 @@ class ColumnChooser {
         let checkstate;
         let elem = parentsUntil(e.target, 'e-checkbox-wrapper');
         if (elem) {
-            toogleCheckbox(elem.parentElement);
+            let selectAll = elem.querySelector('.e-selectall');
+            if (selectAll) {
+                this.updateSelectAll(!elem.querySelector('.e-check'));
+            }
+            else {
+                toogleCheckbox(elem.parentElement);
+            }
             elem.querySelector('.e-chk-hidden').focus();
             if (elem.querySelector('.e-check')) {
                 checkstate = true;
@@ -24874,9 +24902,45 @@ class ColumnChooser {
             else {
                 return;
             }
+            this.updateIntermediateBtn();
             let columnUid = parentsUntil(elem, 'e-ccheck').getAttribute('uid');
-            this.checkstatecolumn(checkstate, columnUid);
+            let column = this.parent.getColumns();
+            if (columnUid === 'grid-selectAll') {
+                column.forEach((col) => {
+                    this.checkstatecolumn(checkstate, col.uid);
+                });
+            }
+            else {
+                this.checkstatecolumn(checkstate, columnUid);
+            }
             this.refreshCheckboxButton();
+        }
+    }
+    updateIntermediateBtn() {
+        let cnt = this.ulElement.children.length - 1;
+        let className = [];
+        let elem = this.ulElement.children[0].querySelector('.e-frame');
+        let selected = this.ulElement.querySelectorAll('.e-check:not(.e-selectall)').length;
+        let btn = this.dlgObj.btnObj[0];
+        btn.disabled = false;
+        if (cnt === selected) {
+            className = ['e-check'];
+        }
+        else if (selected) {
+            className = ['e-stop'];
+        }
+        else {
+            className = ['e-uncheck'];
+            btn.disabled = true;
+        }
+        btn.dataBind();
+        removeClass([elem], ['e-check', 'e-stop', 'e-uncheck']);
+        addClass([elem], className);
+    }
+    updateSelectAll(checked) {
+        let cBoxes = [].slice.call(this.ulElement.querySelectorAll('.e-frame'));
+        for (let cBox of cBoxes) {
+            removeAddCboxClasses(cBox, checked);
         }
     }
     refreshCheckboxButton() {
@@ -24913,6 +24977,16 @@ class ColumnChooser {
     }
     refreshCheckboxList(gdCol, searchVal) {
         this.ulElement = this.parent.createElement('ul', { className: 'e-ccul-ele e-cc' });
+        let selectAllValue = this.l10n.getConstant('SelectAll');
+        let cclist = this.parent.createElement('li', { className: 'e-cclist e-cc e-cc-selectall' });
+        let selectAll = this.createCheckBox(selectAllValue, false, 'grid-selectAll');
+        if (gdCol.length) {
+            selectAll.querySelector('.e-checkbox-wrapper').firstElementChild.classList.add('e-selectall');
+            selectAll.querySelector('.e-frame').classList.add('e-selectall');
+            this.checkState(selectAll.querySelector('.e-icons'), true);
+            cclist.appendChild(selectAll);
+            this.ulElement.appendChild(cclist);
+        }
         for (let i = 0; i < gdCol.length; i++) {
             let columns = gdCol[i];
             this.renderCheckbox(columns);
@@ -24923,7 +24997,7 @@ class ColumnChooser {
         this.dlgObj.element.querySelector('.e-cc.e-input').value = '';
         this.columnChooserSearch('');
         let gridObject = this.parent;
-        let currentCheckBoxColls = this.dlgObj.element.querySelectorAll('.e-cc-chbox');
+        let currentCheckBoxColls = this.dlgObj.element.querySelectorAll('.e-cc-chbox:not(.e-selectall)');
         for (let i = 0, itemLen = currentCheckBoxColls.length; i < itemLen; i++) {
             let element = currentCheckBoxColls[i];
             let columnUID;
@@ -24963,6 +25037,9 @@ class ColumnChooser {
             let cccheckboxlist = this.createCheckBox(column.headerText, (column.visible && !hideColState) || showColState, column.uid);
             cclist.appendChild(cccheckboxlist);
             this.ulElement.appendChild(cclist);
+        }
+        if (this.isInitialOpen) {
+            this.updateIntermediateBtn();
         }
     }
     columnChooserManualSearch(e) {
@@ -26150,7 +26227,7 @@ class ExcelExport {
                 let format = col.format;
                 style.numberFormat = !isNullOrUndefined(format.format) ? format.format : format.skeleton;
                 if (!isNullOrUndefined(format.type)) {
-                    style.type = format.type;
+                    style.type = format.type.toLowerCase();
                 }
             }
             else {
@@ -28275,7 +28352,9 @@ class FreezeRender extends HeaderRender {
                 fRows = fHdr.querySelector(wrapMode === 'Content' ? 'tbody' : 'thead').querySelectorAll('tr');
                 mRows = mHdr.querySelector(wrapMode === 'Content' ? 'tbody' : 'thead').querySelectorAll('tr');
             }
-            this.setWrapHeight(fRows, mRows, obj.isModeChg, false, this.colDepth > 1);
+            if (!this.parent.getHeaderContent().querySelectorAll('.e-stackedheadercell').length) {
+                this.setWrapHeight(fRows, mRows, obj.isModeChg, false, this.colDepth > 1);
+            }
             this.refreshStackedHdrHgt();
         }
     }

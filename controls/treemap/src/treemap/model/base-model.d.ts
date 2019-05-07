@@ -398,7 +398,7 @@ export interface LeafItemSettingsModel {
 
     /**
      * Specifies the fill color for leaf items.
-     * @default '#808080'
+     * @default null
      */
     fill?: string;
 
@@ -640,7 +640,7 @@ export interface LevelSettingsModel {
 
     /**
      * Specifies the background of level.
-     * @default '#808080'
+     * @default null
      */
     fill?: string;
 

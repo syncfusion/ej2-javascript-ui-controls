@@ -2840,6 +2840,7 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     private applyFunction(eve?: MouseEvent | KeyboardEventArgs): void {
+        let isValueChanged: boolean = false;
         eve.preventDefault();
         if (this.closeEventArgs && this.closeEventArgs.cancel) {
             this.startValue = this.popupWrapper.querySelector('.e-start-date') &&
@@ -2860,11 +2861,18 @@ export class DateRangePicker extends CalendarBase {
             this.previousEndValue = new Date(+this.endValue);
             this.previousEleValue = this.inputElement.value;
             Input.setValue(this.rangeArgs(eve).text, this.inputElement, this.floatLabelType, this.showClearButton);
+            if (+this.initStartDate !== +this.startValue || +this.initEndDate !== +this.endValue) {
+                isValueChanged = true;
+            }
             this.changeTrigger(eve);
             this.hide(eve ? eve : null);
             this.errorClass();
         } else {
             this.hide(eve ? eve : null);
+        }
+        if (!(closest(eve.target as HTMLElement, '.' + INPUTCONTAINER))
+        && (!isValueChanged)) {
+            this.focusOut();
         }
         if (!this.isMobile) {
             this.isKeyPopup = false;

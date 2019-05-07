@@ -947,7 +947,10 @@ describe('Schedule Timeline Week view', () => {
             schObj.workHours.highlight = false;
             schObj.dataBind();
             schObj.setWorkHours([new Date(2017, 9, 5)], '04:00', '08:00');
-            expect(schObj.element.querySelectorAll('.e-work-hours').length).toEqual(8);
+            let workHourCells: HTMLTableCellElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-hours'));
+            expect(workHourCells.length).toEqual(8);
+            expect(workHourCells[0].cellIndex).toEqual(200);
+            expect(workHourCells[workHourCells.length - 1].cellIndex).toEqual(207);
             schObj.setWorkHours([new Date(2017, 9, 5)], '16:00', '20:00');
             expect(schObj.element.querySelectorAll('.e-work-hours').length).toEqual(16);
 
@@ -1113,8 +1116,12 @@ describe('Schedule Timeline Week view', () => {
             schObj.workHours.highlight = false;
             schObj.dataBind();
             schObj.setWorkHours([new Date(2017, 9, 5)], '04:00', '08:00', 0);
-            expect(schObj.element.querySelectorAll('.e-work-hours').length).toEqual(8);
+            let workHourCells: HTMLTableCellElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-hours'));
+            expect(workHourCells.length).toEqual(8);
+            expect(workHourCells[0].cellIndex).toEqual(200);
+            expect(workHourCells[workHourCells.length - 1].cellIndex).toEqual(207);
             schObj.setWorkHours([new Date(2017, 9, 5)], '16:00', '20:00', 0);
+            expect(schObj.element.querySelectorAll('.e-work-hours[data-group-index="0"]').length).toEqual(16);
             expect(schObj.element.querySelectorAll('.e-work-hours').length).toEqual(16);
 
             schObj.setWorkHours([new Date(2017, 9, 5)], '16', '20', 0);

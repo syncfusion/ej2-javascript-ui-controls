@@ -3,7 +3,7 @@ import { DropDownBase, dropDownBaseClasses, SelectEventArgs } from '../drop-down
 import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';
 import { EventHandler, closest, removeClass, addClass, Complex, Property, ChildProperty, BaseEventArgs, L10n } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, NotifyPropertyChanges, getComponent, EmitType, Event, extend, detach, attributes } from '@syncfusion/ej2-base';
-import { getUniqueID, Browser, formatUnit } from '@syncfusion/ej2-base';
+import { getUniqueID, Browser, formatUnit, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { cssClass, Sortable, moveTo } from '@syncfusion/ej2-lists';
 import { SelectionSettingsModel, ListBoxModel, ToolbarSettingsModel } from './list-box-model';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -610,6 +610,9 @@ export class ListBox extends DropDownBase {
             }
         });
         this.updateSelectedOptions();
+        this.triggerSelectAndChange(
+            this.getSelectedItems(), this.selectionSettings.showCheckbox && this.selectionSettings.showSelectAll ?
+                this.isSelected(this.list.firstElementChild) : state);
     }
 
     private wireEvents(): void {
@@ -680,6 +683,8 @@ export class ListBox extends DropDownBase {
                     });
                     removeClass(this.getSelectedItems(), cssClass.selected);
                 }
+            } else {
+                isSelect = !li.getElementsByClassName('e-frame')[0].classList.contains('e-check');
             }
             if (e.shiftKey && !this.selectionSettings.showCheckbox && this.selectionSettings.mode !== 'Single') {
                 selectedLi = [].slice.call(li.parentElement.children)
@@ -701,11 +706,15 @@ export class ListBox extends DropDownBase {
                 this.notify('updatelist', { li: li, e: e });
             }
             this.updateSelectedOptions();
-            if (isSelect) {
-                this.trigger('select', { elements: selectedLi, items: this.getDataByElems(selectedLi) });
-            }
-            this.trigger('change', { value: this.value });
+            this.triggerSelectAndChange(selectedLi, isSelect);
         }
+    }
+
+    private triggerSelectAndChange(selectedLi: Element[], isSelect?: Boolean): void {
+        if (isSelect) {
+            this.trigger('select', { elements: selectedLi, items: this.getDataByElems(selectedLi) });
+        }
+        this.trigger('change', { value: this.value });
     }
 
     private getDataByElems(elems: Element[]): Object[] {
@@ -1202,6 +1211,17 @@ export class ListBox extends DropDownBase {
                         }
                         this.initToolbarAndStyles();
                         this.wireToolbarEvent();
+                    }
+                    break;
+                case 'selectionSettings':
+                    let showSelectAll: boolean = newProp.selectionSettings.showSelectAll;
+                    if (!isNullOrUndefined(showSelectAll)) {
+                        this.showSelectAll = showSelectAll;
+                        if (this.showSelectAll) {
+                            this.checkBoxSelectionModule.checkAllParent = null;
+                        }
+                        this.notify('selectAll', {});
+                        this.checkSelectAll();
                     }
                     break;
             }

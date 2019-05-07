@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.44 (2019-05-07)
+
+### Document Editor
+
+#### Bug Fixes
+
+- #233280 - Improvised performance while updating page field.
+
 ## 17.1.43 (2019-04-30)
 
 ### Document Editor

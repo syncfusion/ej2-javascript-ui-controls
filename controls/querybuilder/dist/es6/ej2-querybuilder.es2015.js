@@ -46,6 +46,9 @@ __decorate([
 __decorate([
     Property(null)
 ], Columns.prototype, "step", void 0);
+__decorate([
+    Property(null)
+], Columns.prototype, "value", void 0);
 class Rule extends ChildProperty {
 }
 __decorate([
@@ -861,17 +864,21 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         return result;
     }
-    renderMultiSelect(rule, parentId, i, selectedValue) {
+    renderMultiSelect(rule, parentId, i, selectedValue, values) {
         let isFetched = false;
         let ds;
+        let isValues = false;
         if (this.dataColl[1]) {
             if (Object.keys(this.dataColl[1]).indexOf(rule.field) > -1) {
                 isFetched = true;
                 ds = this.getDistinctValues(this.dataColl, rule.field);
             }
         }
+        if (!this.dataColl.length && values.length) {
+            isValues = true;
+        }
         let multiSelectObj = new MultiSelect({
-            dataSource: isFetched ? ds : this.dataManager,
+            dataSource: isValues ? values : (isFetched ? ds : this.dataManager),
             query: new Query([rule.field]),
             fields: { text: rule.field, value: rule.field },
             value: selectedValue,
@@ -882,6 +889,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             actionBegin: this.multiSelectOpen.bind(this, parentId + '_valuekey' + i)
         });
         multiSelectObj.appendTo('#' + parentId + '_valuekey' + i);
+        this.updateRules(multiSelectObj.element, selectedValue, 0);
     }
     multiSelectOpen(parentId, args) {
         if (this.dataSource instanceof DataManager) {
@@ -946,13 +954,31 @@ let QueryBuilder = class QueryBuilder extends Component {
         let fieldObj = getComponent(document.getElementById(parentId + '_filterkey'), 'dropdownlist');
         return this.columns[fieldObj.index];
     }
+    setDefaultValue(parentId, isArryValue, isNumber) {
+        let itemData = this.getItemData(parentId);
+        if (isNullOrUndefined(itemData.value)) {
+            return isNumber ? isArryValue ? [0, 0] : 0 : isArryValue ? [] : '';
+        }
+        if (isArryValue) {
+            if (!(itemData.value instanceof Array)) {
+                return [itemData.value];
+            }
+        }
+        else {
+            if (itemData.value instanceof Array) {
+                return itemData.value[0];
+            }
+        }
+        // this.updateRules(ruleValElem, itemData.defaultValue, idx);
+        return itemData.value;
+    }
     renderStringValue(parentId, rule, operator, idx, ruleValElem) {
         let selectedVal;
         let columnData = this.getItemData(parentId);
-        let selectedValue = this.isImportRules ? rule.value : '';
-        if ((operator === 'in' || operator === 'notin') && this.dataColl.length) {
-            selectedVal = this.isImportRules ? rule.value : [];
-            this.renderMultiSelect(columnData, parentId, idx, selectedVal);
+        let selectedValue = this.isImportRules ? rule.value : this.setDefaultValue(parentId, false, false);
+        if ((operator === 'in' || operator === 'notin') && (this.dataColl.length || columnData.values)) {
+            selectedVal = this.isImportRules ? rule.value : this.setDefaultValue(parentId, true, false);
+            this.renderMultiSelect(columnData, parentId, idx, selectedVal, columnData.values);
             if (this.displayMode === 'Vertical' || this.element.className.indexOf('e-device') > -1) {
                 ruleValElem.style.width = '100%';
             }
@@ -963,7 +989,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         else {
             if (operator === 'in' || operator === 'notin') {
-                selectedVal = this.isImportRules ? rule.value : [];
+                selectedVal = this.isImportRules ? rule.value : this.setDefaultValue(parentId, true, false);
                 selectedValue = selectedVal.join(',');
             }
             let inputobj = new TextBox({
@@ -976,12 +1002,11 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
     }
     renderNumberValue(parentId, rule, operator, idx, ruleValElem, itemData, length) {
-        let selectedValue = this.isImportRules ? rule.value : 0;
-        let selectedVal;
         let columnData = this.getItemData(parentId);
-        if ((operator === 'in' || operator === 'notin') && this.dataColl.length) {
-            selectedVal = this.isImportRules ? rule.value : [];
-            this.renderMultiSelect(columnData, parentId, idx, selectedVal);
+        let selectedVal = this.isImportRules ? rule.value : this.setDefaultValue(parentId, false, true);
+        if ((operator === 'in' || operator === 'notin') && (this.dataColl.length || columnData.values)) {
+            selectedVal = this.isImportRules ? rule.value : this.setDefaultValue(parentId, true, false);
+            this.renderMultiSelect(columnData, parentId, idx, selectedVal, columnData.values);
             if (this.element.className.indexOf('e-device') > -1 || this.displayMode === 'Vertical') {
                 ruleValElem.style.width = '100%';
             }
@@ -991,7 +1016,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             }
         }
         else if (operator === 'in' || operator === 'notin') {
-            selectedVal = this.isImportRules ? rule.value : [];
+            selectedVal = this.isImportRules ? rule.value : this.setDefaultValue(parentId, true, false);
             let selVal = selectedVal.join(',');
             let inputobj = new TextBox({
                 placeholder: 'Value',
@@ -1008,10 +1033,10 @@ let QueryBuilder = class QueryBuilder extends Component {
             let max = (itemData.validation && itemData.validation.max) ? itemData.validation.max : Number.MAX_VALUE;
             let format = itemData.format ? itemData.format : 'n';
             if (length > 1 && rule) {
-                selectedValue = rule.value[idx] ? rule.value[idx] : 0;
+                selectedVal = rule.value[idx] ? rule.value[idx] : this.setDefaultValue(parentId, true, true);
             }
             let numeric = new NumericTextBox({
-                value: selectedValue,
+                value: (selectedVal instanceof Array) ? selectedVal[idx] : selectedVal,
                 format: format, min: min, max: max, width: '100%',
                 step: itemData.step ? itemData.step : 1,
                 change: this.changeValue.bind(this, idx)
@@ -1067,7 +1092,13 @@ let QueryBuilder = class QueryBuilder extends Component {
                         case 'boolean':
                             {
                                 let values = itemData.values && itemData.values.length ? itemData.values : ['True', 'False'];
-                                let isCheck = this.isImportRules ? Boolean(rule.value) : true;
+                                let isCheck = false;
+                                if (itemData.value) {
+                                    isCheck = values[i].toString() === itemData.value.toString();
+                                }
+                                else if (rule.value) {
+                                    isCheck = values[i].toString() === rule.value.toString();
+                                }
                                 let radiobutton = new RadioButton({
                                     label: values[i].toString(), name: parentId + 'default', checked: isCheck, value: values[i],
                                     change: this.changeValue.bind(this, i)
@@ -1080,6 +1111,10 @@ let QueryBuilder = class QueryBuilder extends Component {
                             {
                                 let selectedValue = new Date();
                                 let selVal;
+                                if (itemData.value) {
+                                    selectedValue = itemData.value instanceof Date ?
+                                        itemData.value : new Date(itemData.value);
+                                }
                                 if (this.isImportRules && rule && rule.value) {
                                     selectedValue = (length > 1) ? new Date(rule.value[i]) : new Date(rule.value);
                                     let format;
@@ -1234,6 +1269,9 @@ let QueryBuilder = class QueryBuilder extends Component {
                 else {
                     rule.value = this.intl.formatDate(getComponent(element, controlName).value, format);
                 }
+                break;
+            case 'multiselect':
+                rule.value = getComponent(element, controlName).value;
                 break;
         }
     }
@@ -2024,7 +2062,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         let pred;
         let pred2;
         let ruleValue;
-        let matchCase = false;
+        let ignoreCase = false;
         let column;
         for (let i = 0, len = ruleColl.length; i < len; i++) {
             let keys = Object.keys(ruleColl[i]);
@@ -2046,9 +2084,11 @@ let QueryBuilder = class QueryBuilder extends Component {
             }
             else if (ruleColl[i].operator.length) {
                 let oper = ruleColl[i].operator.toLowerCase();
-                let strOperColl = ['contains', 'startswith', 'endswith'];
                 let dateOperColl = ['equal', 'notequal'];
-                matchCase = (strOperColl.indexOf(oper) > -1 || (ruleColl[i].type === 'date' && dateOperColl.indexOf(oper) > -1));
+                ignoreCase = this.matchCase ? false : true;
+                if (ruleColl[i].type === 'date' && dateOperColl.indexOf(oper) > -1) {
+                    ignoreCase = true;
+                }
                 column = this.getColumn(ruleColl[i].field);
                 if (ruleColl[i].type === 'date') {
                     let format = { type: 'dateTime', format: column.format || 'MM/dd/yyyy' };
@@ -2064,7 +2104,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                     else {
                         let value = ruleValue;
                         if (value !== '') {
-                            pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue, matchCase);
+                            pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue, ignoreCase);
                         }
                     }
                 }
@@ -2076,10 +2116,10 @@ let QueryBuilder = class QueryBuilder extends Component {
                         else {
                             let value = ruleValue;
                             if (pred && value !== '') {
-                                pred = pred.and(ruleColl[i].field, ruleColl[i].operator, ruleValue, matchCase);
+                                pred = pred.and(ruleColl[i].field, ruleColl[i].operator, ruleValue, ignoreCase);
                             }
                             else if (value !== '') {
-                                pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue, matchCase);
+                                pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue, ignoreCase);
                             }
                         }
                     }
@@ -2090,10 +2130,10 @@ let QueryBuilder = class QueryBuilder extends Component {
                         else {
                             let value = ruleValue;
                             if (pred && value !== '') {
-                                pred = pred.or(ruleColl[i].field, ruleColl[i].operator, ruleValue, matchCase);
+                                pred = pred.or(ruleColl[i].field, ruleColl[i].operator, ruleValue, ignoreCase);
                             }
                             else if (value !== '') {
-                                pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue, matchCase);
+                                pred = new Predicate(ruleColl[i].field, ruleColl[i].operator, ruleValue, ignoreCase);
                             }
                         }
                     }
@@ -2546,6 +2586,9 @@ __decorate([
 __decorate([
     Property('auto')
 ], QueryBuilder.prototype, "width", void 0);
+__decorate([
+    Property(false)
+], QueryBuilder.prototype, "matchCase", void 0);
 __decorate([
     Complex({ condition: 'and', rules: [] }, Rule)
 ], QueryBuilder.prototype, "rule", void 0);

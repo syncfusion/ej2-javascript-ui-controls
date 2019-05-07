@@ -869,6 +869,7 @@ export class BpmnDiagrams {
         if (task === 'SubProcess' && subProcess) {
             content = this.getBPMNSubProcessShape(node);
         }
+        content.id = task + node.id;
         eventshape.children = [content];
         eventshape.style.fill = 'transparent';
         eventshape.style.strokeColor = 'transparent'; eventshape.style.strokeWidth = 0;

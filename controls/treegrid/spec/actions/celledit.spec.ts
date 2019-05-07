@@ -432,6 +432,50 @@ it('Check cancelling events', (done: Function) => {
     destroy(gridObj);
   });
 });
+describe('Cell edit and cancel when selection mode is set as Cell', () => {
+  let gridObj: TreeGrid;
+  let rows: Element[];
+
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        allowSelection: true,
+        selectionSettings: {mode: 'Cell'},
+        treeColumnIndex: 1,
+          editSettings: {
+              allowAdding: true,
+              allowEditing: true,
+              allowDeleting: true,
+              mode: 'Cell'
+          },
+          toolbar: ['Add', 'Delete', 'Update', 'Cancel'],
+          columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+          { field: 'taskName', headerText: 'Task Name' },
+          { field: 'startDate', headerText: 'Start Date'},
+          { field: 'duration', headerText: 'duration' },
+          ]
+      },
+      done
+    );
+  });
+  it('double click on a record, cell edit and cancel',() => {
+    debugger;
+    let event: MouseEvent = new MouseEvent('dblclick', {
+      'view': window,
+      'bubbles': true,
+      'cancelable': true
+    });
+    gridObj.getCellFromIndex(1, 1).dispatchEvent(event);
+    gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = 'Planning completed';
+    (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_cancel' } });
+    expect((gridObj.getRows()[1].getElementsByClassName('e-treecell')[0] as HTMLElement).innerText=="Plan timeline").toBe(true);
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
 
   it('memory leak', () => {
     profile.sample();

@@ -1147,6 +1147,17 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             remove(eventClone);
         }
     }
+    public getStartEndTime(startEndTime: string): Date {
+        if (!isNullOrUndefined(startEndTime) && startEndTime !== '') {
+            let startEndDate: Date = util.resetTime(new Date());
+            let timeString: string[] = startEndTime.split(':');
+            if (timeString.length === 2) {
+                startEndDate.setHours(parseInt(timeString[0], 10), parseInt(timeString[1], 10), 0);
+            }
+            return startEndDate;
+        }
+        return null;
+    }
     private onDocumentClick(args: Event): void {
         this.notify(events.documentClick, { event: args });
     }
@@ -1495,8 +1506,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @returns {void}
      */
     public setWorkHours(dates: Date[], start: string, end: string, groupIndex?: number): void {
-        let startHour: Date = this.globalize.parseDate(start, { skeleton: 'Hm', calendar: this.getCalendarMode() });
-        let endHour: Date = this.globalize.parseDate(end, { skeleton: 'Hm', calendar: this.getCalendarMode() });
+        let startHour: Date = this.getStartEndTime(start);
+        let endHour: Date = this.getStartEndTime(end);
         let tableEle: HTMLTableElement = this.getContentTable() as HTMLTableElement;
         if (isNullOrUndefined(startHour) || isNullOrUndefined(endHour) || !tableEle) {
             return;
@@ -1507,13 +1518,14 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (startHour < viewStartHour) {
             startHour = viewStartHour;
         }
-        if (endHour > this.activeView.getEndHour()) {
-            endHour = this.activeView.getEndHour();
+        let viewEndHour: Date = this.activeView.getEndHour();
+        if (endHour > viewEndHour) {
+            endHour = viewEndHour;
         }
         let msMajorInterval: number = this.activeViewOptions.timeScale.interval * util.MS_PER_MINUTE;
         let msInterval: number = msMajorInterval / this.activeViewOptions.timeScale.slotCount;
-        let startIndex: number = Math.round((util.getDateInMs(startHour) - util.getDateInMs(viewStartHour)) / msInterval);
-        let endIndex: number = Math.ceil((util.getDateInMs(endHour) - util.getDateInMs(viewStartHour)) / msInterval);
+        let startIndex: number = Math.round((startHour.getTime() - viewStartHour.getTime()) / msInterval);
+        let endIndex: number = Math.ceil((endHour.getTime() - viewStartHour.getTime()) / msInterval);
         let cells: HTMLTableCellElement[] = [];
         for (let date of dates) {
             util.resetTime(date);
@@ -1523,6 +1535,11 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             }
             let colIndex: number = this.getIndexOfDate(renderDates, date);
             if (colIndex >= 0) {
+                if (this.activeView.isTimelineView()) {
+                    let slotsPerDay: number = Math.round((viewEndHour.getTime() - viewStartHour.getTime()) / msInterval);
+                    startIndex = startIndex + (colIndex * slotsPerDay);
+                    endIndex = endIndex + (colIndex * slotsPerDay);
+                }
                 for (let i: number = startIndex; i < endIndex; i++) {
                     if (this.activeView.isTimelineView()) {
                         let rowIndex: number = (!isNullOrUndefined(groupIndex)) ? groupIndex : 0;
