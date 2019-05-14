@@ -601,4 +601,59 @@ describe('ComboBox', () => {
         });
     });
 
+    describe('EJ2-26477- dropdown popup closed suddenly. ', () => {
+        let comboObj: any;
+        let select: boolean = false;
+        let change: boolean = false;
+        let comboEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'combo' });
+        let keyEventArgs: any = {
+            preventDefault: (): void => { /** NO Code */ },
+            keyCode: 74
+        };
+        let data: { [key: string]: Object }[] = [
+            { text: 'Australia', id: 'AU' },
+            { text: 'Bermuda', id: 'BM' },
+            { text: 'Canada', id: 'CA' },
+            { text: 'Cameroon', id: 'CM' },
+            { text: 'Denmark', id: 'DK' },
+            { text: 'France', id: 'FR' },
+        ];
+        beforeAll(() => {
+            document.body.appendChild(comboEle);
+            comboObj = new ComboBox({
+                dataSource: data,
+                fields: { text: 'text', value: 'id' },
+                placeholder: 'Select a customer',
+                popupHeight: '230px',
+                readonly: true,
+                allowFiltering: true,
+                filtering: function (e) {
+                    let query: Query = new Query();
+                    e.updateData(data, query, { text: 'text', value: 'id' });
+                }
+            });
+            comboObj.appendTo(comboEle);
+        });
+        afterAll(() => {
+            comboObj.destroy();
+            comboEle.remove();
+        });
+
+        it(' when filtering second time', (done) => {
+            comboObj.readonly = false;
+            comboObj.dataBind();
+            comboObj.filterInput.value = "can";
+            comboObj.onInput();
+            comboObj.onFilterUp(keyEventArgs);
+            setTimeout(() => {
+                let liElement: any = comboObj.list.querySelector('[data-value="CA"]');
+                expect(liElement).not.toBe(null);
+                comboObj.setSelection(liElement);
+                comboObj.hidePopup();
+                expect(comboObj.value === 'CA').toBe(true);
+                done();
+            }, 800);
+        });
+    });
+
 });

@@ -3558,6 +3558,9 @@ var TooltipSettings = /** @__PURE__ @class */ (function (_super) {
     }
     __decorate$5([
         Property('')
+    ], TooltipSettings.prototype, "template", void 0);
+    __decorate$5([
+        Property('')
     ], TooltipSettings.prototype, "fill", void 0);
     __decorate$5([
         Complex({}, TooltipBorder)
@@ -3626,7 +3629,7 @@ var Tooltip$1 = /** @__PURE__ @class */ (function () {
      * @return {void}
      * @private
      */
-    Tooltip$$1.prototype.createTooltip = function (x, y, tempTooltipText) {
+    Tooltip$$1.prototype.createTooltip = function (currentRect, x, y, tempTooltipText) {
         var offset = null;
         if (this.heatMap.cellSettings.showLabel && this.heatMap.heatMapSeries.checkLabelXDisplay &&
             this.heatMap.heatMapSeries.checkLabelYDisplay) {
@@ -3636,9 +3639,19 @@ var Tooltip$1 = /** @__PURE__ @class */ (function () {
             enableAnimation: false,
             offset: offset,
             location: { x: x, y: y },
+            data: {
+                xValue: this.heatMap.heatMapSeries.hoverXAxisValue,
+                yValue: this.heatMap.heatMapSeries.hoverYAxisValue,
+                value: currentRect.value,
+                xLabel: this.heatMap.heatMapSeries.hoverXAxisLabel ?
+                    this.heatMap.heatMapSeries.hoverXAxisLabel.toString() : null,
+                yLabel: this.heatMap.heatMapSeries.hoverYAxisLabel ?
+                    this.heatMap.heatMapSeries.hoverYAxisLabel.toString() : null,
+            },
             theme: this.heatMap.theme,
             content: tempTooltipText,
             fill: this.heatMap.tooltipSettings.fill,
+            template: this.heatMap.tooltipSettings.template,
             border: {
                 width: this.heatMap.tooltipSettings.border.width,
                 color: this.heatMap.tooltipSettings.border.color
@@ -3753,10 +3766,19 @@ var Tooltip$1 = /** @__PURE__ @class */ (function () {
                 tempTooltipText = this.getTooltipContent(currentRect, hetmapSeries);
             }
             if (!this.tooltipObject) {
-                this.createTooltip(currentRect.x + (currentRect.width / 2), currentRect.y + (currentRect.height / 2), tempTooltipText);
+                this.createTooltip(currentRect, currentRect.x + (currentRect.width / 2), currentRect.y + (currentRect.height / 2), tempTooltipText);
             }
             else {
                 this.tooltipObject.content = tempTooltipText;
+                this.tooltipObject.data = {
+                    xValue: this.heatMap.heatMapSeries.hoverXAxisValue,
+                    yValue: this.heatMap.heatMapSeries.hoverYAxisValue,
+                    xLabel: this.heatMap.heatMapSeries.hoverXAxisLabel ?
+                        this.heatMap.heatMapSeries.hoverXAxisLabel.toString() : null,
+                    yLabel: this.heatMap.heatMapSeries.hoverYAxisLabel ?
+                        this.heatMap.heatMapSeries.hoverYAxisLabel.toString() : null,
+                    value: currentRect.value,
+                };
             }
             this.showHideTooltip(true);
             this.tooltipObject.enableAnimation = (this.isFirst || this.isFadeout) ? false : true;
@@ -5478,6 +5500,7 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
                         this.tooltipModule.tooltipObject.fill = this.tooltipSettings.fill;
                         this.tooltipModule.tooltipObject.border = this.tooltipSettings.border;
                         this.tooltipModule.tooltipObject.textStyle = this.tooltipSettings.textStyle;
+                        this.tooltipModule.tooltipObject.template = this.tooltipSettings.template;
                         this.tooltipModule.tooltipObject.refresh();
                     }
                     break;

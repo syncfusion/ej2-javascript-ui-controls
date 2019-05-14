@@ -496,31 +496,35 @@ export class Legend {
                                 layerIndex + '_shapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
                             if (shapeEle !== null) {
                                 if (value === 'highlight' && this.shapeElement !== targetElement) {
-                                    this.setColor(
-                                        shapeEle, module.fill, module.opacity.toString(), module.border.color,
-                                        module.border.width.toString());
-                                    this.setColor(
-                                        targetElement, module.fill, module.opacity.toString(), module.border.color,
-                                        module.border.width.toString());
                                     if (j === 0) {
                                         this.legendHighlightCollection = [];
-                                        this.pushCollection(targetElement, this.legendHighlightCollection, collection[i]);
+                                        this.pushCollection(
+                                            targetElement, this.legendHighlightCollection, collection[i],
+                                            shapeEle.getAttribute('opacity'));
                                     }
                                     length = this.legendHighlightCollection.length;
                                     this.legendHighlightCollection[length - 1]['MapShapeCollection']['Elements'].push(shapeEle);
+                                    this.setColor(
+                                        shapeEle, module.fill, module.opacity.toString(), module.border.color,
+                                        module.border.width.toString());
+                                    this.setColor(
+                                        targetElement, module.fill, module.opacity.toString(), module.border.color,
+                                        module.border.width.toString());
                                 } else if (value === 'selection' && this.shapeSelection) {
+                                    this.legendHighlightCollection = [];
+                                    if (j === 0) {
+                                        this.pushCollection(
+                                            targetElement, this.legendSelectionCollection, collection[i],
+                                            shapeEle.getAttribute('opacity'));
+                                    }
+                                    selectLength = this.legendSelectionCollection.length;
+                                    this.legendSelectionCollection[selectLength - 1]['MapShapeCollection']['Elements'].push(shapeEle);
                                     this.setColor(
                                         targetElement, module.fill, module.opacity.toString(), module.border.color,
                                         module.border.width.toString());
                                     this.setColor(
                                         shapeEle, module.fill, module.opacity.toString(), module.border.color,
                                         module.border.width.toString());
-                                    this.legendHighlightCollection = [];
-                                    if (j === 0) {
-                                        this.pushCollection(targetElement, this.legendSelectionCollection, collection[i]);
-                                    }
-                                    selectLength = this.legendSelectionCollection.length;
-                                    this.legendSelectionCollection[selectLength - 1]['MapShapeCollection']['Elements'].push(shapeEle);
                                     this.legendElement = targetElement;
                                     if (j === data.length - 1) { this.legendSelection = false; }
                                 }
@@ -539,10 +543,10 @@ export class Legend {
         element.setAttribute('stroke-width', borderWidth);
     }
 
-    private pushCollection(targetElement: Element, collection: object[], oldElement: object): void {
+    private pushCollection(targetElement: Element, collection: object[], oldElement: object, shapeOpacity?: string): void {
         collection.push({
             legendElement: targetElement, legendOldFill: oldElement['fill'], legendOldOpacity: oldElement['opacity'],
-            legendOldBorderColor: oldElement['borderColor'], legendOldBorderWidth: oldElement['borderWidth']
+            legendOldBorderColor: oldElement['borderColor'], legendOldBorderWidth: oldElement['borderWidth'], shapeOpacity: shapeOpacity
         });
         length = collection.length;
         collection[length - 1]['MapShapeCollection'] = { Elements: [] };
@@ -557,7 +561,7 @@ export class Legend {
             let dataCount: number = item['MapShapeCollection']['Elements'].length;
             for (let j: number = 0; j < dataCount; j++) {
                 this.setColor(
-                    item['MapShapeCollection']['Elements'][j], item['legendOldFill'], item['legendOldOpacity'],
+                    item['MapShapeCollection']['Elements'][j], item['legendOldFill'], item['shapeOpacity'],
                     item['legendOldBorderColor'], item['legendOldBorderWidth']);
             }
         }

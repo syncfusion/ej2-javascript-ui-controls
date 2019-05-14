@@ -913,7 +913,8 @@ export abstract class LayoutViewer {
             this.dialogInternal = new Dialog({
                 target: document.body, showCloseIcon: true,
                 allowDragging: true, enableRtl: isRtl, visible: false,
-                width: '1px', isModal: true, position: { X: 'center', Y: 'center' }, zIndex: 20
+                width: '1px', isModal: true, position: { X: 'center', Y: 'center' }, zIndex: 20,
+                animationSettings: { effect: 'None' }
             });
             this.dialogInternal.open = this.selection.hideCaret;
             this.dialogInternal.beforeClose = this.updateFocus;

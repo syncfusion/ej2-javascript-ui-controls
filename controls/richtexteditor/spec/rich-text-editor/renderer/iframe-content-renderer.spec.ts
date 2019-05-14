@@ -36,4 +36,23 @@ describe('Iframe Content renderer module', () => {
         });
     });
 
+    describe('Value property content without parent tag to render', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                iframeSettings: {
+                    enable: true
+                },
+                value: 'RichTextEdit'
+            });
+        });
+
+        it('InnerHtml testing', () => {
+            expect((rteObj.contentModule.getPanel() as HTMLIFrameElement).contentDocument.querySelector('body').innerHTML).toBe('<p>RichTextEdit</p>');
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

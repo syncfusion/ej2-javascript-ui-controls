@@ -43,6 +43,13 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
      public orientation: Orientation;
 
     /**
+     * Specifies target element to open/close Menu while click in Hamburger mode.
+     * @default ''  
+     */
+    @Property('')
+    public target: string;
+
+    /**
      * Specifies the template for Menu item.
      * @default null
      */
@@ -211,8 +218,10 @@ export class Menu extends MenuBase implements INotifyPropertyChanged {
                                 if (!this.element.previousElementSibling) {
                                     super.createHeaderContainer();
                                 }
+                                this.element.previousElementSibling.classList.remove(VMENU);
+                            } else {
+                                this.element.previousElementSibling.classList.add(VMENU);
                             }
-                            this.element.previousElementSibling.classList.add(VMENU);
                             this.element.classList.add('e-hide-menu');
                         }
                     }

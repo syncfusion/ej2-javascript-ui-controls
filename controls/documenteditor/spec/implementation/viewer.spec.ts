@@ -172,7 +172,7 @@ describe('update cursor position validation', () => {
         }, 1000);
     });
     it('Update Cursor on hyperlink validation', () => {
-        editor.editorModule.insertHyperlink('Syncfusion', 'https://syncfusion.com', true);
+        editor.editorModule.insertHyperlinkInternal('Syncfusion', 'https://syncfusion.com', true);
         editor.selection.movePreviousPosition();
         editor.selection.movePreviousPosition();
 

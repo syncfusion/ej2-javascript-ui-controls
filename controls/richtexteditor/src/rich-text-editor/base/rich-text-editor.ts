@@ -1,7 +1,7 @@
 import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType, addClass, select, detach } from '@syncfusion/ej2-base';
 import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';
 import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';
-import { isNullOrUndefined as isNOU, compile, append, extend, debounce, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';
 import { getScrollableParent } from '@syncfusion/ej2-popups';
 import { RichTextEditorModel } from './rich-text-editor-model';
 import * as events from '../base/constant';
@@ -38,7 +38,7 @@ import { FullScreen } from '../actions/full-screen';
 import { PasteCleanup } from '../actions/paste-clean-up';
 import * as CONSTANT from '../../common/constant';
 import { IHtmlKeyboardEvent } from '../../editor-manager/base/interface';
-import { dispatchEvent } from '../base/util';
+import { dispatchEvent, getEditValue, isIDevice, decode } from '../base/util';
 
 export interface ChangeEventArgs {
     /**
@@ -811,13 +811,6 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         return divNode.innerHTML.replace(/<br\s*[\/]?>/gi, '\n');
     }
 
-    private decode(value: string): string {
-        return value.replace(/&amp;/g, '&').replace(/&amp;lt;/g, '<')
-            .replace(/&lt;/g, '<').replace(/&amp;gt;/g, '>')
-            .replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ')
-            .replace(/&amp;nbsp;/g, ' ').replace(/&quot;/g, '');
-    }
-
     /**
      * For internal use only - To Initialize the component rendering.
      * @private
@@ -901,16 +894,21 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     }
 
     private mouseUp(e: MouseEvent | TouchEvent): void {
-        let touch: Touch = <Touch>((e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e);
         this.notify(events.mouseUp, { member: 'mouseUp', args: e });
         if (this.inputElement && ((this.editorMode === 'HTML' && this.inputElement.textContent.length !== 0) ||
             (this.editorMode === 'Markdown' && (this.inputElement as HTMLTextAreaElement).value.length !== 0))) {
             this.notify(events.toolbarRefresh, { args: e });
         }
-        if (this.clickPoints.clientX === touch.clientX && this.clickPoints.clientY === touch.clientY) {
+        if (!isIDevice()) {
             this.notify(events.editAreaClick, { member: 'editAreaClick', args: e });
+        } else {
+            let touch: Touch = <Touch>((e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e);
+            if (this.clickPoints.clientX === touch.clientX && this.clickPoints.clientY === touch.clientY) {
+                this.notify(events.editAreaClick, { member: 'editAreaClick', args: e });
+            }
         }
     }
+
     /** 
      * @hidden
      */
@@ -1002,7 +1000,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             detach(this.element);
             if (this.originalElement.innerHTML.trim() !== '') {
                 this.valueContainer.value = this.originalElement.innerHTML.trim();
-                this.setProperties({ value: (!isNullOrUndefined(this.initialValue) ? this.initialValue : null) }, true);
+                this.setProperties({ value: (!isNOU(this.initialValue) ? this.initialValue : null) }, true);
             } else {
                 this.valueContainer.value = '';
             }
@@ -1010,7 +1008,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         } else {
             if (this.originalElement.innerHTML.trim() !== '') {
                 this.element.innerHTML = this.originalElement.innerHTML.trim();
-                this.setProperties({ value: (!isNullOrUndefined(this.initialValue) ? this.initialValue : null) }, true);
+                this.setProperties({ value: (!isNOU(this.initialValue) ? this.initialValue : null) }, true);
             } else {
                 this.element.innerHTML = '';
             }
@@ -1094,18 +1092,16 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'value':
-                    this.value = (this.enableHtmlEncode) ? this.encode(this.decode(newProp[prop])) : newProp[prop];
+                    let nVal: string = newProp[prop];
+                    let val: string = this.editorMode === 'HTML' ? getEditValue(nVal, this) : nVal;
+                    if (!isNOU(nVal) && nVal !== '') { this.value = (this.enableHtmlEncode) ? this.encode(decode(val)) : val; }
                     this.updatePanelValue();
                     this.setPlaceHolder();
-                    if (this.showCharCount) {
-                        this.countModule.refresh();
-                    }
+                    if (this.showCharCount) { this.countModule.refresh(); }
                     break;
                 case 'valueTemplate':
                     this.setValue();
-                    if (this.showCharCount) {
-                        this.countModule.refresh();
-                    }
+                    if (this.showCharCount) { this.countModule.refresh(); }
                     break;
                 case 'width': this.setWidth(newProp[prop]);
                     if (this.toolbarSettings.enable) {
@@ -1167,16 +1163,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                     this.setContentHeight();
                     break;
                 case 'maxLength':
-                    if (this.showCharCount) {
-                        this.countModule.refresh();
-                    }
+                    if (this.showCharCount) { this.countModule.refresh(); }
                     break;
                 case 'showCharCount':
                     if (newProp[prop] && this.countModule) {
                         this.countModule.renderCount();
                     } else if (newProp[prop] === false && this.countModule) {
-                        this.countModule.destroy();
-                    }
+                        this.countModule.destroy(); }
                     break;
                 case 'enableHtmlEncode':
                     this.updateValueData();
@@ -1196,11 +1189,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     public updateValueData(): void {
         if (this.enableHtmlEncode) {
-            this.setProperties({ value: this.encode(this.decode(this.inputElement.innerHTML)) });
+            this.setProperties({ value: this.encode(decode(this.inputElement.innerHTML)) });
         } else {
             this.setProperties({
                 value: /<[a-z][\s\S]*>/i.test(this.inputElement.innerHTML) ? this.inputElement.innerHTML :
-                    this.decode(this.inputElement.innerHTML)
+                    decode(this.inputElement.innerHTML)
             });
         }
     }
@@ -1217,7 +1210,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         } else {
             value = this.value;
         }
-        value = (this.enableHtmlEncode && this.value) ? this.decode(value) : value;
+        value = (this.enableHtmlEncode && this.value) ? decode(value) : value;
         if (value) {
             if (this.valueContainer) {
                 this.valueContainer.value = (this.enableHtmlEncode) ? this.value : value;
@@ -1401,7 +1394,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.updateReadOnly();
         this.updatePanelValue();
         if (this.enableHtmlEncode && !isNOU(this.value)) {
-            this.setProperties({ value: this.encode(this.decode(this.value)) });
+            this.setProperties({ value: this.encode(decode(this.value)) });
         }
     }
 
@@ -1474,7 +1467,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
         } else if (this.element.innerHTML.trim() !== '') {
             if (this.element.tagName === 'TEXTAREA') {
-                this.setProperties({ value: this.decode(this.element.innerHTML.trim()) });
+                this.setProperties({ value: decode(this.element.innerHTML.trim()) });
             } else {
                 this.setProperties({ value: this.element.innerHTML.trim() });
             }
@@ -1535,7 +1528,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     public getBaseToolbarObject(): BaseToolbar {
         let tbObj: BaseToolbar;
-        if (this.inlineMode.enable && !Browser.isDevice) {
+        if (this.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             tbObj = this.quickToolbarModule && this.quickToolbarModule.getInlineBaseToolbar();
         } else {
             tbObj = this.toolbarModule && this.toolbarModule.getBaseToolbar();
@@ -1613,7 +1606,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             addClass([this.element], [classes.CLS_FOCUS]);
             if (this.editorMode === 'HTML') {
                 this.cloneValue = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.enableHtmlEncode ?
-                    this.encode(this.decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
+                    this.encode(decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
             } else {
                 this.cloneValue = (this.inputElement as HTMLTextAreaElement).value === '' ? null :
                     (this.inputElement as HTMLTextAreaElement).value;
@@ -1634,7 +1627,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         let value: string;
         if (this.editorMode === 'HTML') {
             value = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.enableHtmlEncode ?
-                this.encode(this.decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
+                this.encode(decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
         } else {
             value = (this.inputElement as HTMLTextAreaElement).value === '' ? null :
                 (this.inputElement as HTMLTextAreaElement).value;

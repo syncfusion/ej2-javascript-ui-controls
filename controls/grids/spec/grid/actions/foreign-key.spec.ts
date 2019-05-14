@@ -382,20 +382,20 @@ describe('Foreign Key =>', () => {
 
     });
 
-    describe('Binding datasource dynamically with Foreign key =>', () => {
-        // it('Bind the data', () => {
-        //     expect(gridObj.getDataModule().dataManager.dataSource.json.length).toBe(15);
-        // });
-        it('Check the data', (done: Function) => {
-            gridObj.actionComplete = (args) => {
-                if (args.requestType === 'refresh') {
-                expect(gridObj.getDataModule().dataManager.dataSource.json.length).toBe(5);
-                done();
-                }
-            };
-            gridObj.dataSource = data.slice(0,5);
-        });
-    });
+    // describe('Binding datasource dynamically with Foreign key =>', () => {
+    //     // it('Bind the data', () => {
+    //     //     expect(gridObj.getDataModule().dataManager.dataSource.json.length).toBe(15);
+    //     // });
+    //     it('Check the data', (done: Function) => {
+    //         gridObj.actionComplete = (args) => {
+    //             if (args.requestType === 'refresh') {
+    //             expect(gridObj.getDataModule().dataManager.dataSource.json.length).toBe(5);
+    //             done();
+    //             }
+    //         };
+    //         gridObj.dataSource = data.slice(0,5);
+    //     });
+    // });
     it('memory leak', () => {     
         profile.sample();
         let average: any = inMB(profile.averageChange)

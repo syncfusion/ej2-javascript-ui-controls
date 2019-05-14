@@ -5059,7 +5059,9 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                         this.endValue = endDate;
                         this.setValue();
                         this.refreshControl();
-                        this.changeTrigger(e);
+                        if (value !== this.previousEleValue) {
+                            this.changeTrigger(e);
+                        }
                         if (!this.preventBlur && document.activeElement !== this.inputElement) {
                             this.preventFocus = false;
                             var blurArguments = {

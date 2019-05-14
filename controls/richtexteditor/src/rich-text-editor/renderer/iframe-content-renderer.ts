@@ -1,6 +1,7 @@
 import { IRichTextEditor } from '../base/interface';
 import { ContentRender } from '../renderer/content-renderer';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { getEditValue } from '../base/util';
 
 /* tslint:disable */
 const IFRAMEHEADER: string = `
@@ -90,7 +91,7 @@ export class IframeContentRender extends ContentRender {
 
     public renderPanel(): void {
         let rteObj: IRichTextEditor = this.parent;
-        let rteContent: string = (rteObj.value !== null && rteObj.value !== '') ? rteObj.value : '<p><br/></p>';
+        let rteContent: string = getEditValue(rteObj.value, rteObj);
         let iFrameBodyContent: string = '<body spellcheck="false" autocorrect="off" contenteditable="true">' +
             rteContent + '</body></html>';
         let iFrameContent: string = IFRAMEHEADER + iFrameBodyContent;

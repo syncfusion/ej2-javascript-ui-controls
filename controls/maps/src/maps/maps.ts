@@ -472,7 +472,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /** @public */
     public zoomTranslatePoint: Point = new Point(0, 0);
     /** @public */
-    public previousProjection : String;
+    public previousProjection: String;
     /** @private */
     public tileTranslatePoint: Point = new Point(0, 0);
     /** @private */
@@ -636,6 +636,20 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
         this.element.appendChild(this.svgObject);
 
+        if (!isNullOrUndefined(document.getElementById(this.element.id + '_tile_parent'))) {
+            let svg: ClientRect = this.svgObject.getBoundingClientRect();
+            let element: HTMLElement = document.getElementById(this.element.id);
+            let tileElement: HTMLElement = document.getElementById(this.element.id + '_tile_parent');
+            let tile: ClientRect = tileElement.getBoundingClientRect();
+            let bottom: number = svg.bottom - tile.bottom - element.offsetTop;
+            let left: number = parseFloat(tileElement.style.left) + element.offsetLeft;
+            let top: number = parseFloat(tileElement.style.top) + element.offsetTop;
+            top = (bottom <= 10) ? top : (top * 2);
+            left = (bottom <= 10) ? left : (left * 2);
+            tileElement.style.top = top + 'px';
+            tileElement.style.left = left + 'px';
+        }
+
         this.arrangeTemplate();
 
         if (this.annotationsModule) {
@@ -773,12 +787,13 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let padding: number = 0;
         if (mainLayer.isBaseLayer && (mainLayer.layerType === 'OSM' || mainLayer.layerType === 'Bing')) {
             removeElement(this.element.id + '_tile_parent');
-            let elementRect: ClientRect = this.element.getBoundingClientRect();
-            let left: number = Math.abs(elementRect.left);
-            let top: number = Math.abs(elementRect.top);
+            // let elementRect: ClientRect = this.element.getBoundingClientRect();
+            // let parentRect: ClientRect = this.element.parentElement.getBoundingClientRect();
+            // let left: number = Math.abs(elementRect.left - parentRect.left);
+            // let top: number = Math.abs(elementRect.top - parentRect.top);
             let ele: Element = createElement('div', {
                 id: this.element.id + '_tile_parent', styles: 'position: absolute; left: ' +
-                    (this.mapAreaRect.x + left) + 'px; top: ' + (this.mapAreaRect.y + top + padding) + 'px; height: ' +
+                    (this.mapAreaRect.x) + 'px; top: ' + (this.mapAreaRect.y + padding) + 'px; height: ' +
                     (this.mapAreaRect.height) + 'px; width: '
                     + (this.mapAreaRect.width) + 'px; overflow: hidden;'
             });

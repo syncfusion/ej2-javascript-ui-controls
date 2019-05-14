@@ -763,28 +763,6 @@ describe("Toolbar - Actions Module", () => {
             trg.dispatchEvent(clickEvent);
             Browser.userAgent = defaultUA;
         });
-
-        it("iOS fixed toolbar state testing", () => {
-            mobileUA = "Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1";
-            Browser.userAgent = mobileUA;
-            rteObj = renderRTE({
-                inlineMode: {
-                    enable: true
-                }
-            });
-            rteEle = rteObj.element;
-            expect(rteEle.querySelector(".e-toolbar").classList.contains("e-show")).toBe(false);
-            let cntEle: HTMLElement = rteEle.querySelector(".e-rte-content > .e-content");
-            let mouseDownEvent: MouseEvent = document.createEvent("MouseEvents");
-            mouseDownEvent.initEvent("mousedown", true, true);
-            cntEle.dispatchEvent(mouseDownEvent);
-            expect(rteEle.querySelector(".e-toolbar").classList.contains("e-tbar-ios-fixed")).toBe(true);
-            let trg: HTMLElement = <HTMLElement>document.querySelectorAll(".e-toolbar-item > button")[3];
-            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
-            clickEvent.initEvent("mousedown", true, true);
-            trg.dispatchEvent(clickEvent);
-            Browser.userAgent = defaultUA;
-        });
     });
 
     describe("Floating toolbar testing", () => {

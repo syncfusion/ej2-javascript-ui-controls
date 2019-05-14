@@ -2673,7 +2673,7 @@ describe('Schedule Timeline Week view', () => {
 
         it('Checking events elements', () => {
             let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            expect(eventElementList.length).toEqual(35);
+            expect(eventElementList.length).toEqual(33);
             let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(10);
         });
@@ -2687,7 +2687,7 @@ describe('Schedule Timeline Week view', () => {
 
         it('Checking right icon', () => {
             let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            expect(eventElementList[21].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Next week');
+            expect(eventElementList[21].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('All Day Event - Next week');
             expect(eventElementList[21].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-right-icon'))
                 .toBeTruthy();
         });
@@ -2701,10 +2701,10 @@ describe('Schedule Timeline Week view', () => {
 
         it('More event element checking', () => {
             let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(23);
+            expect(moreIndicatorList.length).toEqual(19);
             expect(moreIndicatorList[0].innerHTML).toEqual('+1&nbsp;more');
             expect(moreIndicatorList[1].innerHTML).toEqual('+1&nbsp;more');
-            expect(moreIndicatorList[22].innerHTML).toEqual('+1&nbsp;more');
+            expect(moreIndicatorList[18].innerHTML).toEqual('+1&nbsp;more');
             let element: HTMLElement = moreIndicatorList[0] as HTMLElement;
             element.click();
             let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
@@ -2772,7 +2772,7 @@ describe('Schedule Timeline Week view', () => {
 
         it('Checking events elements', () => {
             let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            expect(eventElementList.length).toEqual(35);
+            expect(eventElementList.length).toEqual(33);
             let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(10);
         });
@@ -2786,7 +2786,7 @@ describe('Schedule Timeline Week view', () => {
 
         it('Checking right icon', () => {
             let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            expect(eventElementList[21].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Next week');
+            expect(eventElementList[21].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('All Day Event - Next week');
             expect(eventElementList[21].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-right-icon'))
                 .toBeTruthy();
         });
@@ -2800,10 +2800,10 @@ describe('Schedule Timeline Week view', () => {
 
         it('More event element checking', () => {
             let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(23);
+            expect(moreIndicatorList.length).toEqual(19);
             expect(moreIndicatorList[0].innerHTML).toEqual('+1&nbsp;more');
             expect(moreIndicatorList[1].innerHTML).toEqual('+1&nbsp;more');
-            expect(moreIndicatorList[22].innerHTML).toEqual('+1&nbsp;more');
+            expect(moreIndicatorList[18].innerHTML).toEqual('+1&nbsp;more');
             let element: HTMLElement = moreIndicatorList[0] as HTMLElement;
             element.click();
             let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;

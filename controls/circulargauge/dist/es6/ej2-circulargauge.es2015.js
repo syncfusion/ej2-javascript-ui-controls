@@ -1076,10 +1076,12 @@ class Annotations {
      * Method to render the annotation for circular gauge.
      */
     renderAnnotation(axis, index) {
+        let width = this.gauge.availableSize.width;
         let element = createElement('div', {
             id: this.elementId + '_Annotations_' + index
         });
         let parentElement = getElement(this.elementId + '_Secondary_Element');
+        document.getElementById(this.elementId + '_Secondary_Element').style.width = width + 'px';
         axis.annotations.map((annotation, annotationIndex) => {
             if (annotation.content !== null) {
                 this.createTemplate(element, annotationIndex, index);

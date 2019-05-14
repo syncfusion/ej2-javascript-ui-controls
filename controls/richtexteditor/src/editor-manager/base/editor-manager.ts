@@ -90,19 +90,20 @@ export class EditorManager {
     private editorKeyUp(e: IHtmlKeyboardEvent): void {
         this.observer.notify(EVENTS.KEY_UP_HANDLER, e);
     }
-    public execCommand<T>(command: ExecCommand, value: T, event?: Event, callBack?: Function, text?: string | Node, exeValue?: T): void {
+    public execCommand<T>(
+        command: ExecCommand, value: T, event?: Event, callBack?: Function, text?: string | Node, exeValue?: T, selector?: string): void {
         switch (command.toLocaleLowerCase()) {
             case 'lists':
-                this.observer.notify(EVENTS.LIST_TYPE, { subCommand: value, event: event, callBack: callBack });
+                this.observer.notify(EVENTS.LIST_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
                 break;
             case 'formats':
-                this.observer.notify(EVENTS.FORMAT_TYPE, { subCommand: value, event: event, callBack: callBack });
+                this.observer.notify(EVENTS.FORMAT_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
                 break;
             case 'alignments':
-                this.observer.notify(CONSTANT.ALIGNMENT_TYPE, { subCommand: value, event: event, callBack: callBack });
+                this.observer.notify(CONSTANT.ALIGNMENT_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
                 break;
             case 'indents':
-                this.observer.notify(CONSTANT.INDENT_TYPE, { subCommand: value, event: event, callBack: callBack });
+                this.observer.notify(CONSTANT.INDENT_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
                 break;
             case 'links':
                 this.observer.notify(CONSTANT.LINK, { command: command, value: value, item: exeValue, event: event, callBack: callBack });
@@ -149,7 +150,7 @@ export class EditorManager {
             case 'casing':
                 this.observer.notify(
                     CONSTANT.SELECTION_TYPE,
-                    { subCommand: value, event: event, callBack: callBack, value: text });
+                    { subCommand: value, event: event, callBack: callBack, value: text, selector: selector });
                 break;
             case 'inserthtml':
                 this.observer.notify(CONSTANT.INSERTHTML_TYPE, { subCommand: value, callBack: callBack, value: text });
@@ -158,10 +159,10 @@ export class EditorManager {
                 this.observer.notify(CONSTANT.INSERT_TEXT_TYPE, { subCommand: value, callBack: callBack, value: text });
                 break;
             case 'clear':
-                this.observer.notify(CONSTANT.CLEAR_TYPE, { subCommand: value, event: event, callBack: callBack });
+                this.observer.notify(CONSTANT.CLEAR_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
                 break;
             case 'actions':
-                this.observer.notify(EVENTS.ACTION, { subCommand: value, event: event, callBack: callBack });
+                this.observer.notify(EVENTS.ACTION, { subCommand: value, event: event, callBack: callBack, selector: selector });
                 break;
         }
     }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.47 (2019-05-14)
+
+### Chart
+
+#### New Features
+
+- #233749 - Provided zOrder support for chart series.
+
 ## 17.1.43 (2019-04-30)
 
 ### Chart

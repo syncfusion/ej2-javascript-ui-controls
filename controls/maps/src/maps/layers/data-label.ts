@@ -148,9 +148,9 @@ export class DataLabel {
             elementSize = measureText(trimmedLable, style);
             this.value[index] = { rightWidth: xpositionEnds, leftWidth: xpositionStart, heightTop: start, heightBottom: end };
             let animate: boolean = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
-            let translate: Object = getTranslate(this.maps, layer, animate);
-            let scale: number = translate['scale'];
-            let transPoint: Point = translate['location'] as Point;
+            let translate: Object = (this.maps.isTileMap) ? new Object() : getTranslate(this.maps, layer, animate);
+            let scale: number = (this.maps.isTileMap) ? this.maps.scale : translate['scale'];
+            let transPoint: Point = (this.maps.isTileMap) ? this.maps.translatePoint : translate['location'] as Point;
             let labelElement: HTMLElement;
             if (eventargs.template !== '') {
                 templateFn = getTemplateFunction(eventargs.template);

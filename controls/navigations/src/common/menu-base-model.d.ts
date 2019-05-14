@@ -190,7 +190,7 @@ export interface MenuBaseModel extends ComponentModel{
 
     /**
      * Specifies target element selector in which the ContextMenu should be opened.
-     * Not applicable to Menu component.
+     * Specifies target element to open/close Menu while click in Hamburger mode.
      * @default ''
      * @private
      */

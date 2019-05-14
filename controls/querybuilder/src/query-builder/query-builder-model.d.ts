@@ -67,6 +67,12 @@ export interface ColumnsModel {
      */
     value?:  string[] | number[] | string | number | boolean | Date;
 
+    /**
+     * Specifies the category for columns.
+     * @default null
+     */
+    category?: string;
+
 }
 
 /**

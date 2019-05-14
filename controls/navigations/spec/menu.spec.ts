@@ -264,7 +264,7 @@ describe('Menu', () => {
             menu = new Menu({ items: items, hamburgerMode: true, target: '#menuTrgt' }, '#menu');
             menu.target = '';
             menu.dataBind();
-            expect(menu.element.previousElementSibling.classList.contains('e-vertical')).toBeTruthy();
+            expect(menu.element.previousElementSibling.classList.contains('e-vertical')).toBeFalsy();
             menu.destroy();
             menu = new Menu({ items: items, orientation: 'Vertical', target: '#menuTrgt' }, '#menu');
             menu.title = 'Hamburger';

@@ -4,12 +4,12 @@ import { IntlBase as base } from './intl-base';
 import { isUndefined, throwError, getValue } from '../util';
 import { HijriParser } from '../hijri-parser';
 import { isNullOrUndefined } from '../util';
-const abbreviateRegexGlobal: RegExp = /\/MMMMM|MMMM|MMM|a|LLL|EEEEE|EEEE|E|K|ccc|G+|z+/gi;
+const abbreviateRegexGlobal: RegExp = /\/MMMMM|MMMM|MMM|a|LLL|EEEEE|EEEE|E|K|cccc|ccc|G+|z+/gi;
 const standalone: string = 'stand-alone';
 const weekdayKey: string[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 export const basicPatterns: string[] = ['short', 'medium', 'long', 'full'];
 /**
- * Interface for Date Format Options Module.
+ * Interface for Date Format Options Modules.
  * @private
  */
 export interface FormatOptions {

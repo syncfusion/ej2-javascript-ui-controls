@@ -5,7 +5,7 @@ import { Toolbar as tool, OverflowMode } from '@syncfusion/ej2-navigations';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { RenderType, ToolbarType, ToolbarItems } from '../base/enum';
-import { setToolbarStatus, updateUndoRedoStatus, getTBarItemsIndex, getCollection, toObjectLowerCase } from '../base/util';
+import { setToolbarStatus, updateUndoRedoStatus, getTBarItemsIndex, getCollection, toObjectLowerCase, isIDevice } from '../base/util';
 import * as model from '../models/items';
 import { IRichTextEditor, IRenderer, NotifyArgs, IToolbarRenderOptions } from '../base/interface';
 import { IToolbarItemModel, IToolsItems, IUpdateItemsModel, IDropDownRenderArgs, ISetToolbarStatusArgs } from '../base/interface';
@@ -81,7 +81,7 @@ export class Toolbar {
     }
     private createToolbarElement(): void {
         this.tbElement = this.parent.createElement('div', { id: this.parent.getID() + '_toolbar' });
-        if (!Browser.isDevice && this.parent.inlineMode.enable) {
+        if (!Browser.isDevice && this.parent.inlineMode.enable && isIDevice()) {
             return;
         } else {
             if (this.parent.toolbarSettings.enableFloating && !this.parent.inlineMode.enable) {
@@ -111,7 +111,7 @@ export class Toolbar {
     }
 
     private checkToolbarResponsive(ele: HTMLElement): boolean {
-        if (!Browser.isDevice) { return false; }
+        if (!Browser.isDevice || isIDevice()) { return false; }
         this.baseToolbar.render({
             container: ((this.parent.inlineMode.enable) ? 'quick' : 'toolbar'),
             items: this.parent.toolbarSettings.items,
@@ -231,7 +231,7 @@ export class Toolbar {
             }
         }
         this.wireEvents();
-        if (this.parent.inlineMode.enable) {
+        if (this.parent.inlineMode.enable && !isIDevice()) {
             this.addFixedTBarClass();
         }
         if (!this.parent.inlineMode.enable) {
@@ -285,20 +285,15 @@ export class Toolbar {
     }
 
     private updateToolbarStatus(args: IToolbarStatus): void {
-        if (!this.parent.inlineMode.enable) {
-            let options: ISetToolbarStatusArgs = {
-                args: args,
-                dropDownModule: this.dropDownModule,
-                parent: this.parent,
-                tbElements: selectAll('.' + classes.CLS_TB_ITEM, this.tbElement),
-                tbItems: this.baseToolbar.toolbarObj.items
-            };
-            if (this.parent.inlineMode.enable) {
-                setToolbarStatus(options, true);
-            } else {
-                setToolbarStatus(options, false);
-            }
-        }
+        if (!this.tbElement || (this.parent.inlineMode.enable && (isIDevice() || !Browser.isDevice))) { return; }
+        let options: ISetToolbarStatusArgs = {
+            args: args,
+            dropDownModule: this.dropDownModule,
+            parent: this.parent,
+            tbElements: selectAll('.' + classes.CLS_TB_ITEM, this.tbElement),
+            tbItems: this.baseToolbar.toolbarObj.items
+        };
+        setToolbarStatus(options, (this.parent.inlineMode.enable ? true : false));
     }
 
     private fullScreen(e?: MouseEvent): void {
@@ -415,13 +410,13 @@ export class Toolbar {
     }
 
     private mouseDownHandler(): void {
-        if (Browser.isDevice && this.parent.inlineMode.enable) {
+        if (Browser.isDevice && this.parent.inlineMode.enable && !isIDevice()) {
             this.showFixedTBar();
         }
     }
 
     private focusChangeHandler(): void {
-        if (Browser.isDevice && this.parent.inlineMode.enable) {
+        if (Browser.isDevice && this.parent.inlineMode.enable && !isIDevice()) {
             this.isToolbar = false;
             this.hideFixedTBar();
         }
@@ -450,6 +445,7 @@ export class Toolbar {
     }
 
     protected wireEvents(): void {
+        if (this.parent.inlineMode.enable && isIDevice()) { return; }
         EventHandler.add(this.tbElement, 'click mousedown', this.toolbarMouseDownHandler, this);
     }
 

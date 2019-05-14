@@ -1876,13 +1876,15 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
     };
     ListView.prototype.renderList = function (data) {
         this.setViewDataSource(data);
-        if (this.enableVirtualization && Object.keys(this.dataSource).length) {
-            if ((this.template || this.groupTemplate) && !this.virtualizationModule.isNgTemplate()) {
-                this.listBaseOption.template = null;
-                this.listBaseOption.groupTemplate = null;
-                this.listBaseOption.itemCreated = this.virtualizationModule.createUIItem.bind(this.virtualizationModule);
+        if (this.enableVirtualization) {
+            if (Object.keys(this.dataSource).length) {
+                if ((this.template || this.groupTemplate) && !this.virtualizationModule.isNgTemplate()) {
+                    this.listBaseOption.template = null;
+                    this.listBaseOption.groupTemplate = null;
+                    this.listBaseOption.itemCreated = this.virtualizationModule.createUIItem.bind(this.virtualizationModule);
+                }
+                this.virtualizationModule.uiVirtualization();
             }
-            this.virtualizationModule.uiVirtualization();
         }
         else {
             this.createList();
@@ -2541,7 +2543,7 @@ var Virtualization = /** @__PURE__ @class */ (function () {
             this.topElement.style.height = this.topElementHeight + 'px';
             this.bottomElement.style.height = this.bottomElementHeight + 'px';
             if (scroll > this.scrollPosition) {
-                var listDiff = ((this.topElementHeight / this.listItemHeight) - this.listDiff);
+                var listDiff = Math.round(((this.topElementHeight / this.listItemHeight) - this.listDiff));
                 if (listDiff > (this.expectedDomItemCount + 5)) {
                     this.onLongScroll(listDiff, true);
                 }
@@ -2550,7 +2552,7 @@ var Virtualization = /** @__PURE__ @class */ (function () {
                 }
             }
             else {
-                var listDiff = (this.listDiff - (this.topElementHeight / this.listItemHeight));
+                var listDiff = Math.round((this.listDiff - (this.topElementHeight / this.listItemHeight)));
                 if (listDiff > (this.expectedDomItemCount + 5)) {
                     this.onLongScroll(listDiff, false);
                 }
@@ -2558,7 +2560,7 @@ var Virtualization = /** @__PURE__ @class */ (function () {
                     this.onNormalScroll(listDiff, false);
                 }
             }
-            this.listDiff = this.topElementHeight / this.listItemHeight;
+            this.listDiff = Math.round(this.topElementHeight / this.listItemHeight);
             if (typeof this.listViewInstance.onUIScrolled === 'function') {
                 this.listViewInstance.onUIScrolled();
             }
@@ -2875,6 +2877,9 @@ var Virtualization = /** @__PURE__ @class */ (function () {
             this.listViewInstance.dataSource.splice(index, 1);
             this.listViewInstance.setViewDataSource(this.listViewInstance.dataSource);
         }
+        // recollect all the list item into collection
+        this.listViewInstance.liCollection =
+            this.listViewInstance.curUL.querySelectorAll('li');
     };
     Virtualization.prototype.setCheckboxLI = function (li, e) {
         var index = Array.prototype.indexOf.call(this.listViewInstance.curUL.querySelectorAll('li'), li) + this.uiFirstIndex;
@@ -2908,6 +2913,10 @@ var Virtualization = /** @__PURE__ @class */ (function () {
         }
     };
     Virtualization.prototype.addUiItem = function (index) {
+        // virtually new add list item based on the scollbar position
+        // if the scroll bar is at the top, just pretend the new item has been added since no UI
+        // change is required for the item that has been added at last but when scroll bar is at the bottom
+        // just detach top and inject into bottom to mimic new item is added
         var curViewDs = this.listViewInstance.curViewDS;
         this.changeUiIndices(index, true);
         if (this.activeIndex && this.activeIndex >= index) {
@@ -2949,7 +2958,7 @@ var Virtualization = /** @__PURE__ @class */ (function () {
             }
         }
         this.totalHeight += this.listItemHeight;
-        this.listDiff = parseFloat(this.topElement.style.height) / this.listItemHeight;
+        this.listDiff = Math.round(parseFloat(this.topElement.style.height) / this.listItemHeight);
     };
     Virtualization.prototype.removeUiItem = function (index) {
         this.totalHeight -= this.listItemHeight;
@@ -3006,7 +3015,7 @@ var Virtualization = /** @__PURE__ @class */ (function () {
             }
         }
         this.changeUiIndices(index, false);
-        this.listDiff = parseFloat(this.topElement.style.height) / this.listItemHeight;
+        this.listDiff = Math.round(parseFloat(this.topElement.style.height) / this.listItemHeight);
     };
     Virtualization.prototype.changeUiIndices = function (index, increment) {
         var _this = this;
@@ -3024,25 +3033,76 @@ var Virtualization = /** @__PURE__ @class */ (function () {
     Virtualization.prototype.addItem = function (data, fields) {
         var _this = this;
         data.forEach(function (dataSource) {
+            // push the given data to main data array
             _this.listViewInstance.dataSource.push(dataSource);
+            // recalculate all the group data or other datasource related things
             _this.listViewInstance.setViewDataSource(_this.listViewInstance.dataSource);
+            // render list items for first time due to no datasource present earlier
             if (!_this.domItemCount) {
+                // fresh rendering for first time
+                if ((_this.listViewInstance.template || _this.listViewInstance.groupTemplate) && !_this.isNgTemplate()) {
+                    _this.listViewInstance.listBaseOption.template = null;
+                    _this.listViewInstance.listBaseOption.groupTemplate = null;
+                    _this.listViewInstance.listBaseOption.itemCreated = _this.createUIItem.bind(_this);
+                }
                 _this.uiVirtualization();
+                // when expected expected DOM count doesn't meet the condition we need to create and inject new item into DOM
             }
             else if (_this.domItemCount < _this.expectedDomItemCount) {
-                _this.wireScrollEvent(true);
-                detach(_this.listViewInstance.contentContainer);
-                _this.uiVirtualization();
+                var ds = _this.listViewInstance.findItemFromDS(_this.listViewInstance.dataSource, fields);
+                if (ds instanceof Array) {
+                    if (_this.listViewInstance.ulElement) {
+                        var index = _this.listViewInstance.curViewDS.indexOf(dataSource);
+                        // inject new list item into DOM
+                        _this.createAndInjectNewItem(dataSource, index);
+                        // check for group header item
+                        var curViewDS = _this.listViewInstance.curViewDS[index - 1];
+                        if (curViewDS && curViewDS.isHeader && curViewDS.items.length === 1) {
+                            // target group item index in datasource
+                            --index;
+                            // inject new group header into DOM for previously created list item
+                            _this.createAndInjectNewItem(curViewDS, index);
+                        }
+                    }
+                    // recollect all the list item into collection
+                    _this.listViewInstance.liCollection =
+                        _this.listViewInstance.curUL.querySelectorAll('li');
+                }
             }
             else {
                 var index = _this.listViewInstance.curViewDS.indexOf(dataSource);
+                // virtually new add list item based on the scollbar position
                 _this.addUiItem(index);
+                // check for group header item needs to be added
                 var curViewDS = _this.listViewInstance.curViewDS[index - 1];
                 if (curViewDS && curViewDS.isHeader && curViewDS.items.length === 1) {
                     _this.addUiItem(index - 1);
                 }
             }
         });
+    };
+    Virtualization.prototype.createAndInjectNewItem = function (itemData, index) {
+        // generate li item for given datasource
+        var target;
+        var li = ListBase.createListItemFromJson(this.listViewInstance.createElement, [itemData], this.listViewInstance.listBaseOption);
+        // check for target element whether to insert before last item or group item
+        if ((Object.keys(this.listViewInstance.curViewDS).length - 1) === index) {
+            target = this.listViewInstance.curUL.lastElementChild;
+        }
+        else {
+            // target group header's first child item to append its header
+            target = this.listViewInstance.getLiFromObjOrElement(this.listViewInstance.curViewDS[index + 1]) ||
+                this.listViewInstance.getLiFromObjOrElement(this.listViewInstance.curViewDS[index + 2]);
+        }
+        // insert before the target element
+        this.listViewInstance.ulElement.insertBefore(li[0], target);
+        // increment internal DOM count, last index count for new element
+        this.domItemCount++;
+        if (this.bottomElementHeight <= 0) {
+            this.uiLastIndex++;
+        }
+        // recalculate the current item height, to avoid jumpy scroller
+        this.refreshItemHeight();
     };
     Virtualization.prototype.createUIItem = function (args) {
         var template = this.listViewInstance.createElement('div');
@@ -3278,6 +3338,9 @@ var Virtualization = /** @__PURE__ @class */ (function () {
         }
         this.listViewInstance.preRender();
         this.listViewInstance.localData = this.listViewInstance.dataSource;
+        // resetting the dom count to 0, to avoid edge case of dataSource suddenly becoming zero
+        // and then manually adding item using addItem API
+        this.domItemCount = 0;
         this.listViewInstance.renderList();
     };
     Virtualization.prototype.updateUI = function (element, index, targetElement) {
@@ -3286,7 +3349,7 @@ var Virtualization = /** @__PURE__ @class */ (function () {
             var curViewDS = this.listViewInstance.curViewDS[index];
             element.dataset.uid = curViewDS[this.listViewInstance.fields.id] ?
                 curViewDS[this.listViewInstance.fields.id].toString() : ListBase.generateId();
-            onChange(curViewDS, element);
+            onChange(curViewDS, element, this);
         }
         else {
             this.updateUiContent(element, index);
@@ -3296,8 +3359,14 @@ var Virtualization = /** @__PURE__ @class */ (function () {
             this.listViewInstance.ulElement.insertBefore(element, targetElement);
         }
     };
-    Virtualization.prototype.onNgChange = function (newData, listElement) {
-        listElement.context.$implicit = newData;
+    Virtualization.prototype.onNgChange = function (newData, listElement, virtualThis) {
+        // compile given target element with template for new data
+        var templateCompiler = compile(virtualThis.listViewInstance.template);
+        var resultElement = templateCompiler(newData);
+        while (listElement.lastChild) {
+            listElement.removeChild(listElement.lastChild);
+        }
+        listElement.appendChild(resultElement[0]);
     };
     Virtualization.prototype.getModuleName = function () {
         return 'virtualization';

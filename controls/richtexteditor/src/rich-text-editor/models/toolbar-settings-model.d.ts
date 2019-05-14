@@ -170,7 +170,7 @@ export interface QuickToolbarSettingsModel {
     enable?: boolean;
 
     /**
-     * specifies the action that should happen when scroll the target-parent container.
+     * Specifies the action that should happen when scroll the target-parent container.
      * @default 'hide'
      */
     actionOnScroll?: ActionOnScroll;

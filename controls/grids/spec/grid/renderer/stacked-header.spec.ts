@@ -38,6 +38,7 @@ describe('Stacked header render module', () => {
                         { field: 'EmployeeID', textAlign: 'Right', headerText: 'Employee ID' },
                         {
                             headerText: 'Ship Details',
+                            headerTemplate: '<span>${headerText}</span>',
                             columns: [
                                 { field: 'ShipCity', headerText: 'Ship City' },
                                 { field: 'ShipCountry', headerText: 'Ship Country' },

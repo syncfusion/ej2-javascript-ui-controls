@@ -225,7 +225,7 @@ export class QuickToolbarSettings extends ChildProperty<QuickToolbarSettings> {
     public enable: boolean;
 
     /**
-     * specifies the action that should happen when scroll the target-parent container.
+     * Specifies the action that should happen when scroll the target-parent container.
      * @default 'hide'
      */
     @Property('hide')

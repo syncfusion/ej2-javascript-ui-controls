@@ -745,9 +745,9 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             this.adjustArrow(target, newpos, elePos.horizontal, elePos.vertical);
             let offsetPos: OffsetPosition = this.calculateTooltipOffset(newpos);
             offsetPos.top -= (('TopBottom'.indexOf(this.position.split(/(?=[A-Z])/)[0]) !== -1) &&
-            ('TopBottom'.indexOf(newpos.split(/(?=[A-Z])/)[0]) !== -1)) ? (2 * this.offsetY) : 0;
+                ('TopBottom'.indexOf(newpos.split(/(?=[A-Z])/)[0]) !== -1)) ? (2 * this.offsetY) : 0;
             offsetPos.left -= (('RightLeft'.indexOf(this.position.split(/(?=[A-Z])/)[0]) !== -1) &&
-            ('RightLeft'.indexOf(newpos.split(/(?=[A-Z])/)[0]) !== -1)) ? (2 * this.offsetX) : 0;
+                ('RightLeft'.indexOf(newpos.split(/(?=[A-Z])/)[0]) !== -1)) ? (2 * this.offsetX) : 0;
             elePos.position = newpos;
             elePos.left = pos.left + offsetPos.left;
             elePos.top = pos.top + offsetPos.top;
@@ -827,8 +827,28 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
     private onMouseOut(e: Event): void {
-        this.hideTooltip(this.animation.close, e);
+        const enteredElement: EventTarget = (e as MouseEvent).relatedTarget;
+        // don't close the tooltip only if it is tooltip content element
+        if (enteredElement && !this.mouseTrail) {
+            const checkForTooltipElement: Element = closest(
+                enteredElement as HTMLElement,
+                `.${TOOLTIP_WRAP}.${POPUP_LIB}.${POPUP_ROOT}`);
+            if (checkForTooltipElement) {
+                EventHandler.add(checkForTooltipElement, 'mouseleave', this.tooltipElementMouseOut, this);
+                this.unwireMouseEvents(e.target as Element);
+            } else {
+                this.hideTooltip(this.animation.close, e);
+            }
+        } else {
+            this.hideTooltip(this.animation.close, e);
+        }
     }
+
+    private tooltipElementMouseOut(e: Event): void {
+        this.hideTooltip(this.animation.close, e, this.findTarget());
+        EventHandler.remove(this.element, 'mouseleave', this.tooltipElementMouseOut);
+    }
+
     private onStickyClose(e: Event): void {
         this.close();
     }

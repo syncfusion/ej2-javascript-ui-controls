@@ -1015,7 +1015,7 @@ describe('section combine validation ', () => {
         editor.selection.handleLeftKey();
         editor.selection.handleShiftDownKey();
         editor.selection.handleShiftDownKey();
-        editor.editorModule.insertHyperlink('www.google.com', editor.selection.text, false);
+        editor.editorModule.insertHyperlinkInternal('www.google.com', editor.selection.text, false);
         editor.selection.handleUpKey();
         editor.selection.handleLeftKey();
         editor.hyperlinkDialogModule.show();

@@ -9,7 +9,7 @@ import { generate } from '../../recurrence-editor/date-generator';
 import * as util from '../base/util';
 import * as cls from '../base/css-constant';
 import * as event from '../base/constant';
-
+import { PredicateData } from '../base/interface';
 /**
  * EventBase for appointment rendering
  */
@@ -187,15 +187,41 @@ export class EventBase {
     }
 
     public filterEventsByResource(resourceTdData: TdData, appointments: Object[] = this.parent.eventsProcessed): Object[] {
-        let predicate: Predicate;
         let resourceCollection: ResourcesModel[] = this.parent.resourceBase.resourceCollection;
+        let resourceData: PredicateData[] = [];
+        let events: { [key: string]: Object }[] = appointments as { [key: string]: Object }[];
         for (let level: number = 0; level < resourceCollection.length; level++) {
-            let operator: string = this.parent.activeViewOptions.group.allowGroupEdit && resourceCollection[level].allowMultiple ?
-                'contains' : 'equal';
-            let tempPredicate: Predicate = new Predicate(resourceCollection[level].field, operator, resourceTdData.groupOrder[level]);
-            predicate = predicate ? predicate.and(tempPredicate) : tempPredicate;
+            let operator: Function = this.parent.activeViewOptions.group.allowGroupEdit && resourceCollection[level].allowMultiple ?
+                contains : equal;
+            let resource: PredicateData = {
+                field: resourceCollection[level].field,
+                operator: operator,
+                value: resourceTdData.groupOrder[level]
+            };
+            resourceData.push(resource);
         }
-        return new DataManager({ json: appointments }).executeLocal(new Query().where(predicate));
+        let app: { [key: string]: Object }[] = [];
+        for (let i: number = 0; i < appointments.length; i++) {
+            let isResourceMatched: boolean = true;
+            for (let j: number = 0; j < resourceData.length; j++) {
+                isResourceMatched = resourceData[j].operator(events[i][resourceData[j].field], resourceData[j].value as string);
+                if (!isResourceMatched) {
+                    break;
+                }
+            }
+            if (isResourceMatched) {
+                app.push(events[i]);
+            }
+        }
+        function equal(field: string, fieldValue: string): boolean {
+            return field === fieldValue;
+        }
+        function contains(field: string[] | string | number, fieldValue: string): boolean {
+            let resourceField: (string[] | string) = <string[] | string>((field instanceof Array) ?
+                field : isNullOrUndefined(field) ? '' : field.toString());
+            return resourceField.indexOf(fieldValue) > -1;
+        }
+        return app;
     }
 
     public sortByTime(appointments: Object[]): Object[] {

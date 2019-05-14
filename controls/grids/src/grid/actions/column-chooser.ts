@@ -576,7 +576,8 @@ export class ColumnChooser implements IAction {
             let element: HTMLInputElement = currentCheckBoxColls[i] as HTMLInputElement;
             let columnUID: string;
             if (this.parent.childGrid || this.parent.detailTemplate) {
-                columnUID = parentsUntil(this.dlgObj.element.querySelectorAll('.e-cc-chbox')[i], 'e-ccheck').getAttribute('uid');
+                columnUID = parentsUntil(this.dlgObj.element.querySelectorAll('.e-cc-chbox:not(.e-selectall)')[i],
+                                         'e-ccheck').getAttribute('uid');
             } else { columnUID = parentsUntil(element, 'e-ccheck').getAttribute('uid'); }
             let column: Column = gridObject.getColumnByUid(columnUID);
             if (column.visible) {

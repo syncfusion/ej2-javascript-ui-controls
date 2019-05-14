@@ -1691,20 +1691,22 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     private calculateVisibleSeries(): void {
         let series: Series;
+        let seriesCollection: SeriesModel[];
         this.visibleSeries = [];
         let colors: string[] = this.palettes.length ? this.palettes : getSeriesColor(this.theme);
         let count: number = colors.length;
-        for (let i: number = 0, len: number = this.series.length; i < len; i++) {
-            series = <Series>this.series[i];
+        seriesCollection = this.series.sort((a: SeriesModel, b: SeriesModel) => { return a.zOrder - b.zOrder; });
+        for (let i: number = 0, len: number = seriesCollection.length; i < len; i++) {
+            series = <Series>seriesCollection[i];
             // for y axis label issue during chart navigation
-            series.category = this.series[0].type === 'Pareto' ? 'Pareto' : 'Series';
+            series.category = seriesCollection[0].type === 'Pareto' ? 'Pareto' : 'Series';
             series.index = i;
             series.interior = series.fill || colors[i % count];
             switch (series.type) {
                 case 'Bar':
                 case 'StackingBar':
                 case 'StackingBar100':
-                    if (this.series[0].type.indexOf('Bar') === -1) {
+                    if (seriesCollection[0].type.indexOf('Bar') === -1) {
                         continue;
                     } break;
                 case 'Polar':
@@ -1723,13 +1725,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                     this.paretoSeriesModule.initSeries(series, this);
                     continue;
                 default:
-                    if (this.chartAreaType === 'PolarRadar' || this.series[0].type.indexOf('Bar') > -1) {
+                    if (this.chartAreaType === 'PolarRadar' || seriesCollection[0].type.indexOf('Bar') > -1) {
                         continue;
                     }
                     break;
             }
             this.visibleSeries.push(series);
-            this.series[i] = series;
+            seriesCollection[i] = series;
         }
     }
 

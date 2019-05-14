@@ -413,7 +413,7 @@
       padding: $grid-bigger-groupedcell-padding;
     }
 
-    &:not(.e-grid-min-height).e-frozenheader table tr td.e-rowcell {
+    .e-frozenheader table tr td.e-rowcell {
       height: $grid-bigger-rowcell-line-height + $grid-bigger-content-padding + $grid-bigger-content-padding -6;
     }
 
@@ -1023,7 +1023,7 @@
       width: auto;
     }
 
-    &:not(.e-grid-min-height).e-frozenheader table tr td.e-rowcell {
+    .e-frozenheader table tr td.e-rowcell {
       height: $grid-rowcell-line-height + $grid-content-padding + $grid-content-padding;
     }
 
@@ -1361,6 +1361,13 @@
     &.e-rtl .e-columnmenu {
       left: $grid-rtl-column-menu-left;
       right: auto;
+      margin: $grid-rtl-column-menu-margin;
+    }
+
+    &.e-wrap {
+        &.e-rtl  .e-columnmenu {
+            margin: $grid-rtl-textwrap-column-menu-margin;
+        }
     }
 
     [class^='e-'] {
@@ -2815,7 +2822,7 @@
 
 #{&}.e-grid-min-height {
   .e-rowcell {
-    line-height: initial;
+    line-height: 0;
     padding-bottom: 0;
     padding-top: 0;
   }
@@ -2848,7 +2855,7 @@
   .e-rowcell,
   .e-rowcell:first-child,
   .e-rowcell:last-child {
-    line-height: initial;
+    line-height: 0;
     padding-bottom: 0;
     padding-top: 0;
   }

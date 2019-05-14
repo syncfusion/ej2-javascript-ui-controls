@@ -1581,19 +1581,27 @@ export class Editor {
     }
     /**
      * Insert Hyperlink 
-     * @param  {string} url
+     * @param  {string} address 
      * @param  {string} displayText
-     * @param  {boolean} remove
      * @private
      */
-    public insertHyperlink(url: string, displayText: string, remove: boolean, isBookmark?: boolean): void {
+    public insertHyperlink(address: string, displayText?: string): void {
+        if (isNullOrUndefined(displayText)) {
+            displayText = address;
+        }
+        this.insertHyperlinkInternal(address, displayText, this.owner.selection.text !== displayText, false);
+    }
+    /**
+     * @private
+     */
+    public insertHyperlinkInternal(url: string, displayText: string, remove: boolean, isBookmark?: boolean): void {
         let selection: Selection = this.viewer.selection;
         if (selection.start.paragraph.associatedCell !== selection.end.paragraph.associatedCell) {
             return;
         }
         if (remove) {
             //Empty selection Hyperlink insert
-            this.insertHyperlinkInternal(selection, url, displayText, isBookmark);
+            this.insertHyperlinkInternalInternal(selection, url, displayText, isBookmark);
         } else {
             //Non-Empty Selection- change the selected text to Field       
             // this.preservedFontCol = this.getFontColor();
@@ -1649,7 +1657,7 @@ export class Editor {
             }
         }
     }
-    private insertHyperlinkInternal(selection: Selection, url: string, displayText: string, isBookmark?: boolean): void {
+    private insertHyperlinkInternalInternal(selection: Selection, url: string, displayText: string, isBookmark?: boolean): void {
         if (isNullOrUndefined(selection.start)) {
             return;
         }
@@ -8389,7 +8397,8 @@ export class Editor {
         this.pasteContentsInternal(widgets);
     }
     /**
-     * @private
+     * Insert Bookmark at current selection range
+     * @param  {string} name - Name of bookmark
      */
     public insertBookmark(name: string): void {
         let bookmark: BookmarkElementBox = new BookmarkElementBox(0);

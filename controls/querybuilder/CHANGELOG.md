@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 17.1.47 (2019-05-14)
+
+### QueryBuilder
+
+#### New Features
+
+- Provided `case sensitive` support.
+- Provided default value option support for column fields.
+- Provided groupBy support for columns.
+
+#### Bug Fixes
+
+- Updating conditions throws script error after using 'setRules' method.
+- Rule with AND operator is not properly updated in ASP.NET MVC and Core.
+- Multiselect datasource not properly updated for in and notin operators.
+- Provided option for handling data source request on demand.
+
 ## 17.1.43 (2019-04-30)
 
 ### QueryBuilder

@@ -2,7 +2,7 @@ import { select, isNullOrUndefined, Browser, addClass, removeClass, EventHandler
 import { OverflowMode } from '@syncfusion/ej2-navigations';
 import { RenderType } from '../base/enum';
 import * as events from '../base/constant';
-import { pageYOffset, hasClass } from '../base/util';
+import { pageYOffset, hasClass, isIDevice } from '../base/util';
 import { IRichTextEditor, IQuickToolbarOptions, IRenderer, IToolbarItems, NotifyArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
@@ -82,6 +82,9 @@ export class QuickToolbar {
     private initializeQuickToolbars(): void {
         this.parent.quickToolbarModule = this;
         this.contentRenderer = this.renderFactory.getRenderer(RenderType.Content);
+        if (this.parent.inlineMode.enable && this.parent.inlineMode.onSelection && isIDevice()) {
+            EventHandler.add(this.contentRenderer.getDocument(), 'selectionchange', this.selectionChangeHandler, this);
+        }
     }
 
     private onMouseDown(e: MouseEvent): void {
@@ -106,7 +109,7 @@ export class QuickToolbar {
     }
 
     private renderInlineQuickToolbar(): void {
-        if (this.parent.inlineMode.enable && !Browser.isDevice) {
+        if (this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             addClass([this.parent.element], [CLS_INLINE]);
             this.inlineQTBar = this.createQTBar('Inline', 'MultiRow', this.parent.toolbarSettings.items, RenderType.InlineToolbar);
             this.renderFactory.addRenderer(RenderType.InlineToolbar, this.inlineQTBar);
@@ -127,7 +130,7 @@ export class QuickToolbar {
         if (this.textQTBar && !hasClass(this.textQTBar.element, 'e-popup-close')) { this.textQTBar.hidePopup(); }
         if (this.imageQTBar && !hasClass(this.imageQTBar.element, 'e-popup-close')) { this.imageQTBar.hidePopup(); }
         if (this.tableQTBar && !hasClass(this.tableQTBar.element, 'e-popup-close')) { this.tableQTBar.hidePopup(); }
-        if (this.parent.inlineMode.enable && !Browser.isDevice) {
+        if (this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             this.hideInlineQTBar();
         }
     }
@@ -138,14 +141,17 @@ export class QuickToolbar {
     }
 
     private mouseUpHandler(e: NotifyArgs): void {
-        if (this.parent.inlineMode.enable && !Browser.isDevice) {
-            let args: MouseEvent = e.args as MouseEvent;
+        if (this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
+            let coordinates: Touch | MouseEvent;
+            coordinates = (e.args as TouchEvent).touches ? (e.args as TouchEvent).changedTouches[0] : e.args as MouseEvent;
             let range: Range = this.parent.getRange();
-            let target: HTMLElement = args.target as HTMLElement;
+            let target: HTMLElement = (e.args as MouseEvent).target as HTMLElement;
             if (isNullOrUndefined(select('.' + CLS_INLINE_POP, document.body))) {
+                if (isIDevice() && e.touchData && e.touchData.prevClientX !== e.touchData.clientX
+                    && e.touchData.prevClientY !== e.touchData.clientY) { return; }
                 this.hideInlineQTBar();
-                this.offsetX = args.pageX;
-                this.offsetY = pageYOffset(args, this.parent.element, this.parent.iframeSettings.enable);
+                this.offsetX = coordinates.pageX;
+                this.offsetY = pageYOffset(coordinates, this.parent.element, this.parent.iframeSettings.enable);
                 if (target.nodeName === 'TEXTAREA') {
                     this.showInlineQTBar(this.offsetX, this.offsetY, target);
                 } else {
@@ -162,13 +168,15 @@ export class QuickToolbar {
     }
 
     private keyDownHandler(): void {
-        if ((this.parent.inlineMode.enable && !Browser.isDevice) && !isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
+        if ((this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice()))
+            && !isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
             this.hideInlineQTBar();
         }
     }
 
     private inlineQTBarMouseDownHandler(): void {
-        if ((this.parent.inlineMode.enable && !Browser.isDevice) && !isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
+        if ((this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice()))
+            && !isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
             this.hideInlineQTBar();
         }
     }
@@ -183,6 +191,17 @@ export class QuickToolbar {
 
     public getInlineBaseToolbar(): BaseToolbar {
         return this.inlineQTBar && this.inlineQTBar.quickTBarObj;
+    }
+
+    private selectionChangeHandler(e: Event): void {
+        clearTimeout(this.deBouncer);
+        this.deBouncer = window.setTimeout(() => { this.onSelectionChange(e); }, 1000);
+    }
+
+    private onSelectionChange(e: Event): void {
+        if (!isNullOrUndefined(select('.' + CLS_INLINE_POP, document.body))) { return; }
+        let selection: Selection = this.contentRenderer.getDocument().getSelection();
+        if (!selection.isCollapsed) { this.mouseUpHandler({ args: e as MouseEvent }); }
     }
 
     /**
@@ -209,6 +228,9 @@ export class QuickToolbar {
         }
         if (this.inlineQTBar) {
             EventHandler.remove(this.inlineQTBar.element, 'mousedown', this.onMouseDown);
+            if (isIDevice()) {
+                EventHandler.remove(document, 'selectionchange', this.selectionChangeHandler);
+            }
             this.inlineQTBar.destroy();
         }
         this.removeEventListener();
@@ -316,7 +338,7 @@ export class QuickToolbar {
             this.unWireInlineQTBarEvents();
             this.hideInlineQTBar();
         }
-        if (this.parent.inlineMode.enable && !Browser.isDevice) {
+        if (this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             addClass([this.parent.element], [CLS_INLINE]);
             this.wireInlineQTBarEvents();
         }

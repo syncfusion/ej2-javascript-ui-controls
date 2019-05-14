@@ -1271,6 +1271,13 @@ export class Series extends SeriesBase {
     public opacity: number;
 
     /**
+     * The z order of the series.
+     * @default 0
+     */
+    @Property(0)
+    public zOrder: number;
+
+    /**
      * The type of the series are
      * * Line
      * * Column

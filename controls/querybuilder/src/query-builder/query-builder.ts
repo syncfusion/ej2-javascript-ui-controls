@@ -78,7 +78,12 @@ export class Columns extends ChildProperty<Columns> {
      */
     @Property(null)
     public value:  string[] | number[] | string | number | boolean | Date;
-
+    /**
+     * Specifies the category for columns.
+     * @default null
+     */
+    @Property(null)
+    public category: string;
 }
 export class Rule extends ChildProperty<Rule> {
     /**
@@ -175,7 +180,6 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private btnGroupId: number;
     private levelColl: Level;
     private isImportRules: boolean;
-    private filterIndex: number;
     private parser: string[][];
     private defaultLocale: Object;
     private l10n: L10n;
@@ -188,6 +192,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private groupElem: Element;
     private dataColl: object[];
     private dataManager: DataManager;
+    private fields: Object;
+    private selectedColumn: ColumnsModel;
     /** 
      * Triggers when the component is created.
      * @event 
@@ -338,7 +344,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         if (this.dataColl.length) {
             let columnKeys: string[] = Object.keys(this.dataColl[0]);
             let cols: ColumnsModel[] = [];
-            let type: string;
+            let type: string; let groupBy: boolean = false;
             let isDate: boolean = false; let value: string | number | boolean | Object;
             let validateObj: Validation = {isRequired: true, min: 0, max: Number.MAX_VALUE};
             if (this.columns.length) {
@@ -363,6 +369,14 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     if (!columns[i].validation) {
                         columns[i].validation = validateObj;
                     }
+                    if (columns[i].category) {
+                        groupBy = true;
+                    } else {
+                        columns[i].category = this.l10n.getConstant('OtherFields');
+                    }
+                }
+                if (groupBy) {
+                    this.fields = { text: 'label', value: 'field', groupBy: 'category' };
                 }
             } else {
                 for (let i: number = 0, len: number = columnKeys.length; i < len; i++) {
@@ -380,8 +394,17 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 }
                 this.columns = cols as Columns[];
             }
-        }
+        } else if (this.columns.length) {
+            let columns: ColumnsModel[] = this.columns;
+            for (let i: number = 0, len: number = columns.length; i < len; i++) {
+                if (columns[i].category) {
+                        this.fields = { text: 'label', value: 'field', groupBy: 'category' };
+                } else {
+                    columns[i].category = this.l10n.getConstant('OtherFields');
+                }
+            }
     }
+}
     private triggerEvents(args: ChangeEventArgs | RuleChangeEventArgs, type ?: string): ChangeEventArgs | RuleChangeEventArgs | void {
         if (this.isImportRules) {
             return args;
@@ -519,15 +542,15 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         height = (this.element.className.indexOf('e-device') > -1) ? '250px' : '200px';
         dropDownList = new DropDownList({
             dataSource: this.columns as { [key: string]: Object }[], // tslint:disable-line
-            fields: { text: 'label', value: 'field' },
+            fields: this.fields,
             placeholder: this.l10n.getConstant('SelectField'),
             popupHeight: ((this.columns.length > 5) ? height : 'auto'),
             change: this.changeField.bind(this),
             value: rule ? rule.field : null
         });
         dropDownList.appendTo('#' + ruleElem.id + '_filterkey');
-        this.filterIndex = dropDownList.index;
         groupLevel = this.levelColl[target.id];
+        this.selectedColumn = dropDownList.getDataByValue(dropDownList.value) as ColumnsModel;
         if (!this.isImportRules) {
             rules = this.rule as RuleModel;
             for (i = 0, len = groupLevel.length; i < len; i++) {
@@ -544,7 +567,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         if (Object.keys(rule).length) {
             this.changeRule(rule, {
                 element: dropDownList.element,
-                itemData: this.columns[this.filterIndex] as FieldSettingsModel
+                itemData: this.selectedColumn as FieldSettingsModel
             } as DropDownChangeEventArgs);
         }
         ruleID = ruleElem.id.replace(this.element.id + '_', '');
@@ -572,7 +595,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 index = 0;
                 indexElem = tempElem = ruleElemCln[i];
                 dropDownObj = getComponent(ruleElemCln[i].querySelector('.e-rule-field input.e-control') as HTMLElement, 'dropdownlist');
-                validateRule = !isNullOrUndefined(dropDownObj.index) && this.columns[dropDownObj.index].validation;
+                this.selectedColumn = dropDownObj.getDataByValue(dropDownObj.value) as ColumnsModel;
+                validateRule = !isNullOrUndefined(dropDownObj.index) && (this.selectedColumn as ColumnsModel).validation;
                 fieldElem = tempElem.querySelector('.e-rule-field input.e-control');
                 if (validateRule && validateRule.isRequired) {
                     while (indexElem && indexElem.previousElementSibling !== null) {
@@ -813,8 +837,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             rbValue = parseInt(element.id.split('valuekey')[1], 0);
             dropDownObj =
             getComponent(closest(element, '.e-rule-container').querySelector('.e-filter-input') as HTMLElement, 'dropdownlist');
-            if (this.columns[dropDownObj.index].values) {
-                value = this.columns[dropDownObj.index].values[rbValue];
+            this.selectedColumn =  dropDownObj.getDataByValue(dropDownObj.value) as ColumnsModel;
+            if (this.selectedColumn.values) {
+                value = this.selectedColumn.values[rbValue];
             } else {
                 let valColl: string [] = ['True', 'False'];
                 value = valColl[rbValue];
@@ -850,24 +875,21 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         if (!args.itemData) {
             return;
         }
-        let tempRule: RuleModel = {}; let ddlObj: DropDownList; let ruleElem: Element;
-        let operatorList: { [key: string]: Object }[]; let ruleID: string; let filterElem: Element; let operatorElem: Element;
-        let prevOper: string = rule.operator ? rule.operator.toLowerCase() : ''; let oprElem: Element;
-        filterElem = closest(args.element, '.e-rule-filter'); operatorElem = closest(args.element, '.e-rule-operator');
-        let dropDownObj: DropDownList = getComponent(args.element, 'dropdownlist') as DropDownList;
+        let tempRule: RuleModel = {}; let ddlObj: DropDownList; let ruleElem: Element; let ruleID: string; let operatorElem: Element;
+        let prevOper: string = rule.operator ? rule.operator.toLowerCase() : ''; let operatorList: { [key: string]: Object }[];
+        let filterElem: Element = closest(args.element, '.e-rule-filter'); operatorElem = closest(args.element, '.e-rule-operator');
+        let dropDownObj: DropDownList = getComponent(args.element, 'dropdownlist') as DropDownList; let oprElem: Element;
         let element: Element = closest(args.element, '.e-group-container'); let eventsArgs: ChangeEventArgs;
         let groupID: string = element.id.replace(this.element.id + '_', '');
         if (filterElem) {
+            this.selectedColumn =  dropDownObj.getDataByValue(dropDownObj.value) as ColumnsModel;
             ruleElem = closest(filterElem, '.e-rule-container'); ruleID = ruleElem.id.replace(this.element.id + '_', '');
-            eventsArgs = { groupID: groupID, ruleID: ruleID, selectedIndex: dropDownObj.index, cancel: false, type: 'field' };
+            eventsArgs = { groupID: groupID, ruleID: ruleID, selectedField: dropDownObj.value as string, cancel: false, type: 'field' };
             eventsArgs = this.triggerEvents(eventsArgs, 'before') as ChangeEventArgs;
             if (eventsArgs.cancel) {
                 return;
             }
-            if (dropDownObj.index !== eventsArgs.selectedIndex) {
-                dropDownObj.index = eventsArgs.selectedIndex;
-            }
-            tempRule.type = this.columns[dropDownObj.index].type;
+            tempRule.type = this.selectedColumn.type;
             if (ruleElem.querySelector('.e-template')) {
                 rule.value = '';
             }
@@ -878,9 +900,6 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             eventsArgs = this.triggerEvents(eventsArgs, 'before') as ChangeEventArgs;
             if (eventsArgs.cancel) {
                 return;
-            }
-            if (dropDownObj.index !== eventsArgs.selectedIndex) {
-                dropDownObj.index = eventsArgs.selectedIndex;
             }
             tempRule.operator = dropDownObj.value as string;
             let currOper: string = tempRule.operator.toLowerCase();
@@ -917,10 +936,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 let ruleId: string = closest(operatorElem, '.e-rule-container').id;
                 oprElem = this.createElement('input', { attrs: { type: 'text', id: ruleId + '_operatorkey' } });
                 operatorElem.appendChild(oprElem);
-                if (this.columns[dropDownObj.index].operators) {
-                    operatorList = this.columns[dropDownObj.index].operators;
+                if (this.selectedColumn.operators) {
+                    operatorList = this.selectedColumn.operators;
                 } else if (args.itemData) {
-                    operatorList = this.customOperators[this.columns[dropDownObj.index].type + 'Operator'];
+                    operatorList = this.customOperators[this.selectedColumn.type + 'Operator'];
                 }
                 let height: string = (this.element.className.indexOf('e-device') > -1) ? '250px' : '200px';
                 let dropDownList: DropDownList = new DropDownList({
@@ -935,11 +954,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 dropDownList.appendTo('#' + ruleId + '_operatorkey');
                 tempRule.operator = (rule && rule.operator !== '') ? rule.operator : operatorList[0].value as string;
                 if (this.isImportRules) {
-                    tempRule.type = this.columns[dropDownObj.index].type;
+                    tempRule.type = this.selectedColumn.type;
                     tempRule.operator = rule.operator;
                 }
                 this.renderValues(
-                    operatorElem, this.columns[dropDownObj.index], args.previousItemData as ColumnsModel,
+                    operatorElem, this.selectedColumn, args.previousItemData as ColumnsModel,
                     false, rule, tempRule, args.element);
             }
         }
@@ -1054,7 +1073,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             let element: Element = document.getElementById(parentId);
             let dropDownObj: DropDownList =
             getComponent(closest(element, '.e-rule-container').querySelector('.e-filter-input') as HTMLElement, 'dropdownlist');
-            let value: string = this.columns[dropDownObj.index].field;
+            this.selectedColumn =  dropDownObj.getDataByValue(dropDownObj.value) as ColumnsModel;
+            let value: string = this.selectedColumn.field;
             let isFetched: boolean = false;
             if (this.dataColl[1]) {
                 if (Object.keys(this.dataColl[1]).indexOf(value) > -1) {
@@ -1214,8 +1234,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         if (itemData.template) {
             this.processTemplate(target, itemData, rule, tempRule);
         } else {
-            let length: number = (tempRule.type === 'boolean' ||
-                tempRule.operator && tempRule.operator.toLowerCase().indexOf('between') > -1) ? 2 : 1;
+            let length: number;
+            if (tempRule.type === 'boolean') {
+                length = this.selectedColumn.values.length;
+            } else {
+                length = tempRule.operator && tempRule.operator.toLowerCase().indexOf('between') > -1 ? 2 : 1;
+            }
             let parentId: string = closest(target, '.e-rule-container').id; let ruleValElem: HTMLElement;
             if (target.className.indexOf('e-rule-operator') > -1 || target.className.indexOf('e-rule-filter') > -1) {
                 ruleValElem = target.parentElement.querySelector('.e-rule-value') as HTMLElement;
@@ -1359,14 +1383,15 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 parentElem.style.minWidth = '200px';
             }
         } else {
-            if (tempRule.type === 'boolean' || tempRule.operator && tempRule.operator.toLowerCase().indexOf('between') > -1) {
-                for (let i: number = 0; i < 2; i++) {
-                    let valElem: HTMLElement;
-                    valElem = this.createElement('input', { attrs: { type: 'text', id: parentId + '_valuekey' + i } });
-                    target.nextElementSibling.appendChild(valElem);
-                }
+            let inputLen: number = 1;
+            if (tempRule.type === 'boolean') {
+                inputLen = this.selectedColumn.values.length;
             } else {
-                let valElem: HTMLElement = this.createElement('input', { attrs: { type: 'text', id: parentId + '_valuekey0' } });
+                inputLen = (tempRule.operator && tempRule.operator.toLowerCase().indexOf('between') > -1) ? 2 : 1;
+            }
+            for (let i: number = 0; i < inputLen; i++) {
+                let valElem: HTMLElement;
+                valElem = this.createElement('input', { attrs: { type: 'text', id: parentId + '_valuekey' + i } });
                 target.nextElementSibling.appendChild(valElem);
             }
         }
@@ -1384,9 +1409,13 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 break;
             case 'radio':
                 let radioBtnObj: RadioButton = getComponent(element, controlName) as RadioButton;
-                radioBtnObj.checked = true;
+                if (!this.selectedColumn.value || (this.selectedColumn.value && this.selectedColumn.value === radioBtnObj.value)) {
+                    radioBtnObj.checked = true;
+                    rule.value = radioBtnObj.value;
+                } else {
+                    radioBtnObj.checked = false;
+                }
                 radioBtnObj.refresh();
-                rule.value = radioBtnObj.value;
                 break;
             case 'numerictextbox':
                 if (rule.operator.indexOf('between') > -1) {
@@ -1429,21 +1458,24 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             if (!this.isImportRules && rule.rules[index].field.toLowerCase() !== this.columns[dropDownObj.index].field.toLowerCase()) {
                 rule.rules[index].value = '';
             }
-            rule.rules[index].field = this.columns[dropDownObj.index].field; rule.rules[index].type = this.columns[dropDownObj.index].type;
-            rule.rules[index].label = this.columns[dropDownObj.index].label;
+            this.selectedColumn = dropDownObj.getDataByValue(dropDownObj.value) as ColumnsModel;
+            rule.rules[index].field = this.selectedColumn.field; rule.rules[index].type = this.selectedColumn.type;
+            rule.rules[index].label = this.selectedColumn.label;
             let ruleElement: Element = closest(target, '.e-rule-filter');
             let element: HTMLElement = ruleElement.nextElementSibling.querySelector('input.e-control') as HTMLElement;
             let operator: string = (getComponent(element, 'dropdownlist') as DropDownList).value as string;
             rule.rules[index].operator = operator;
-            element = ruleElement.nextElementSibling.nextElementSibling.querySelector('input.e-control') as HTMLElement;
-            if (!element) {
-                element = ruleElement.nextElementSibling.nextElementSibling.querySelector('div.e-control') as HTMLElement;
+            let elementCln: NodeListOf<HTMLElement> = ruleElement.nextElementSibling.nextElementSibling.querySelectorAll('input.e-control');
+            for (let i: number = 0; i < elementCln.length; i++) {
+                if (!elementCln[i]) {
+                    elementCln[i] = ruleElement.nextElementSibling.nextElementSibling.querySelector('div.e-control') as HTMLElement;
+                }
+                if (!elementCln[i]) {
+                    elementCln[i] = ruleElement.nextElementSibling.nextElementSibling.querySelector('.e-template');
+                }
+                eventsArgs = { groupID: groupID, ruleID: ruleID, value: rule.rules[index].field, type: 'field' };
+                this.updateValues(elementCln[i], rule.rules[index]);
             }
-            if (!element) {
-                element = ruleElement.nextElementSibling.nextElementSibling.querySelector('.e-template');
-            }
-            eventsArgs = { groupID: groupID, ruleID: ruleID, value: rule.rules[index].field , type: 'field' };
-            this.updateValues(element, rule.rules[index]);
             this.triggerEvents(eventsArgs);
             if (this.allowValidation && rule.rules[index].field && target.parentElement.className.indexOf('e-tooltip') > -1) {
                 (getComponent(target.parentElement as HTMLElement, 'tooltip') as Tooltip).destroy();
@@ -1841,7 +1873,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             AddCondition: 'Add Condition',
             Edit: 'EDIT',
             ValidationMessage: 'This field is required',
-            SummaryViewTitle: 'Summary View'
+            SummaryViewTitle: 'Summary View',
+            OtherFields: 'Other Fields'
         };
         this.l10n = new L10n('querybuilder', this.defaultLocale, this.locale);
         this.intl = new Internationalization(this.locale);
@@ -1891,6 +1924,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             between: 'Between', in: 'in', notin: 'NotIn', notbetween: 'NotBetween', startswith: 'StartsWith', endswith: 'EndsWith',
             contains: 'Contains'
         };
+        this.fields =  { text: 'label', value: 'field' };
     }
 
     protected render(): void {
@@ -2627,6 +2661,7 @@ export interface ChangeEventArgs extends BaseEventArgs {
     ruleID?: string;
     value?: string | number | Date | boolean | string[];
     selectedIndex?: number;
+    selectedField?: string;
     cancel?: boolean;
     type?: string;
 }

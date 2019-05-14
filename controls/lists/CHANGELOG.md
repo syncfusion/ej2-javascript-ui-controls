@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.47 (2019-05-14)
+
+### ListView
+
+#### New Features
+
+- #230272 - Provided the support for adding new list view item without re-render the listview in virtualization mode.
+
 ## 17.1.43 (2019-04-30)
 
 ### ListView

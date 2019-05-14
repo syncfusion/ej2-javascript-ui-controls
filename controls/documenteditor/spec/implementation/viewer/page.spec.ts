@@ -69,7 +69,7 @@ describe('Get Minimum and maximum width form cell', () => {
     it('Get minimum and maximum width from cell', () => {
         editor.editor.insertTable(2, 2);
         editor.editor.insertText('Adventure Works Cycles, the fictitious company on which the AdventureWorks sample databases are based, is a large, multinational manufacturing company.');
-        editor.editor.insertHyperlink('https://syncfusion.com', 'Syncfusion', true, false);
+        editor.editor.insertHyperlinkInternal('https://syncfusion.com', 'Syncfusion', true, false);
         let widthInfo: WidthInfo = editor.selection.start.paragraph.associatedCell.getMinimumAndMaximumWordWidth(0, 0);
         expect(widthInfo.minimumWordWidth).toBeGreaterThan(70);
         expect(widthInfo.minimumWordWidth).toBeLessThan(78);

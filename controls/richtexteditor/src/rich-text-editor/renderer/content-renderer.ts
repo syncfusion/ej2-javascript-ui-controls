@@ -1,5 +1,6 @@
 import { IRenderer, IRichTextEditor } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
+import { getEditValue } from '../base/util';
 
 /**
  * Content module is used to render RichTextEditor content
@@ -26,7 +27,7 @@ export class ContentRender implements IRenderer {
     public renderPanel(): void {
         let rteObj: IRichTextEditor = this.parent;
         let div: HTMLElement = this.parent.createElement('div', { className: 'e-rte-content', id: this.parent.getID() + 'rte-view' });
-        let rteContent: string = (rteObj.value !== null && rteObj.value !== '') ? rteObj.value : '<p><br/></p>';
+        let rteContent: string = getEditValue(rteObj.value, rteObj);
         this.editableElement = this.parent.createElement('div', {
             className: 'e-content',
             id: this.parent.getID() + '_rte-edit-view',

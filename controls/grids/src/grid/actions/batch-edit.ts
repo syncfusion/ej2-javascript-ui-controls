@@ -772,6 +772,7 @@ export class BatchEdit {
         if (!isNullOrUndefined(this.parent.detailTemplate) || !isNullOrUndefined(this.parent.childGrid)) {
             cIdx++;
         }
+        if (this.parent.isRowDragable()) { cIdx++; }
         return cIdx;
     }
 
@@ -801,6 +802,7 @@ export class BatchEdit {
         if (!isNullOrUndefined(this.parent.detailTemplate) || !isNullOrUndefined(this.parent.childGrid)) {
             cIdx++;
         }
+        if (this.parent.isRowDragable()) { cIdx++; }
         for (let m: number = 0; m < cells.length; m++) {
             let colIndex: number = parseInt(cells[m].getAttribute('aria-colindex'), 10);
             if (colIndex === index - cIdx) {

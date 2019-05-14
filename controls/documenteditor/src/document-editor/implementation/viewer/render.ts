@@ -496,6 +496,7 @@ export class Renderer {
         bold = format.bold ? 'bold' : breakCharacterFormat.bold ? 'bold' : '';
         italic = format.italic ? 'italic' : breakCharacterFormat.italic ? 'italic' : '';
         fontSize = fontSize === 0 ? 0.5 : fontSize / (baselineAlignment === 'Normal' ? 1 : 1.5);
+        fontSize = this.isPrinting ? fontSize : fontSize * this.viewer.zoomFactor;
         let strikethrough: Strikethrough = format.strikethrough === 'None' ? breakCharacterFormat.strikethrough : format.strikethrough;
         let highlightColor: HighlightColor = format.highlightColor === 'NoColor' ? breakCharacterFormat.highlightColor :
             format.highlightColor;
@@ -508,7 +509,7 @@ export class Renderer {
             // tslint:disable-next-line:max-line-length
             this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
         }
-        this.pageContext.font = bold + ' ' + italic + ' ' + fontSize * this.viewer.zoomFactor + 'pt' + ' ' + fontFamily;
+        this.pageContext.font = bold + ' ' + italic + ' ' + fontSize + 'pt' + ' ' + fontFamily;
         if (baselineAlignment === 'Subscript') {
             topMargin += elementBox.height - elementBox.height / 1.5;
         }
@@ -569,7 +570,8 @@ export class Renderer {
         bold = format.bold ? 'bold' : '';
         italic = format.italic ? 'italic' : '';
         fontSize = format.fontSize === 0 ? 0.5 : format.fontSize / (format.baselineAlignment === 'Normal' ? 1 : 1.5);
-        this.pageContext.font = bold + ' ' + italic + ' ' + fontSize * this.viewer.zoomFactor + 'pt' + ' ' + format.fontFamily;
+        fontSize = this.isPrinting ? fontSize : fontSize * this.viewer.zoomFactor;
+        this.pageContext.font = bold + ' ' + italic + ' ' + fontSize + 'pt' + ' ' + format.fontFamily;
         if (format.baselineAlignment === 'Subscript') {
             topMargin += elementBox.height - elementBox.height / 1.5;
         }

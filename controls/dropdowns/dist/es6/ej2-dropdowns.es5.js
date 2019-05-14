@@ -2954,7 +2954,6 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             ((this.allowFiltering && !(Browser.isDevice && this.isFilterLayout())) || this.getModuleName() === 'autocomplete')) {
             removeClass([this.popupObj.element], 'e-popup-close');
             this.popupObj.refreshPosition(this.inputWrapper.container);
-            addClass([this.popupObj.element], 'e-popup-close');
         }
     };
     DropDownList.prototype.checkDatasource = function (newProp) {

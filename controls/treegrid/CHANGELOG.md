@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.47 (2019-05-14)
+
+### TreeGrid
+
+#### New Features
+
+- 'Row Template' support is provided that allows to use custom layout for the TreeGrid rows.
+
 ## 17.1.44 (2019-05-07)
 
 ### TreeGrid

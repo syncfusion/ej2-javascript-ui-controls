@@ -1145,7 +1145,7 @@ export class Gantt extends Component<HTMLElement>
     /**
      * @private
      */
-    public renderGantt(): void {
+    public renderGantt(isChange?: boolean): void {
         this.timelineModule.processTimelineUnit();
         // predecessor calculation
         if (this.taskFields.dependency) {
@@ -1156,18 +1156,25 @@ export class Gantt extends Component<HTMLElement>
         }
         this.dataOperation.calculateProjectDates();
         this.timelineModule.validateTimelineProp();
-        this.dataOperation.updateGanttData();
-        this.treeGridPane.classList.remove('e-temp-content');
-        remove(this.treeGridPane.querySelector('.e-gantt-temp-header'));
-        this.notify('dataReady', {});
-        this.renderTreeGrid();
-        this.wireEvents();
-        if (this.taskFields.dependency && this.isInPredecessorValidation) {
-            let dialogElement: HTMLElement = createElement('div', {
-                id: this.element.id + '_dialogValidationRule',
-            });
-            this.element.appendChild(dialogElement);
-            this.predecessorModule.renderValidationDialog();
+        if (isChange) {
+            this.updateProjectDates(
+                this.cloneProjectStartDate, this.cloneProjectEndDate, this.isTimelineRoundOff);
+            this.dataOperation.updateGanttData();
+            this.treeGrid.dataSource = this.flatData;
+        } else {
+            this.dataOperation.updateGanttData();
+            this.treeGridPane.classList.remove('e-temp-content');
+            remove(this.treeGridPane.querySelector('.e-gantt-temp-header'));
+            this.notify('dataReady', {});
+            this.renderTreeGrid();
+            this.wireEvents();
+            if (this.taskFields.dependency && this.isInPredecessorValidation) {
+                let dialogElement: HTMLElement = createElement('div', {
+                    id: this.element.id + '_dialogValidationRule',
+                });
+                this.element.appendChild(dialogElement);
+                this.predecessorModule.renderValidationDialog();
+            }
         }
         this.splitterModule.updateSplitterPosition();
         if (this.gridLines === 'Vertical' || this.gridLines === 'Both') {
@@ -1381,6 +1388,10 @@ export class Gantt extends Component<HTMLElement>
                         this.toolbarModule.updateSearchTextBox();
                     }
                     break;
+                case 'dataSource':
+                    this.closeGanttActions();
+                    this.dataOperation.checkDataBinding(true);
+                    break;
             }
         }
     }
@@ -1414,6 +1425,7 @@ export class Gantt extends Component<HTMLElement>
         this.element.innerHTML = '';
         removeClass([this.element], cls.root);
         this.element.innerHTML = '';
+        this.isTreeGridRendered = false;
     }
     /**
      * public method to get taskbarHeight.
@@ -1658,21 +1670,21 @@ export class Gantt extends Component<HTMLElement>
             prevTimeSpan: 'Previous timespan',
             saveButton: 'Save',
             taskBeforePredecessor_FS: 'You moved "{0}" to start before "{1}" finishes and the two tasks are linked.'
-            + 'As the result, the links cannot be honored. Select one action below to perform',
+                + 'As the result, the links cannot be honored. Select one action below to perform',
             taskAfterPredecessor_FS: 'You moved "{0}" away from "{1}" and the two tasks are linked.'
-            + 'As the result, the links cannot be honored. Select one action below to perform',
+                + 'As the result, the links cannot be honored. Select one action below to perform',
             taskBeforePredecessor_SS: 'You moved "{0}" to start before "{1}" starts and the two tasks are linked.'
-            + 'As the result, the links cannot be honored. Select one action below to perform',
+                + 'As the result, the links cannot be honored. Select one action below to perform',
             taskAfterPredecessor_SS: 'You moved "{0}" to start after "{1}" starts and the two tasks are linked.'
-            + 'As the result, the links cannot be honored. Select one action below to perform',
+                + 'As the result, the links cannot be honored. Select one action below to perform',
             taskBeforePredecessor_FF: 'You moved "{0}" to finish before "{1}" finishes and the two tasks are linked.'
-            + 'As the result, the links cannot be honored. Select one action below to perform',
+                + 'As the result, the links cannot be honored. Select one action below to perform',
             taskAfterPredecessor_FF: 'You moved "{0}" to finish after "{1}" finishes and the two tasks are linked.'
-            + 'As the result, the links cannot be honored. Select one action below to perform',
+                + 'As the result, the links cannot be honored. Select one action below to perform',
             taskBeforePredecessor_SF: 'You moved "{0}" away from "{1}" to starts and the two tasks are linked.'
-            + 'As the result, the links cannot be honored. Select one action below to perform',
+                + 'As the result, the links cannot be honored. Select one action below to perform',
             taskAfterPredecessor_SF: 'You moved "{0}" to finish after "{1}" starts and the two tasks are linked.'
-            + 'As the result, the links cannot be honored. Select one action below to perform',
+                + 'As the result, the links cannot be honored. Select one action below to perform',
             okText: 'Ok',
             confirmDelete: 'Are you sure you want to Delete Record?',
             from: 'From',
@@ -2253,6 +2265,24 @@ export class Gantt extends Component<HTMLElement>
         return { top: Math.round(top), left: Math.round(left) };
     }
 
+    /**
+     * Public method to update data source.
+     * @return {void}
+     * @public
+     */
+    public updateDataSource(dataSource: object[], args: object): void {
+        for (let prop of Object.keys(args)) {
+            switch (prop) {
+                case 'projectStartDate':
+                    this.setProperties({ projectStartDate: args[prop] }, true);
+                    break;
+                case 'projectEndDate':
+                    this.setProperties({ projectEndDate: args[prop] }, true);
+                    break;
+            }
+        }
+        this.dataSource = dataSource;
+    }
     /**
      * Public method to expand all the rows of Gantt
      * @return {void}

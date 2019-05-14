@@ -29,7 +29,7 @@ describe('UI virtualization', () => {
                 data.push({ 'text': i.toString(), 'id': i.toString() });
             }
             data[30].enabled = false;
-            data[40].id  = undefined
+            data[40].id = undefined
             beforeAll(() => {
                 document.body.appendChild(ele);
                 listObj = new ListView({
@@ -46,7 +46,7 @@ describe('UI virtualization', () => {
                 let uiFirstIndex: number = listObj.virtualizationModule.uiFirstIndex;
                 let uiLastIndex: number = listObj.virtualizationModule.uiLastIndex;
                 let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
-                document.documentElement.getBoundingClientRect().top;
+                    document.documentElement.getBoundingClientRect().top;
                 simulateScrollEvent(document.documentElement, startingHeight + 181);
                 expect(uiFirstIndex + 4).toBe(listObj.virtualizationModule.uiFirstIndex);
                 expect(uiLastIndex + 4).toBe(listObj.virtualizationModule.uiLastIndex);
@@ -55,20 +55,20 @@ describe('UI virtualization', () => {
                 let uiFirstIndex: number = listObj.virtualizationModule.uiFirstIndex;
                 let uiLastIndex: number = listObj.virtualizationModule.uiLastIndex;
                 let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
-                document.documentElement.getBoundingClientRect().top;
+                    document.documentElement.getBoundingClientRect().top;
                 simulateScrollEvent(document.documentElement, startingHeight + 91);
                 expect(uiFirstIndex - 2).toBe(listObj.virtualizationModule.uiFirstIndex);
                 expect(uiLastIndex - 2).toBe(listObj.virtualizationModule.uiLastIndex);
             });
             it('scrolling to top of the page', () => {
                 let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
-                document.documentElement.getBoundingClientRect().top;
+                    document.documentElement.getBoundingClientRect().top;
                 simulateScrollEvent(document.documentElement, startingHeight + 0);
                 expect(0).toBe(listObj.virtualizationModule.uiFirstIndex);
             });
             it('scrolling to end of the page', () => {
                 let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
-                document.documentElement.getBoundingClientRect().top;
+                    document.documentElement.getBoundingClientRect().top;
                 simulateScrollEvent(document.documentElement, startingHeight + 4500);
                 expect(99).toBe(listObj.virtualizationModule.uiLastIndex);
             });
@@ -98,7 +98,7 @@ describe('UI virtualization', () => {
                 let ItemCount: number = listObj.dataSource.length;
                 listObj.addItem([{ text: '999', id: '101' }]);
                 let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
-                document.documentElement.getBoundingClientRect().top;
+                    document.documentElement.getBoundingClientRect().top;
                 simulateScrollEvent(document.documentElement, startingHeight + 4545);
                 expect(100).toBe(listObj.virtualizationModule.uiLastIndex);
                 expect(ItemCount + 1).toBe(listObj.dataSource.length);
@@ -107,7 +107,7 @@ describe('UI virtualization', () => {
                 let ItemCount: number = listObj.dataSource.length;
                 listObj.addItem([{ text: '999999', id: '102' }, { text: '99999', id: '103' }, { text: '9999', id: '104' }]);
                 let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
-                document.documentElement.getBoundingClientRect().top;
+                    document.documentElement.getBoundingClientRect().top;
                 simulateScrollEvent(document.documentElement, startingHeight + 4680);
                 expect(103).toBe(listObj.virtualizationModule.uiLastIndex);
                 expect(ItemCount + 3).toBe(listObj.dataSource.length);
@@ -116,7 +116,7 @@ describe('UI virtualization', () => {
                 let ItemCount: number = listObj.dataSource.length;
                 listObj.removeItem({ text: '999999', id: '104' });
                 let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
-                document.documentElement.getBoundingClientRect().top;
+                    document.documentElement.getBoundingClientRect().top;
                 simulateScrollEvent(document.documentElement, startingHeight + 4635);
                 expect(102).toBe(listObj.virtualizationModule.uiLastIndex);
                 expect(ItemCount - 1).toBe(listObj.dataSource.length);
@@ -125,18 +125,18 @@ describe('UI virtualization', () => {
                 let ItemCount: number = listObj.dataSource.length;
                 listObj.removeMultipleItems([{ text: '999', id: '101' }, { text: '9999', id: '102' }, { text: '99999', id: '103' }]);
                 let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
-                document.documentElement.getBoundingClientRect().top;
+                    document.documentElement.getBoundingClientRect().top;
                 simulateScrollEvent(document.documentElement, startingHeight + 4500);
                 expect(99).toBe(listObj.virtualizationModule.uiLastIndex);
                 expect(ItemCount - 3).toBe(listObj.dataSource.length);
             });
             it('Adding single item at begining of the scroll', () => {
                 let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
-                document.documentElement.getBoundingClientRect().top;
+                    document.documentElement.getBoundingClientRect().top;
                 simulateScrollEvent(document.documentElement, startingHeight + 181);
-                listObj.selectItem({text: '1', id: '1'})
+                listObj.selectItem({ text: '1', id: '1' })
                 startingHeight = listObj.ulElement.getBoundingClientRect().top -
-                document.documentElement.getBoundingClientRect().top;
+                    document.documentElement.getBoundingClientRect().top;
                 simulateScrollEvent(document.documentElement, startingHeight + 0);
                 let ItemCount: number = listObj.dataSource.length;
                 listObj.addItem([{ text: '0', id: '101' }]);
@@ -165,7 +165,7 @@ describe('UI virtualization', () => {
             it('Removing slected item data', () => {
                 let ItemCount: number = listObj.dataSource.length;
                 let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
-                document.documentElement.getBoundingClientRect().top;
+                    document.documentElement.getBoundingClientRect().top;
                 simulateScrollEvent(document.documentElement, startingHeight + 4500);
                 listObj.selectItem({ text: '999', id: '101' });
                 expect(listObj.element.querySelector('[data-uid="101"]').classList.contains('e-active')).toBe(true);
@@ -179,7 +179,7 @@ describe('UI virtualization', () => {
             });
             it('Disabling list item', () => {
                 let startingHeight: number = listObj.ulElement.getBoundingClientRect().top -
-                document.documentElement.getBoundingClientRect().top;
+                    document.documentElement.getBoundingClientRect().top;
                 simulateScrollEvent(document.documentElement, startingHeight + 0);
                 listObj.disableItem({ text: '1', id: '1' });
                 expect(listObj.element.querySelector('[data-uid="1"]').classList.contains('e-disabled')).toBe(true);
@@ -202,6 +202,7 @@ describe('UI virtualization', () => {
                 listObj.destroy();
             });
             afterAll(() => {
+                listObj.destroy();
                 ele.remove();
             });
         });
@@ -295,6 +296,7 @@ describe('UI virtualization', () => {
                 listObj.destroy();
             });
             afterAll(() => {
+                listObj.destroy();
                 ele.remove();
             });
         });
@@ -369,7 +371,7 @@ describe('UI virtualization', () => {
             });
             it('onProperty changed - fields with empty data ', () => {
                 expect(listObj.fields.text).toBe('text');
-                listObj.fields = {text: 'name'};
+                listObj.fields = { text: 'name' };
                 listObj.dataBind();
                 expect(listObj.fields.text).toBe('name');
             });
@@ -399,6 +401,7 @@ describe('UI virtualization', () => {
                 expect(ItemCount).toBe(listObj.dataSource.length);
             });
             afterAll(() => {
+                listObj.destroy();
                 ele.remove();
             })
         });
@@ -459,6 +462,7 @@ describe('UI virtualization', () => {
             expect(cusDsCount - 3).toBe(listObj.curViewDS.length);
         });
         afterAll(() => {
+            listObj.destroy();
             ele.remove();
         })
     });
@@ -584,6 +588,7 @@ describe('UI virtualization', () => {
             listObj.destroy();
         });
         afterAll(() => {
+            listObj.destroy();
             ele.remove();
         });
     });
@@ -642,6 +647,7 @@ describe('UI virtualization', () => {
             expect(listObj.dataSource.length).toBe(itemCount - 1);
         });
         afterAll(() => {
+            listObj.destroy();
             ele.remove();
         });
     });
@@ -720,6 +726,7 @@ describe('UI virtualization', () => {
             expect(selectedItem).toBe(undefined);
         });
         afterAll(() => {
+            listObj.destroy();
             ele.remove();
         })
     });
@@ -771,6 +778,7 @@ describe('UI virtualization', () => {
             expect(textContent).toBe('oddText');
         });
         afterAll(() => {
+            listObj.destroy();
             ele.remove();
         });
     });
@@ -825,6 +833,7 @@ describe('UI virtualization', () => {
             expect(textContent).toBe('oddText');
         });
         afterAll(() => {
+            listObj.destroy();
             ele.remove();
         });
     });
@@ -901,6 +910,7 @@ describe('UI virtualization', () => {
             expect(className.contains('odd-list')).toBe(true);
         });
         afterAll(() => {
+            listObj.destroy();
             ele.remove();
         });
     });
@@ -911,7 +921,7 @@ describe('UI virtualization', () => {
         ele.style.overflow = 'auto';
         setStyle(ele, 45);
         let data: { [key: string]: Object }[] = [
-            {text: 'BMW', id: '1'}
+            { text: 'BMW', id: '1' }
         ];
         beforeAll(() => {
             document.body.appendChild(ele);
@@ -922,20 +932,77 @@ describe('UI virtualization', () => {
             });
             listObj.templateRef = {};
             listObj.viewContainerRef = {};
-            listObj.viewContainerRef._embeddedViews = [{context: {$implicit: {text: 'BMW', id: '1'}}}] ;
+            listObj.viewContainerRef._embeddedViews = [{ context: { $implicit: { text: 'BMW', id: '1' } } }];
             listObj.appendTo(ele);
         });
 
         it('checking context data', () => {
             let li = listObj.element.querySelector('.e-list-item');
-            let newData: { [key: string]: Object } = {text: 'Audi', id: '2'}
-            listObj.virtualizationModule.onNgChange(newData, li);
-            expect(li.context.$implicit.text).toBe('Audi');
+            let newData: { [key: string]: Object } = { text: 'Audi', id: '2' }
+            listObj.virtualizationModule.onNgChange(newData, li, listObj.virtualizationModule);
+            expect((li as HTMLElement).children[0].textContent).toBe('Audi');
             listObj.refreshItemHeight();
         });
         afterAll(() => {
+            listObj.destroy();
             ele.remove();
         });
     });
 
+    describe('Add item should inject new item if data count is less than expected', () => {
+        let listObj: any;
+        let ele: HTMLElement = createElement('div', { id: 'ListView' });
+        ele.style.overflow = 'auto';
+        setStyle(ele, 50);
+        let data: { [key: string]: Object }[] = [];
+        data.push({ text: '0', id: '0', groupBy: 'number' });
+
+        beforeAll(() => {
+            document.body.appendChild(ele);
+            listObj = new ListView({
+                dataSource: data, enableVirtualization: true, height: 300,
+                fields: { groupBy: 'groupBy' }
+            });
+            listObj.appendTo(ele);
+        });
+
+        it('should inject new item into DOM', () => {
+            listObj.addItem([{ text: '1', id: '1', groupBy: 'number' }]);
+            const li = listObj.element.querySelector('ul').querySelectorAll('li');
+            expect(li[li.length - 1].getAttribute('data-uid')).toBe('1');
+            expect(li[li.length - 1].querySelector('.e-list-text').textContent).toBe('1');
+        });
+
+        it('should inject new group item into DOM', () => {
+            listObj.addItem([{ text: '2', id: '2', groupBy: 'numbers' }]);
+            simulateScrollEvent(listObj.element, 1000);
+            const li = listObj.element.querySelector('ul').querySelectorAll('li');
+            expect(li[li.length - 1].getAttribute('data-uid')).toBe('2');
+            expect(li[li.length - 1].querySelector('.e-list-text').textContent).toBe('2');
+
+            expect(li[li.length - 2].getAttribute('data-uid')).toBe('group-list-item-numbers');
+            expect(li[li.length - 2].querySelector('.e-list-text').textContent).toBe('numbers');
+
+            listObj.addItem([{ text: '2', id: '2', groupBy: 'numbers' }]);
+        });
+
+        it('addItem with template', () => {
+            data = [];
+            listObj.destroy();
+            listObj = new ListView({
+                dataSource: data, enableVirtualization: true, height: 300,
+                template: '<div>${text}</div>'
+            });
+            listObj.appendTo(ele);
+
+            listObj.addItem([{ id: '0', text: '0' }]);
+            const li = listObj.element.querySelector('ul').querySelectorAll('li');
+            expect(li[li.length - 1].getAttribute('data-uid')).toBe('0');
+        })
+
+        afterAll(() => {
+            listObj.destroy();
+            ele.remove();
+        });
+    });
 });

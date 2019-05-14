@@ -432,3 +432,9 @@ export interface ExportOptions {
      */
     includeOccurrences?: boolean;
 }
+
+export interface PredicateData {
+    field: string;
+    operator: Function;
+    value: string;
+}

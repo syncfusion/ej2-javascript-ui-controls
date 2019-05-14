@@ -3917,15 +3917,41 @@ class EventBase {
         return this.sortByTime(filteredEvents);
     }
     filterEventsByResource(resourceTdData, appointments = this.parent.eventsProcessed) {
-        let predicate;
         let resourceCollection = this.parent.resourceBase.resourceCollection;
+        let resourceData = [];
+        let events = appointments;
         for (let level = 0; level < resourceCollection.length; level++) {
             let operator = this.parent.activeViewOptions.group.allowGroupEdit && resourceCollection[level].allowMultiple ?
-                'contains' : 'equal';
-            let tempPredicate = new Predicate(resourceCollection[level].field, operator, resourceTdData.groupOrder[level]);
-            predicate = predicate ? predicate.and(tempPredicate) : tempPredicate;
+                contains : equal;
+            let resource = {
+                field: resourceCollection[level].field,
+                operator: operator,
+                value: resourceTdData.groupOrder[level]
+            };
+            resourceData.push(resource);
         }
-        return new DataManager({ json: appointments }).executeLocal(new Query().where(predicate));
+        let app = [];
+        for (let i = 0; i < appointments.length; i++) {
+            let isResourceMatched = true;
+            for (let j = 0; j < resourceData.length; j++) {
+                isResourceMatched = resourceData[j].operator(events[i][resourceData[j].field], resourceData[j].value);
+                if (!isResourceMatched) {
+                    break;
+                }
+            }
+            if (isResourceMatched) {
+                app.push(events[i]);
+            }
+        }
+        function equal(field, fieldValue) {
+            return field === fieldValue;
+        }
+        function contains(field, fieldValue) {
+            let resourceField = ((field instanceof Array) ?
+                field : isNullOrUndefined(field) ? '' : field.toString());
+            return resourceField.indexOf(fieldValue) > -1;
+        }
+        return app;
     }
     sortByTime(appointments) {
         let fieldMapping = this.parent.eventFields;

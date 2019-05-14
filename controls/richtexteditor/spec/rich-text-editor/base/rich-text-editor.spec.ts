@@ -2165,19 +2165,19 @@ describe('RTE base module', () => {
         let change: boolean = false;
         beforeAll((done: Function) => {
             rteObj = renderRTE({
-                value: 'testing',
+                value: '<p>testing</p>',
                 change: function (args: any) {
                     change = true;
                     expect(change).toBe(true);
-                    expect(rteObj.value).toBe('changed');
+                    expect(rteObj.value).toBe('<p>testing</p>');
                 }
             });
             elem = rteObj.element;
             done();
         });
         it('Ensure Width property', () => {
-            expect(rteObj.value).toBe('testing');
-            rteObj.value = 'changed';
+            expect(rteObj.value).toBe('<p>testing</p>');
+            rteObj.value = '<p>testing</p>';
             rteObj.dataBind();
         });
     });

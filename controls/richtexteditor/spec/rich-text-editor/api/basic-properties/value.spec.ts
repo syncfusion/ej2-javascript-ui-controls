@@ -63,5 +63,46 @@ describe('RTE BASIC PROPERTIES - value - ', () => {
                 expect(textArea.value === '<p>RichTextEditor</p>').toBe(true);
             });
         });
+
+        describe(' Plain text in value API with onproperty testing - ', () => {
+            let rteObj: RichTextEditor;
+            afterEach((done: Function) => {
+                destroy(rteObj);
+                done();
+            });
+
+            it(' plaintext ', () => {
+                rteObj = renderRTE({
+                    value: 'Test'
+                });
+                expect(rteObj.value === '<p>Test</p>').toBe(true);
+                rteObj.value = 'Testing';
+                rteObj.dataBind();
+                expect(rteObj.value === '<p>Testing</p>').toBe(true);
+                rteObj.value = '<p>Test</p>';
+                rteObj.dataBind();
+                expect(rteObj.value === '<p>Test</p>').toBe(true);
+                rteObj.value = 'Testing';
+                rteObj.dataBind();
+                expect(rteObj.value === '<p>Testing</p>').toBe(true);
+            });
+
+            it(' enableHtmlEncode as true with plaintext ', () => {
+                rteObj = renderRTE({
+                    value: 'Test',
+                    enableHtmlEncode: true
+                });
+                expect(rteObj.value === '&lt;p&gt;Test&lt;/p&gt;').toBe(true);
+                rteObj.value = 'Testing';
+                rteObj.dataBind();
+                expect(rteObj.value === '&lt;p&gt;Testing&lt;/p&gt;').toBe(true);
+                rteObj.value = '<p>Test</p>';
+                rteObj.dataBind();
+                expect(rteObj.value === '&lt;p&gt;Test&lt;/p&gt;').toBe(true);
+                rteObj.value = 'Testing';
+                rteObj.dataBind();
+                expect(rteObj.value === '&lt;p&gt;Testing&lt;/p&gt;').toBe(true);
+            });
+        });
     });
 });

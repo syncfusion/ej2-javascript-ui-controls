@@ -1154,7 +1154,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     }
                 }
             } else if (this.dataType === 2 || (this.fields.dataSource instanceof DataManager &&
-                this.fields.dataSource.dataSource.offline)) {
+                this.fields.dataSource.dataSource.offline) || (this.fields.dataSource instanceof DataManager &&
+                    !this.loadOnDemand)) {
                 for (let index: number = 0; index < this.treeData.length; index++) {
                     let fieldId: string = this.treeData[index][this.fields.id] ? this.treeData[index][this.fields.id].toString() : '';
                     if (this.treeData[index][this.fields.isChecked] && !(this.isLoaded) && this.checkedNodes.indexOf(fieldId) === -1) {
@@ -1629,7 +1630,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 }
             }
         } else if (this.dataType === 2 || (this.fields.dataSource instanceof DataManager &&
-            this.fields.dataSource.dataSource.offline)) {
+            this.fields.dataSource.dataSource.offline) || (this.fields.dataSource instanceof DataManager &&
+               !this.loadOnDemand)) {
             let id: string;
             let parentElement: Element;
             let check: Element;
@@ -2171,11 +2173,12 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 return;
             }
             this.treeList.push('false');
-            if (this.fields.dataSource instanceof DataManager && (this.fields.dataSource.dataSource.offline)) {
+            if ((this.fields.dataSource instanceof DataManager && (this.fields.dataSource.dataSource.offline)) ||
+                    (this.fields.dataSource instanceof DataManager && !this.loadOnDemand)) {
                        this.treeList.pop();
                        childItems = this.getChildNodes(this.treeData, parentLi.getAttribute('data-uid'));
                        this.loadChild(childItems, mapper, eicon, parentLi, expandChild, callback, loaded);
-            } else {
+            } else if (this.fields.dataSource instanceof DataManager && this.loadOnDemand) {
                     (mapper.dataSource as DataManager).executeQuery(this.getQuery(mapper,
                                                                                   parentLi.getAttribute('data-uid'))).then((e: Object) => {
                     this.treeList.pop();

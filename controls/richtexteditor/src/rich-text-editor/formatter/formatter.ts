@@ -1,6 +1,6 @@
 import { extend, isNullOrUndefined, KeyboardEventArgs, Browser } from '@syncfusion/ej2-base';
 import * as CONSTANT from '../base/constant';
-import { updateUndoRedoStatus } from '../base/util';
+import { updateUndoRedoStatus, isIDevice } from '../base/util';
 import { ActionBeginEventArgs, IDropDownItemModel, IShowPopupArgs } from './../base/interface';
 import { IRichTextEditor, IEditorModel, NotifyArgs } from './../base/interface';
 import { IHtmlFormatterCallBack, IMarkdownFormatterCallBack, IUndoCallBack } from './../../common/interface';
@@ -87,7 +87,7 @@ export class Formatter {
                     args.item.subCommand,
                     event, this.onSuccess.bind(this, self),
                     (args.item as IDropDownItemModel).value,
-                    value);
+                    value, ('#' + self.getID() + ' iframe'));
             }
         }
         if (isNullOrUndefined(event) || event && (event as KeyboardEventArgs).action !== 'copy') {
@@ -142,7 +142,7 @@ export class Formatter {
 
     public enableUndo(self: IRichTextEditor): void {
         let status: { [key: string]: boolean } = this.getUndoStatus();
-        if (self.inlineMode.enable && !Browser.isDevice) {
+        if (self.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             updateUndoRedoStatus(self.quickToolbarModule.inlineQTBar.quickTBarObj, status);
         } else {
             if (self.toolbarModule) {

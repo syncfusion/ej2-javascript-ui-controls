@@ -11472,6 +11472,57 @@ describe('Drag and drop with different TreeView functionality testing with empty
             }, 450);
         });
     });
+    describe('loadOnDemand disabled for remote data source', () => {
+        let mouseEventArgs: any = {
+            preventDefault: (): void => {},
+            stopImmediatePropagation: (): void => {},
+            target: null,
+            type: null,
+            shiftKey: false,
+            ctrlKey: false
+        };
+        let tapEvent: any = {
+            originalEvent: mouseEventArgs,
+            tapCount: 1
+        };
+        let treeObj: any;
+        let ele: HTMLElement = createElement('div', { id: 'tree1' });
+        let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData' });
+        beforeEach((done: Function) => {
+            jasmine.Ajax.install();
+            document.body.appendChild(ele);
+            treeObj = new TreeView({ 
+                fields: { dataSource: dataManager1, id: "nodeId", parentID: 'nodePid', text: "nodeText", hasChildren: "hasChild", 
+                    tooltip: 'nodeTooltip', selected: 'nodeSelected'
+                },
+                allowMultiSelection: true,
+                dataBound:() => {
+                    done();
+                },
+            });
+            treeObj.appendTo(ele);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify({d: remoteData1, __count: 5})
+            });
+        });
+        afterEach(() => {
+            if (ele)
+                ele.remove();
+            document.body.innerHTML = '';
+            jasmine.Ajax.uninstall();
+        });
+        it('functionality testing', (done: Function) => {
+            expect(treeObj.getTreeData().length).toBe(25);
+            tapEvent.tapCount = 2;
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            mouseEventArgs.target = li[0].querySelector('.e-list-text');
+            treeObj.touchExpandObj.tap(tapEvent);
+            expect(treeObj.getTreeData().length).toBe(25);
+            done();
+        }, 100);
+    });
     describe('Load on demand by setmodel testing', () => {
         let treeObj: any;
         beforeEach(():void => {

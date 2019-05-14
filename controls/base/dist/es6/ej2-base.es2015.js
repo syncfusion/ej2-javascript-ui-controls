@@ -4048,7 +4048,7 @@ var HijriParser;
     HijriParser.toGregorian = toGregorian;
 })(HijriParser || (HijriParser = {}));
 
-const abbreviateRegexGlobal = /\/MMMMM|MMMM|MMM|a|LLL|EEEEE|EEEE|E|K|ccc|G+|z+/gi;
+const abbreviateRegexGlobal = /\/MMMMM|MMMM|MMM|a|LLL|EEEEE|EEEE|E|K|cccc|ccc|G+|z+/gi;
 const standalone = 'stand-alone';
 const weekdayKey = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
 

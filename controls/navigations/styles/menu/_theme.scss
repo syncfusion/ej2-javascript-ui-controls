@@ -218,12 +218,25 @@
         background: $cmenu-li-selection-bgcolor;
       }
     }
+  }
 
+  .e-menu-wrapper.e-hamburger {
     & .e-menu-header {
-      color: $menu-color;
+      color: $submenu-color;
 
       & .e-menu-icon {
         color: $submenu-color;
+      }
+    }
+
+    & ul {
+      color: $submenu-color;
+
+      @if $skin-name == 'bootstrap4' {
+        & .e-selected .e-caret,
+        & .e-caret {
+          color: $submenu-color;
+        }
       }
     }
   }

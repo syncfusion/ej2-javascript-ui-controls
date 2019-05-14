@@ -3521,7 +3521,25 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Tooltip.prototype.onMouseOut = function (e) {
-        this.hideTooltip(this.animation.close, e);
+        var enteredElement = e.relatedTarget;
+        // don't close the tooltip only if it is tooltip content element
+        if (enteredElement && !this.mouseTrail) {
+            var checkForTooltipElement = closest(enteredElement, "." + TOOLTIP_WRAP + "." + POPUP_LIB + "." + POPUP_ROOT$1);
+            if (checkForTooltipElement) {
+                EventHandler.add(checkForTooltipElement, 'mouseleave', this.tooltipElementMouseOut, this);
+                this.unwireMouseEvents(e.target);
+            }
+            else {
+                this.hideTooltip(this.animation.close, e);
+            }
+        }
+        else {
+            this.hideTooltip(this.animation.close, e);
+        }
+    };
+    Tooltip.prototype.tooltipElementMouseOut = function (e) {
+        this.hideTooltip(this.animation.close, e, this.findTarget());
+        EventHandler.remove(this.element, 'mouseleave', this.tooltipElementMouseOut);
     };
     Tooltip.prototype.onStickyClose = function (e) {
         this.close();

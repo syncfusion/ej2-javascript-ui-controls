@@ -1024,7 +1024,7 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
     if (isNullOrUndefined(mapObject.mapScaleValue)) {
         mapObject.mapScaleValue = mapObject.zoomSettings.zoomFactor;
     }
-    let zoomFactor: number = mapObject.mapScaleValue;
+    let zoomFactor: number = animate ? 1 : mapObject.mapScaleValue;
     let min: Object = mapObject.baseMapRectBounds['min'] as Object;
     let max: Object = mapObject.baseMapRectBounds['max'] as Object;
     let size: Rect = mapObject.mapAreaRect;
@@ -1072,7 +1072,7 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
     if (isNullOrUndefined(mapObject.mapScaleValue)) {
         mapObject.mapScaleValue = mapObject.zoomSettings.zoomFactor;
     }
-    let zoomFactor: number = mapObject.mapScaleValue;
+    let zoomFactor: number = animate ? 1 : mapObject.mapScaleValue;
     let size: Rect = mapObject.mapAreaRect; let x: number; let y: number;
     let min: Object = mapObject.baseMapRectBounds['min'] as Object;
     let max: Object = mapObject.baseMapRectBounds['max'] as Object;

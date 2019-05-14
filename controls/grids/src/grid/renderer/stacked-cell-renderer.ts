@@ -4,7 +4,7 @@ import { Cell } from '../models/cell';
 import { ICellRenderer } from '../base/interface';
 import { CellRenderer } from './cell-renderer';
 import { headerCellInfo } from '../base/constant';
-import { setStyleAndAttributes } from '../base/util';
+import { setStyleAndAttributes, appendChildren } from '../base/util';
 
 /**
  * StackedHeaderCellRenderer class which responsible for building stacked header cell content.
@@ -32,8 +32,13 @@ export class StackedHeaderCellRenderer extends CellRenderer implements ICellRend
             className: 'e-stackedheadercelldiv',
             attrs: { 'e-mappinguid': cell.column.uid }
         });
+        let column: Column = cell.column;
         node.appendChild(div);
-        div.innerHTML = cell.column.headerText;
+        if (!isNullOrUndefined(column.headerTemplate)) {
+            appendChildren(div, column.getHeaderTemplate()(column, this.parent, 'headerTemplate'));
+        } else {
+            this.appendHtml(div, column.headerText, column.getDomSetter());
+        }
 
         if (cell.column.toolTip) {
             node.setAttribute('title', cell.column.toolTip);

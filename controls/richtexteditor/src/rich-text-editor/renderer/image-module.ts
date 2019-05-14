@@ -13,6 +13,7 @@ import { RendererFactory } from '../services/renderer-factory';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { RenderType } from '../base/enum';
 import { dispatchEvent, parseHtml } from '../base/util';
+import { isIDevice } from '../../common/util';
 /**
  * `Image` module is used to handle image actions.
  */
@@ -378,6 +379,7 @@ export class Image {
         return this.resizeBtnStat = { botLeft: false, botRight: false, topRight: false, topLeft: false };
     }
     private onToolbarAction(args: NotifyArgs): void {
+        if (isIDevice()) { this.parent.notify(events.selectionRestore, {}); }
         let item: IToolbarItemModel = (args.args as ClickEventArgs).item as IToolbarItemModel;
         switch (item.subCommand) {
             case 'Replace':
@@ -625,6 +627,7 @@ export class Image {
                 if (isPopupOpen) { return; }
                 this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.setSelectionContents(this.contentModule.getDocument(), target);
+                if (isIDevice()) { this.parent.notify(events.selectionSave, e); }
                 addClass([target], 'e-img-focus');
                 let items: NodeListOf<Element> = this.quickToolObj.imageQTBar.toolbarElement.querySelectorAll('.e-toolbar-item');
                 let separator: HTMLElement;

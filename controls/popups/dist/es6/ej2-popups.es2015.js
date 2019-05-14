@@ -3434,7 +3434,25 @@ let Tooltip = class Tooltip extends Component {
         }
     }
     onMouseOut(e) {
-        this.hideTooltip(this.animation.close, e);
+        const enteredElement = e.relatedTarget;
+        // don't close the tooltip only if it is tooltip content element
+        if (enteredElement && !this.mouseTrail) {
+            const checkForTooltipElement = closest(enteredElement, `.${TOOLTIP_WRAP}.${POPUP_LIB}.${POPUP_ROOT$1}`);
+            if (checkForTooltipElement) {
+                EventHandler.add(checkForTooltipElement, 'mouseleave', this.tooltipElementMouseOut, this);
+                this.unwireMouseEvents(e.target);
+            }
+            else {
+                this.hideTooltip(this.animation.close, e);
+            }
+        }
+        else {
+            this.hideTooltip(this.animation.close, e);
+        }
+    }
+    tooltipElementMouseOut(e) {
+        this.hideTooltip(this.animation.close, e, this.findTarget());
+        EventHandler.remove(this.element, 'mouseleave', this.tooltipElementMouseOut);
     }
     onStickyClose(e) {
         this.close();

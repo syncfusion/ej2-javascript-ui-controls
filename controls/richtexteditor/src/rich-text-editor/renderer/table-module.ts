@@ -67,8 +67,8 @@ export class Table {
         this.parent.off(events.initialEnd, this.afterRender);
         this.parent.off(events.docClick, this.docClick);
         this.parent.off(events.editAreaClick, this.editAreaClickHandler);
-        this.parent.on(events.tableToolbarAction, this.onToolbarAction, this);
-        this.parent.on(events.dropDownSelect, this.dropdownSelect, this);
+        this.parent.off(events.tableToolbarAction, this.onToolbarAction);
+        this.parent.off(events.dropDownSelect, this.dropdownSelect);
         this.parent.off(events.mouseDown, this.cellSelect);
         this.parent.off(events.tableColorPickerChanged, this.setBGColor);
         this.parent.off(events.keyDown, this.keyDown);
@@ -211,11 +211,12 @@ export class Table {
         }
         if (command === 'Alternate') {
             (this.parent.element.classList.contains(classes.CLS_TB_ALT_BOR)) ?
-                this.parent.element.classList.remove(classes.CLS_TB_DASH_BOR) : this.parent.element.classList.add(classes.CLS_TB_ALT_BOR);
+                this.parent.element.classList.remove(classes.CLS_TB_ALT_BOR) : this.parent.element.classList.add(classes.CLS_TB_ALT_BOR);
             (table.classList.contains(classes.CLS_TB_ALT_BOR)) ? table.classList.remove(classes.CLS_TB_ALT_BOR) :
                 table.classList.add(classes.CLS_TB_ALT_BOR);
         }
         this.parent.formatter.saveData();
+        this.parent.formatter.editorManager.nodeSelection.restore();
     }
     private insideList(range: Range): boolean {
         let blockNodes: Element[] = <Element[]>(this.parent.formatter.editorManager as EditorManager).domNode.blockNodes();

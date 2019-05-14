@@ -65,6 +65,9 @@ var Columns = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(null)
     ], Columns.prototype, "value", void 0);
+    __decorate([
+        Property(null)
+    ], Columns.prototype, "category", void 0);
     return Columns;
 }(ChildProperty));
 var Rule = /** @__PURE__ @class */ (function (_super) {
@@ -142,6 +145,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             var columnKeys = Object.keys(this.dataColl[0]);
             var cols = [];
             var type = void 0;
+            var groupBy = false;
             var isDate = false;
             var value = void 0;
             var validateObj = { isRequired: true, min: 0, max: Number.MAX_VALUE };
@@ -168,6 +172,15 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     if (!columns[i].validation) {
                         columns[i].validation = validateObj;
                     }
+                    if (columns[i].category) {
+                        groupBy = true;
+                    }
+                    else {
+                        columns[i].category = this.l10n.getConstant('OtherFields');
+                    }
+                }
+                if (groupBy) {
+                    this.fields = { text: 'label', value: 'field', groupBy: 'category' };
                 }
             }
             else {
@@ -186,6 +199,17 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     isDate = false;
                 }
                 this.columns = cols;
+            }
+        }
+        else if (this.columns.length) {
+            var columns = this.columns;
+            for (var i = 0, len = columns.length; i < len; i++) {
+                if (columns[i].category) {
+                    this.fields = { text: 'label', value: 'field', groupBy: 'category' };
+                }
+                else {
+                    columns[i].category = this.l10n.getConstant('OtherFields');
+                }
             }
         }
     };
@@ -341,15 +365,15 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         height = (this.element.className.indexOf('e-device') > -1) ? '250px' : '200px';
         dropDownList = new DropDownList({
             dataSource: this.columns,
-            fields: { text: 'label', value: 'field' },
+            fields: this.fields,
             placeholder: this.l10n.getConstant('SelectField'),
             popupHeight: ((this.columns.length > 5) ? height : 'auto'),
             change: this.changeField.bind(this),
             value: rule ? rule.field : null
         });
         dropDownList.appendTo('#' + ruleElem.id + '_filterkey');
-        this.filterIndex = dropDownList.index;
         groupLevel = this.levelColl[target.id];
+        this.selectedColumn = dropDownList.getDataByValue(dropDownList.value);
         if (!this.isImportRules) {
             rules = this.rule;
             for (i = 0, len = groupLevel.length; i < len; i++) {
@@ -367,7 +391,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         if (Object.keys(rule).length) {
             this.changeRule(rule, {
                 element: dropDownList.element,
-                itemData: this.columns[this.filterIndex]
+                itemData: this.selectedColumn
             });
         }
         ruleID = ruleElem.id.replace(this.element.id + '_', '');
@@ -404,7 +428,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 index = 0;
                 indexElem = tempElem = ruleElemCln[i];
                 dropDownObj = getComponent(ruleElemCln[i].querySelector('.e-rule-field input.e-control'), 'dropdownlist');
-                validateRule = !isNullOrUndefined(dropDownObj.index) && this.columns[dropDownObj.index].validation;
+                this.selectedColumn = dropDownObj.getDataByValue(dropDownObj.value);
+                validateRule = !isNullOrUndefined(dropDownObj.index) && this.selectedColumn.validation;
                 fieldElem = tempElem.querySelector('.e-rule-field input.e-control');
                 if (validateRule && validateRule.isRequired) {
                     while (indexElem && indexElem.previousElementSibling !== null) {
@@ -663,8 +688,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             rbValue = parseInt(element.id.split('valuekey')[1], 0);
             dropDownObj =
                 getComponent(closest(element, '.e-rule-container').querySelector('.e-filter-input'), 'dropdownlist');
-            if (this.columns[dropDownObj.index].values) {
-                value = this.columns[dropDownObj.index].values[rbValue];
+            this.selectedColumn = dropDownObj.getDataByValue(dropDownObj.value);
+            if (this.selectedColumn.values) {
+                value = this.selectedColumn.values[rbValue];
             }
             else {
                 var valColl = ['True', 'False'];
@@ -705,30 +731,27 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var tempRule = {};
         var ddlObj;
         var ruleElem;
-        var operatorList;
         var ruleID;
-        var filterElem;
         var operatorElem;
         var prevOper = rule.operator ? rule.operator.toLowerCase() : '';
-        var oprElem;
-        filterElem = closest(args.element, '.e-rule-filter');
+        var operatorList;
+        var filterElem = closest(args.element, '.e-rule-filter');
         operatorElem = closest(args.element, '.e-rule-operator');
         var dropDownObj = getComponent(args.element, 'dropdownlist');
+        var oprElem;
         var element = closest(args.element, '.e-group-container');
         var eventsArgs;
         var groupID = element.id.replace(this.element.id + '_', '');
         if (filterElem) {
+            this.selectedColumn = dropDownObj.getDataByValue(dropDownObj.value);
             ruleElem = closest(filterElem, '.e-rule-container');
             ruleID = ruleElem.id.replace(this.element.id + '_', '');
-            eventsArgs = { groupID: groupID, ruleID: ruleID, selectedIndex: dropDownObj.index, cancel: false, type: 'field' };
+            eventsArgs = { groupID: groupID, ruleID: ruleID, selectedField: dropDownObj.value, cancel: false, type: 'field' };
             eventsArgs = this.triggerEvents(eventsArgs, 'before');
             if (eventsArgs.cancel) {
                 return;
             }
-            if (dropDownObj.index !== eventsArgs.selectedIndex) {
-                dropDownObj.index = eventsArgs.selectedIndex;
-            }
-            tempRule.type = this.columns[dropDownObj.index].type;
+            tempRule.type = this.selectedColumn.type;
             if (ruleElem.querySelector('.e-template')) {
                 rule.value = '';
             }
@@ -740,9 +763,6 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             eventsArgs = this.triggerEvents(eventsArgs, 'before');
             if (eventsArgs.cancel) {
                 return;
-            }
-            if (dropDownObj.index !== eventsArgs.selectedIndex) {
-                dropDownObj.index = eventsArgs.selectedIndex;
             }
             tempRule.operator = dropDownObj.value;
             var currOper = tempRule.operator.toLowerCase();
@@ -781,11 +801,11 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 var ruleId = closest(operatorElem, '.e-rule-container').id;
                 oprElem = this.createElement('input', { attrs: { type: 'text', id: ruleId + '_operatorkey' } });
                 operatorElem.appendChild(oprElem);
-                if (this.columns[dropDownObj.index].operators) {
-                    operatorList = this.columns[dropDownObj.index].operators;
+                if (this.selectedColumn.operators) {
+                    operatorList = this.selectedColumn.operators;
                 }
                 else if (args.itemData) {
-                    operatorList = this.customOperators[this.columns[dropDownObj.index].type + 'Operator'];
+                    operatorList = this.customOperators[this.selectedColumn.type + 'Operator'];
                 }
                 var height = (this.element.className.indexOf('e-device') > -1) ? '250px' : '200px';
                 var dropDownList = new DropDownList({
@@ -800,10 +820,10 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 dropDownList.appendTo('#' + ruleId + '_operatorkey');
                 tempRule.operator = (rule && rule.operator !== '') ? rule.operator : operatorList[0].value;
                 if (this.isImportRules) {
-                    tempRule.type = this.columns[dropDownObj.index].type;
+                    tempRule.type = this.selectedColumn.type;
                     tempRule.operator = rule.operator;
                 }
-                this.renderValues(operatorElem, this.columns[dropDownObj.index], args.previousItemData, false, rule, tempRule, args.element);
+                this.renderValues(operatorElem, this.selectedColumn, args.previousItemData, false, rule, tempRule, args.element);
             }
         }
         if (!this.isImportRules) {
@@ -925,7 +945,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         if (this.dataSource instanceof DataManager) {
             var element_1 = document.getElementById(parentId);
             var dropDownObj = getComponent(closest(element_1, '.e-rule-container').querySelector('.e-filter-input'), 'dropdownlist');
-            var value_1 = this.columns[dropDownObj.index].field;
+            this.selectedColumn = dropDownObj.getDataByValue(dropDownObj.value);
+            var value_1 = this.selectedColumn.field;
             var isFetched = false;
             if (this.dataColl[1]) {
                 if (Object.keys(this.dataColl[1]).indexOf(value_1) > -1) {
@@ -1093,8 +1114,13 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             this.processTemplate(target, itemData, rule, tempRule);
         }
         else {
-            var length_1 = (tempRule.type === 'boolean' ||
-                tempRule.operator && tempRule.operator.toLowerCase().indexOf('between') > -1) ? 2 : 1;
+            var length_1;
+            if (tempRule.type === 'boolean') {
+                length_1 = this.selectedColumn.values.length;
+            }
+            else {
+                length_1 = tempRule.operator && tempRule.operator.toLowerCase().indexOf('between') > -1 ? 2 : 1;
+            }
             var parentId = closest(target, '.e-rule-container').id;
             var ruleValElem = void 0;
             if (target.className.indexOf('e-rule-operator') > -1 || target.className.indexOf('e-rule-filter') > -1) {
@@ -1249,15 +1275,16 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             }
         }
         else {
-            if (tempRule.type === 'boolean' || tempRule.operator && tempRule.operator.toLowerCase().indexOf('between') > -1) {
-                for (var i = 0; i < 2; i++) {
-                    var valElem = void 0;
-                    valElem = this.createElement('input', { attrs: { type: 'text', id: parentId + '_valuekey' + i } });
-                    target.nextElementSibling.appendChild(valElem);
-                }
+            var inputLen = 1;
+            if (tempRule.type === 'boolean') {
+                inputLen = this.selectedColumn.values.length;
             }
             else {
-                var valElem = this.createElement('input', { attrs: { type: 'text', id: parentId + '_valuekey0' } });
+                inputLen = (tempRule.operator && tempRule.operator.toLowerCase().indexOf('between') > -1) ? 2 : 1;
+            }
+            for (var i = 0; i < inputLen; i++) {
+                var valElem = void 0;
+                valElem = this.createElement('input', { attrs: { type: 'text', id: parentId + '_valuekey' + i } });
                 target.nextElementSibling.appendChild(valElem);
             }
         }
@@ -1275,9 +1302,14 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 break;
             case 'radio':
                 var radioBtnObj = getComponent(element, controlName);
-                radioBtnObj.checked = true;
+                if (!this.selectedColumn.value || (this.selectedColumn.value && this.selectedColumn.value === radioBtnObj.value)) {
+                    radioBtnObj.checked = true;
+                    rule.value = radioBtnObj.value;
+                }
+                else {
+                    radioBtnObj.checked = false;
+                }
                 radioBtnObj.refresh();
-                rule.value = radioBtnObj.value;
                 break;
             case 'numerictextbox':
                 if (rule.operator.indexOf('between') > -1) {
@@ -1326,22 +1358,25 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             if (!this.isImportRules && rule.rules[index].field.toLowerCase() !== this.columns[dropDownObj.index].field.toLowerCase()) {
                 rule.rules[index].value = '';
             }
-            rule.rules[index].field = this.columns[dropDownObj.index].field;
-            rule.rules[index].type = this.columns[dropDownObj.index].type;
-            rule.rules[index].label = this.columns[dropDownObj.index].label;
+            this.selectedColumn = dropDownObj.getDataByValue(dropDownObj.value);
+            rule.rules[index].field = this.selectedColumn.field;
+            rule.rules[index].type = this.selectedColumn.type;
+            rule.rules[index].label = this.selectedColumn.label;
             var ruleElement = closest(target, '.e-rule-filter');
             var element = ruleElement.nextElementSibling.querySelector('input.e-control');
             var operator = getComponent(element, 'dropdownlist').value;
             rule.rules[index].operator = operator;
-            element = ruleElement.nextElementSibling.nextElementSibling.querySelector('input.e-control');
-            if (!element) {
-                element = ruleElement.nextElementSibling.nextElementSibling.querySelector('div.e-control');
+            var elementCln = ruleElement.nextElementSibling.nextElementSibling.querySelectorAll('input.e-control');
+            for (var i_1 = 0; i_1 < elementCln.length; i_1++) {
+                if (!elementCln[i_1]) {
+                    elementCln[i_1] = ruleElement.nextElementSibling.nextElementSibling.querySelector('div.e-control');
+                }
+                if (!elementCln[i_1]) {
+                    elementCln[i_1] = ruleElement.nextElementSibling.nextElementSibling.querySelector('.e-template');
+                }
+                eventsArgs = { groupID: groupID, ruleID: ruleID, value: rule.rules[index].field, type: 'field' };
+                this.updateValues(elementCln[i_1], rule.rules[index]);
             }
-            if (!element) {
-                element = ruleElement.nextElementSibling.nextElementSibling.querySelector('.e-template');
-            }
-            eventsArgs = { groupID: groupID, ruleID: ruleID, value: rule.rules[index].field, type: 'field' };
-            this.updateValues(element, rule.rules[index]);
             this.triggerEvents(eventsArgs);
             if (this.allowValidation && rule.rules[index].field && target.parentElement.className.indexOf('e-tooltip') > -1) {
                 getComponent(target.parentElement, 'tooltip').destroy();
@@ -1361,8 +1396,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             if (inputElem.length > 1) {
                 rule.rules[index].value = [];
             }
-            for (var i_1 = 0; i_1 < inputElem.length; i_1++) {
-                this.updateValues(inputElem[i_1], rule.rules[index]);
+            for (var i_2 = 0; i_2 < inputElem.length; i_2++) {
+                this.updateValues(inputElem[i_2], rule.rules[index]);
             }
             this.triggerEvents(eventsArgs);
             this.filterRules(beforeRules, this.getValidRules(this.rule), 'operator');
@@ -1769,7 +1804,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             AddCondition: 'Add Condition',
             Edit: 'EDIT',
             ValidationMessage: 'This field is required',
-            SummaryViewTitle: 'Summary View'
+            SummaryViewTitle: 'Summary View',
+            OtherFields: 'Other Fields'
         };
         this.l10n = new L10n('querybuilder', this.defaultLocale, this.locale);
         this.intl = new Internationalization(this.locale);
@@ -1823,6 +1859,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             between: 'Between', in: 'in', notin: 'NotIn', notbetween: 'NotBetween', startswith: 'StartsWith', endswith: 'EndsWith',
             contains: 'Contains'
         };
+        this.fields = { text: 'label', value: 'field' };
     };
     QueryBuilder.prototype.render = function () {
         this.levelColl = {};

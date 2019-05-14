@@ -1212,15 +1212,8 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         });
     };
     MenuBase.prototype.mouseDownHandler = function (e) {
-        var isValidLI = false;
-        if (this.isMenu && !this.showItemOnClick) {
-            var cul = this.getUlByNavIdx();
-            if (cul) {
-                isValidLI = Array.prototype.indexOf.call(cul.children, e.target.closest('li')) > -1;
-            }
-        }
         if (closest(e.target, '.e-' + this.getModuleName() + '-wrapper') !== this.getWrapper()
-            && (!closest(e.target, '.e-' + this.getModuleName() + '-popup') || isValidLI)) {
+            && (!closest(e.target, '.e-' + this.getModuleName() + '-popup'))) {
             this.closeMenu(this.isMenu ? null : this.navIdx.length, e);
         }
     };
@@ -2011,18 +2004,17 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             else {
-                if (this.isMenu) {
-                    if (trgt.tagName === 'DIV' && this.navIdx.length && closest(trgt, '.e-menu-vscroll')) {
-                        var popupEle = closest(trgt, '.' + POPUP);
-                        var cIdx = Array.prototype.indexOf.call(this.getPopups(), popupEle) + 1;
-                        if (cIdx < this.navIdx.length) {
-                            this.closeMenu(cIdx + 1, e);
-                            this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]);
-                        }
+                if (this.isMenu && trgt.tagName === 'DIV' && this.navIdx.length && closest(trgt, '.e-menu-vscroll')) {
+                    var popupEle = closest(trgt, '.' + POPUP);
+                    var cIdx = Array.prototype.indexOf.call(this.getPopups(), popupEle) + 1;
+                    if (cIdx < this.navIdx.length) {
+                        this.closeMenu(cIdx + 1, e);
+                        this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]);
                     }
-                    if (trgt.tagName === 'SPAN' && trgt.classList.contains('e-menu-icon')) {
-                        this.menuHeaderClickHandler(e);
-                    }
+                }
+                else if (this.isMenu && this.hamburgerMode && trgt.tagName === 'SPAN'
+                    && trgt.classList.contains('e-menu-icon')) {
+                    this.menuHeaderClickHandler(e);
                 }
                 else {
                     if (trgt.tagName !== 'UL' || trgt.parentElement !== wrapper) {
@@ -5986,8 +5978,11 @@ var Menu = /** @__PURE__ @class */ (function (_super) {
                                 if (!this.element.previousElementSibling) {
                                     _super.prototype.createHeaderContainer.call(this);
                                 }
+                                this.element.previousElementSibling.classList.remove(VMENU);
                             }
-                            this.element.previousElementSibling.classList.add(VMENU);
+                            else {
+                                this.element.previousElementSibling.classList.add(VMENU);
+                            }
                             this.element.classList.add('e-hide-menu');
                         }
                     }
@@ -6033,6 +6028,9 @@ var Menu = /** @__PURE__ @class */ (function (_super) {
     __decorate$6([
         Property('Horizontal')
     ], Menu.prototype, "orientation", void 0);
+    __decorate$6([
+        Property('')
+    ], Menu.prototype, "target", void 0);
     __decorate$6([
         Property(null)
     ], Menu.prototype, "template", void 0);
@@ -8179,7 +8177,8 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             else if (this.dataType === 2 || (this.fields.dataSource instanceof DataManager &&
-                this.fields.dataSource.dataSource.offline)) {
+                this.fields.dataSource.dataSource.offline) || (this.fields.dataSource instanceof DataManager &&
+                !this.loadOnDemand)) {
                 for (var index = 0; index < this.treeData.length; index++) {
                     var fieldId = this.treeData[index][this.fields.id] ? this.treeData[index][this.fields.id].toString() : '';
                     if (this.treeData[index][this.fields.isChecked] && !(this.isLoaded) && this.checkedNodes.indexOf(fieldId) === -1) {
@@ -8667,7 +8666,8 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             }
         }
         else if (this.dataType === 2 || (this.fields.dataSource instanceof DataManager &&
-            this.fields.dataSource.dataSource.offline)) {
+            this.fields.dataSource.dataSource.offline) || (this.fields.dataSource instanceof DataManager &&
+            !this.loadOnDemand)) {
             var id = void 0;
             var parentElement = void 0;
             var check = void 0;
@@ -9216,12 +9216,13 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 return;
             }
             this.treeList.push('false');
-            if (this.fields.dataSource instanceof DataManager && (this.fields.dataSource.dataSource.offline)) {
+            if ((this.fields.dataSource instanceof DataManager && (this.fields.dataSource.dataSource.offline)) ||
+                (this.fields.dataSource instanceof DataManager && !this.loadOnDemand)) {
                 this.treeList.pop();
                 childItems = this.getChildNodes(this.treeData, parentLi.getAttribute('data-uid'));
                 this.loadChild(childItems, mapper_2, eicon, parentLi, expandChild, callback, loaded);
             }
-            else {
+            else if (this.fields.dataSource instanceof DataManager && this.loadOnDemand) {
                 mapper_2.dataSource.executeQuery(this.getQuery(mapper_2, parentLi.getAttribute('data-uid'))).then(function (e) {
                     _this.treeList.pop();
                     childItems = e.result;

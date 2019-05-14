@@ -2471,29 +2471,29 @@ describe('Schedule Timeline Month view', () => {
 
         it('Checking left icon', () => {
             let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            expect(eventElementList[0].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
-            expect(eventElementList[0].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-left-icon'))
+            expect(eventElementList[10].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
+            expect(eventElementList[10].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-left-icon'))
                 .toBeTruthy();
         });
 
         it('Checking recurrence icon', () => {
             let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            expect(eventElementList[0].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
-            expect(eventElementList[0].querySelectorAll('.e-appointment-details .e-icons')[1].classList.contains('e-recurrence-icon'))
+            expect(eventElementList[0].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Same day');
+            expect(eventElementList[0].querySelectorAll('.e-appointment-details .e-icons')[0].classList.contains('e-recurrence-icon'))
                 .toBeTruthy();
         });
 
         it('More event element checking', () => {
             let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(26);
-            expect(moreIndicatorList[0].innerHTML).toEqual('+2&nbsp;more');
+            expect(moreIndicatorList.length).toEqual(19);
+            expect(moreIndicatorList[0].innerHTML).toEqual('+3&nbsp;more');
             expect(moreIndicatorList[1].innerHTML).toEqual('+1&nbsp;more');
             expect(moreIndicatorList[11].innerHTML).toEqual('+1&nbsp;more');
             let element: HTMLElement = moreIndicatorList[0] as HTMLElement;
             element.click();
             let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
-            expect(moreEventList.length).toEqual(3);
+            expect(moreEventList.length).toEqual(4);
             triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
     });
@@ -2563,29 +2563,29 @@ describe('Schedule Timeline Month view', () => {
 
         it('Checking left icon', () => {
             let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            expect(eventElementList[0].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
-            expect(eventElementList[0].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-left-icon'))
+            expect(eventElementList[10].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
+            expect(eventElementList[10].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-left-icon'))
                 .toBeTruthy();
         });
 
         it('Checking recurrence icon', () => {
             let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            expect(eventElementList[0].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Previous week');
-            expect(eventElementList[0].querySelectorAll('.e-appointment-details .e-icons')[1].classList.contains('e-recurrence-icon'))
+            expect(eventElementList[0].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Same day');
+            expect(eventElementList[0].querySelectorAll('.e-appointment-details .e-icons')[0].classList.contains('e-recurrence-icon'))
                 .toBeTruthy();
         });
 
         it('More event element checking', () => {
             let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(26);
-            expect(moreIndicatorList[0].innerHTML).toEqual('+2&nbsp;more');
+            expect(moreIndicatorList.length).toEqual(19);
+            expect(moreIndicatorList[0].innerHTML).toEqual('+3&nbsp;more');
             expect(moreIndicatorList[1].innerHTML).toEqual('+1&nbsp;more');
             expect(moreIndicatorList[11].innerHTML).toEqual('+1&nbsp;more');
             let element: HTMLElement = moreIndicatorList[0] as HTMLElement;
             element.click();
             let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
-            expect(moreEventList.length).toEqual(3);
+            expect(moreEventList.length).toEqual(4);
             triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
     });

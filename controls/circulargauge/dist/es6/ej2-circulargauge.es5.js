@@ -1201,10 +1201,12 @@ var Annotations = /** @__PURE__ @class */ (function () {
      */
     Annotations.prototype.renderAnnotation = function (axis, index) {
         var _this = this;
+        var width = this.gauge.availableSize.width;
         var element = createElement('div', {
             id: this.elementId + '_Annotations_' + index
         });
         var parentElement = getElement(this.elementId + '_Secondary_Element');
+        document.getElementById(this.elementId + '_Secondary_Element').style.width = width + 'px';
         axis.annotations.map(function (annotation, annotationIndex) {
             if (annotation.content !== null) {
                 _this.createTemplate(element, annotationIndex, index);

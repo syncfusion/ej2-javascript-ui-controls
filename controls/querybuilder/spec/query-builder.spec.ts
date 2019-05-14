@@ -668,9 +668,10 @@ describe('QueryBuilder', () => {
                 columns: eData,
                 rule: eRules
             }, '#querybuilder');
-            let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances;
-            expect(filterElem[0].value).toEqual('EmployeeID');
-            expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('number');
+            let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances[0];
+            let selectedColumn: ColumnsModel = filterElem.dataSource[0];
+            expect(filterElem.value).toEqual('EmployeeID');
+            expect(selectedColumn.type).toEqual('number');
             let operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
             expect(operatorElem[0].value).toEqual('equal');
             let valueElem: NumericTextBox = queryBuilder.element.querySelector('.e-rule-value .e-control').ej2_instances;
@@ -720,23 +721,25 @@ describe('QueryBuilder', () => {
             expect(queryBuilder.element.querySelector('.e-rule-value .e-control').classList.contains('e-multiselect')).toBeTruthy();
 
             //Change the field
-            filterElem[0].showPopup();
+            filterElem.showPopup();
             operatorElem = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
             items = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
             items[1].click();
-            expect(filterElem[0].value).toEqual('FirstName');
-            expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('string');
+            selectedColumn = filterElem.dataSource[1];
+            expect(filterElem.value).toEqual('FirstName');
+            expect(selectedColumn.type).toEqual('string');
 
            expect(operatorElem[0].value).toEqual('in');
             expect(queryBuilder.rule.rules[0].operator).toEqual('in');
             expect(queryBuilder.element.querySelector('.e-rule-value .e-control').classList.contains('e-multiselect')).toBeTruthy();
 
             //Change the field
-            filterElem[0].showPopup();
+            filterElem.showPopup();
             items = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
             items[2].click();
             operatorElem = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
-            expect(filterElem[0].dataSource[filterElem[0].index].type).toEqual('boolean');
+            selectedColumn = filterElem.dataSource[2];
+            expect(selectedColumn.type).toEqual('boolean');
             operatorElem[0].showPopup();
             items = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
             items[0].click();

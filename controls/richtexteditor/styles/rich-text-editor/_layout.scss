@@ -581,6 +581,13 @@
       ul {
         min-width: auto;
       }
+
+      @media screen and (max-width: 768px) {
+
+        ul {
+          min-width: 30px;
+        }
+      }
     }
   }
 

@@ -5,6 +5,7 @@ import { IHtmlSubCommands } from './../base/interface';
 import { IHtmlKeyboardEvent } from './../../editor-manager/base/interface';
 import { KeyboardEventArgs } from '@syncfusion/ej2-base';
 import * as EVENTS from './../../common/constant';
+import { isIDevice, setEditFrameFocus } from '../../common/util';
 /**
  * Indents internal component
  * @hidden
@@ -77,6 +78,7 @@ export class Indents {
             }
         }
         (this.parent.editableElement as HTMLElement).focus();
+        if (isIDevice()) { setEditFrameFocus(this.parent.editableElement, e.selector); }
         save = this.parent.domNode.saveMarker(save);
         save.restore();
         if (e.callBack) {

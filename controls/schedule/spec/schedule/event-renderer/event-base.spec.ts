@@ -2,9 +2,10 @@
  * Events base methods testing
  */
 import { createElement, remove, EmitType } from '@syncfusion/ej2-base';
-import { Schedule, Day, Week, WorkWeek, Month, Agenda, Timezone } from '../../../src/schedule/index';
+import { Schedule, Day, Week, WorkWeek, Month, Agenda, Timezone, ScheduleModel } from '../../../src/schedule/index';
 import { EventBase } from '../../../src/schedule/event-renderer/event-base';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
+import { createGroupSchedule, destroy } from '../util.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda);
 
@@ -196,6 +197,167 @@ describe('Event Base Module', () => {
             expect(app1.length).toEqual(115);
             (schObj.element.querySelector('.e-schedule-toolbar .e-next') as HTMLElement).click();
             expect(schObj.element.querySelector('.e-date-range .e-tbar-btn-text').innerHTML).toEqual('February - May 2019');
+        });
+    });
+
+
+    describe('Resources with allow multiplegroup as true', () => {
+        let schObj: Schedule;
+        let getResourceIndex: Function = (element: HTMLElement) => {
+            return parseInt(element.getAttribute('data-group-index'), 10);
+        };
+        let data: Object[] = [{
+            Id: 1,
+            Subject: 'Meeting',
+            StartTime: new Date(2018, 3, 1, 10, 0),
+            EndTime: new Date(2018, 3, 1, 12, 30),
+            IsAllDay: false,
+            RoomId: [1, 2],
+            OwnerId: [1, 2, 3]
+        }];
+        beforeAll((done: Function) => {
+            let options: ScheduleModel = {
+                height: '550px', width: '100%',
+                selectedDate: new Date(2018, 3, 1)
+            };
+            schObj = createGroupSchedule(2, options, data, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+
+        it('Allow multiple true', () => {
+            let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+            expect(eventElementList.length).toEqual(3);
+            let resourceIndex: number = getResourceIndex(eventElementList[0]);
+            expect(resourceIndex).toEqual(0);
+            resourceIndex = getResourceIndex(eventElementList[1]);
+            expect(resourceIndex).toEqual(1);
+            resourceIndex = getResourceIndex(eventElementList[2]);
+            expect(resourceIndex).toEqual(2);
+        });
+
+        it('Allow multiple false for 1st resource', (done: Function) => {
+            schObj.dataBound = () => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(2);
+                let resourceIndex: number = getResourceIndex(eventElementList[0]);
+                expect(resourceIndex).toEqual(0);
+                resourceIndex = getResourceIndex(eventElementList[1]);
+                expect(resourceIndex).toEqual(1);
+                done();
+            };
+            schObj.resources[0].allowMultiple = false;
+            schObj.eventSettings.dataSource = [{
+                Id: 1,
+                Subject: 'Meeting',
+                StartTime: new Date(2018, 3, 1, 10, 0),
+                EndTime: new Date(2018, 3, 1, 12, 30),
+                IsAllDay: false,
+                RoomId: 1,
+                OwnerId: [1, 2, 3]
+            }];
+            schObj.dataBind();
+        });
+
+        it('Resource data source with 2 digits with allow multiple true', (done: Function) => {
+            schObj.dataBound = () => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(1);
+                let resourceIndex: number = getResourceIndex(eventElementList[0]);
+                expect(resourceIndex).toEqual(2);
+                done();
+            };
+            schObj.resources[0].allowMultiple = true;
+            schObj.resources[0].dataSource = [
+                { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
+                { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' },
+                { RoomText: 'ROOM 12', Id: 12, RoomColor: '#cb6bb2' }];
+            schObj.resources[1].dataSource = [
+                { OwnerText: 'Nancy', Id: 1, OwnerGroupId: 1, OwnerColor: '#ffaa00' },
+                { OwnerText: 'Steven', Id: 2, OwnerGroupId: 2, OwnerColor: '#f8a398' },
+                { OwnerText: 'Michael', Id: 12, OwnerGroupId: 12, OwnerColor: '#7499e1' }
+            ];
+            schObj.eventSettings.dataSource = [{
+                Id: 1,
+                Subject: 'Meeting',
+                StartTime: new Date(2018, 3, 1, 10, 0),
+                EndTime: new Date(2018, 3, 1, 12, 30),
+                IsAllDay: false,
+                RoomId: [12],
+                OwnerId: [1, 2, 12]
+            }];
+            schObj.dataBind();
+        });
+
+        it('Resource data source with 2 digits with allow multiple false', (done: Function) => {
+            schObj.dataBound = () => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(1);
+                let resourceIndex: number = getResourceIndex(eventElementList[0]);
+                expect(resourceIndex).toEqual(2);
+                done();
+            };
+            schObj.resources[0].allowMultiple = false;
+            schObj.eventSettings.dataSource = [{
+                Id: 1,
+                Subject: 'Meeting',
+                StartTime: new Date(2018, 3, 1, 10, 0),
+                EndTime: new Date(2018, 3, 1, 12, 30),
+                IsAllDay: false,
+                RoomId: 12,
+                OwnerId: [1, 2, 12],
+            }];
+            schObj.dataBind();
+        });
+        it('Resource data source with 2 digits with single resource', (done: Function) => {
+            schObj.dataBound = () => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(1);
+                let resourceIndex: number = getResourceIndex(eventElementList[0]);
+                expect(resourceIndex).toEqual(2);
+                done();
+            };
+            schObj.resources = [
+                {
+                    field: 'RoomId', title: 'Room',
+                    name: 'Rooms', allowMultiple: false,
+                    dataSource: [
+                        { RoomText: 'ROOM 1', Id: 1, RoomColor: '#cb6bb2' },
+                        { RoomText: 'ROOM 2', Id: 2, RoomColor: '#56ca85' },
+                        { RoomText: 'ROOM 12', Id: 12, RoomColor: '#cb6bb2' }],
+                    textField: 'RoomText', idField: 'Id', colorField: 'RoomColor'
+                }];
+            schObj.eventSettings.dataSource = [{
+                Id: 1,
+                Subject: 'Meeting',
+                StartTime: new Date(2018, 3, 1, 10, 0),
+                EndTime: new Date(2018, 3, 1, 12, 30),
+                IsAllDay: false,
+                RoomId: 12,
+            }];
+            schObj.dataBind();
+        });
+        it('Resource data source with 2 digits with single resource and allow multiple true', (done: Function) => {
+
+            schObj.dataBound = () => {
+                let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
+                expect(eventElementList.length).toEqual(1);
+                let resourceIndex: number = getResourceIndex(eventElementList[0]);
+                expect(resourceIndex).toEqual(2);
+                done();
+            };
+            schObj.resources[0].allowMultiple = true;
+            schObj.eventSettings.dataSource = [{
+                Id: 1,
+                Subject: 'Meeting',
+                StartTime: new Date(2018, 3, 1, 10, 0),
+                EndTime: new Date(2018, 3, 1, 12, 30),
+                IsAllDay: false,
+                RoomId: [12],
+            }];
+            schObj.dataBind();
+
         });
     });
 

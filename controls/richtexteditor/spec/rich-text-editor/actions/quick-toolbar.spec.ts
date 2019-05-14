@@ -2,9 +2,9 @@
  * RTE - Quick Toolbar action spec
  */
 import { Browser, select } from "@syncfusion/ej2-base";
-import { RichTextEditor, Toolbar, IRenderer, QuickToolbar, HtmlEditor, ToolbarRenderer } from "../../../src/rich-text-editor/index";
+import { RichTextEditor, Toolbar, IRenderer, QuickToolbar, HtmlEditor, ToolbarRenderer, BaseToolbar } from "../../../src/rich-text-editor/index";
 import { pageYOffset } from "../../../src/rich-text-editor/base/util";
-import { renderRTE, destroy } from "./../render.spec";
+import { renderRTE, destroy, removeStyleElements, androidUA, iPhoneUA, currentBrowserUA  } from "./../render.spec";
 
 RichTextEditor.Inject(HtmlEditor, Toolbar, QuickToolbar);
 
@@ -19,6 +19,7 @@ describe("Quick Toolbar - Actions Module", () => {
     let defaultUA: string = navigator.userAgent;
 
     beforeAll(() => {
+        removeStyleElements(document.head.querySelectorAll('style'));
         let css: string = ".e-richtexteditor { margin-top: 100px; height: 500px }" +
             ".e-toolbar { display: block; white-space: nowrap; position: relative; }" +
             ".e-rte-quick-popup .e-toolbar-items { display: inline-block; }" +
@@ -33,6 +34,7 @@ describe("Quick Toolbar - Actions Module", () => {
 
     afterAll(() => {
         document.head.getElementsByClassName('toolbar-style')[0].remove();
+        removeStyleElements(document.head.querySelectorAll('style'));
     });
 
     describe("Default value with render testing", () => {
@@ -708,6 +710,7 @@ describe("Quick Toolbar - Actions Module", () => {
         let imgEle: HTMLElement;
         let linkEle: HTMLElement;
         let QTBarModule: IRenderer;
+        let clickEvent: MouseEvent;
         let htmlStr: string = "<img id='imgTag' style='width: 200px' alt='Logo'" +
             " src='http://cdn.syncfusion.com/content/images/sales/buynow/Character-opt.png' /> <br/>" +
             "<a id='linkTag' href='http://www.syncfusion.com'>Syncfusion</a>" +
@@ -722,7 +725,7 @@ describe("Quick Toolbar - Actions Module", () => {
             trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
             imgEle = document.getElementById('imgTag');
             linkEle = document.getElementById('linkTag');
-            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent = document.createEvent("MouseEvents");
             clickEvent.initEvent("mousedown", true, true);
             trg.dispatchEvent(clickEvent);
             QTBarModule = getQTBarModule(rteObj);
@@ -751,10 +754,11 @@ describe("Quick Toolbar - Actions Module", () => {
         });
 
         it("Image toolbar open testing", (done: Function) => {
-            QTBarModule.imageQTBar.showPopup(100, 1, trg);
+            clickEvent.initEvent("mouseup", true, true);
+            imgEle.dispatchEvent(clickEvent);
             setTimeout(() => {
                 let imgPop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
-                expect(imgPop.offsetLeft >= 120).toBe(true);
+                expect(imgPop.offsetLeft >= rteEle.offsetLeft).toBe(true);
                 expect((imgPop.offsetTop + imgPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 done();
             }, 400);
@@ -875,6 +879,7 @@ describe("Quick Toolbar - Actions Module", () => {
         let imgEle: HTMLElement;
         let linkEle: HTMLElement;
         let QTBarModule: IRenderer;
+        let clickEvent: MouseEvent;
         let pageY: number;
         let htmlStr: string = "<img id='imgTag' style='width: 200px; float: none' alt='Logo'" +
             " src='http://cdn.syncfusion.com/content/images/sales/buynow/Character-opt.png' /> <br/>" +
@@ -895,7 +900,7 @@ describe("Quick Toolbar - Actions Module", () => {
             imgEle = <HTMLElement>trg.children[0];
             linkEle = <HTMLElement>trg.children[2];
             pageY = window.scrollY + rteEle.getBoundingClientRect().top;
-            let clickEvent: MouseEvent = document.createEvent("MouseEvents");
+            clickEvent = document.createEvent("MouseEvents");
             clickEvent.initEvent("mousedown", true, true);
             trg.dispatchEvent(clickEvent);
             QTBarModule = getQTBarModule(rteObj);
@@ -925,10 +930,11 @@ describe("Quick Toolbar - Actions Module", () => {
         });
 
         it("Image toolbar open testing", (done: Function) => {
-            QTBarModule.imageQTBar.showPopup(100, pageY + 1, trg);
+            clickEvent.initEvent("mouseup", true, true);
+            imgEle.dispatchEvent(clickEvent);
             setTimeout(() => {
                 let imgPop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
-                expect(imgPop.offsetLeft >= 120).toBe(true);
+                expect(imgPop.offsetLeft >= rteEle.offsetLeft).toBe(true);
                 expect(imgPop.offsetTop > rteEle.offsetTop).toBe(true);
                 expect((imgPop.offsetTop + imgPop.offsetHeight) < (rteEle.offsetTop + rteEle.offsetHeight)).toBe(true);
                 done();
@@ -977,7 +983,8 @@ describe("Quick Toolbar - Actions Module", () => {
         it("Image element 'Right' align with click testing", (done: Function) => {
             imgEle.setAttribute('align', 'right');
             rteObj.notify('selection-save', {});
-            QTBarModule.imageQTBar.showPopup(10, pageY + 131, trg.children[0]);
+            clickEvent.initEvent("mouseup", true, true);
+            imgEle.dispatchEvent(clickEvent);
             let toolbarRenderer: ToolbarRenderer = new ToolbarRenderer(rteObj);
             (toolbarRenderer as any).dropDownSelected({item:{command:'Images'}});
             setTimeout(() => {
@@ -1419,6 +1426,384 @@ describe("Quick Toolbar - Actions Module", () => {
                 rteObj.quickToolbarModule.hideInlineQTBar();
                 done();
             }, 2000);
+        });
+    });
+    describe("Desktop - Inline quick toolbar testing", () => {
+        let args: any;
+        let rteObj: any;
+        let trg: HTMLElement;
+        let rteEle: HTMLElement;
+        let trgNode: HTMLElement;
+        let clickEvent: MouseEvent;
+        let QTBarModule: IRenderer;
+        beforeEach((done: Function) => {
+            clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", true, true);
+            rteObj = renderRTE({
+                inlineMode: {
+                    enable: true,
+                    onSelection: false
+                },
+                value: "<p><b>Syncfusion</b></p>"
+            });
+            rteEle = rteObj.element;
+            trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
+            trg.dispatchEvent(clickEvent);
+            QTBarModule = getQTBarModule(rteObj);
+            trgNode = <HTMLElement>rteEle.querySelector(".e-content p b");
+            done();
+        });
+
+        afterEach(() => {
+            destroy(rteObj);
+        });
+
+        it('Toolbar availability testing', (done: Function) => {
+            clickEvent.initEvent("mouseup", true, true);
+            trgNode.dispatchEvent(clickEvent);
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(1);
+                expect(document.querySelectorAll('.e-rte-tb-mobile').length).toBe(0);
+                expect(document.querySelectorAll('.e-rte-tb-fixed.e-rte-tb-mobile').length).toBe(0);
+                done();
+            }, 2000);
+        });
+
+        it('getToolbar public method with toolbar testing', (done: Function) => {
+            clickEvent.initEvent("mouseup", true, true);
+            trgNode.dispatchEvent(clickEvent);
+            setTimeout(() => {
+                expect(rteObj.getToolbar()).toBe(null);
+                done();
+            }, 2000);
+        });
+
+        it('getBaseToolbarObject private method with toolbar object testing', (done: Function) => {
+            clickEvent.initEvent("mouseup", true, true);
+            trgNode.dispatchEvent(clickEvent);
+            setTimeout(() => {
+                expect(rteObj.getBaseToolbarObject()).not.toBe(undefined);
+                expect(rteObj.getBaseToolbarObject() instanceof BaseToolbar).toBe(true);
+                done();
+            }, 2000);
+        });
+
+        it('MouseEvent args with mouseUp handler testing', (done: Function) => {
+            args = {
+                preventDefault: function () { },
+                action: 'mouseup',
+                target: trg,
+                x: 10, y: 200
+            };
+            rteObj.quickToolbarModule.mouseUpHandler({ args: args });
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(1);
+                done();
+            }, 2000);
+        });
+
+        it('TouchEvent args with mouseUp handler testing', (done: Function) => {
+            args = {
+                preventDefault: function () { },
+                action: 'mouseup',
+                target: trg,
+                x: 10, y: 200,
+                touches: { length: 0 }, changedTouches: [{ pageX: 0, pageY: 0, clientX: 0 }]
+            };
+            rteObj.quickToolbarModule.mouseUpHandler({ args: args });
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(1);
+                done();
+            }, 2000);
+        });
+
+        it('KeyDown handler testing', (done: Function) => {
+            args = {
+                preventDefault: function () { },
+                action: 'moveRight',
+                target: trg,
+                x: 10, y: 200
+            };
+            rteObj.quickToolbarModule.keyDownHandler({ args: args });
+            setTimeout(() => {
+                let pop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+                expect(pop).toBe(undefined);
+                rteObj.quickToolbarModule.hideQuickToolbars();
+                rteObj.quickToolbarModule.hideInlineQTBar();
+                rteObj.quickToolbarModule.keyDownHandler({ args: args });
+                done();
+            }, 2000);
+        });
+
+        it('hideInlineQTBar method testing', () => {
+            (QTBarModule as any).hideInlineQTBar();
+            let pop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+            expect(pop).toBe(undefined);
+        });
+    });
+
+    describe("Android device - Inline quick toolbar testing", () => {
+        let args: any;
+        let rteObj: any;
+        let trg: HTMLElement;
+        let rteEle: HTMLElement;
+        let trgNode: HTMLElement;
+        let clickEvent: MouseEvent;
+        let QTBarModule: IRenderer;
+        beforeAll(() => {
+            Browser.userAgent = androidUA;
+        });
+
+        beforeEach((done: Function) => {
+            clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", true, true);
+            rteObj = renderRTE({
+                inlineMode: {
+                    enable: true,
+                    onSelection: false
+                },
+                value: "<p><b>Syncfusion</b></p>"
+            });
+            rteEle = rteObj.element;
+            trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
+            trg.dispatchEvent(clickEvent);
+            QTBarModule = getQTBarModule(rteObj);
+            trgNode = <HTMLElement>rteEle.querySelector(".e-content p b");
+            done();
+        });
+
+        afterEach(() => {
+            destroy(rteObj);
+        });
+
+        afterAll(()=> {
+            Browser.userAgent = currentBrowserUA;
+        });
+
+        it('Toolbar availability testing', (done: Function) => {
+            clickEvent.initEvent("mouseup", true, true);
+            trgNode.dispatchEvent(clickEvent);
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(0);
+                expect(document.querySelectorAll('.e-rte-tb-mobile').length).toBe(1);
+                expect(document.querySelectorAll('.e-rte-tb-fixed.e-rte-tb-mobile').length).toBe(1);
+                expect(document.querySelectorAll('.e-rte-tb-fixed.e-rte-tb-mobile')[0].classList.contains('e-show')).toBe(true);
+                done();
+            }, 2000);
+        });
+
+        it('getToolbar public method with toolbar testing', (done: Function) => {
+            trgNode.dispatchEvent(clickEvent);
+            setTimeout(() => {
+                expect(rteObj.getToolbar()).not.toBe(null);
+                done();
+            }, 2000);
+        });
+
+        it('getBaseToolbarObject private method with toolbar object testing', (done: Function) => {
+            clickEvent.initEvent("mouseup", true, true);
+            trgNode.dispatchEvent(clickEvent);
+            setTimeout(() => {
+                expect(rteObj.getBaseToolbarObject()).not.toBe(undefined);
+                expect(rteObj.getBaseToolbarObject() instanceof BaseToolbar).toBe(true);
+                done();
+            }, 2000);
+        });
+
+        it('MouseEvent args with mouseUp handler testing', (done: Function) => {
+            args = {
+                preventDefault: function () { },
+                action: 'mouseup',
+                target: trg,
+                x: 10, y: 200
+            };
+            rteObj.quickToolbarModule.mouseUpHandler({ args: args });
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-rte-tb-fixed.e-rte-tb-mobile').length).toBe(1);
+                done();
+            }, 2000);
+        });
+
+        it('TouchEvent args with mouseUp handler testing', (done: Function) => {
+            args = {
+                preventDefault: function () { },
+                action: 'mouseup',
+                target: trg,
+                x: 10, y: 200,
+                touches: { length: 0 }, changedTouches: [{ pageX: 0, pageY: 0, clientX: 0 }]
+            };
+            rteObj.quickToolbarModule.mouseUpHandler({ args: args });
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-rte-tb-fixed.e-rte-tb-mobile').length).toBe(1);
+                done();
+            }, 2000);
+        });
+
+        it('hideInlineQTBar method testing', () => {
+            (QTBarModule as any).hideInlineQTBar();
+            let pop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+            expect(pop).toBe(undefined);
+        });
+    });
+
+    describe("iOS device - Inline quick toolbar testing", () => {
+        let args: any;
+        let rteObj: any;
+        let trg: HTMLElement;
+        let rteEle: HTMLElement;
+        let trgNode: HTMLElement;
+        let clickEvent: MouseEvent;
+        let QTBarModule: IRenderer;
+        beforeAll(() => {
+            Browser.userAgent = iPhoneUA;
+        });
+
+        beforeEach((done: Function) => {
+            clickEvent = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", true, true);
+            rteObj = renderRTE({
+                inlineMode: {
+                    enable: true,
+                    onSelection: false
+                },
+                value: "<div id='rte'><p><b>Syncfusion</b> Software</p>"
+            });
+            rteEle = rteObj.element;
+            trg = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
+            trg.dispatchEvent(clickEvent);
+            QTBarModule = getQTBarModule(rteObj);
+            trgNode = <HTMLElement>rteEle.querySelector(".e-content p b");
+            done();
+        });
+
+        afterEach(() => {
+            destroy(rteObj);
+        });
+
+        afterAll(()=> {
+            Browser.userAgent = currentBrowserUA;
+        });
+
+        it('Toolbar availability testing', (done: Function) => {
+            clickEvent.initEvent("mouseup", true, true);
+            trgNode.dispatchEvent(clickEvent);
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(1);
+                expect(document.querySelectorAll('.e-rte-tb-mobile').length).toBe(0);
+                expect(document.querySelectorAll('.e-rte-tb-fixed.e-rte-tb-mobile').length).toBe(0);
+                done();
+            }, 2000);
+        });
+
+        it('getToolbar public method with toolbar testing', (done: Function) => {
+            clickEvent.initEvent("mouseup", true, true);
+            trgNode.dispatchEvent(clickEvent);
+            setTimeout(() => {
+                expect(rteObj.getToolbar()).toBe(null);
+                done();
+            }, 2000);
+        });
+
+        it('getBaseToolbarObject private method with toolbar object testing', (done: Function) => {
+            clickEvent.initEvent("mouseup", true, true);
+            trgNode.dispatchEvent(clickEvent);
+            setTimeout(() => {
+                expect(rteObj.getBaseToolbarObject()).not.toBe(undefined);
+                expect(rteObj.getBaseToolbarObject() instanceof BaseToolbar).toBe(true);
+                done();
+            }, 2000);
+        });
+
+        it('MouseEvent args with mouseUp handler testing', (done: Function) => {
+            args = {
+                preventDefault: function () { },
+                action: 'mouseup',
+                target: trg,
+                x: 10, y: 200
+            };
+            let touchData: any = { prevClientX: 0, prevClientY: 10, clientX: 0, clientY: 0 };
+            rteObj.quickToolbarModule.mouseUpHandler({ args: args, touchData: touchData });
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(1);
+                done();
+            }, 2000);
+        });
+
+        it('TouchEvent args with mouseUp handler testing', (done: Function) => {
+            args = {
+                preventDefault: function () { },
+                action: 'mouseup',
+                target: trg,
+                x: 10, y: 200,
+                touches: { length: 0 }, changedTouches: [{ pageX: 0, pageY: 0, clientX: 0 }]
+            };
+            let touchData: any = { prevClientX: 0, prevClientY: 10, clientX: 0, clientY: 0 };
+            rteObj.quickToolbarModule.mouseUpHandler({ args: args, touchData: touchData });
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(1);
+                done();
+            }, 2000);
+        });
+
+        it('SelectionChange event with quick toolbar availability testing', (done: Function) => {
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 2);
+            args = {
+                preventDefault: function () { },
+                action: 'selectionchange',
+                target: trg
+            };
+            rteObj.quickToolbarModule.selectionChangeHandler(args); 
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(1);
+                done();
+            }, 2000);
+        });
+
+        it('Quick toolbar open with selection change event action to quick toolbar availability testing', (done: Function) => {
+            clickEvent.initEvent("mouseup", true, true);
+            trgNode.dispatchEvent(clickEvent);
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(1);
+                let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+                rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 2);
+                args = {
+                    preventDefault: function () { },
+                    action: 'selectionchange',
+                    target: trg
+                };
+                rteObj.quickToolbarModule.selectionChangeHandler(args); 
+                setTimeout(() => {
+                    expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(1);
+                    done();
+                }, 2000);
+            }, 2000);
+        });
+
+        it('Selection change update with quick toolbar availability testing', (done: Function) => {
+            let pEle: HTMLElement = rteObj.element.querySelector('#rte');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0].childNodes[0], pEle.childNodes[0].childNodes[0], 0, 1);
+            args = {
+                preventDefault: function () { },
+                action: 'selectionchange',
+                target: trg
+            };
+            rteObj.quickToolbarModule.selectionChangeHandler(args); 
+            setTimeout(() => {
+                expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(1);
+                rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 1);
+                rteObj.quickToolbarModule.selectionChangeHandler(args);
+                setTimeout(() => {
+                    expect(document.querySelectorAll('.e-rte-inline-popup').length).toBe(1);
+                    done();
+                }, 2000);
+            }, 2000);
+        });
+
+        it('hideInlineQTBar method testing', () => {
+            (QTBarModule as any).hideInlineQTBar();
+            let pop: HTMLElement = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+            expect(pop).toBe(undefined);
         });
     });
 });

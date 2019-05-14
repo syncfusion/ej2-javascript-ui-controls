@@ -746,6 +746,12 @@ export interface SeriesModel extends SeriesBaseModel{
     opacity?: number;
 
     /**
+     * The z order of the series.
+     * @default 0
+     */
+    zOrder?: number;
+
+    /**
      * The type of the series are
      * * Line
      * * Column

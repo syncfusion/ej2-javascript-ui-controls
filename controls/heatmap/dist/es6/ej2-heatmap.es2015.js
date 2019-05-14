@@ -3360,6 +3360,9 @@ class TooltipSettings extends ChildProperty {
 }
 __decorate$5([
     Property('')
+], TooltipSettings.prototype, "template", void 0);
+__decorate$5([
+    Property('')
 ], TooltipSettings.prototype, "fill", void 0);
 __decorate$5([
     Complex({}, TooltipBorder)
@@ -3426,7 +3429,7 @@ class Tooltip$1 {
      * @return {void}
      * @private
      */
-    createTooltip(x, y, tempTooltipText) {
+    createTooltip(currentRect, x, y, tempTooltipText) {
         let offset = null;
         if (this.heatMap.cellSettings.showLabel && this.heatMap.heatMapSeries.checkLabelXDisplay &&
             this.heatMap.heatMapSeries.checkLabelYDisplay) {
@@ -3436,9 +3439,19 @@ class Tooltip$1 {
             enableAnimation: false,
             offset: offset,
             location: { x: x, y: y },
+            data: {
+                xValue: this.heatMap.heatMapSeries.hoverXAxisValue,
+                yValue: this.heatMap.heatMapSeries.hoverYAxisValue,
+                value: currentRect.value,
+                xLabel: this.heatMap.heatMapSeries.hoverXAxisLabel ?
+                    this.heatMap.heatMapSeries.hoverXAxisLabel.toString() : null,
+                yLabel: this.heatMap.heatMapSeries.hoverYAxisLabel ?
+                    this.heatMap.heatMapSeries.hoverYAxisLabel.toString() : null,
+            },
             theme: this.heatMap.theme,
             content: tempTooltipText,
             fill: this.heatMap.tooltipSettings.fill,
+            template: this.heatMap.tooltipSettings.template,
             border: {
                 width: this.heatMap.tooltipSettings.border.width,
                 color: this.heatMap.tooltipSettings.border.color
@@ -3553,10 +3566,19 @@ class Tooltip$1 {
                 tempTooltipText = this.getTooltipContent(currentRect, hetmapSeries);
             }
             if (!this.tooltipObject) {
-                this.createTooltip(currentRect.x + (currentRect.width / 2), currentRect.y + (currentRect.height / 2), tempTooltipText);
+                this.createTooltip(currentRect, currentRect.x + (currentRect.width / 2), currentRect.y + (currentRect.height / 2), tempTooltipText);
             }
             else {
                 this.tooltipObject.content = tempTooltipText;
+                this.tooltipObject.data = {
+                    xValue: this.heatMap.heatMapSeries.hoverXAxisValue,
+                    yValue: this.heatMap.heatMapSeries.hoverYAxisValue,
+                    xLabel: this.heatMap.heatMapSeries.hoverXAxisLabel ?
+                        this.heatMap.heatMapSeries.hoverXAxisLabel.toString() : null,
+                    yLabel: this.heatMap.heatMapSeries.hoverYAxisLabel ?
+                        this.heatMap.heatMapSeries.hoverYAxisLabel.toString() : null,
+                    value: currentRect.value,
+                };
             }
             this.showHideTooltip(true);
             this.tooltipObject.enableAnimation = (this.isFirst || this.isFadeout) ? false : true;
@@ -5241,6 +5263,7 @@ let HeatMap = class HeatMap extends Component {
                         this.tooltipModule.tooltipObject.fill = this.tooltipSettings.fill;
                         this.tooltipModule.tooltipObject.border = this.tooltipSettings.border;
                         this.tooltipModule.tooltipObject.textStyle = this.tooltipSettings.textStyle;
+                        this.tooltipModule.tooltipObject.template = this.tooltipSettings.template;
                         this.tooltipModule.tooltipObject.refresh();
                     }
                     break;

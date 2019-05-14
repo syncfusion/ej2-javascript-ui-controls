@@ -5,6 +5,7 @@ import { IHtmlSubCommands } from './../base/interface';
 import { IHtmlKeyboardEvent } from './../base/interface';
 import { setStyleAttribute, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import * as EVENTS from './../../common/constant';
+import { isIDevice, setEditFrameFocus } from '../../common/util';
 /**
  * Formats internal component
  * @hidden
@@ -60,6 +61,7 @@ export class Alignments {
         }
         (this.parent.editableElement as HTMLElement).focus();
         save = this.parent.domNode.saveMarker(save);
+        if (isIDevice()) { setEditFrameFocus(this.parent.editableElement, e.selector); }
         save.restore();
         if (e.callBack) {
             e.callBack({

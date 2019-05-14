@@ -35,4 +35,20 @@ describe('Content renderer module', () => {
         });
     });
 
+    describe('Value property content without parent tag to render', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: 'RichTextEditor'
+            });
+        });
+
+        it('InnerHtml testing', () => {
+            expect(rteObj.element.querySelector('.e-rte-content .e-content').innerHTML).toBe('<p>RichTextEditor</p>');
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

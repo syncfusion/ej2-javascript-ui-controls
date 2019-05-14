@@ -6,6 +6,7 @@ import { IHtmlKeyboardEvent } from './../../editor-manager/base/interface';
 import { KeyboardEventArgs } from './../../rich-text-editor/actions/keyboard';
 import * as EVENTS from './../../common/constant';
 import { IUndoCallBack } from '../../common/interface';
+import { isIDevice, setEditFrameFocus } from '../../common/util';
 /**
  * `Undo` module is used to handle undo actions.
  */
@@ -122,6 +123,7 @@ export class UndoRedoManager {
             let removedContent: string = this.undoRedoStack[this.steps - 1].text as string;
             this.parent.editableElement.innerHTML = removedContent;
             (this.parent.editableElement as HTMLElement).focus();
+            if (isIDevice()) { setEditFrameFocus(this.parent.editableElement, (e as IHtmlSubCommands).selector); }
             (range as NodeSelection).restore();
             this.steps--;
             if (e.callBack) {
@@ -145,6 +147,7 @@ export class UndoRedoManager {
             let range: string | object = this.undoRedoStack[this.steps + 1].range;
             this.parent.editableElement.innerHTML = this.undoRedoStack[this.steps + 1].text as string;
             (this.parent.editableElement as HTMLElement).focus();
+            if (isIDevice()) { setEditFrameFocus(this.parent.editableElement, (e as IHtmlSubCommands).selector); }
             (range as NodeSelection).restore();
             this.steps++;
             if (e.callBack) {

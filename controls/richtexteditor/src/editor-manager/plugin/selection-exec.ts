@@ -40,7 +40,7 @@ export class SelectionBasedExec {
             this.parent.currentDocument,
             e.subCommand.toLocaleLowerCase(),
             this.parent.editableElement,
-            e.value as string);
+            e.value as string, e.selector);
         this.callBack(e, e.subCommand);
     }
 

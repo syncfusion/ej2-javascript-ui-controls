@@ -5,10 +5,10 @@ import { NodeSelection } from './../../selection/index';
 import { NodeCutter } from './nodecutter';
 import { InsertMethods } from './insert-methods';
 import { IsFormatted } from './isformatted';
+import { isIDevice, setEditFrameFocus } from '../../common/util';
 
 export class SelectionCommands {
-
-    public static applyFormat(docElement: Document, format: string, endNode: Node, value?: string): void {
+    public static applyFormat(docElement: Document, format: string, endNode: Node, value?: string, selector?: string): void {
         let validFormats: string[] = ['bold', 'italic', 'underline', 'strikethrough', 'superscript',
             'subscript', 'uppercase', 'lowercase', 'fontcolor', 'fontname', 'fontsize', 'backgroundcolor'];
         if (validFormats.indexOf(format) > -1) {
@@ -68,6 +68,7 @@ export class SelectionCommands {
                 }
                 domSelection = this.applySelection(nodes, domSelection, nodeCutter, index, isCollapsed);
             }
+            if (isIDevice()) { setEditFrameFocus(endNode as Element, selector); }
             save.restore();
         }
     }

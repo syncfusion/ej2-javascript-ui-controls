@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 17.1.47 (2019-05-14)
+
+### Gantt
+
+#### Bug Fixes
+
+- #233041 - Alignment issue with timeline and vertical lines has been fixed.
+
+#### New Features
+
+- #F143360 - Provided support to refresh the `dataSource` dynamically.
+
 ## 17.1.43 (2019-04-30)
 
 ### Gantt

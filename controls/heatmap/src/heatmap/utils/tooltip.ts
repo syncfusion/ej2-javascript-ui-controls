@@ -18,20 +18,26 @@ import { DataModel } from '../datasource/adaptor-model';
  */
 export class TooltipSettings extends ChildProperty<TooltipSettings> {
     /**
-     * Specifies the color collection for heat map cell. 
+     * Custom template to format the ToolTip content.
+     * @default ''
+     */
+    @Property('')
+    public template: string;
+    /**
+     * Specifies the color collection for heat map cell.
      * @default ''
      */
     @Property('')
     public fill: string;
     /**
-     * Specifies the cell border style. 
+     * Specifies the cell border style.
      * @default ''
      */
     @Complex<TooltipBorderModel>({}, TooltipBorder)
     public border: TooltipBorderModel;
 
     /**
-     * Specifies the cell label style. 
+     * Specifies the cell label style.
      * @default ''
      */
     @Complex<FontModel>(Theme.tooltipFont, Font)
@@ -39,7 +45,7 @@ export class TooltipSettings extends ChildProperty<TooltipSettings> {
 
 }
 /**
- * 
+ *
  * The `Tooltip` module is used to render the tooltip for heatmap series.
  */
 export class Tooltip {
@@ -102,7 +108,7 @@ export class Tooltip {
      * @return {void}
      * @private
      */
-    private createTooltip(x: number, y: number, tempTooltipText?: string[]): void {
+    private createTooltip(currentRect : CurrentRect, x: number, y: number, tempTooltipText?: string[]): void {
         let offset: number = null;
         if (this.heatMap.cellSettings.showLabel && this.heatMap.heatMapSeries.checkLabelXDisplay &&
             this.heatMap.heatMapSeries.checkLabelYDisplay) {
@@ -113,9 +119,19 @@ export class Tooltip {
                 enableAnimation: false,
                 offset: offset,
                 location: { x: x, y: y },
+                data: {
+                    xValue: this.heatMap.heatMapSeries.hoverXAxisValue,
+                    yValue: this.heatMap.heatMapSeries.hoverYAxisValue,
+                    value : currentRect.value,
+                    xLabel: this.heatMap.heatMapSeries.hoverXAxisLabel ?
+                    this.heatMap.heatMapSeries.hoverXAxisLabel.toString() : null,
+                    yLabel: this.heatMap.heatMapSeries.hoverYAxisLabel ?
+                    this.heatMap.heatMapSeries.hoverYAxisLabel.toString() : null,
+                },
                 theme: this.heatMap.theme,
                 content: tempTooltipText,
                 fill: this.heatMap.tooltipSettings.fill,
+                template: this.heatMap.tooltipSettings.template,
                 border: {
                     width: this.heatMap.tooltipSettings.border.width,
                     color: this.heatMap.tooltipSettings.border.color
@@ -238,9 +254,23 @@ export class Tooltip {
                tempTooltipText = this.getTooltipContent(currentRect, hetmapSeries);
             }
             if (!this.tooltipObject) {
-                this.createTooltip(currentRect.x + (currentRect.width / 2), currentRect.y + (currentRect.height / 2), tempTooltipText);
+                this.createTooltip(
+                    currentRect,
+                    currentRect.x + (currentRect.width / 2),
+                    currentRect.y + (currentRect.height / 2),
+                    tempTooltipText);
             } else {
                 this.tooltipObject.content = tempTooltipText;
+                this.tooltipObject.data = {
+                    xValue: this.heatMap.heatMapSeries.hoverXAxisValue,
+                    yValue: this.heatMap.heatMapSeries.hoverYAxisValue,
+                    xLabel: this.heatMap.heatMapSeries.hoverXAxisLabel ?
+                    this.heatMap.heatMapSeries.hoverXAxisLabel.toString() : null,
+                    yLabel: this.heatMap.heatMapSeries.hoverYAxisLabel ?
+                    this.heatMap.heatMapSeries.hoverYAxisLabel.toString() : null,
+                    value: currentRect.value,
+
+                };
             }
             this.showHideTooltip(true);
             this.tooltipObject.enableAnimation = (this.isFirst || this.isFadeout) ? false : true;

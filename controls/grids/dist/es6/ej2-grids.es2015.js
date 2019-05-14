@@ -5343,8 +5343,14 @@ class StackedHeaderCellRenderer extends CellRenderer {
             className: 'e-stackedheadercelldiv',
             attrs: { 'e-mappinguid': cell.column.uid }
         });
+        let column = cell.column;
         node.appendChild(div);
-        div.innerHTML = cell.column.headerText;
+        if (!isNullOrUndefined(column.headerTemplate)) {
+            appendChildren(div, column.getHeaderTemplate()(column, this.parent, 'headerTemplate'));
+        }
+        else {
+            this.appendHtml(div, column.headerText, column.getDomSetter());
+        }
         if (cell.column.toolTip) {
             node.setAttribute('title', cell.column.toolTip);
         }
@@ -23435,6 +23441,9 @@ class BatchEdit {
         if (!isNullOrUndefined(this.parent.detailTemplate) || !isNullOrUndefined(this.parent.childGrid)) {
             cIdx++;
         }
+        if (this.parent.isRowDragable()) {
+            cIdx++;
+        }
         return cIdx;
     }
     refreshTD(td, column, rowObj, value) {
@@ -23459,6 +23468,9 @@ class BatchEdit {
             cIdx = this.parent.groupSettings.columns.length;
         }
         if (!isNullOrUndefined(this.parent.detailTemplate) || !isNullOrUndefined(this.parent.childGrid)) {
+            cIdx++;
+        }
+        if (this.parent.isRowDragable()) {
             cIdx++;
         }
         for (let m = 0; m < cells.length; m++) {
@@ -25002,7 +25014,7 @@ class ColumnChooser {
             let element = currentCheckBoxColls[i];
             let columnUID;
             if (this.parent.childGrid || this.parent.detailTemplate) {
-                columnUID = parentsUntil(this.dlgObj.element.querySelectorAll('.e-cc-chbox')[i], 'e-ccheck').getAttribute('uid');
+                columnUID = parentsUntil(this.dlgObj.element.querySelectorAll('.e-cc-chbox:not(.e-selectall)')[i], 'e-ccheck').getAttribute('uid');
             }
             else {
                 columnUID = parentsUntil(element, 'e-ccheck').getAttribute('uid');
@@ -25754,6 +25766,8 @@ class ExcelExport {
                     }
                     /* tslint:disable-next-line:no-any */
                     tCell.style = this.getCaptionThemeStyle(this.theme);
+                    let col = groupCaptionSummaryRows[0].cells[tCell.index - 1].column;
+                    this.aggregateStyle(col, tCell.style, col.field);
                     if (cells[cells.length - 1].index !== tCell.index) {
                         cells.push(tCell);
                     }
@@ -25954,25 +25968,25 @@ class ExcelExport {
                             for (let key of Object.keys(row.data[cell.column.field])) {
                                 if (key === cell.column.type) {
                                     if (!isNullOrUndefined(row.data[cell.column.field].Sum)) {
-                                        eCell.value = row.data[cell.column.field].Sum;
+                                        eCell.value = row.data[cell.column.field][`${cell.column.field} - sum`];
                                     }
                                     else if (!isNullOrUndefined(row.data[cell.column.field].Average)) {
-                                        eCell.value = row.data[cell.column.field].Average;
+                                        eCell.value = row.data[cell.column.field][`${cell.column.field} - average`];
                                     }
                                     else if (!isNullOrUndefined(row.data[cell.column.field].Max)) {
-                                        eCell.value = row.data[cell.column.field].Max;
+                                        eCell.value = row.data[cell.column.field][`${cell.column.field} - max`];
                                     }
                                     else if (!isNullOrUndefined(row.data[cell.column.field].Min)) {
-                                        eCell.value = row.data[cell.column.field].Min;
+                                        eCell.value = row.data[cell.column.field][`${cell.column.field} - min`];
                                     }
                                     else if (!isNullOrUndefined(row.data[cell.column.field].Count)) {
-                                        eCell.value = row.data[cell.column.field].Count;
+                                        eCell.value = row.data[cell.column.field][`${cell.column.field} - count`];
                                     }
                                     else if (!isNullOrUndefined(row.data[cell.column.field].TrueCount)) {
-                                        eCell.value = row.data[cell.column.field].TrueCount;
+                                        eCell.value = row.data[cell.column.field][`${cell.column.field} - truecount`];
                                     }
                                     else if (!isNullOrUndefined(row.data[cell.column.field].FalseCount)) {
-                                        eCell.value = row.data[cell.column.field].FalseCount;
+                                        eCell.value = row.data[cell.column.field][`${cell.column.field} - falsecount`];
                                     }
                                     else if (!isNullOrUndefined(row.data[cell.column.field].Custom)) {
                                         eCell.value = row.data[cell.column.field].Custom;
@@ -25981,6 +25995,7 @@ class ExcelExport {
                             }
                         }
                         eCell.style = this.getCaptionThemeStyle(this.theme); //{ name: gObj.element.id + 'column' + index };
+                        this.aggregateStyle(cell.column, eCell.style, cell.column.field);
                         let gridCellStyle = cell.attributes.style;
                         if (gridCellStyle.textAlign) {
                             eCell.style.hAlign = gridCellStyle.textAlign.toLowerCase();
@@ -26015,6 +26030,18 @@ class ExcelExport {
             }
         }
         return excelRows;
+    }
+    aggregateStyle(col, style, field) {
+        if (typeof col.format === 'object') {
+            let format = col.format;
+            style.numberFormat = !isNullOrUndefined(format.format) ? format.format : format.skeleton;
+            style.type = !isNullOrUndefined(format.type) ? format.type.toLowerCase() :
+                this.parent.getColumnByField(field).type.toLowerCase();
+        }
+        else {
+            style.numberFormat = col.format;
+            style.type = this.parent.getColumnByField(field).type.toLowerCase();
+        }
     }
     getAggreateValue(cellType, template, cell, row) {
         let templateFn = {};

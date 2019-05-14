@@ -403,6 +403,8 @@ export class ExcelExport {
                     }
                     /* tslint:disable-next-line:no-any */
                     (tCell as any).style = this.getCaptionThemeStyle(this.theme);
+                    let col: AggregateColumnModel = groupCaptionSummaryRows[0].cells[tCell.index - 1].column;
+                    this.aggregateStyle(col, tCell.style, col.field);
                     if (cells[cells.length - 1].index !== tCell.index) {
                         cells.push(tCell);
                     }
@@ -606,19 +608,19 @@ export class ExcelExport {
                             for (let key of Object.keys(row.data[cell.column.field])) {
                                 if (key === cell.column.type) {
                                     if (!isNullOrUndefined(row.data[cell.column.field].Sum)) {
-                                        eCell.value = row.data[cell.column.field].Sum;
+                                        eCell.value = row.data[cell.column.field][`${cell.column.field} - sum`];
                                     } else if (!isNullOrUndefined(row.data[cell.column.field].Average)) {
-                                        eCell.value = row.data[cell.column.field].Average;
+                                        eCell.value = row.data[cell.column.field][`${cell.column.field} - average`];
                                     } else if (!isNullOrUndefined(row.data[cell.column.field].Max)) {
-                                        eCell.value = row.data[cell.column.field].Max;
+                                        eCell.value = row.data[cell.column.field][`${cell.column.field} - max`];
                                     } else if (!isNullOrUndefined(row.data[cell.column.field].Min)) {
-                                        eCell.value = row.data[cell.column.field].Min;
+                                        eCell.value = row.data[cell.column.field][`${cell.column.field} - min`];
                                     } else if (!isNullOrUndefined(row.data[cell.column.field].Count)) {
-                                        eCell.value = row.data[cell.column.field].Count;
+                                        eCell.value = row.data[cell.column.field][`${cell.column.field} - count`];
                                     } else if (!isNullOrUndefined(row.data[cell.column.field].TrueCount)) {
-                                        eCell.value = row.data[cell.column.field].TrueCount;
+                                        eCell.value = row.data[cell.column.field][`${cell.column.field} - truecount`];
                                     } else if (!isNullOrUndefined(row.data[cell.column.field].FalseCount)) {
-                                        eCell.value = row.data[cell.column.field].FalseCount;
+                                        eCell.value = row.data[cell.column.field][`${cell.column.field} - falsecount`];
                                     } else if (!isNullOrUndefined(row.data[cell.column.field].Custom)) {
                                         eCell.value = row.data[cell.column.field].Custom;
                                     }
@@ -626,6 +628,7 @@ export class ExcelExport {
                             }
                         }
                         eCell.style = this.getCaptionThemeStyle(this.theme); //{ name: gObj.element.id + 'column' + index };
+                        this.aggregateStyle(cell.column, eCell.style, cell.column.field);
                         let gridCellStyle: {textAlign?: ExcelHAlign} = cell.attributes.style;
                         if (gridCellStyle.textAlign) {
                             eCell.style.hAlign = gridCellStyle.textAlign.toLowerCase() as ExcelHAlign;
@@ -658,6 +661,18 @@ export class ExcelExport {
             }
         }
         return excelRows;
+    }
+
+    private aggregateStyle(col: AggregateColumnModel, style: ExcelStyle, field: string): void {
+        if (typeof col.format === 'object') {
+            let format: DateFormatOptions = col.format;
+            style.numberFormat = !isNullOrUndefined(format.format) ? format.format : format.skeleton;
+            style.type = !isNullOrUndefined(format.type) ? format.type.toLowerCase() :
+            this.parent.getColumnByField(field).type.toLowerCase();
+        } else {
+            style.numberFormat = col.format;
+            style.type = this.parent.getColumnByField(field).type.toLowerCase();
+        }
     }
 
     private getAggreateValue(cellType: CellType, template: string,

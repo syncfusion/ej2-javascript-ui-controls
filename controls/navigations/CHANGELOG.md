@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 17.1.47 (2019-05-14)
+
+### Menu
+
+#### New Features
+
+- #230456 - Provided hamburger menu support for adaptive view.
+
+### TreeView
+
+#### New Features
+
+- #227540 - Provided the support for rendering treeview data in single server request while disabling the loadOnDemand
+
 ## 17.1.43 (2019-04-30)
 
 ### Toolbar

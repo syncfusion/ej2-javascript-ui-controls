@@ -96,10 +96,10 @@ describe('Selection Public APi testing ', () => {
     });
     it('insert hyperlink with same display text', () => {
         let text = editor.selection.text;
-        editor.editorModule.insertHyperlink('https://syncfusion.com', text, true);
+        editor.editorModule.insertHyperlinkInternal('https://syncfusion.com', text, true);
     });
     it('Insert hyperlink with different display text', () => {
-        editor.editorModule.insertHyperlink('https://syncfusion.com', 'Syncfusion', true);
+        editor.editorModule.insertHyperlinkInternal('https://syncfusion.com', 'Syncfusion', true);
     });
     it('Toggle text alignment', () => {
         editor.openBlank();

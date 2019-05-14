@@ -1,5 +1,5 @@
 import { ListView, ItemCreatedArgs, classNames, Fields, UISelectedItem } from './list-view';
-import { EventHandler, append, isNullOrUndefined, detach, removeClass, addClass } from '@syncfusion/ej2-base';
+import { EventHandler, append, isNullOrUndefined, detach, removeClass, addClass, compile } from '@syncfusion/ej2-base';
 import { ListBase } from '../common/list-base';
 
 /**
@@ -98,7 +98,7 @@ export class Virtualization {
 
     private ValidateItemCount(dataSourceLength: number): number {
         let itemCount: number = this.listViewInstance.isWindow ? Math.round((window.innerHeight / this.listItemHeight) * 3) :
-            Math.round((this.listViewInstance.height as number / this.listItemHeight) * 1.5);
+            Math.round(((this.listViewInstance.height as number) / this.listItemHeight) * 1.5);
         if (itemCount > dataSourceLength) {
             itemCount = dataSourceLength;
         }
@@ -157,21 +157,21 @@ export class Virtualization {
             this.topElement.style.height = this.topElementHeight + 'px';
             this.bottomElement.style.height = this.bottomElementHeight + 'px';
             if (scroll > this.scrollPosition) {
-                let listDiff: number = ((this.topElementHeight / this.listItemHeight) - this.listDiff);
+                let listDiff: number = Math.round(((this.topElementHeight / this.listItemHeight) - this.listDiff));
                 if (listDiff > (this.expectedDomItemCount + 5)) {
                     this.onLongScroll(listDiff, true);
                 } else {
                     this.onNormalScroll(listDiff, true);
                 }
             } else {
-                let listDiff: number = (this.listDiff - (this.topElementHeight / this.listItemHeight));
+                let listDiff: number = Math.round((this.listDiff - (this.topElementHeight / this.listItemHeight)));
                 if (listDiff > (this.expectedDomItemCount + 5)) {
                     this.onLongScroll(listDiff, false);
                 } else {
                     this.onNormalScroll(listDiff, false);
                 }
             }
-            this.listDiff = this.topElementHeight / this.listItemHeight;
+            this.listDiff = Math.round(this.topElementHeight / this.listItemHeight);
             if (typeof this.listViewInstance.onUIScrolled === 'function') {
                 this.listViewInstance.onUIScrolled();
             }
@@ -479,7 +479,11 @@ export class Virtualization {
             (this.listViewInstance.dataSource as { [key: string]: Object }[]).splice(index, 1);
             this.listViewInstance.setViewDataSource(this.listViewInstance.dataSource as { [key: string]: Object }[]);
         }
+        // recollect all the list item into collection
+        this.listViewInstance.liCollection =
+            <HTMLElement[] & NodeListOf<HTMLLIElement>>this.listViewInstance.curUL.querySelectorAll('li');
     }
+
     public setCheckboxLI(li: HTMLElement | Element, e?: MouseEvent | KeyboardEvent | FocusEvent): void {
         let index: number = Array.prototype.indexOf.call(this.listViewInstance.curUL.querySelectorAll('li'), li) + this.uiFirstIndex;
         this.activeIndex = Array.prototype.indexOf.call(this.listViewInstance.curUL.querySelectorAll('li'), li) + this.uiFirstIndex;
@@ -511,7 +515,12 @@ export class Virtualization {
         }
 
     }
+
     private addUiItem(index: number): void {
+        // virtually new add list item based on the scollbar position
+        // if the scroll bar is at the top, just pretend the new item has been added since no UI
+        // change is required for the item that has been added at last but when scroll bar is at the bottom
+        // just detach top and inject into bottom to mimic new item is added
         let curViewDs: { [key: string]: Object }[] = this.listViewInstance.curViewDS as { [key: string]: Object }[];
         this.changeUiIndices(index, true);
         if (this.activeIndex && this.activeIndex >= index) {
@@ -551,7 +560,7 @@ export class Virtualization {
             }
         }
         this.totalHeight += this.listItemHeight;
-        this.listDiff = parseFloat(this.topElement.style.height) / this.listItemHeight;
+        this.listDiff = Math.round(parseFloat(this.topElement.style.height) / this.listItemHeight);
     }
 
     private removeUiItem(index: number): void {
@@ -605,7 +614,7 @@ export class Virtualization {
             }
         }
         this.changeUiIndices(index, false);
-        this.listDiff = parseFloat(this.topElement.style.height) / this.listItemHeight;
+        this.listDiff = Math.round(parseFloat(this.topElement.style.height) / this.listItemHeight);
     }
 
     private changeUiIndices(index: number, increment: boolean): void {
@@ -622,24 +631,82 @@ export class Virtualization {
 
     public addItem(data: { [key: string]: Object }[], fields: Fields): void {
         data.forEach((dataSource: { [key: string]: Object; }) => {
+            // push the given data to main data array
             (this.listViewInstance.dataSource as { [key: string]: Object; }[]).push(dataSource);
-            this.listViewInstance.setViewDataSource(this.listViewInstance.dataSource as { [key: string]: Object; }[]);
+            // recalculate all the group data or other datasource related things
+            this.listViewInstance.setViewDataSource(this.listViewInstance.dataSource);
+            // render list items for first time due to no datasource present earlier
             if (!this.domItemCount) {
+                // fresh rendering for first time
+                if ((this.listViewInstance.template || this.listViewInstance.groupTemplate) && !this.isNgTemplate()) {
+                    this.listViewInstance.listBaseOption.template = null;
+                    this.listViewInstance.listBaseOption.groupTemplate = null;
+                    this.listViewInstance.listBaseOption.itemCreated = this.createUIItem.bind(this);
+                }
                 this.uiVirtualization();
+                // when expected expected DOM count doesn't meet the condition we need to create and inject new item into DOM
             } else if (this.domItemCount < this.expectedDomItemCount) {
-                this.wireScrollEvent(true);
-                detach(this.listViewInstance.contentContainer);
-                this.uiVirtualization();
+                let ds: { [key: string]: Object } = this.listViewInstance.findItemFromDS(this.listViewInstance.dataSource, fields);
+
+                if (ds instanceof Array) {
+                    if (this.listViewInstance.ulElement) {
+                        let index: number = (this.listViewInstance.curViewDS as { [key: string]: Object }[]).indexOf(dataSource);
+                        // inject new list item into DOM
+                        this.createAndInjectNewItem(dataSource, index);
+
+                        // check for group header item
+                        let curViewDS: { [key: string]: Object } =
+                            (this.listViewInstance.curViewDS as { [key: string]: Object }[])[index - 1];
+                        if (curViewDS && curViewDS.isHeader && (curViewDS.items as { [key: string]: Object }[]).length === 1) {
+                            // target group item index in datasource
+                            --index;
+                            // inject new group header into DOM for previously created list item
+                            this.createAndInjectNewItem(curViewDS, index);
+                        }
+                    }
+                    // recollect all the list item into collection
+                    this.listViewInstance.liCollection =
+                        <HTMLElement[] & NodeListOf<HTMLLIElement>>this.listViewInstance.curUL.querySelectorAll('li');
+                }
             } else {
                 let index: number = (this.listViewInstance.curViewDS as { [key: string]: Object; }[]).indexOf(dataSource);
+                // virtually new add list item based on the scollbar position
                 this.addUiItem(index);
-                let curViewDS: { [key: string]: Object; } = (this.listViewInstance.curViewDS as { [key: string]: Object; }[])[index - 1];
-                if (curViewDS && curViewDS.isHeader && (curViewDS.items as { [key: string]: Object; }[]).length === 1) {
+                // check for group header item needs to be added
+                let curViewDS: { [key: string]: Object } = (this.listViewInstance.curViewDS as { [key: string]: Object }[])[index - 1];
+                if (curViewDS && curViewDS.isHeader && (curViewDS.items as { [key: string]: Object }[]).length === 1) {
                     this.addUiItem(index - 1);
                 }
             }
         });
     }
+
+    private createAndInjectNewItem(itemData: { [key: string]: Object }, index: number): void {
+        // generate li item for given datasource
+        let target: HTMLElement;
+        let li: HTMLElement[] = ListBase.createListItemFromJson(
+            this.listViewInstance.createElement,
+            [itemData],
+            this.listViewInstance.listBaseOption);
+        // check for target element whether to insert before last item or group item
+        if ((Object.keys(this.listViewInstance.curViewDS).length - 1) === index) {
+            target = this.listViewInstance.curUL.lastElementChild as HTMLElement;
+        } else {
+            // target group header's first child item to append its header
+            target = this.listViewInstance.getLiFromObjOrElement(this.listViewInstance.curViewDS[index + 1]) ||
+                this.listViewInstance.getLiFromObjOrElement(this.listViewInstance.curViewDS[index + 2]);
+        }
+        // insert before the target element
+        this.listViewInstance.ulElement.insertBefore(li[0], target);
+        // increment internal DOM count, last index count for new element
+        this.domItemCount++;
+        if (this.bottomElementHeight <= 0) {
+            this.uiLastIndex++;
+        }
+        // recalculate the current item height, to avoid jumpy scroller
+        this.refreshItemHeight();
+    }
+
     public createUIItem(args: ItemCreatedArgs): void {
         let template: HTMLElement = this.listViewInstance.createElement('div');
         let commonTemplate: string = '<div class="e-text-content" role="presentation"> ' +
@@ -867,6 +934,9 @@ export class Virtualization {
         }
         this.listViewInstance.preRender();
         this.listViewInstance.localData = this.listViewInstance.dataSource;
+        // resetting the dom count to 0, to avoid edge case of dataSource suddenly becoming zero
+        // and then manually adding item using addItem API
+        this.domItemCount = 0;
         this.listViewInstance.renderList();
     }
 
@@ -876,7 +946,7 @@ export class Virtualization {
             let curViewDS: { [key: string]: Object } = (this.listViewInstance.curViewDS as { [key: string]: Object }[])[index];
             element.dataset.uid = curViewDS[this.listViewInstance.fields.id] ?
                 curViewDS[this.listViewInstance.fields.id].toString() : ListBase.generateId();
-            onChange(curViewDS, element);
+            onChange(curViewDS, element, this);
         } else {
             this.updateUiContent(element, index);
         }
@@ -886,9 +956,16 @@ export class Virtualization {
         }
     }
 
-    private onNgChange(newData: { [key: string]: Object }, listElement: ElementContext): void {
-        listElement.context.$implicit = newData;
+    private onNgChange(newData: { [key: string]: Object }, listElement: ElementContext, virtualThis: Virtualization): void {
+        // compile given target element with template for new data
+        let templateCompiler: Function = compile(virtualThis.listViewInstance.template);
+        let resultElement: NodeList = templateCompiler(newData);
+        while (listElement.lastChild) {
+            listElement.removeChild(listElement.lastChild);
+        }
+        listElement.appendChild(resultElement[0]);
     }
+
     public getModuleName(): string {
         return 'virtualization';
     }
@@ -896,5 +973,4 @@ export class Virtualization {
     public destroy(): void {
         this.wireScrollEvent(true);
     }
-
 }

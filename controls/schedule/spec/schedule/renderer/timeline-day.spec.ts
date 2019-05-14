@@ -2330,13 +2330,13 @@ describe('Schedule timeline day view', () => {
 
         it('More event element checking', () => {
             let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(14);
-            expect(moreIndicatorList[0].innerHTML).toEqual('+1&nbsp;more');
+            expect(moreIndicatorList.length).toEqual(12);
+            expect(moreIndicatorList[0].innerHTML).toEqual('+2&nbsp;more');
             let element: HTMLElement = moreIndicatorList[0] as HTMLElement;
             element.click();
             let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
-            expect(moreEventList.length).toEqual(2);
+            expect(moreEventList.length).toEqual(3);
             triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
     });
@@ -2424,13 +2424,13 @@ describe('Schedule timeline day view', () => {
 
         it('More event element checking', () => {
             let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(14);
-            expect(moreIndicatorList[0].innerHTML).toEqual('+1&nbsp;more');
+            expect(moreIndicatorList.length).toEqual(12);
+            expect(moreIndicatorList[0].innerHTML).toEqual('+2&nbsp;more');
             let element: HTMLElement = moreIndicatorList[0] as HTMLElement;
             element.click();
             let morePopup: HTMLElement = schObj.element.querySelector('.e-more-popup-wrapper') as HTMLElement;
             let moreEventList: Element[] = [].slice.call(morePopup.querySelectorAll('.e-more-appointment-wrapper .e-appointment'));
-            expect(moreEventList.length).toEqual(2);
+            expect(moreEventList.length).toEqual(3);
             triggerMouseEvent(morePopup.querySelector('.e-more-event-close'), 'click');
         });
     });

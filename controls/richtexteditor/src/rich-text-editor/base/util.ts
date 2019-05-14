@@ -1,10 +1,10 @@
 /**
  * Exports util methods used by RichTextEditor.
  */
-import { isNullOrUndefined as isNOU, addClass, removeClass, L10n, selectAll, createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, addClass, removeClass, L10n, selectAll, createElement, Browser } from '@syncfusion/ej2-base';
 import * as classes from '../base/classes';
 import * as model from '../models/items';
-import { IToolsItemConfigs } from '../base/interface';
+import { IToolsItemConfigs, IRichTextEditor } from '../base/interface';
 import { toolsLocale } from '../models/default-locale';
 import { IToolbarItems, IDropDownItemModel, ISetToolbarStatusArgs, IToolbarItemModel } from './interface';
 import { BaseToolbar } from '../actions/base-toolbar';
@@ -66,12 +66,8 @@ export function getDropDownValue(items: IDropDownItemModel[], value: string, typ
 
 export function isIDevice(): boolean {
     let result: boolean = false;
-    let iosDevices: string[] = ['iphone', 'ipad', 'ipod'];
-    for (let i: number = 0; i < iosDevices.length; i++) {
-        if (navigator.platform.toLocaleLowerCase().indexOf(iosDevices[i]) > -1) {
-            result = true;
-            break;
-        }
+    if (Browser.isDevice && Browser.isIos) {
+        result = true;
     }
     return result;
 }
@@ -81,7 +77,7 @@ export function getFormattedFontSize(value: string): string {
     return value;
 }
 
-export function pageYOffset(e: MouseEvent, parentElement: HTMLElement, isIFrame: boolean): number {
+export function pageYOffset(e: MouseEvent | Touch, parentElement: HTMLElement, isIFrame: boolean): number {
     let y: number = 0;
     if (isIFrame) {
         y = window.pageYOffset + parentElement.getBoundingClientRect().top + e.clientY;
@@ -123,7 +119,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                                 (!isNOU(dropDown.formatDropDown) && dropDown.formatDropDown.isDestroyed)) { return; }
                             let formatItems: IDropDownItemModel[] = e.parent.format.types;
                             result = getDropDownValue(formatItems, value, 'subCommand', 'text');
-                            let formatContent: string = isNullOrUndefined(e.parent.format.default) ? formatItems[0].text :
+                            let formatContent: string = isNOU(e.parent.format.default) ? formatItems[0].text :
                                 e.parent.format.default;
                             dropDown.formatDropDown.content = ('<span style="display: inline-flex;' +
                                 'width:' + e.parent.format.width + '" >' +
@@ -145,7 +141,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                                 (!isNOU(dropDown.fontNameDropDown) && dropDown.fontNameDropDown.isDestroyed)) { return; }
                             let fontNameItems: IDropDownItemModel[] = e.parent.fontFamily.items;
                             result = getDropDownValue(fontNameItems, value, 'value', 'text');
-                            let fontNameContent: string = isNullOrUndefined(e.parent.fontFamily.default) ? fontNameItems[0].text :
+                            let fontNameContent: string = isNOU(e.parent.fontFamily.default) ? fontNameItems[0].text :
                                 e.parent.fontFamily.default;
                             let name: string = (isNOU(result) ? fontNameContent : result);
                             e.tbElements[j].title = name;
@@ -159,7 +155,7 @@ export function setToolbarStatus(e: ISetToolbarStatusArgs, isPopToolbar: boolean
                             if (isNOU(dropDown.fontSizeDropDown) ||
                                 (!isNOU(dropDown.fontSizeDropDown) && dropDown.fontSizeDropDown.isDestroyed)) { return; }
                             let fontSizeItems: IDropDownItemModel[] = e.parent.fontSize.items;
-                            let fontSizeContent: string = isNullOrUndefined(e.parent.fontSize.default) ? fontSizeItems[1].text :
+                            let fontSizeContent: string = isNOU(e.parent.fontSize.default) ? fontSizeItems[1].text :
                                 e.parent.fontSize.default;
                             result = getDropDownValue(
                                 fontSizeItems, (value === '' ? fontSizeContent.replace(/\s/g, '') : value), 'value', 'text');
@@ -254,4 +250,37 @@ export function toObjectLowerCase(obj: { [key: string]: IToolsItemConfigs }): { 
         convertedValue[keys[i].toLocaleLowerCase()] = obj[keys[i]];
     }
     return convertedValue;
+}
+export function getEditValue(value: string, rteObj: IRichTextEditor): string {
+    let val: string;
+    if (value !== null && value !== '') {
+        val = rteObj.enableHtmlEncode ? updateTextNode(decode(value)) : updateTextNode(value);
+        rteObj.setProperties({ value: val }, true);
+    } else {
+        val = rteObj.enableHtmlEncode ? '&lt;p&gt;&lt;br/&gt;&lt;/p&gt;' : '<p><br/></p>';
+    }
+    return val;
+}
+export function updateTextNode(value: string): string {
+    let tempNode: HTMLElement = document.createElement('div');
+    tempNode.innerHTML = value;
+    let childNodes: NodeListOf<Node> = tempNode.childNodes as NodeListOf<Node>;
+    if (childNodes.length > 0) {
+        [].slice.call(childNodes).forEach((childNode: Node) => {
+            if (childNode.nodeType === Node.TEXT_NODE && childNode.parentNode === tempNode) {
+                let defaultTag: HTMLElement = document.createElement('p');
+                let parentNode: Element = childNode.parentNode as Element;
+                parentNode.insertBefore(defaultTag, childNode);
+                defaultTag.appendChild(childNode);
+            }
+        });
+    }
+    return tempNode.innerHTML;
+}
+
+export function decode(value: string): string {
+    return value.replace(/&amp;/g, '&').replace(/&amp;lt;/g, '<')
+        .replace(/&lt;/g, '<').replace(/&amp;gt;/g, '>')
+        .replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ')
+        .replace(/&amp;nbsp;/g, ' ').replace(/&quot;/g, '');
 }

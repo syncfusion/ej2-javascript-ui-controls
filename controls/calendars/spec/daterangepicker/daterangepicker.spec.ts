@@ -8310,6 +8310,84 @@ describe('DateRangePicker', () => {
             expect(daterangepicker.inputWrapper.container.classList.contains('e-input-focus')).toBe(false);
         });
     });
+    describe('Change event Testing', () => {
+        let daterangepicker: any;
+        let startValue: Date;
+        let endValue: Date;
+        let changeCount: number = 0;
+        beforeEach(() => {
+            let ele: HTMLElement = <HTMLElement>createElement('input', { id: 'date' });
+            document.body.appendChild(ele);
+        });
+        afterEach(() => {
+            if (daterangepicker) {
+                daterangepicker.destroy();
+            }
+            document.body.innerHTML = '';
+            changeCount = 0;
+        });
+        
+        it('Format is MM yyyy', function () {
+            daterangepicker = new DateRangePicker({ 
+                format : "MM yyyy",
+                change : function onChange() {
+                changeCount++;
+            } });
+            daterangepicker.appendTo('#date');
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            let startEle: HTMLElement = <HTMLElement>(daterangepicker.popupObj.element.querySelectorAll('.e-left-calendar.e-calendar td')[10]);
+            let endEle: HTMLElement = <HTMLElement>(daterangepicker.popupObj.element.querySelectorAll('.e-right-calendar.e-calendar td')[10]);
+            startValue = daterangepicker.getIdValue(null, startEle);
+            endValue = daterangepicker.getIdValue(null, endEle);
+            (startEle).dispatchEvent(clickEvent);
+            (endEle).dispatchEvent(clickEvent);
+            <HTMLElement>(daterangepicker.applyButton.element).click();
+            daterangepicker.inputBlurHandler();
+            expect(changeCount).toBe(1);
+        });
+        it('Format is M yyyy', function () {
+            daterangepicker = new DateRangePicker({ 
+                format : "M yyyy",
+                change : function onChange() {
+                changeCount++;
+            } });
+            daterangepicker.appendTo('#date');
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            let startEle: HTMLElement = <HTMLElement>(daterangepicker.popupObj.element.querySelectorAll('.e-left-calendar.e-calendar td')[10]);
+            let endEle: HTMLElement = <HTMLElement>(daterangepicker.popupObj.element.querySelectorAll('.e-right-calendar.e-calendar td')[10]);
+            startValue = daterangepicker.getIdValue(null, startEle);
+            endValue = daterangepicker.getIdValue(null, endEle);
+            (startEle).dispatchEvent(clickEvent);
+            (endEle).dispatchEvent(clickEvent);
+            <HTMLElement>(daterangepicker.applyButton.element).click();
+            daterangepicker.inputBlurHandler();
+            expect(changeCount).toBe(1);
+        });
+        it('Format is yyyy MM', function () {
+            daterangepicker = new DateRangePicker({ 
+                format : "yyyy MM",
+                change : function onChange() {
+                changeCount++;
+            } });
+            daterangepicker.appendTo('#date');
+            if (!daterangepicker.isPopupOpen()) {
+                <HTMLElement>(daterangepicker.inputWrapper.buttons[0]).dispatchEvent(clickEvent);
+            }
+            let startEle: HTMLElement = <HTMLElement>(daterangepicker.popupObj.element.querySelectorAll('.e-left-calendar.e-calendar td')[10]);
+            let endEle: HTMLElement = <HTMLElement>(daterangepicker.popupObj.element.querySelectorAll('.e-right-calendar.e-calendar td')[10]);
+            startValue = daterangepicker.getIdValue(null, startEle);
+            endValue = daterangepicker.getIdValue(null, endEle);
+            (startEle).dispatchEvent(clickEvent);
+            (endEle).dispatchEvent(clickEvent);
+            <HTMLElement>(daterangepicker.applyButton.element).click();
+            daterangepicker.inputBlurHandler();
+            expect(changeCount).toBe(1);
+        });
+    });
 });
 interface CalendarElement {
     leftCalTitle: HTMLElement;

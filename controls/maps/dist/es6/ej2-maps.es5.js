@@ -941,7 +941,7 @@ function getTranslate(mapObject, layer, animate) {
     if (isNullOrUndefined(mapObject.mapScaleValue)) {
         mapObject.mapScaleValue = mapObject.zoomSettings.zoomFactor;
     }
-    var zoomFactor = mapObject.mapScaleValue;
+    var zoomFactor = animate ? 1 : mapObject.mapScaleValue;
     var min = mapObject.baseMapRectBounds['min'];
     var max = mapObject.baseMapRectBounds['max'];
     var size = mapObject.mapAreaRect;
@@ -991,7 +991,7 @@ function getZoomTranslate(mapObject, layer, animate) {
     if (isNullOrUndefined(mapObject.mapScaleValue)) {
         mapObject.mapScaleValue = mapObject.zoomSettings.zoomFactor;
     }
-    var zoomFactor = mapObject.mapScaleValue;
+    var zoomFactor = animate ? 1 : mapObject.mapScaleValue;
     var size = mapObject.mapAreaRect;
     var x;
     var y;
@@ -3432,8 +3432,7 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
         if (this.mapObject.isTileMap && secondaryEle) {
             this.tileSvgObject = this.mapObject.renderer.createSvg({
                 id: this.mapObject.element.id + '_Tile_SVG', width: areaRect.width,
-                height: areaRect.height,
-                style: 'pointer-events:none'
+                height: areaRect.height
             });
             secondaryEle.appendChild(this.tileSvgObject);
         }
@@ -4515,6 +4514,19 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         }
         this.mapLayerPanel.measureLayerPanel();
         this.element.appendChild(this.svgObject);
+        if (!isNullOrUndefined(document.getElementById(this.element.id + '_tile_parent'))) {
+            var svg = this.svgObject.getBoundingClientRect();
+            var element = document.getElementById(this.element.id);
+            var tileElement = document.getElementById(this.element.id + '_tile_parent');
+            var tile = tileElement.getBoundingClientRect();
+            var bottom = svg.bottom - tile.bottom - element.offsetTop;
+            var left = parseFloat(tileElement.style.left) + element.offsetLeft;
+            var top_1 = parseFloat(tileElement.style.top) + element.offsetTop;
+            top_1 = (bottom <= 10) ? top_1 : (top_1 * 2);
+            left = (bottom <= 10) ? left : (left * 2);
+            tileElement.style.top = top_1 + 'px';
+            tileElement.style.left = left + 'px';
+        }
         this.arrangeTemplate();
         if (this.annotationsModule) {
             this.annotationsModule.renderAnnotationElements();
@@ -4638,12 +4650,13 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         var padding = 0;
         if (mainLayer.isBaseLayer && (mainLayer.layerType === 'OSM' || mainLayer.layerType === 'Bing')) {
             removeElement(this.element.id + '_tile_parent');
-            var elementRect = this.element.getBoundingClientRect();
-            var left = Math.abs(elementRect.left);
-            var top_1 = Math.abs(elementRect.top);
+            // let elementRect: ClientRect = this.element.getBoundingClientRect();
+            // let parentRect: ClientRect = this.element.parentElement.getBoundingClientRect();
+            // let left: number = Math.abs(elementRect.left - parentRect.left);
+            // let top: number = Math.abs(elementRect.top - parentRect.top);
             var ele = createElement('div', {
                 id: this.element.id + '_tile_parent', styles: 'position: absolute; left: ' +
-                    (this.mapAreaRect.x + left) + 'px; top: ' + (this.mapAreaRect.y + top_1 + padding) + 'px; height: ' +
+                    (this.mapAreaRect.x) + 'px; top: ' + (this.mapAreaRect.y + padding) + 'px; height: ' +
                     (this.mapAreaRect.height) + 'px; width: '
                     + (this.mapAreaRect.width) + 'px; overflow: hidden;'
             });
@@ -5786,9 +5799,9 @@ var DataLabel = /** @__PURE__ @class */ (function () {
             elementSize = measureText(trimmedLable, style);
             this.value[index] = { rightWidth: xpositionEnds, leftWidth: xpositionStart, heightTop: start, heightBottom: end };
             var animate$$1 = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
-            var translate = getTranslate(this.maps, layer, animate$$1);
-            var scale = translate['scale'];
-            var transPoint = translate['location'];
+            var translate = (this.maps.isTileMap) ? new Object() : getTranslate(this.maps, layer, animate$$1);
+            var scale = (this.maps.isTileMap) ? this.maps.scale : translate['scale'];
+            var transPoint = (this.maps.isTileMap) ? this.maps.translatePoint : translate['location'];
             var labelElement = void 0;
             if (eventargs.template !== '') {
                 templateFn = getTemplateFunction(eventargs.template);
@@ -6555,24 +6568,24 @@ var Legend = /** @__PURE__ @class */ (function () {
                                 layerIndex + '_shapeIndex_' + shapeIndex + '_dataIndex_' + dataIndex);
                             if (shapeEle !== null) {
                                 if (value === 'highlight' && this.shapeElement !== targetElement) {
-                                    this.setColor(shapeEle, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
-                                    this.setColor(targetElement, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
                                     if (j === 0) {
                                         this.legendHighlightCollection = [];
-                                        this.pushCollection(targetElement, this.legendHighlightCollection, collection[i]);
+                                        this.pushCollection(targetElement, this.legendHighlightCollection, collection[i], shapeEle.getAttribute('opacity'));
                                     }
                                     length = this.legendHighlightCollection.length;
                                     this.legendHighlightCollection[length - 1]['MapShapeCollection']['Elements'].push(shapeEle);
+                                    this.setColor(shapeEle, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
+                                    this.setColor(targetElement, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
                                 }
                                 else if (value === 'selection' && this.shapeSelection) {
-                                    this.setColor(targetElement, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
-                                    this.setColor(shapeEle, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
                                     this.legendHighlightCollection = [];
                                     if (j === 0) {
-                                        this.pushCollection(targetElement, this.legendSelectionCollection, collection[i]);
+                                        this.pushCollection(targetElement, this.legendSelectionCollection, collection[i], shapeEle.getAttribute('opacity'));
                                     }
                                     selectLength = this.legendSelectionCollection.length;
                                     this.legendSelectionCollection[selectLength - 1]['MapShapeCollection']['Elements'].push(shapeEle);
+                                    this.setColor(targetElement, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
+                                    this.setColor(shapeEle, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
                                     this.legendElement = targetElement;
                                     if (j === data.length - 1) {
                                         this.legendSelection = false;
@@ -6591,10 +6604,10 @@ var Legend = /** @__PURE__ @class */ (function () {
         element.setAttribute('stroke', borderColor);
         element.setAttribute('stroke-width', borderWidth);
     };
-    Legend.prototype.pushCollection = function (targetElement, collection, oldElement) {
+    Legend.prototype.pushCollection = function (targetElement, collection, oldElement, shapeOpacity) {
         collection.push({
             legendElement: targetElement, legendOldFill: oldElement['fill'], legendOldOpacity: oldElement['opacity'],
-            legendOldBorderColor: oldElement['borderColor'], legendOldBorderWidth: oldElement['borderWidth']
+            legendOldBorderColor: oldElement['borderColor'], legendOldBorderWidth: oldElement['borderWidth'], shapeOpacity: shapeOpacity
         });
         length = collection.length;
         collection[length - 1]['MapShapeCollection'] = { Elements: [] };
@@ -6605,7 +6618,7 @@ var Legend = /** @__PURE__ @class */ (function () {
             this.setColor(item['legendElement'], item['legendOldFill'], item['legendOldOpacity'], item['legendOldBorderColor'], item['legendOldBorderWidth']);
             var dataCount = item['MapShapeCollection']['Elements'].length;
             for (var j = 0; j < dataCount; j++) {
-                this.setColor(item['MapShapeCollection']['Elements'][j], item['legendOldFill'], item['legendOldOpacity'], item['legendOldBorderColor'], item['legendOldBorderWidth']);
+                this.setColor(item['MapShapeCollection']['Elements'][j], item['legendOldFill'], item['shapeOpacity'], item['legendOldBorderColor'], item['legendOldBorderWidth']);
             }
         }
     };

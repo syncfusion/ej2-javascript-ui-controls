@@ -7,15 +7,17 @@ import { EventHandler, Browser } from '@syncfusion/ej2-base';
 import { Tooltip, TooltipEventArgs } from '../../src/tooltip/tooltip';
 import '../../node_modules/es6-promise/dist/es6-promise';
 
-function triggerMouseEvent(node: HTMLElement, eventType: string, x?: number, y?: number) {
+function triggerMouseEvent(node: HTMLElement, eventType: string, x?: number, y?: number, relatedTarget?: any) {
     let mouseEve: MouseEvent = document.createEvent("MouseEvents");
+    const relatedTargetElement = relatedTarget ? relatedTarget : null;
     if (x && y) {
-        mouseEve.initMouseEvent(eventType, true, true, window, 0, 0, 0, x, y, false, false, false, false, 0, null);
+        mouseEve.initMouseEvent(eventType, true, true, window, 0, 0, 0, x, y, false, false, false, false, 0, relatedTargetElement);
     } else {
         mouseEve.initEvent(eventType, true, true);
     }
     node.dispatchEvent(mouseEve);
 }
+
 function triggerTouchEvent(node: HTMLElement | Document, eventType: string, x?: number, y?: number) {
     let touchEvent: Event = new TouchEvent(eventType);
     node.dispatchEvent(touchEvent);
@@ -2046,4 +2048,34 @@ describe('Tooltip Control', () => {
         });
     });
 
+    describe('Tooltip should not close on hover on the content element', () => {
+        let tooltip: Tooltip;
+        beforeEach((): void => {
+            tooltip = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'tstooltip', innerHTML: 'Tooltip' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tooltip) {
+                tooltip.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Mouse hover event testing', () => {
+            tooltip = new Tooltip({
+                animation: { open: { effect: 'None' }, close: { effect: 'None' } },
+                width: '100px', height: '50px', content: 'Tooltip Content'
+            }, '#tstooltip');
+            let target: HTMLElement = document.getElementById('tstooltip');
+            expect(document.querySelector('.e-tooltip-wrap')).toBeNull();
+            triggerMouseEvent(target, 'mouseover');
+            let tooltipEle: HTMLElement = document.querySelector('.e-tooltip-wrap') as HTMLElement;
+            expect(isVisible(tooltipEle)).toBe(true);
+            const positions = tooltipEle.getElementsByClassName('e-tip-content')[0].getBoundingClientRect();
+            triggerMouseEvent(target, 'mouseover');
+            triggerMouseEvent(target, 'mouseleave', positions.left, positions.top, tooltipEle);
+            expect(isVisible(tooltipEle)).toBe(true);
+            triggerMouseEvent(tooltipEle, 'mouseleave');
+        });
+    })
 });

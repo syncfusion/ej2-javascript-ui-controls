@@ -3,6 +3,7 @@ import { NodeSelection } from './../../selection';
 import { IHtmlSubCommands } from './../base/interface';
 import * as EVENTS from './../../common/constant';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isIDevice, setEditFrameFocus } from '../../common/util';
 /**
  * Formats internal component
  * @hidden
@@ -55,6 +56,7 @@ export class Formats {
         }
         (this.parent.editableElement as HTMLElement).focus();
         save = this.parent.domNode.saveMarker(save);
+        if (isIDevice()) { setEditFrameFocus(this.parent.editableElement, e.selector); }
         save.restore();
         if (e.callBack) {
             e.callBack({

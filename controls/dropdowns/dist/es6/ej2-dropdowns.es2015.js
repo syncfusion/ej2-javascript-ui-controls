@@ -2899,7 +2899,6 @@ let DropDownList = class DropDownList extends DropDownBase {
             ((this.allowFiltering && !(Browser.isDevice && this.isFilterLayout())) || this.getModuleName() === 'autocomplete')) {
             removeClass([this.popupObj.element], 'e-popup-close');
             this.popupObj.refreshPosition(this.inputWrapper.container);
-            addClass([this.popupObj.element], 'e-popup-close');
         }
     }
     checkDatasource(newProp) {

@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 17.1.47 (2019-05-14)
+
+### HeatMap
+
+#### New Features
+
+- #230837, #229200 - Provided the tool tip template support for customizing the cell tool tip.
+
 ## 17.1.32-beta (2019-03-13)
 
 ### HeatMap

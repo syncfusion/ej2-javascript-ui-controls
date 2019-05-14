@@ -1,4 +1,4 @@
-import { EventHandler, detach, L10n, isNullOrUndefined, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { EventHandler, detach, L10n, isNullOrUndefined, KeyboardEventArgs, select } from '@syncfusion/ej2-base';
 import { closest, addClass, removeClass, Browser } from '@syncfusion/ej2-base';
 import { IRichTextEditor, NotifyArgs, IRenderer, IImageNotifyArgs, IToolbarItemModel, IShowPopupArgs } from './../base/interface';
 import { IDropDownItemModel } from './../base/interface';
@@ -12,6 +12,7 @@ import { NodeSelection } from '../../selection/selection';
 import { RendererFactory } from '../services/renderer-factory';
 import { RenderType } from '../base/enum';
 import { dispatchEvent, parseHtml } from '../base/util';
+import { isIDevice } from '../../common/util';
 
 /**
  * `Link` module is used to handle undo actions.
@@ -85,7 +86,6 @@ export class Link {
         this.quickToolObj = this.parent.quickToolbarModule;
         let parentTop: number = this.parent.element.getBoundingClientRect().top;
         let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
-        let args: MouseEvent = e.args as MouseEvent;
         let target: HTMLElement;
         [].forEach.call(e.elements, (element: Element, index: number) => {
             if (index === 0) {
@@ -100,6 +100,8 @@ export class Link {
             let tbHeight: number = (tbElement) ? (tbElement.offsetHeight + this.parent.toolbarModule.getExpandTBarPopHeight()) : 0;
             pageY = window.pageYOffset + ((this.parent.iframeSettings.enable) ? (parentTop + tbHeight + linkTop) : (parentTop + linkPos));
         } else {
+            let args: Touch | MouseEvent;
+            args = (e.args as TouchEvent).touches ? (e.args as TouchEvent).changedTouches[0] : args = e.args as MouseEvent;
             pageX = args.pageX;
             pageY = (this.parent.iframeSettings.enable) ? window.pageYOffset + parentTop + args.clientY : args.pageY;
         }
@@ -182,8 +184,7 @@ export class Link {
         if (this.parent.editorMode === 'HTML' && (e.selectParent.length > 0 &&
             !isNullOrUndefined((e.selectParent[0] as HTMLElement).classList) &&
             (e.selectParent[0] as HTMLElement).classList.contains('e-rte-anchor')) && isNullOrUndefined(inputDetails)) {
-            this.editLink(e);
-            return;
+            this.editLink(e); return;
         }
         let selectText: string; let linkWebAddress: string = this.i10n.getConstant('linkWebUrl');
         let linkDisplayText: string = this.i10n.getConstant('linkText');
@@ -233,7 +234,7 @@ export class Link {
                 click: this.insertlink.bind(selectObj),
                 buttonModel: { content: linkInsert, cssClass: 'e-flat e-insertLink', isPrimary: true }
             },
-            { click: (e: MouseEvent) => { this.cancelDialog(e); }, buttonModel: { cssClass: 'e-flat', content: linkCancel } }],
+            { click: this.cancelDialog.bind(selectObj), buttonModel: { cssClass: 'e-flat', content: linkCancel } }],
             target: (Browser.isDevice) ? document.body : this.parent.element,
             animationSettings: { effect: 'None' },
             close: (event: { [key: string]: object }) => {
@@ -305,6 +306,12 @@ export class Link {
             url: linkUrl, text: linkText, title: linkTitle, target: target,
             selection: (this as NotifyArgs).selection, selectParent: (this as NotifyArgs).selectParent
         };
+        if (document.body.contains(proxy.dialogObj.element)) {
+            (this as NotifyArgs).selfLink.dialogObj.hide({ returnValue: false } as Event);
+        }
+        if (isIDevice() && proxy.parent.iframeSettings.enable) {
+            (<HTMLIFrameElement>select('iframe', proxy.parent.element)).contentWindow.focus();
+        }
         if (proxy.parent.editorMode === 'HTML') { (this as NotifyArgs).selection.restore(); }
         if (proxy.parent.formatter.getUndoRedoStack().length === 0) {
             proxy.parent.formatter.saveData();
@@ -312,9 +319,6 @@ export class Link {
         (this as NotifyArgs).selfLink.parent.formatter.process(
             (this as NotifyArgs).selfLink.parent, (this as NotifyArgs).args,
             ((this as NotifyArgs).args as ClickEventArgs).originalEvent, value);
-        if (document.body.contains(proxy.dialogObj.element)) {
-            (this as NotifyArgs).selfLink.dialogObj.hide({ returnValue: false } as Event);
-        }
         ((this as NotifyArgs).selfLink.parent.contentModule.getEditPanel() as HTMLElement).focus();
     }
     private isUrl(url: string): boolean {
@@ -342,7 +346,11 @@ export class Link {
                 selectNode: e.selectNode, selectParent: e.selectParent, selection: e.selection,
                 subCommand: ((e.args as ClickEventArgs).item as IDropDownItemModel).subCommand
             });
-        (this.contentModule.getEditPanel() as HTMLElement).focus();
+        if (isIDevice() && this.parent.iframeSettings.enable) {
+            (<HTMLIFrameElement>select('iframe', this.parent.element)).contentWindow.focus();
+        } else {
+            (this.contentModule.getEditPanel() as HTMLElement).focus();
+        }
         this.hideLinkQuickToolbar();
     }
     private openLink(e: NotifyArgs): void {
@@ -375,9 +383,13 @@ export class Link {
     }
 
     private cancelDialog(e: MouseEvent): void {
-        this.parent.isBlur = false;
-        this.dialogObj.hide({ returnValue: true } as Event);
-        (this.parent.contentModule.getEditPanel() as HTMLElement).focus();
+        (this as NotifyArgs).selfLink.parent.isBlur = false;
+        (this as NotifyArgs).selfLink.dialogObj.hide({ returnValue: true } as Event);
+        if (isIDevice()) {
+            (this as NotifyArgs).selection.restore();
+        } else {
+            ((this as NotifyArgs).selfLink.parent.contentModule.getEditPanel() as HTMLElement).focus();
+        }
     }
 
     private onDocumentClick(e: MouseEvent): void {

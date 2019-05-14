@@ -1186,7 +1186,7 @@ describe('Insert Hyperlink validation via dialog method', () => {
         }, 1000);
     });
     it('simple hyperlink inserting', () => {
-        editor.editorModule.insertHyperlink('www.google.com', 'www.google.com', true);
+        editor.editorModule.insertHyperlinkInternal('www.google.com', 'www.google.com', true);
         let line: LineWidget = (editor.selection.start.paragraph.childWidgets[0] as LineWidget);
         expect(line.children.length).toBe(5);
         expect((line.children[0] as FieldElementBox).hasFieldEnd).toBe(true);

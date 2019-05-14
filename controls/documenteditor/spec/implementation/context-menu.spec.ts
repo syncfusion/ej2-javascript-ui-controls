@@ -151,7 +151,7 @@ describe('Context Menu Testing - 2', () => {
         }
     });
     it('Open context menu in hyperlink', () => {
-        editor.editorModule.insertHyperlink('https://syncfusion.com', 'Syncfusion Software', true);
+        editor.editorModule.insertHyperlinkInternal('https://syncfusion.com', 'Syncfusion Software', true);
         editor.selection.movePreviousPosition();
         let event: MouseEvent = document.createEvent('MouseEvent');
         event.initEvent('contextmenu', true, true);

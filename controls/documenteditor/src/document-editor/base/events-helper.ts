@@ -1,5 +1,6 @@
 import { HyperlinkType } from './types';
 import { DocumentEditor } from '../document-editor';
+import { DocumentEditorContainer } from '../../document-editor-container';
 
 /** 
  * This event arguments provides the necessary information about documentChange event.
@@ -124,4 +125,24 @@ export interface BeforeOpenCloseCustomContentMenuEventArgs {
      * Specifies the array of added custom context menu item ids.
      */
     ids: string[];
+}
+
+/** 
+ * This event arguments provides the necessary information about DocumentEditorContainer's contentChange event.
+ */
+export interface ContainerContentChangeEventArgs {
+    /**
+     * Specifies the source DocumentEditorContainer instance which triggers this contentChange event.
+     */
+    source: DocumentEditorContainer;
+}
+
+/** 
+ * This event arguments provides the necessary information about DocumentEditorContainer's selectionChange event.
+ */
+export interface ContainerSelectionChangeEventArgs {
+    /**
+     * Specifies the source DocumentEditorContainer instance which triggers this selectionChange event.
+     */
+    source: DocumentEditorContainer;
 }

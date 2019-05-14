@@ -50,7 +50,7 @@ describe('insert hyperlink validation', () => {
         editor.selection.handleLeftKey();
         editor.selection.handleShiftLeftKey();
         editor.selection.handleShiftLeftKey();
-        editor.editorModule.insertHyperlink('www.google.com', editor.selection.text, false);
+        editor.editorModule.insertHyperlinkInternal('www.google.com', editor.selection.text, false);
         editor.selection.handleLeftKey();
         expect(editor.selection.getHyperlinkField()).not.toBeUndefined();
         let fieldBegin = editor.selection.getHyperlinkField();
@@ -94,7 +94,7 @@ describe('Edit hyperlink validation', () => {
         editor.selection.handleLeftKey();
         editor.selection.handleShiftUpKey();
         editor.selection.handleShiftUpKey();
-        editor.editorModule.insertHyperlink('s', editor.selection.text, false);
+        editor.editorModule.insertHyperlinkInternal('s', editor.selection.text, false);
         editor.selection.handleLeftKey();
         expect(editor.selection.getHyperlinkField()).not.toBeUndefined();
         let fieldBegin = editor.selection.getHyperlinkField();

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.47 (2019-05-14)
+
+### PDF Viewer
+
+#### New Features
+
+- Provided the supports for adding custom header to the AJAX requests in the PDF viewer control.
+
 ## 17.1.44 (2019-05-07)
 
 ### PDF Viewer

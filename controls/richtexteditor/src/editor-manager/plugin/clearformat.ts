@@ -5,6 +5,7 @@ import { NodeSelection } from './../../selection/index';
 import { NodeCutter } from './nodecutter';
 import { InsertMethods } from './insert-methods';
 import { IsFormatted } from './isformatted';
+import { isIDevice, setEditFrameFocus } from '../../common/util';
 
 export class ClearFormat {
 
@@ -19,7 +20,7 @@ export class ClearFormat {
     private static NONVALID_TAGS: string[] = ['thead', 'tbody', 'figcaption', 'td', 'tr',
             'th',   'tfoot', 'figcaption', 'li'  ];
 
-    public static clear(docElement: Document, endNode: Node): void {
+    public static clear(docElement: Document, endNode: Node, selector?: string): void {
         let nodeSelection: NodeSelection = new NodeSelection();
         let nodeCutter: NodeCutter = new NodeCutter();
         let range: Range = nodeSelection.getRange(docElement);
@@ -50,6 +51,7 @@ export class ClearFormat {
             exactNodes = nodeSelection.getNodeCollection(range);
             let cloneParentNodes: Node[] = exactNodes.slice();
             this.clearBlocks(docElement, cloneParentNodes, endNode, nodeCutter, nodeSelection);
+            if (isIDevice()) { setEditFrameFocus(endNode as Element, selector); }
             this.reSelection(docElement, save, exactNodes);
         }
     }

@@ -1206,24 +1206,36 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
     /**
      * @private
      */
-    TaskProcessor.prototype.checkDataBinding = function () {
+    TaskProcessor.prototype.checkDataBinding = function (isChange) {
+        if (isChange) {
+            this.parent.flatData = [];
+            this.parent.currentViewData = [];
+            this.dataArray = [];
+            this.taskIds = [];
+            this.parent.ids = [];
+            this.recordIndex = 0;
+            this.taskIds = [];
+            this.hierarchyData = [];
+            this.parent.predecessorsCollection = [];
+            this.parent.treeGrid.parentData = [];
+        }
         if (isNullOrUndefined(this.parent.dataSource)) {
             this.parent.dataSource = [];
-            this.parent.renderGantt();
+            this.parent.renderGantt(isChange);
         }
         else if (this.parent.dataSource instanceof DataManager) {
-            this.initDataSource();
+            this.initDataSource(isChange);
         }
         else if (this.parent.dataSource.length > 0) {
             this.dataArray = this.parent.dataSource;
             this.cloneDataSource();
-            this.parent.renderGantt();
+            this.parent.renderGantt(isChange);
         }
         else {
-            this.parent.renderGantt();
+            this.parent.renderGantt(isChange);
         }
     };
-    TaskProcessor.prototype.initDataSource = function () {
+    TaskProcessor.prototype.initDataSource = function (isChange) {
         var _this = this;
         var queryManager = this.parent.query instanceof Query ? this.parent.query : new Query();
         queryManager.requiresCount();
@@ -1231,10 +1243,10 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
         dataManager.executeQuery(queryManager).then(function (e) {
             _this.dataArray = e.result;
             _this.cloneDataSource();
-            _this.parent.renderGantt();
+            _this.parent.renderGantt(isChange);
         }).catch(function (e) {
             // Trigger action failure event
-            _this.parent.renderGantt();
+            _this.parent.renderGantt(isChange);
             _this.parent.trigger('actionFailure', { error: e });
         });
     };
@@ -8644,7 +8656,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
     /**
      * @private
      */
-    Gantt.prototype.renderGantt = function () {
+    Gantt.prototype.renderGantt = function (isChange) {
         this.timelineModule.processTimelineUnit();
         // predecessor calculation
         if (this.taskFields.dependency) {
@@ -8655,18 +8667,25 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
         }
         this.dataOperation.calculateProjectDates();
         this.timelineModule.validateTimelineProp();
-        this.dataOperation.updateGanttData();
-        this.treeGridPane.classList.remove('e-temp-content');
-        remove(this.treeGridPane.querySelector('.e-gantt-temp-header'));
-        this.notify('dataReady', {});
-        this.renderTreeGrid();
-        this.wireEvents();
-        if (this.taskFields.dependency && this.isInPredecessorValidation) {
-            var dialogElement = createElement('div', {
-                id: this.element.id + '_dialogValidationRule',
-            });
-            this.element.appendChild(dialogElement);
-            this.predecessorModule.renderValidationDialog();
+        if (isChange) {
+            this.updateProjectDates(this.cloneProjectStartDate, this.cloneProjectEndDate, this.isTimelineRoundOff);
+            this.dataOperation.updateGanttData();
+            this.treeGrid.dataSource = this.flatData;
+        }
+        else {
+            this.dataOperation.updateGanttData();
+            this.treeGridPane.classList.remove('e-temp-content');
+            remove(this.treeGridPane.querySelector('.e-gantt-temp-header'));
+            this.notify('dataReady', {});
+            this.renderTreeGrid();
+            this.wireEvents();
+            if (this.taskFields.dependency && this.isInPredecessorValidation) {
+                var dialogElement = createElement('div', {
+                    id: this.element.id + '_dialogValidationRule',
+                });
+                this.element.appendChild(dialogElement);
+                this.predecessorModule.renderValidationDialog();
+            }
         }
         this.splitterModule.updateSplitterPosition();
         if (this.gridLines === 'Vertical' || this.gridLines === 'Both') {
@@ -8884,6 +8903,10 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
                         this.toolbarModule.updateSearchTextBox();
                     }
                     break;
+                case 'dataSource':
+                    this.closeGanttActions();
+                    this.dataOperation.checkDataBinding(true);
+                    break;
             }
         }
     };
@@ -8916,6 +8939,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
         this.element.innerHTML = '';
         removeClass([this.element], root);
         this.element.innerHTML = '';
+        this.isTreeGridRendered = false;
     };
     /**
      * public method to get taskbarHeight.
@@ -9742,6 +9766,25 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
         var top = box.top + scrollTop - clientTop;
         var left = box.left + scrollLeft - clientLeft;
         return { top: Math.round(top), left: Math.round(left) };
+    };
+    /**
+     * Public method to update data source.
+     * @return {void}
+     * @public
+     */
+    Gantt.prototype.updateDataSource = function (dataSource, args) {
+        for (var _i = 0, _a = Object.keys(args); _i < _a.length; _i++) {
+            var prop = _a[_i];
+            switch (prop) {
+                case 'projectStartDate':
+                    this.setProperties({ projectStartDate: args[prop] }, true);
+                    break;
+                case 'projectEndDate':
+                    this.setProperties({ projectEndDate: args[prop] }, true);
+                    break;
+            }
+        }
+        this.dataSource = dataSource;
     };
     /**
      * Public method to expand all the rows of Gantt

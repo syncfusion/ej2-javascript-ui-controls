@@ -14,6 +14,7 @@ import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { NodeSelection } from '../../selection/selection';
 import { InsertHtml } from '../../editor-manager/plugin/inserthtml';
 import { getTextNodesUnder } from '../base/util';
+import { isIDevice } from '../../common/util';
 
 /**
  * `HtmlEditor` module is used to HTML editor
@@ -81,7 +82,7 @@ export class HtmlEditor {
     private onSelectionRestore(e: IToolbarOptions): void {
         this.parent.isBlur = false;
         (this.contentRenderer.getEditPanel() as HTMLElement).focus();
-        if (isNullOrUndefined(e.items) || (e.items && (e.items[0] as IToolbarItemModel).command !== 'Table')) {
+        if (isNullOrUndefined(e.items) || e.items) {
             this.saveSelection.restore();
         }
     }
@@ -193,6 +194,7 @@ export class HtmlEditor {
         if (closestElement && !closestElement.classList.contains('e-rte-inline-popup')) {
             if (!(item.subCommand === 'SourceCode' || item.subCommand === 'Preview' ||
                 item.subCommand === 'FontColor' || item.subCommand === 'BackgroundColor')) {
+                if (isIDevice() && item.command === 'Images') { this.nodeSelectionObj.restore(); }
                 let range: Range = this.nodeSelectionObj.getRange(this.parent.contentModule.getDocument());
                 save = this.nodeSelectionObj.save(range, this.parent.contentModule.getDocument());
                 selectNodeEle = this.nodeSelectionObj.getNodeCollection(range);

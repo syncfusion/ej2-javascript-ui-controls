@@ -48,8 +48,7 @@ export class LayerPanel {
         if (this.mapObject.isTileMap && secondaryEle) {
             this.tileSvgObject = this.mapObject.renderer.createSvg({
                 id: this.mapObject.element.id + '_Tile_SVG', width: areaRect.width,
-                height: areaRect.height,
-                style: 'pointer-events:none'
+                height: areaRect.height
             });
             secondaryEle.appendChild(this.tileSvgObject);
         }

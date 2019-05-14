@@ -130,7 +130,10 @@
     .e-detailrowexpand,
     .e-gridcontent .e-rowdragdrop,
     .e-emptyrow {
-      color: $grid-content-font-color;
+      &:not(.e-editedbatchcell) {
+        color: $grid-content-font-color;
+        opacity: $grid-conent-font-opacity;
+      }
     }
 
     .e-summarycell {

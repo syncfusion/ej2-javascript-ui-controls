@@ -1518,9 +1518,9 @@ export class Splitter extends Component<HTMLElement> {
         let tempEle: HTMLElement = this.createElement('div');
         this.compileElement(tempEle, cnt, 'content');
         if (tempEle.childNodes.length !== 0) {
-            for (let item : number = 0; item < tempEle.childNodes.length; item ++) {
-                ele.appendChild(tempEle.childNodes[item]);
-            }
+            [].slice.call(tempEle.childNodes).forEach((childEle: HTMLElement): void => {
+                ele.appendChild(childEle);
+            });
         }
     }
 

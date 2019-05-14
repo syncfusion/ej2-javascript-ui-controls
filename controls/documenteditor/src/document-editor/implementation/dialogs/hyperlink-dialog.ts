@@ -245,7 +245,7 @@ export class HyperlinkDialog {
             this.owner.owner.editorModule.editHyperlink(this.owner.selection, address, displayText, isBookmark);
         } else {
             let remove: boolean = this.owner.selection.text !== displayText && !this.displayTextBox.disabled;
-            this.owner.owner.editorModule.insertHyperlink(address, displayText, remove, isBookmark);
+            this.owner.owner.editorModule.insertHyperlinkInternal(address, displayText, remove, isBookmark);
         }
         this.owner.dialog.hide();
         this.navigationUrl = undefined;

@@ -1191,12 +1191,8 @@ function getDropDownValue(items, value, type, returnType) {
 }
 function isIDevice() {
     var result = false;
-    var iosDevices = ['iphone', 'ipad', 'ipod'];
-    for (var i = 0; i < iosDevices.length; i++) {
-        if (navigator.platform.toLocaleLowerCase().indexOf(iosDevices[i]) > -1) {
-            result = true;
-            break;
-        }
+    if (Browser.isDevice && Browser.isIos) {
+        result = true;
     }
     return result;
 }
@@ -1393,6 +1389,39 @@ function toObjectLowerCase(obj) {
         convertedValue[keys[i].toLocaleLowerCase()] = obj[keys[i]];
     }
     return convertedValue;
+}
+function getEditValue(value, rteObj) {
+    var val;
+    if (value !== null && value !== '') {
+        val = rteObj.enableHtmlEncode ? updateTextNode(decode(value)) : updateTextNode(value);
+        rteObj.setProperties({ value: val }, true);
+    }
+    else {
+        val = rteObj.enableHtmlEncode ? '&lt;p&gt;&lt;br/&gt;&lt;/p&gt;' : '<p><br/></p>';
+    }
+    return val;
+}
+function updateTextNode(value) {
+    var tempNode = document.createElement('div');
+    tempNode.innerHTML = value;
+    var childNodes = tempNode.childNodes;
+    if (childNodes.length > 0) {
+        [].slice.call(childNodes).forEach(function (childNode) {
+            if (childNode.nodeType === Node.TEXT_NODE && childNode.parentNode === tempNode) {
+                var defaultTag = document.createElement('p');
+                var parentNode = childNode.parentNode;
+                parentNode.insertBefore(defaultTag, childNode);
+                defaultTag.appendChild(childNode);
+            }
+        });
+    }
+    return tempNode.innerHTML;
+}
+function decode(value) {
+    return value.replace(/&amp;/g, '&').replace(/&amp;lt;/g, '<')
+        .replace(/&lt;/g, '<').replace(/&amp;gt;/g, '>')
+        .replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ')
+        .replace(/&amp;nbsp;/g, ' ').replace(/&quot;/g, '');
 }
 
 /**
@@ -1708,6 +1737,9 @@ var ToolbarRenderer = /** @__PURE__ @class */ (function () {
                 args.element.classList.add(CLS_COLOR_PALETTE);
             },
             change: function (colorPickerArgs) {
+                if (isIDevice()) {
+                    proxy.parent.notify(selectionRestore, {});
+                }
                 /* tslint:disable */
                 var colorpickerValue = Browser.info.name === 'msie' || Browser.info.name === 'edge' || isIDevice() ? colorPickerArgs.currentValue.rgba : colorPickerArgs.currentValue.hex;
                 /* tslint:enable */
@@ -2424,7 +2456,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
     };
     Toolbar$$1.prototype.createToolbarElement = function () {
         this.tbElement = this.parent.createElement('div', { id: this.parent.getID() + '_toolbar' });
-        if (!Browser.isDevice && this.parent.inlineMode.enable) {
+        if (!Browser.isDevice && this.parent.inlineMode.enable && isIDevice()) {
             return;
         }
         else {
@@ -2454,7 +2486,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         return tbMode;
     };
     Toolbar$$1.prototype.checkToolbarResponsive = function (ele) {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || isIDevice()) {
             return false;
         }
         this.baseToolbar.render({
@@ -2585,7 +2617,7 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             }
         }
         this.wireEvents();
-        if (this.parent.inlineMode.enable) {
+        if (this.parent.inlineMode.enable && !isIDevice()) {
             this.addFixedTBarClass();
         }
         if (!this.parent.inlineMode.enable) {
@@ -2634,21 +2666,17 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         }
     };
     Toolbar$$1.prototype.updateToolbarStatus = function (args) {
-        if (!this.parent.inlineMode.enable) {
-            var options = {
-                args: args,
-                dropDownModule: this.dropDownModule,
-                parent: this.parent,
-                tbElements: selectAll('.' + CLS_TB_ITEM, this.tbElement),
-                tbItems: this.baseToolbar.toolbarObj.items
-            };
-            if (this.parent.inlineMode.enable) {
-                setToolbarStatus(options, true);
-            }
-            else {
-                setToolbarStatus(options, false);
-            }
+        if (!this.tbElement || (this.parent.inlineMode.enable && (isIDevice() || !Browser.isDevice))) {
+            return;
         }
+        var options = {
+            args: args,
+            dropDownModule: this.dropDownModule,
+            parent: this.parent,
+            tbElements: selectAll('.' + CLS_TB_ITEM, this.tbElement),
+            tbItems: this.baseToolbar.toolbarObj.items
+        };
+        setToolbarStatus(options, (this.parent.inlineMode.enable ? true : false));
     };
     Toolbar$$1.prototype.fullScreen = function (e) {
         this.parent.fullScreenModule.showFullScreen(e);
@@ -2754,12 +2782,12 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         }
     };
     Toolbar$$1.prototype.mouseDownHandler = function () {
-        if (Browser.isDevice && this.parent.inlineMode.enable) {
+        if (Browser.isDevice && this.parent.inlineMode.enable && !isIDevice()) {
             this.showFixedTBar();
         }
     };
     Toolbar$$1.prototype.focusChangeHandler = function () {
-        if (Browser.isDevice && this.parent.inlineMode.enable) {
+        if (Browser.isDevice && this.parent.inlineMode.enable && !isIDevice()) {
             this.isToolbar = false;
             this.hideFixedTBar();
         }
@@ -2787,6 +2815,9 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
         }
     };
     Toolbar$$1.prototype.wireEvents = function () {
+        if (this.parent.inlineMode.enable && isIDevice()) {
+            return;
+        }
         EventHandler.add(this.tbElement, 'click mousedown', this.toolbarMouseDownHandler, this);
     };
     Toolbar$$1.prototype.unWireEvents = function () {
@@ -3442,7 +3473,7 @@ var BaseQuickToolbar = /** @__PURE__ @class */ (function () {
         var expTBHeight = toolbarAvail && this.parent.toolbarModule.getExpandTBarPopHeight();
         var tBarHeight = (toolbarAvail) ? (tbHeight + expTBHeight) : 0;
         addClass([this.element], [CLS_HIDE]);
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !isIDevice()) {
             addClass([this.parent.getToolbar()], [CLS_HIDE]);
         }
         if (this.parent.iframeSettings.enable) {
@@ -3508,7 +3539,7 @@ var BaseQuickToolbar = /** @__PURE__ @class */ (function () {
     };
     BaseQuickToolbar.prototype.hidePopup = function () {
         var viewSourcePanel = this.parent.sourceCodeModule.getViewPanel();
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !isIDevice()) {
             removeClass([this.parent.getToolbar()], [CLS_HIDE]);
         }
         if (!isNullOrUndefined(this.parent.getToolbar()) && !this.parent.inlineMode.enable) {
@@ -3712,6 +3743,9 @@ var QuickToolbar = /** @__PURE__ @class */ (function () {
     QuickToolbar.prototype.initializeQuickToolbars = function () {
         this.parent.quickToolbarModule = this;
         this.contentRenderer = this.renderFactory.getRenderer(RenderType.Content);
+        if (this.parent.inlineMode.enable && this.parent.inlineMode.onSelection && isIDevice()) {
+            EventHandler.add(this.contentRenderer.getDocument(), 'selectionchange', this.selectionChangeHandler, this);
+        }
     };
     QuickToolbar.prototype.onMouseDown = function (e) {
         this.parent.isBlur = false;
@@ -3743,7 +3777,7 @@ var QuickToolbar = /** @__PURE__ @class */ (function () {
         }
     };
     QuickToolbar.prototype.renderInlineQuickToolbar = function () {
-        if (this.parent.inlineMode.enable && !Browser.isDevice) {
+        if (this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             addClass([this.parent.element], [CLS_INLINE]);
             this.inlineQTBar = this.createQTBar('Inline', 'MultiRow', this.parent.toolbarSettings.items, RenderType.InlineToolbar);
             this.renderFactory.addRenderer(RenderType.InlineToolbar, this.inlineQTBar);
@@ -3771,7 +3805,7 @@ var QuickToolbar = /** @__PURE__ @class */ (function () {
         if (this.tableQTBar && !hasClass(this.tableQTBar.element, 'e-popup-close')) {
             this.tableQTBar.hidePopup();
         }
-        if (this.parent.inlineMode.enable && !Browser.isDevice) {
+        if (this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             this.hideInlineQTBar();
         }
     };
@@ -3781,14 +3815,19 @@ var QuickToolbar = /** @__PURE__ @class */ (function () {
         this.deBouncer = window.setTimeout(function () { _this.showInlineQTBar(x, y, target); }, 1000);
     };
     QuickToolbar.prototype.mouseUpHandler = function (e) {
-        if (this.parent.inlineMode.enable && !Browser.isDevice) {
-            var args = e.args;
+        if (this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
+            var coordinates = void 0;
+            coordinates = e.args.touches ? e.args.changedTouches[0] : e.args;
             var range = this.parent.getRange();
-            var target = args.target;
+            var target = e.args.target;
             if (isNullOrUndefined(select('.' + CLS_INLINE_POP, document.body))) {
+                if (isIDevice() && e.touchData && e.touchData.prevClientX !== e.touchData.clientX
+                    && e.touchData.prevClientY !== e.touchData.clientY) {
+                    return;
+                }
                 this.hideInlineQTBar();
-                this.offsetX = args.pageX;
-                this.offsetY = pageYOffset(args, this.parent.element, this.parent.iframeSettings.enable);
+                this.offsetX = coordinates.pageX;
+                this.offsetY = pageYOffset(coordinates, this.parent.element, this.parent.iframeSettings.enable);
                 if (target.nodeName === 'TEXTAREA') {
                     this.showInlineQTBar(this.offsetX, this.offsetY, target);
                 }
@@ -3807,12 +3846,14 @@ var QuickToolbar = /** @__PURE__ @class */ (function () {
         }
     };
     QuickToolbar.prototype.keyDownHandler = function () {
-        if ((this.parent.inlineMode.enable && !Browser.isDevice) && !isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
+        if ((this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice()))
+            && !isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
             this.hideInlineQTBar();
         }
     };
     QuickToolbar.prototype.inlineQTBarMouseDownHandler = function () {
-        if ((this.parent.inlineMode.enable && !Browser.isDevice) && !isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
+        if ((this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice()))
+            && !isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
             this.hideInlineQTBar();
         }
     };
@@ -3827,6 +3868,20 @@ var QuickToolbar = /** @__PURE__ @class */ (function () {
     };
     QuickToolbar.prototype.getInlineBaseToolbar = function () {
         return this.inlineQTBar && this.inlineQTBar.quickTBarObj;
+    };
+    QuickToolbar.prototype.selectionChangeHandler = function (e) {
+        var _this = this;
+        clearTimeout(this.deBouncer);
+        this.deBouncer = window.setTimeout(function () { _this.onSelectionChange(e); }, 1000);
+    };
+    QuickToolbar.prototype.onSelectionChange = function (e) {
+        if (!isNullOrUndefined(select('.' + CLS_INLINE_POP, document.body))) {
+            return;
+        }
+        var selection = this.contentRenderer.getDocument().getSelection();
+        if (!selection.isCollapsed) {
+            this.mouseUpHandler({ args: e });
+        }
     };
     /**
      * Destroys the ToolBar.
@@ -3852,6 +3907,9 @@ var QuickToolbar = /** @__PURE__ @class */ (function () {
         }
         if (this.inlineQTBar) {
             EventHandler.remove(this.inlineQTBar.element, 'mousedown', this.onMouseDown);
+            if (isIDevice()) {
+                EventHandler.remove(document, 'selectionchange', this.selectionChangeHandler);
+            }
             this.inlineQTBar.destroy();
         }
         this.removeEventListener();
@@ -3970,7 +4028,7 @@ var QuickToolbar = /** @__PURE__ @class */ (function () {
             this.unWireInlineQTBarEvents();
             this.hideInlineQTBar();
         }
-        if (this.parent.inlineMode.enable && !Browser.isDevice) {
+        if (this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             addClass([this.parent.element], [CLS_INLINE]);
             this.wireInlineQTBarEvents();
         }
@@ -4462,7 +4520,7 @@ var Formatter = /** @__PURE__ @class */ (function () {
             }
             else {
                 this.editorManager.observer.notify(checkUndo, { subCommand: args.item.subCommand });
-                this.editorManager.execCommand(args.item.command, args.item.subCommand, event, this.onSuccess.bind(this, self), args.item.value, value);
+                this.editorManager.execCommand(args.item.command, args.item.subCommand, event, this.onSuccess.bind(this, self), args.item.value, value, ('#' + self.getID() + ' iframe'));
             }
         }
         if (isNullOrUndefined(event) || event && event.action !== 'copy') {
@@ -4515,7 +4573,7 @@ var Formatter = /** @__PURE__ @class */ (function () {
     };
     Formatter.prototype.enableUndo = function (self) {
         var status = this.getUndoStatus();
-        if (self.inlineMode.enable && !Browser.isDevice) {
+        if (self.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             updateUndoRedoStatus(self.quickToolbarModule.inlineQTBar.quickTBarObj, status);
         }
         else {
@@ -6550,7 +6608,7 @@ var NodeSelection = /** @__PURE__ @class */ (function () {
         var index = num.length;
         var constant = size;
         for (; index--; null) {
-            node = node.childNodes[num[index]];
+            node = node && node.childNodes[num[index]];
         }
         if (node && constant >= 0) {
             range[isvalid ? 'setStart' : 'setEnd'](node, constant);
@@ -7047,6 +7105,22 @@ var DOMNode = /** @__PURE__ @class */ (function () {
 }());
 
 /**
+ * Exports common util methods used by RichTextEditor.
+ */
+function isIDevice$1() {
+    var result = false;
+    if (Browser.isDevice && Browser.isIos) {
+        result = true;
+    }
+    return result;
+}
+function setEditFrameFocus(editableElement, selector) {
+    if (editableElement.nodeName === 'BODY' && !isNullOrUndefined(selector)) {
+        top.window.document.querySelector(selector).contentWindow.focus();
+    }
+}
+
+/**
  * Lists internal component
  * @hidden
  */
@@ -7275,7 +7349,7 @@ var Lists = /** @__PURE__ @class */ (function () {
                 listsNodes[i] = listsNodes[i].parentNode;
             }
         }
-        this.applyLists(listsNodes, this.currentAction);
+        this.applyLists(listsNodes, this.currentAction, e.selector);
         if (e.callBack) {
             e.callBack({
                 requestType: this.currentAction,
@@ -7286,7 +7360,7 @@ var Lists = /** @__PURE__ @class */ (function () {
             });
         }
     };
-    Lists.prototype.applyLists = function (elements, type) {
+    Lists.prototype.applyLists = function (elements, type, selector) {
         if (this.isRevert(elements, type)) {
             this.revertList(elements);
         }
@@ -7309,6 +7383,9 @@ var Lists = /** @__PURE__ @class */ (function () {
         }
         this.cleanNode();
         this.parent.editableElement.focus();
+        if (isIDevice$1()) {
+            setEditFrameFocus(this.parent.editableElement, selector);
+        }
         this.saveSelection = this.domNode.saveMarker(this.saveSelection);
         this.saveSelection.restore();
     };
@@ -7546,6 +7623,9 @@ var Formats = /** @__PURE__ @class */ (function () {
         }
         this.parent.editableElement.focus();
         save = this.parent.domNode.saveMarker(save);
+        if (isIDevice$1()) {
+            setEditFrameFocus(this.parent.editableElement, e.selector);
+        }
         save.restore();
         if (e.callBack) {
             e.callBack({
@@ -8019,6 +8099,9 @@ var Alignments = /** @__PURE__ @class */ (function () {
         }
         this.parent.editableElement.focus();
         save = this.parent.domNode.saveMarker(save);
+        if (isIDevice$1()) {
+            setEditFrameFocus(this.parent.editableElement, e.selector);
+        }
         save.restore();
         if (e.callBack) {
             e.callBack({
@@ -8106,6 +8189,9 @@ var Indents = /** @__PURE__ @class */ (function () {
             }
         }
         this.parent.editableElement.focus();
+        if (isIDevice$1()) {
+            setEditFrameFocus(this.parent.editableElement, e.selector);
+        }
         save = this.parent.domNode.saveMarker(save);
         save.restore();
         if (e.callBack) {
@@ -8844,7 +8930,7 @@ var IsFormatted = /** @__PURE__ @class */ (function () {
 var SelectionCommands = /** @__PURE__ @class */ (function () {
     function SelectionCommands() {
     }
-    SelectionCommands.applyFormat = function (docElement, format, endNode, value) {
+    SelectionCommands.applyFormat = function (docElement, format, endNode, value, selector) {
         var validFormats = ['bold', 'italic', 'underline', 'strikethrough', 'superscript',
             'subscript', 'uppercase', 'lowercase', 'fontcolor', 'fontname', 'fontsize', 'backgroundcolor'];
         if (validFormats.indexOf(format) > -1) {
@@ -8882,6 +8968,9 @@ var SelectionCommands = /** @__PURE__ @class */ (function () {
                     nodes[index] = this.insertFormat(nodes, index, formatNode, isCursor, isFormat, isFontStyle, range, nodeCutter, format, value);
                 }
                 domSelection = this.applySelection(nodes, domSelection, nodeCutter, index, isCollapsed);
+            }
+            if (isIDevice$1()) {
+                setEditFrameFocus(endNode, selector);
             }
             save.restore();
         }
@@ -9086,7 +9175,7 @@ var SelectionBasedExec = /** @__PURE__ @class */ (function () {
         }
     };
     SelectionBasedExec.prototype.applySelection = function (e) {
-        SelectionCommands.applyFormat(this.parent.currentDocument, e.subCommand.toLocaleLowerCase(), this.parent.editableElement, e.value);
+        SelectionCommands.applyFormat(this.parent.currentDocument, e.subCommand.toLocaleLowerCase(), this.parent.editableElement, e.value, e.selector);
         this.callBack(e, e.subCommand);
     };
     SelectionBasedExec.prototype.callBack = function (event, action) {
@@ -9140,7 +9229,7 @@ var InsertHtmlExec = /** @__PURE__ @class */ (function () {
 var ClearFormat$1 = /** @__PURE__ @class */ (function () {
     function ClearFormat() {
     }
-    ClearFormat.clear = function (docElement, endNode) {
+    ClearFormat.clear = function (docElement, endNode, selector) {
         var nodeSelection = new NodeSelection();
         var nodeCutter = new NodeCutter();
         var range = nodeSelection.getRange(docElement);
@@ -9167,6 +9256,9 @@ var ClearFormat$1 = /** @__PURE__ @class */ (function () {
             exactNodes = nodeSelection.getNodeCollection(range);
             var cloneParentNodes = exactNodes.slice();
             this.clearBlocks(docElement, cloneParentNodes, endNode, nodeCutter, nodeSelection);
+            if (isIDevice$1()) {
+                setEditFrameFocus(endNode, selector);
+            }
             this.reSelection(docElement, save, exactNodes);
         }
     };
@@ -9351,7 +9443,7 @@ var ClearFormatExec = /** @__PURE__ @class */ (function () {
     };
     ClearFormatExec.prototype.applyClear = function (e) {
         if (e.subCommand === 'ClearFormat') {
-            ClearFormat$1.clear(this.parent.currentDocument, this.parent.editableElement);
+            ClearFormat$1.clear(this.parent.currentDocument, this.parent.editableElement, e.selector);
             if (e.callBack) {
                 e.callBack({
                     requestType: e.subCommand,
@@ -9478,6 +9570,9 @@ var UndoRedoManager = /** @__PURE__ @class */ (function () {
             var removedContent = this.undoRedoStack[this.steps - 1].text;
             this.parent.editableElement.innerHTML = removedContent;
             this.parent.editableElement.focus();
+            if (isIDevice$1()) {
+                setEditFrameFocus(this.parent.editableElement, e.selector);
+            }
             range.restore();
             this.steps--;
             if (e.callBack) {
@@ -9501,6 +9596,9 @@ var UndoRedoManager = /** @__PURE__ @class */ (function () {
             var range = this.undoRedoStack[this.steps + 1].range;
             this.parent.editableElement.innerHTML = this.undoRedoStack[this.steps + 1].text;
             this.parent.editableElement.focus();
+            if (isIDevice$1()) {
+                setEditFrameFocus(this.parent.editableElement, e.selector);
+            }
             range.restore();
             this.steps++;
             if (e.callBack) {
@@ -9873,19 +9971,19 @@ var EditorManager = /** @__PURE__ @class */ (function () {
     EditorManager.prototype.editorKeyUp = function (e) {
         this.observer.notify(KEY_UP_HANDLER, e);
     };
-    EditorManager.prototype.execCommand = function (command, value, event, callBack, text, exeValue) {
+    EditorManager.prototype.execCommand = function (command, value, event, callBack, text, exeValue, selector) {
         switch (command.toLocaleLowerCase()) {
             case 'lists':
-                this.observer.notify(LIST_TYPE, { subCommand: value, event: event, callBack: callBack });
+                this.observer.notify(LIST_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
                 break;
             case 'formats':
-                this.observer.notify(FORMAT_TYPE, { subCommand: value, event: event, callBack: callBack });
+                this.observer.notify(FORMAT_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
                 break;
             case 'alignments':
-                this.observer.notify(ALIGNMENT_TYPE, { subCommand: value, event: event, callBack: callBack });
+                this.observer.notify(ALIGNMENT_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
                 break;
             case 'indents':
-                this.observer.notify(INDENT_TYPE, { subCommand: value, event: event, callBack: callBack });
+                this.observer.notify(INDENT_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
                 break;
             case 'links':
                 this.observer.notify(LINK, { command: command, value: value, item: exeValue, event: event, callBack: callBack });
@@ -9929,7 +10027,7 @@ var EditorManager = /** @__PURE__ @class */ (function () {
             case 'style':
             case 'effects':
             case 'casing':
-                this.observer.notify(SELECTION_TYPE, { subCommand: value, event: event, callBack: callBack, value: text });
+                this.observer.notify(SELECTION_TYPE, { subCommand: value, event: event, callBack: callBack, value: text, selector: selector });
                 break;
             case 'inserthtml':
                 this.observer.notify(INSERTHTML_TYPE, { subCommand: value, callBack: callBack, value: text });
@@ -9938,10 +10036,10 @@ var EditorManager = /** @__PURE__ @class */ (function () {
                 this.observer.notify(INSERT_TEXT_TYPE, { subCommand: value, callBack: callBack, value: text });
                 break;
             case 'clear':
-                this.observer.notify(CLEAR_TYPE, { subCommand: value, event: event, callBack: callBack });
+                this.observer.notify(CLEAR_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
                 break;
             case 'actions':
-                this.observer.notify(ACTION, { subCommand: value, event: event, callBack: callBack });
+                this.observer.notify(ACTION, { subCommand: value, event: event, callBack: callBack, selector: selector });
                 break;
         }
     };
@@ -10298,7 +10396,7 @@ var ContentRender = /** @__PURE__ @class */ (function () {
     ContentRender.prototype.renderPanel = function () {
         var rteObj = this.parent;
         var div = this.parent.createElement('div', { className: 'e-rte-content', id: this.parent.getID() + 'rte-view' });
-        var rteContent = (rteObj.value !== null && rteObj.value !== '') ? rteObj.value : '<p><br/></p>';
+        var rteContent = getEditValue(rteObj.value, rteObj);
         this.editableElement = this.parent.createElement('div', {
             className: 'e-content',
             id: this.parent.getID() + '_rte-edit-view',
@@ -10379,7 +10477,7 @@ var IframeContentRender = /** @__PURE__ @class */ (function (_super) {
      */
     IframeContentRender.prototype.renderPanel = function () {
         var rteObj = this.parent;
-        var rteContent = (rteObj.value !== null && rteObj.value !== '') ? rteObj.value : '<p><br/></p>';
+        var rteContent = getEditValue(rteObj.value, rteObj);
         var iFrameBodyContent = '<body spellcheck="false" autocorrect="off" contenteditable="true">' +
             rteContent + '</body></html>';
         var iFrameContent = IFRAMEHEADER + iFrameBodyContent;
@@ -10484,7 +10582,7 @@ var HtmlEditor = /** @__PURE__ @class */ (function () {
     HtmlEditor.prototype.onSelectionRestore = function (e) {
         this.parent.isBlur = false;
         this.contentRenderer.getEditPanel().focus();
-        if (isNullOrUndefined(e.items) || (e.items && e.items[0].command !== 'Table')) {
+        if (isNullOrUndefined(e.items) || e.items) {
             this.saveSelection.restore();
         }
     };
@@ -10592,6 +10690,9 @@ var HtmlEditor = /** @__PURE__ @class */ (function () {
         if (closestElement && !closestElement.classList.contains('e-rte-inline-popup')) {
             if (!(item.subCommand === 'SourceCode' || item.subCommand === 'Preview' ||
                 item.subCommand === 'FontColor' || item.subCommand === 'BackgroundColor')) {
+                if (isIDevice$1() && item.command === 'Images') {
+                    this.nodeSelectionObj.restore();
+                }
                 var range = this.nodeSelectionObj.getRange(this.parent.contentModule.getDocument());
                 save = this.nodeSelectionObj.save(range, this.parent.contentModule.getDocument());
                 selectNodeEle = this.nodeSelectionObj.getNodeCollection(range);
@@ -11236,7 +11337,6 @@ var Link = /** @__PURE__ @class */ (function () {
         this.quickToolObj = this.parent.quickToolbarModule;
         var parentTop = this.parent.element.getBoundingClientRect().top;
         var range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
-        var args = e.args;
         var target;
         [].forEach.call(e.elements, function (element, index) {
             if (index === 0) {
@@ -11252,6 +11352,8 @@ var Link = /** @__PURE__ @class */ (function () {
             pageY = window.pageYOffset + ((this.parent.iframeSettings.enable) ? (parentTop + tbHeight + linkTop) : (parentTop + linkPos));
         }
         else {
+            var args = void 0;
+            args = e.args.touches ? e.args.changedTouches[0] : args = e.args;
             pageX = args.pageX;
             pageY = (this.parent.iframeSettings.enable) ? window.pageYOffset + parentTop + args.clientY : args.pageY;
         }
@@ -11390,7 +11492,7 @@ var Link = /** @__PURE__ @class */ (function () {
                     click: this.insertlink.bind(selectObj),
                     buttonModel: { content: linkInsert, cssClass: 'e-flat e-insertLink', isPrimary: true }
                 },
-                { click: function (e) { _this.cancelDialog(e); }, buttonModel: { cssClass: 'e-flat', content: linkCancel } }],
+                { click: this.cancelDialog.bind(selectObj), buttonModel: { cssClass: 'e-flat', content: linkCancel } }],
             target: (Browser.isDevice) ? document.body : this.parent.element,
             animationSettings: { effect: 'None' },
             close: function (event) {
@@ -11464,6 +11566,12 @@ var Link = /** @__PURE__ @class */ (function () {
             url: linkUrl, text: linkText, title: linkTitle, target: target,
             selection: this.selection, selectParent: this.selectParent
         };
+        if (document.body.contains(proxy.dialogObj.element)) {
+            this.selfLink.dialogObj.hide({ returnValue: false });
+        }
+        if (isIDevice$1() && proxy.parent.iframeSettings.enable) {
+            select('iframe', proxy.parent.element).contentWindow.focus();
+        }
         if (proxy.parent.editorMode === 'HTML') {
             this.selection.restore();
         }
@@ -11471,9 +11579,6 @@ var Link = /** @__PURE__ @class */ (function () {
             proxy.parent.formatter.saveData();
         }
         this.selfLink.parent.formatter.process(this.selfLink.parent, this.args, this.args.originalEvent, value);
-        if (document.body.contains(proxy.dialogObj.element)) {
-            this.selfLink.dialogObj.hide({ returnValue: false });
-        }
         this.selfLink.parent.contentModule.getEditPanel().focus();
     };
     Link.prototype.isUrl = function (url) {
@@ -11500,7 +11605,12 @@ var Link = /** @__PURE__ @class */ (function () {
             selectNode: e.selectNode, selectParent: e.selectParent, selection: e.selection,
             subCommand: e.args.item.subCommand
         });
-        this.contentModule.getEditPanel().focus();
+        if (isIDevice$1() && this.parent.iframeSettings.enable) {
+            select('iframe', this.parent.element).contentWindow.focus();
+        }
+        else {
+            this.contentModule.getEditPanel().focus();
+        }
         this.hideLinkQuickToolbar();
     };
     Link.prototype.openLink = function (e) {
@@ -11530,9 +11640,14 @@ var Link = /** @__PURE__ @class */ (function () {
         }
     };
     Link.prototype.cancelDialog = function (e) {
-        this.parent.isBlur = false;
-        this.dialogObj.hide({ returnValue: true });
-        this.parent.contentModule.getEditPanel().focus();
+        this.selfLink.parent.isBlur = false;
+        this.selfLink.dialogObj.hide({ returnValue: true });
+        if (isIDevice$1()) {
+            this.selection.restore();
+        }
+        else {
+            this.selfLink.parent.contentModule.getEditPanel().focus();
+        }
     };
     Link.prototype.onDocumentClick = function (e) {
         var target = e.target;
@@ -11936,6 +12051,9 @@ var Image = /** @__PURE__ @class */ (function () {
         return this.resizeBtnStat = { botLeft: false, botRight: false, topRight: false, topLeft: false };
     };
     Image.prototype.onToolbarAction = function (args) {
+        if (isIDevice$1()) {
+            this.parent.notify(selectionRestore, {});
+        }
         var item = args.args.item;
         switch (item.subCommand) {
             case 'Replace':
@@ -12184,6 +12302,9 @@ var Image = /** @__PURE__ @class */ (function () {
                 }
                 this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.setSelectionContents(this.contentModule.getDocument(), target);
+                if (isIDevice$1()) {
+                    this.parent.notify(selectionSave, e);
+                }
                 addClass([target], 'e-img-focus');
                 var items = this.quickToolObj.imageQTBar.toolbarElement.querySelectorAll('.e-toolbar-item');
                 var separator = void 0;
@@ -13109,8 +13230,8 @@ var Table = /** @__PURE__ @class */ (function () {
         this.parent.off(initialEnd, this.afterRender);
         this.parent.off(docClick, this.docClick);
         this.parent.off(editAreaClick, this.editAreaClickHandler);
-        this.parent.on(tableToolbarAction, this.onToolbarAction, this);
-        this.parent.on(dropDownSelect, this.dropdownSelect, this);
+        this.parent.off(tableToolbarAction, this.onToolbarAction);
+        this.parent.off(dropDownSelect, this.dropdownSelect);
         this.parent.off(mouseDown, this.cellSelect);
         this.parent.off(tableColorPickerChanged, this.setBGColor);
         this.parent.off(keyDown, this.keyDown);
@@ -13250,11 +13371,12 @@ var Table = /** @__PURE__ @class */ (function () {
         }
         if (command === 'Alternate') {
             (this.parent.element.classList.contains(CLS_TB_ALT_BOR)) ?
-                this.parent.element.classList.remove(CLS_TB_DASH_BOR) : this.parent.element.classList.add(CLS_TB_ALT_BOR);
+                this.parent.element.classList.remove(CLS_TB_ALT_BOR) : this.parent.element.classList.add(CLS_TB_ALT_BOR);
             (table.classList.contains(CLS_TB_ALT_BOR)) ? table.classList.remove(CLS_TB_ALT_BOR) :
                 table.classList.add(CLS_TB_ALT_BOR);
         }
         this.parent.formatter.saveData();
+        this.parent.formatter.editorManager.nodeSelection.restore();
     };
     Table.prototype.insideList = function (range) {
         var blockNodes = this.parent.formatter.editorManager.domNode.blockNodes();
@@ -15039,12 +15161,6 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         divNode.innerText = value.trim();
         return divNode.innerHTML.replace(/<br\s*[\/]?>/gi, '\n');
     };
-    RichTextEditor.prototype.decode = function (value) {
-        return value.replace(/&amp;/g, '&').replace(/&amp;lt;/g, '<')
-            .replace(/&lt;/g, '<').replace(/&amp;gt;/g, '>')
-            .replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ')
-            .replace(/&amp;nbsp;/g, ' ').replace(/&quot;/g, '');
-    };
     /**
      * For internal use only - To Initialize the component rendering.
      * @private
@@ -15125,14 +15241,19 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         }
     };
     RichTextEditor.prototype.mouseUp = function (e) {
-        var touch = (e.touches ? e.changedTouches[0] : e);
         this.notify(mouseUp, { member: 'mouseUp', args: e });
         if (this.inputElement && ((this.editorMode === 'HTML' && this.inputElement.textContent.length !== 0) ||
             (this.editorMode === 'Markdown' && this.inputElement.value.length !== 0))) {
             this.notify(toolbarRefresh, { args: e });
         }
-        if (this.clickPoints.clientX === touch.clientX && this.clickPoints.clientY === touch.clientY) {
+        if (!isIDevice()) {
             this.notify(editAreaClick, { member: 'editAreaClick', args: e });
+        }
+        else {
+            var touch = (e.touches ? e.changedTouches[0] : e);
+            if (this.clickPoints.clientX === touch.clientX && this.clickPoints.clientY === touch.clientY) {
+                this.notify(editAreaClick, { member: 'editAreaClick', args: e });
+            }
         }
     };
     /**
@@ -15314,7 +15435,11 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             var prop = _a[_i];
             switch (prop) {
                 case 'value':
-                    this.value = (this.enableHtmlEncode) ? this.encode(this.decode(newProp[prop])) : newProp[prop];
+                    var nVal = newProp[prop];
+                    var val = this.editorMode === 'HTML' ? getEditValue(nVal, this) : nVal;
+                    if (!isNullOrUndefined(nVal) && nVal !== '') {
+                        this.value = (this.enableHtmlEncode) ? this.encode(decode(val)) : val;
+                    }
                     this.updatePanelValue();
                     this.setPlaceHolder();
                     if (this.showCharCount) {
@@ -15418,12 +15543,12 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
      */
     RichTextEditor.prototype.updateValueData = function () {
         if (this.enableHtmlEncode) {
-            this.setProperties({ value: this.encode(this.decode(this.inputElement.innerHTML)) });
+            this.setProperties({ value: this.encode(decode(this.inputElement.innerHTML)) });
         }
         else {
             this.setProperties({
                 value: /<[a-z][\s\S]*>/i.test(this.inputElement.innerHTML) ? this.inputElement.innerHTML :
-                    this.decode(this.inputElement.innerHTML)
+                    decode(this.inputElement.innerHTML)
             });
         }
     };
@@ -15441,7 +15566,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         else {
             value = this.value;
         }
-        value = (this.enableHtmlEncode && this.value) ? this.decode(value) : value;
+        value = (this.enableHtmlEncode && this.value) ? decode(value) : value;
         if (value) {
             if (this.valueContainer) {
                 this.valueContainer.value = (this.enableHtmlEncode) ? this.value : value;
@@ -15635,7 +15760,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         this.updateReadOnly();
         this.updatePanelValue();
         if (this.enableHtmlEncode && !isNullOrUndefined(this.value)) {
-            this.setProperties({ value: this.encode(this.decode(this.value)) });
+            this.setProperties({ value: this.encode(decode(this.value)) });
         }
     };
     RichTextEditor.prototype.setIframeSettings = function () {
@@ -15708,7 +15833,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         }
         else if (this.element.innerHTML.trim() !== '') {
             if (this.element.tagName === 'TEXTAREA') {
-                this.setProperties({ value: this.decode(this.element.innerHTML.trim()) });
+                this.setProperties({ value: decode(this.element.innerHTML.trim()) });
             }
             else {
                 this.setProperties({ value: this.element.innerHTML.trim() });
@@ -15773,7 +15898,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
      */
     RichTextEditor.prototype.getBaseToolbarObject = function () {
         var tbObj;
-        if (this.inlineMode.enable && !Browser.isDevice) {
+        if (this.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             tbObj = this.quickToolbarModule && this.quickToolbarModule.getInlineBaseToolbar();
         }
         else {
@@ -15844,7 +15969,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             addClass([this.element], [CLS_FOCUS]);
             if (this.editorMode === 'HTML') {
                 this.cloneValue = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.enableHtmlEncode ?
-                    this.encode(this.decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
+                    this.encode(decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
             }
             else {
                 this.cloneValue = this.inputElement.value === '' ? null :
@@ -15865,7 +15990,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         var value;
         if (this.editorMode === 'HTML') {
             value = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.enableHtmlEncode ?
-                this.encode(this.decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
+                this.encode(decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
         }
         else {
             value = this.inputElement.value === '' ? null :

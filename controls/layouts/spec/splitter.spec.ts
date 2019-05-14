@@ -3456,5 +3456,27 @@ describe('Splitter Control', () => {
         expect(splitterObj1.element.querySelectorAll('.e-split-bar.e-split-bar-horizontal')[0].classList.contains('e-split-bar-hover')).toBe(false);
         });
         });
-
+        describe('pane content as string and ng-template', () => {
+            let splitterObj: any;
+            beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            let child3: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            element.appendChild(child3);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({ height: '400px', width: '400px' , paneSettings: [{content: 'string content'}, {content: '<p>string content</p>'}]});
+            splitterObj.appendTo(document.getElementById('default'));
+            });
+            afterAll((): void => {
+            document.body.innerHTML = '';
+            });
+            it('initial bind', () => {
+                expect(splitterObj.element.querySelectorAll('.e-pane')[0].innerHTML).toEqual('string content');
+                expect(splitterObj.element.querySelectorAll('.e-pane')[1].innerHTML).toEqual('<p>string content</p>');
+                expect(splitterObj.element.querySelectorAll('.e-pane')[2].innerHTML).toEqual('');
+            });
+        });
  });

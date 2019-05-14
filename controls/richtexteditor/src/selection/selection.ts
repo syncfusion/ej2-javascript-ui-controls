@@ -183,7 +183,7 @@ export class NodeSelection {
         let index: number = num.length;
         let constant: number = size;
         for (; index--; null) {
-            node = node.childNodes[num[index]];
+            node = node && node.childNodes[num[index]];
         }
         if (node && constant >= 0) {
             range[isvalid ? 'setStart' : 'setEnd'](node, constant);

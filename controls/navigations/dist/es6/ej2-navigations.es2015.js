@@ -1137,15 +1137,8 @@ let MenuBase = class MenuBase extends Component {
         });
     }
     mouseDownHandler(e) {
-        let isValidLI = false;
-        if (this.isMenu && !this.showItemOnClick) {
-            let cul = this.getUlByNavIdx();
-            if (cul) {
-                isValidLI = Array.prototype.indexOf.call(cul.children, e.target.closest('li')) > -1;
-            }
-        }
         if (closest(e.target, '.e-' + this.getModuleName() + '-wrapper') !== this.getWrapper()
-            && (!closest(e.target, '.e-' + this.getModuleName() + '-popup') || isValidLI)) {
+            && (!closest(e.target, '.e-' + this.getModuleName() + '-popup'))) {
             this.closeMenu(this.isMenu ? null : this.navIdx.length, e);
         }
     }
@@ -1920,18 +1913,17 @@ let MenuBase = class MenuBase extends Component {
                 }
             }
             else {
-                if (this.isMenu) {
-                    if (trgt.tagName === 'DIV' && this.navIdx.length && closest(trgt, '.e-menu-vscroll')) {
-                        let popupEle = closest(trgt, '.' + POPUP);
-                        let cIdx = Array.prototype.indexOf.call(this.getPopups(), popupEle) + 1;
-                        if (cIdx < this.navIdx.length) {
-                            this.closeMenu(cIdx + 1, e);
-                            this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]);
-                        }
+                if (this.isMenu && trgt.tagName === 'DIV' && this.navIdx.length && closest(trgt, '.e-menu-vscroll')) {
+                    let popupEle = closest(trgt, '.' + POPUP);
+                    let cIdx = Array.prototype.indexOf.call(this.getPopups(), popupEle) + 1;
+                    if (cIdx < this.navIdx.length) {
+                        this.closeMenu(cIdx + 1, e);
+                        this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]);
                     }
-                    if (trgt.tagName === 'SPAN' && trgt.classList.contains('e-menu-icon')) {
-                        this.menuHeaderClickHandler(e);
-                    }
+                }
+                else if (this.isMenu && this.hamburgerMode && trgt.tagName === 'SPAN'
+                    && trgt.classList.contains('e-menu-icon')) {
+                    this.menuHeaderClickHandler(e);
                 }
                 else {
                     if (trgt.tagName !== 'UL' || trgt.parentElement !== wrapper) {
@@ -5766,8 +5758,11 @@ let Menu = class Menu extends MenuBase {
                                 if (!this.element.previousElementSibling) {
                                     super.createHeaderContainer();
                                 }
+                                this.element.previousElementSibling.classList.remove(VMENU);
                             }
-                            this.element.previousElementSibling.classList.add(VMENU);
+                            else {
+                                this.element.previousElementSibling.classList.add(VMENU);
+                            }
                             this.element.classList.add('e-hide-menu');
                         }
                     }
@@ -5814,6 +5809,9 @@ let Menu = class Menu extends MenuBase {
 __decorate$6([
     Property('Horizontal')
 ], Menu.prototype, "orientation", void 0);
+__decorate$6([
+    Property('')
+], Menu.prototype, "target", void 0);
 __decorate$6([
     Property(null)
 ], Menu.prototype, "template", void 0);
@@ -7880,7 +7878,8 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 }
             }
             else if (this.dataType === 2 || (this.fields.dataSource instanceof DataManager &&
-                this.fields.dataSource.dataSource.offline)) {
+                this.fields.dataSource.dataSource.offline) || (this.fields.dataSource instanceof DataManager &&
+                !this.loadOnDemand)) {
                 for (let index = 0; index < this.treeData.length; index++) {
                     let fieldId = this.treeData[index][this.fields.id] ? this.treeData[index][this.fields.id].toString() : '';
                     if (this.treeData[index][this.fields.isChecked] && !(this.isLoaded) && this.checkedNodes.indexOf(fieldId) === -1) {
@@ -8368,7 +8367,8 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             }
         }
         else if (this.dataType === 2 || (this.fields.dataSource instanceof DataManager &&
-            this.fields.dataSource.dataSource.offline)) {
+            this.fields.dataSource.dataSource.offline) || (this.fields.dataSource instanceof DataManager &&
+            !this.loadOnDemand)) {
             let id;
             let parentElement;
             let check;
@@ -8914,12 +8914,13 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 return;
             }
             this.treeList.push('false');
-            if (this.fields.dataSource instanceof DataManager && (this.fields.dataSource.dataSource.offline)) {
+            if ((this.fields.dataSource instanceof DataManager && (this.fields.dataSource.dataSource.offline)) ||
+                (this.fields.dataSource instanceof DataManager && !this.loadOnDemand)) {
                 this.treeList.pop();
                 childItems = this.getChildNodes(this.treeData, parentLi.getAttribute('data-uid'));
                 this.loadChild(childItems, mapper, eicon, parentLi, expandChild, callback, loaded);
             }
-            else {
+            else if (this.fields.dataSource instanceof DataManager && this.loadOnDemand) {
                 mapper.dataSource.executeQuery(this.getQuery(mapper, parentLi.getAttribute('data-uid'))).then((e) => {
                     this.treeList.pop();
                     childItems = e.result;

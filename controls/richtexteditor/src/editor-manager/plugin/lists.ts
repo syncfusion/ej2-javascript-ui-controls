@@ -7,6 +7,7 @@ import { IHtmlKeyboardEvent } from './../../editor-manager/base/interface';
 import { DOMNode, markerClassName } from './dom-node';
 import * as EVENTS from './../../common/constant';
 import { setStyleAttribute } from '@syncfusion/ej2-base';
+import { isIDevice, setEditFrameFocus } from '../../common/util';
 
 /**
  * Lists internal component
@@ -237,7 +238,7 @@ export class Lists {
                 listsNodes[i] = listsNodes[i].parentNode;
             }
         }
-        this.applyLists(listsNodes as HTMLElement[], this.currentAction);
+        this.applyLists(listsNodes as HTMLElement[], this.currentAction, e.selector);
         if (e.callBack) {
             e.callBack({
                 requestType: this.currentAction,
@@ -249,7 +250,7 @@ export class Lists {
         }
     }
 
-    private applyLists(elements: HTMLElement[], type: string): void {
+    private applyLists(elements: HTMLElement[], type: string, selector?: string): void {
         let isReverse: boolean = true;
         if (this.isRevert(elements, type)) {
             this.revertList(elements);
@@ -273,6 +274,7 @@ export class Lists {
         }
         this.cleanNode();
         (this.parent.editableElement as HTMLElement).focus();
+        if (isIDevice()) { setEditFrameFocus(this.parent.editableElement, selector); }
         this.saveSelection = this.domNode.saveMarker(this.saveSelection);
         this.saveSelection.restore();
     }

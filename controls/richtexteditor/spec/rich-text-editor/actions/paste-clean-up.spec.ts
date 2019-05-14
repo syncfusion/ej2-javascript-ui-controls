@@ -518,10 +518,10 @@ describe('EJ2-23795: Console error occurs when pasting the copied content using 
   let elem: HTMLElement;
   let editNode: HTMLTextAreaElement;
   let keyBoardEvent: any = { preventDefault: () => { }, type: 'keydown', stopPropagation: () => { }, ctrlKey: false, shiftKey: false, action: '', which: 8 };
-  let innerHTML: string = `Lists are a piece of cake
+  let innerHTML: string = `<p>Lists are a piece of cake
       They even auto continue as you type
       A double enter will end them
-      Tabs and shift-tabs work too`;
+      Tabs and shift-tabs work too</p>`;
   let controlId: string;
   beforeAll(() => {
     rteObj = renderRTE({
@@ -554,7 +554,7 @@ describe('EJ2-23795: Console error occurs when pasting the copied content using 
       let eventArgs = { keyCode: 13, altKey: false, ctrlKey: false, shiftKey: false };
       (document.getElementById(rteObj.getID() + "_pasteCleanupDialog") as any).ej2_instances[0].keyDown(eventArgs);
       setTimeout(() => {
-        let allElem: any = (rteObj as any).inputElement.firstElementChild;
+        let allElem: any = (rteObj as any).inputElement.firstElementChild.firstElementChild;
         let expected: boolean = true;
         let expectedElem: string = `One Node-1 Two Node-1 Three Node-1`;
         if (allElem.innerHTML !== expectedElem) {
@@ -570,7 +570,7 @@ describe('EJ2-23795: Console error occurs when pasting the copied content using 
           let eventArgs = { keyCode: 13, altKey: false, ctrlKey: false, shiftKey: false };
           (document.getElementById(rteObj.getID() + "_pasteCleanupDialog") as any).ej2_instances[0].keyDown(eventArgs);
           setTimeout(() => {
-            let allElem: any = (rteObj as any).inputElement.firstElementChild;
+            let allElem: any = (rteObj as any).inputElement.firstElementChild.firstElementChild;
             let expected: boolean = true;
             let expectedElem: string = `One Node-1 Two Node-1 Three Node-1<span>One Node-1 Two Node-1 Three Node-1</span>`;
             if (allElem.innerHTML !== expectedElem) {

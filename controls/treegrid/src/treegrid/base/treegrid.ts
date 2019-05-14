@@ -1508,6 +1508,10 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       this.trigger(events.actionComplete, args);
     };
     this.grid.rowDataBound = function (args: RowDataBoundEventArgs): void {
+      if (args.row instanceof DocumentFragment) {
+        let row: Element  = (<Element>(args.row)).querySelector('tr');
+        args.row = row;
+      }
       if (isNullOrUndefined((<IGrid>this).isPrinting)) {
         setValue('isPrinting', false, args);
       } else {

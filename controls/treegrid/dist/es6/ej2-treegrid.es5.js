@@ -2529,6 +2529,10 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             _this.trigger(actionComplete, args);
         };
         this.grid.rowDataBound = function (args) {
+            if (args.row instanceof DocumentFragment) {
+                var row = (args.row).querySelector('tr');
+                args.row = row;
+            }
             if (isNullOrUndefined(this.isPrinting)) {
                 setValue('isPrinting', false, args);
             }

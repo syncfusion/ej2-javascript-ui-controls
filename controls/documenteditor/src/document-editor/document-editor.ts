@@ -1441,6 +1441,16 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         return [];
     }
     /**
+     * Gets the bookmarks.
+     */
+    public getBookmarks(): string[] {
+        let bookmarks: string[] = [];
+        if (this.viewer) {
+            bookmarks = this.viewer.getBookmarks(true);
+        }
+        return bookmarks;
+    }
+    /**
      * Shows the dialog.
      * @param {DialogType} dialogType
      * @returns void

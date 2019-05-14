@@ -1433,13 +1433,15 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
 
     private renderList(data?: { [key: string]: Object; }[]): void {
         this.setViewDataSource(data);
-        if (this.enableVirtualization && Object.keys(this.dataSource).length) {
-            if ((this.template || this.groupTemplate) && !this.virtualizationModule.isNgTemplate()) {
-                this.listBaseOption.template = null;
-                this.listBaseOption.groupTemplate = null;
-                this.listBaseOption.itemCreated = this.virtualizationModule.createUIItem.bind(this.virtualizationModule);
+        if (this.enableVirtualization ) {
+            if (Object.keys(this.dataSource).length) {
+                if ((this.template || this.groupTemplate) && !this.virtualizationModule.isNgTemplate()) {
+                    this.listBaseOption.template = null;
+                    this.listBaseOption.groupTemplate = null;
+                    this.listBaseOption.itemCreated = this.virtualizationModule.createUIItem.bind(this.virtualizationModule);
+                }
+                this.virtualizationModule.uiVirtualization();
             }
-            this.virtualizationModule.uiVirtualization();
         } else {
             this.createList();
             this.contentContainer = this.createElement('div', { className: classNames.content });

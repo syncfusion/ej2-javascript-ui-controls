@@ -5498,8 +5498,14 @@ var StackedHeaderCellRenderer = /** @__PURE__ @class */ (function (_super) {
             className: 'e-stackedheadercelldiv',
             attrs: { 'e-mappinguid': cell.column.uid }
         });
+        var column = cell.column;
         node.appendChild(div);
-        div.innerHTML = cell.column.headerText;
+        if (!isNullOrUndefined(column.headerTemplate)) {
+            appendChildren(div, column.getHeaderTemplate()(column, this.parent, 'headerTemplate'));
+        }
+        else {
+            this.appendHtml(div, column.headerText, column.getDomSetter());
+        }
         if (cell.column.toolTip) {
             node.setAttribute('title', cell.column.toolTip);
         }
@@ -24201,6 +24207,9 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(this.parent.detailTemplate) || !isNullOrUndefined(this.parent.childGrid)) {
             cIdx++;
         }
+        if (this.parent.isRowDragable()) {
+            cIdx++;
+        }
         return cIdx;
     };
     BatchEdit.prototype.refreshTD = function (td, column, rowObj, value) {
@@ -24225,6 +24234,9 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             cIdx = this.parent.groupSettings.columns.length;
         }
         if (!isNullOrUndefined(this.parent.detailTemplate) || !isNullOrUndefined(this.parent.childGrid)) {
+            cIdx++;
+        }
+        if (this.parent.isRowDragable()) {
             cIdx++;
         }
         for (var m = 0; m < cells.length; m++) {
@@ -25797,7 +25809,7 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
             var element = currentCheckBoxColls[i];
             var columnUID = void 0;
             if (this.parent.childGrid || this.parent.detailTemplate) {
-                columnUID = parentsUntil(this.dlgObj.element.querySelectorAll('.e-cc-chbox')[i], 'e-ccheck').getAttribute('uid');
+                columnUID = parentsUntil(this.dlgObj.element.querySelectorAll('.e-cc-chbox:not(.e-selectall)')[i], 'e-ccheck').getAttribute('uid');
             }
             else {
                 columnUID = parentsUntil(element, 'e-ccheck').getAttribute('uid');
@@ -26564,6 +26576,8 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
                     }
                     /* tslint:disable-next-line:no-any */
                     tCell.style = this.getCaptionThemeStyle(this.theme);
+                    var col_1 = groupCaptionSummaryRows[0].cells[tCell.index - 1].column;
+                    this.aggregateStyle(col_1, tCell.style, col_1.field);
                     if (cells[cells.length - 1].index !== tCell.index) {
                         cells.push(tCell);
                     }
@@ -26584,8 +26598,8 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
                 var span = 0;
                 //Calculation for column span when group caption dont have aggregates
                 for (var _c = 0, _d = headerRow.columns; _c < _d.length; _c++) {
-                    var col_1 = _d[_c];
-                    if (col_1.visible) {
+                    var col_2 = _d[_c];
+                    if (col_2.visible) {
                         span++;
                     }
                 }
@@ -26770,25 +26784,25 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
                                 var key = _d[_c];
                                 if (key === cell.column.type) {
                                     if (!isNullOrUndefined(row.data[cell.column.field].Sum)) {
-                                        eCell.value = row.data[cell.column.field].Sum;
+                                        eCell.value = row.data[cell.column.field][cell.column.field + " - sum"];
                                     }
                                     else if (!isNullOrUndefined(row.data[cell.column.field].Average)) {
-                                        eCell.value = row.data[cell.column.field].Average;
+                                        eCell.value = row.data[cell.column.field][cell.column.field + " - average"];
                                     }
                                     else if (!isNullOrUndefined(row.data[cell.column.field].Max)) {
-                                        eCell.value = row.data[cell.column.field].Max;
+                                        eCell.value = row.data[cell.column.field][cell.column.field + " - max"];
                                     }
                                     else if (!isNullOrUndefined(row.data[cell.column.field].Min)) {
-                                        eCell.value = row.data[cell.column.field].Min;
+                                        eCell.value = row.data[cell.column.field][cell.column.field + " - min"];
                                     }
                                     else if (!isNullOrUndefined(row.data[cell.column.field].Count)) {
-                                        eCell.value = row.data[cell.column.field].Count;
+                                        eCell.value = row.data[cell.column.field][cell.column.field + " - count"];
                                     }
                                     else if (!isNullOrUndefined(row.data[cell.column.field].TrueCount)) {
-                                        eCell.value = row.data[cell.column.field].TrueCount;
+                                        eCell.value = row.data[cell.column.field][cell.column.field + " - truecount"];
                                     }
                                     else if (!isNullOrUndefined(row.data[cell.column.field].FalseCount)) {
-                                        eCell.value = row.data[cell.column.field].FalseCount;
+                                        eCell.value = row.data[cell.column.field][cell.column.field + " - falsecount"];
                                     }
                                     else if (!isNullOrUndefined(row.data[cell.column.field].Custom)) {
                                         eCell.value = row.data[cell.column.field].Custom;
@@ -26797,6 +26811,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
                             }
                         }
                         eCell.style = this.getCaptionThemeStyle(this.theme); //{ name: gObj.element.id + 'column' + index };
+                        this.aggregateStyle(cell.column, eCell.style, cell.column.field);
                         var gridCellStyle = cell.attributes.style;
                         if (gridCellStyle.textAlign) {
                             eCell.style.hAlign = gridCellStyle.textAlign.toLowerCase();
@@ -26831,6 +26846,18 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
             }
         }
         return excelRows;
+    };
+    ExcelExport.prototype.aggregateStyle = function (col, style, field) {
+        if (typeof col.format === 'object') {
+            var format = col.format;
+            style.numberFormat = !isNullOrUndefined(format.format) ? format.format : format.skeleton;
+            style.type = !isNullOrUndefined(format.type) ? format.type.toLowerCase() :
+                this.parent.getColumnByField(field).type.toLowerCase();
+        }
+        else {
+            style.numberFormat = col.format;
+            style.type = this.parent.getColumnByField(field).type.toLowerCase();
+        }
     };
     ExcelExport.prototype.getAggreateValue = function (cellType, template, cell, row) {
         var templateFn = {};

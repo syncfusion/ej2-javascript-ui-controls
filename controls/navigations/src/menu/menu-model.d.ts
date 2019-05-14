@@ -14,6 +14,12 @@ export interface MenuModel extends MenuBaseModel{
     orientation?: Orientation;
 
     /**
+     * Specifies target element to open/close Menu while click in Hamburger mode.
+     * @default ''  
+     */
+    target?: string;
+
+    /**
      * Specifies the template for Menu item.
      * @default null
      */

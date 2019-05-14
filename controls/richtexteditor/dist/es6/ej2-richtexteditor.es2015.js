@@ -1191,12 +1191,8 @@ function getDropDownValue(items, value, type, returnType) {
 }
 function isIDevice() {
     let result = false;
-    let iosDevices = ['iphone', 'ipad', 'ipod'];
-    for (let i = 0; i < iosDevices.length; i++) {
-        if (navigator.platform.toLocaleLowerCase().indexOf(iosDevices[i]) > -1) {
-            result = true;
-            break;
-        }
+    if (Browser.isDevice && Browser.isIos) {
+        result = true;
     }
     return result;
 }
@@ -1391,6 +1387,39 @@ function toObjectLowerCase(obj) {
         convertedValue[keys[i].toLocaleLowerCase()] = obj[keys[i]];
     }
     return convertedValue;
+}
+function getEditValue(value, rteObj) {
+    let val;
+    if (value !== null && value !== '') {
+        val = rteObj.enableHtmlEncode ? updateTextNode(decode(value)) : updateTextNode(value);
+        rteObj.setProperties({ value: val }, true);
+    }
+    else {
+        val = rteObj.enableHtmlEncode ? '&lt;p&gt;&lt;br/&gt;&lt;/p&gt;' : '<p><br/></p>';
+    }
+    return val;
+}
+function updateTextNode(value) {
+    let tempNode = document.createElement('div');
+    tempNode.innerHTML = value;
+    let childNodes = tempNode.childNodes;
+    if (childNodes.length > 0) {
+        [].slice.call(childNodes).forEach((childNode) => {
+            if (childNode.nodeType === Node.TEXT_NODE && childNode.parentNode === tempNode) {
+                let defaultTag = document.createElement('p');
+                let parentNode = childNode.parentNode;
+                parentNode.insertBefore(defaultTag, childNode);
+                defaultTag.appendChild(childNode);
+            }
+        });
+    }
+    return tempNode.innerHTML;
+}
+function decode(value) {
+    return value.replace(/&amp;/g, '&').replace(/&amp;lt;/g, '<')
+        .replace(/&lt;/g, '<').replace(/&amp;gt;/g, '>')
+        .replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ')
+        .replace(/&amp;nbsp;/g, ' ').replace(/&quot;/g, '');
 }
 
 /**
@@ -1703,6 +1732,9 @@ class ToolbarRenderer {
                 args.element.classList.add(CLS_COLOR_PALETTE);
             },
             change: (colorPickerArgs) => {
+                if (isIDevice()) {
+                    proxy.parent.notify(selectionRestore, {});
+                }
                 /* tslint:disable */
                 let colorpickerValue = Browser.info.name === 'msie' || Browser.info.name === 'edge' || isIDevice() ? colorPickerArgs.currentValue.rgba : colorPickerArgs.currentValue.hex;
                 /* tslint:enable */
@@ -2407,7 +2439,7 @@ class Toolbar$1 {
     }
     createToolbarElement() {
         this.tbElement = this.parent.createElement('div', { id: this.parent.getID() + '_toolbar' });
-        if (!Browser.isDevice && this.parent.inlineMode.enable) {
+        if (!Browser.isDevice && this.parent.inlineMode.enable && isIDevice()) {
             return;
         }
         else {
@@ -2437,7 +2469,7 @@ class Toolbar$1 {
         return tbMode;
     }
     checkToolbarResponsive(ele) {
-        if (!Browser.isDevice) {
+        if (!Browser.isDevice || isIDevice()) {
             return false;
         }
         this.baseToolbar.render({
@@ -2568,7 +2600,7 @@ class Toolbar$1 {
             }
         }
         this.wireEvents();
-        if (this.parent.inlineMode.enable) {
+        if (this.parent.inlineMode.enable && !isIDevice()) {
             this.addFixedTBarClass();
         }
         if (!this.parent.inlineMode.enable) {
@@ -2617,21 +2649,17 @@ class Toolbar$1 {
         }
     }
     updateToolbarStatus(args) {
-        if (!this.parent.inlineMode.enable) {
-            let options = {
-                args: args,
-                dropDownModule: this.dropDownModule,
-                parent: this.parent,
-                tbElements: selectAll('.' + CLS_TB_ITEM, this.tbElement),
-                tbItems: this.baseToolbar.toolbarObj.items
-            };
-            if (this.parent.inlineMode.enable) {
-                setToolbarStatus(options, true);
-            }
-            else {
-                setToolbarStatus(options, false);
-            }
+        if (!this.tbElement || (this.parent.inlineMode.enable && (isIDevice() || !Browser.isDevice))) {
+            return;
         }
+        let options = {
+            args: args,
+            dropDownModule: this.dropDownModule,
+            parent: this.parent,
+            tbElements: selectAll('.' + CLS_TB_ITEM, this.tbElement),
+            tbItems: this.baseToolbar.toolbarObj.items
+        };
+        setToolbarStatus(options, (this.parent.inlineMode.enable ? true : false));
     }
     fullScreen(e) {
         this.parent.fullScreenModule.showFullScreen(e);
@@ -2737,12 +2765,12 @@ class Toolbar$1 {
         }
     }
     mouseDownHandler() {
-        if (Browser.isDevice && this.parent.inlineMode.enable) {
+        if (Browser.isDevice && this.parent.inlineMode.enable && !isIDevice()) {
             this.showFixedTBar();
         }
     }
     focusChangeHandler() {
-        if (Browser.isDevice && this.parent.inlineMode.enable) {
+        if (Browser.isDevice && this.parent.inlineMode.enable && !isIDevice()) {
             this.isToolbar = false;
             this.hideFixedTBar();
         }
@@ -2770,6 +2798,9 @@ class Toolbar$1 {
         }
     }
     wireEvents() {
+        if (this.parent.inlineMode.enable && isIDevice()) {
+            return;
+        }
         EventHandler.add(this.tbElement, 'click mousedown', this.toolbarMouseDownHandler, this);
     }
     unWireEvents() {
@@ -3399,7 +3430,7 @@ class BaseQuickToolbar {
         let expTBHeight = toolbarAvail && this.parent.toolbarModule.getExpandTBarPopHeight();
         let tBarHeight = (toolbarAvail) ? (tbHeight + expTBHeight) : 0;
         addClass([this.element], [CLS_HIDE]);
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !isIDevice()) {
             addClass([this.parent.getToolbar()], [CLS_HIDE]);
         }
         if (this.parent.iframeSettings.enable) {
@@ -3465,7 +3496,7 @@ class BaseQuickToolbar {
     }
     hidePopup() {
         let viewSourcePanel = this.parent.sourceCodeModule.getViewPanel();
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !isIDevice()) {
             removeClass([this.parent.getToolbar()], [CLS_HIDE]);
         }
         if (!isNullOrUndefined(this.parent.getToolbar()) && !this.parent.inlineMode.enable) {
@@ -3666,6 +3697,9 @@ class QuickToolbar {
     initializeQuickToolbars() {
         this.parent.quickToolbarModule = this;
         this.contentRenderer = this.renderFactory.getRenderer(RenderType.Content);
+        if (this.parent.inlineMode.enable && this.parent.inlineMode.onSelection && isIDevice()) {
+            EventHandler.add(this.contentRenderer.getDocument(), 'selectionchange', this.selectionChangeHandler, this);
+        }
     }
     onMouseDown(e) {
         this.parent.isBlur = false;
@@ -3697,7 +3731,7 @@ class QuickToolbar {
         }
     }
     renderInlineQuickToolbar() {
-        if (this.parent.inlineMode.enable && !Browser.isDevice) {
+        if (this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             addClass([this.parent.element], [CLS_INLINE]);
             this.inlineQTBar = this.createQTBar('Inline', 'MultiRow', this.parent.toolbarSettings.items, RenderType.InlineToolbar);
             this.renderFactory.addRenderer(RenderType.InlineToolbar, this.inlineQTBar);
@@ -3725,7 +3759,7 @@ class QuickToolbar {
         if (this.tableQTBar && !hasClass(this.tableQTBar.element, 'e-popup-close')) {
             this.tableQTBar.hidePopup();
         }
-        if (this.parent.inlineMode.enable && !Browser.isDevice) {
+        if (this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             this.hideInlineQTBar();
         }
     }
@@ -3734,14 +3768,19 @@ class QuickToolbar {
         this.deBouncer = window.setTimeout(() => { this.showInlineQTBar(x, y, target); }, 1000);
     }
     mouseUpHandler(e) {
-        if (this.parent.inlineMode.enable && !Browser.isDevice) {
-            let args = e.args;
+        if (this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
+            let coordinates;
+            coordinates = e.args.touches ? e.args.changedTouches[0] : e.args;
             let range = this.parent.getRange();
-            let target = args.target;
+            let target = e.args.target;
             if (isNullOrUndefined(select('.' + CLS_INLINE_POP, document.body))) {
+                if (isIDevice() && e.touchData && e.touchData.prevClientX !== e.touchData.clientX
+                    && e.touchData.prevClientY !== e.touchData.clientY) {
+                    return;
+                }
                 this.hideInlineQTBar();
-                this.offsetX = args.pageX;
-                this.offsetY = pageYOffset(args, this.parent.element, this.parent.iframeSettings.enable);
+                this.offsetX = coordinates.pageX;
+                this.offsetY = pageYOffset(coordinates, this.parent.element, this.parent.iframeSettings.enable);
                 if (target.nodeName === 'TEXTAREA') {
                     this.showInlineQTBar(this.offsetX, this.offsetY, target);
                 }
@@ -3760,12 +3799,14 @@ class QuickToolbar {
         }
     }
     keyDownHandler() {
-        if ((this.parent.inlineMode.enable && !Browser.isDevice) && !isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
+        if ((this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice()))
+            && !isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
             this.hideInlineQTBar();
         }
     }
     inlineQTBarMouseDownHandler() {
-        if ((this.parent.inlineMode.enable && !Browser.isDevice) && !isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
+        if ((this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice()))
+            && !isNullOrUndefined(select('.' + CLS_INLINE_POP, document))) {
             this.hideInlineQTBar();
         }
     }
@@ -3780,6 +3821,19 @@ class QuickToolbar {
     }
     getInlineBaseToolbar() {
         return this.inlineQTBar && this.inlineQTBar.quickTBarObj;
+    }
+    selectionChangeHandler(e) {
+        clearTimeout(this.deBouncer);
+        this.deBouncer = window.setTimeout(() => { this.onSelectionChange(e); }, 1000);
+    }
+    onSelectionChange(e) {
+        if (!isNullOrUndefined(select('.' + CLS_INLINE_POP, document.body))) {
+            return;
+        }
+        let selection = this.contentRenderer.getDocument().getSelection();
+        if (!selection.isCollapsed) {
+            this.mouseUpHandler({ args: e });
+        }
     }
     /**
      * Destroys the ToolBar.
@@ -3805,6 +3859,9 @@ class QuickToolbar {
         }
         if (this.inlineQTBar) {
             EventHandler.remove(this.inlineQTBar.element, 'mousedown', this.onMouseDown);
+            if (isIDevice()) {
+                EventHandler.remove(document, 'selectionchange', this.selectionChangeHandler);
+            }
             this.inlineQTBar.destroy();
         }
         this.removeEventListener();
@@ -3922,7 +3979,7 @@ class QuickToolbar {
             this.unWireInlineQTBarEvents();
             this.hideInlineQTBar();
         }
-        if (this.parent.inlineMode.enable && !Browser.isDevice) {
+        if (this.parent.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             addClass([this.parent.element], [CLS_INLINE]);
             this.wireInlineQTBarEvents();
         }
@@ -4405,7 +4462,7 @@ class Formatter {
             }
             else {
                 this.editorManager.observer.notify(checkUndo, { subCommand: args.item.subCommand });
-                this.editorManager.execCommand(args.item.command, args.item.subCommand, event, this.onSuccess.bind(this, self), args.item.value, value);
+                this.editorManager.execCommand(args.item.command, args.item.subCommand, event, this.onSuccess.bind(this, self), args.item.value, value, ('#' + self.getID() + ' iframe'));
             }
         }
         if (isNullOrUndefined(event) || event && event.action !== 'copy') {
@@ -4457,7 +4514,7 @@ class Formatter {
     }
     enableUndo(self) {
         let status = this.getUndoStatus();
-        if (self.inlineMode.enable && !Browser.isDevice) {
+        if (self.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             updateUndoRedoStatus(self.quickToolbarModule.inlineQTBar.quickTBarObj, status);
         }
         else {
@@ -6464,7 +6521,7 @@ class NodeSelection {
         let index = num.length;
         let constant = size;
         for (; index--; null) {
-            node = node.childNodes[num[index]];
+            node = node && node.childNodes[num[index]];
         }
         if (node && constant >= 0) {
             range[isvalid ? 'setStart' : 'setEnd'](node, constant);
@@ -6959,6 +7016,22 @@ class DOMNode {
 }
 
 /**
+ * Exports common util methods used by RichTextEditor.
+ */
+function isIDevice$1() {
+    let result = false;
+    if (Browser.isDevice && Browser.isIos) {
+        result = true;
+    }
+    return result;
+}
+function setEditFrameFocus(editableElement, selector) {
+    if (editableElement.nodeName === 'BODY' && !isNullOrUndefined(selector)) {
+        top.window.document.querySelector(selector).contentWindow.focus();
+    }
+}
+
+/**
  * Lists internal component
  * @hidden
  */
@@ -7187,7 +7260,7 @@ class Lists {
                 listsNodes[i] = listsNodes[i].parentNode;
             }
         }
-        this.applyLists(listsNodes, this.currentAction);
+        this.applyLists(listsNodes, this.currentAction, e.selector);
         if (e.callBack) {
             e.callBack({
                 requestType: this.currentAction,
@@ -7198,7 +7271,7 @@ class Lists {
             });
         }
     }
-    applyLists(elements, type) {
+    applyLists(elements, type, selector) {
         if (this.isRevert(elements, type)) {
             this.revertList(elements);
         }
@@ -7221,6 +7294,9 @@ class Lists {
         }
         this.cleanNode();
         this.parent.editableElement.focus();
+        if (isIDevice$1()) {
+            setEditFrameFocus(this.parent.editableElement, selector);
+        }
         this.saveSelection = this.domNode.saveMarker(this.saveSelection);
         this.saveSelection.restore();
     }
@@ -7457,6 +7533,9 @@ class Formats {
         }
         this.parent.editableElement.focus();
         save = this.parent.domNode.saveMarker(save);
+        if (isIDevice$1()) {
+            setEditFrameFocus(this.parent.editableElement, e.selector);
+        }
         save.restore();
         if (e.callBack) {
             e.callBack({
@@ -7921,6 +8000,9 @@ class Alignments {
         }
         this.parent.editableElement.focus();
         save = this.parent.domNode.saveMarker(save);
+        if (isIDevice$1()) {
+            setEditFrameFocus(this.parent.editableElement, e.selector);
+        }
         save.restore();
         if (e.callBack) {
             e.callBack({
@@ -8007,6 +8089,9 @@ class Indents {
             }
         }
         this.parent.editableElement.focus();
+        if (isIDevice$1()) {
+            setEditFrameFocus(this.parent.editableElement, e.selector);
+        }
         save = this.parent.domNode.saveMarker(save);
         save.restore();
         if (e.callBack) {
@@ -8737,7 +8822,7 @@ IsFormatted.inlineTags = [
  * `Selection` module is used to handle RTE Selections.
  */
 class SelectionCommands {
-    static applyFormat(docElement, format, endNode, value) {
+    static applyFormat(docElement, format, endNode, value, selector) {
         let validFormats = ['bold', 'italic', 'underline', 'strikethrough', 'superscript',
             'subscript', 'uppercase', 'lowercase', 'fontcolor', 'fontname', 'fontsize', 'backgroundcolor'];
         if (validFormats.indexOf(format) > -1) {
@@ -8775,6 +8860,9 @@ class SelectionCommands {
                     nodes[index] = this.insertFormat(nodes, index, formatNode, isCursor, isFormat, isFontStyle, range, nodeCutter, format, value);
                 }
                 domSelection = this.applySelection(nodes, domSelection, nodeCutter, index, isCollapsed);
+            }
+            if (isIDevice$1()) {
+                setEditFrameFocus(endNode, selector);
             }
             save.restore();
         }
@@ -8978,7 +9066,7 @@ class SelectionBasedExec {
         }
     }
     applySelection(e) {
-        SelectionCommands.applyFormat(this.parent.currentDocument, e.subCommand.toLocaleLowerCase(), this.parent.editableElement, e.value);
+        SelectionCommands.applyFormat(this.parent.currentDocument, e.subCommand.toLocaleLowerCase(), this.parent.editableElement, e.value, e.selector);
         this.callBack(e, e.subCommand);
     }
     callBack(event, action) {
@@ -9028,7 +9116,7 @@ class InsertHtmlExec {
  * `Clear Format` module is used to handle Clear Format.
  */
 class ClearFormat$1 {
-    static clear(docElement, endNode) {
+    static clear(docElement, endNode, selector) {
         let nodeSelection = new NodeSelection();
         let nodeCutter = new NodeCutter();
         let range = nodeSelection.getRange(docElement);
@@ -9055,6 +9143,9 @@ class ClearFormat$1 {
             exactNodes = nodeSelection.getNodeCollection(range);
             let cloneParentNodes = exactNodes.slice();
             this.clearBlocks(docElement, cloneParentNodes, endNode, nodeCutter, nodeSelection);
+            if (isIDevice$1()) {
+                setEditFrameFocus(endNode, selector);
+            }
             this.reSelection(docElement, save, exactNodes);
         }
     }
@@ -9238,7 +9329,7 @@ class ClearFormatExec {
     }
     applyClear(e) {
         if (e.subCommand === 'ClearFormat') {
-            ClearFormat$1.clear(this.parent.currentDocument, this.parent.editableElement);
+            ClearFormat$1.clear(this.parent.currentDocument, this.parent.editableElement, e.selector);
             if (e.callBack) {
                 e.callBack({
                     requestType: e.subCommand,
@@ -9363,6 +9454,9 @@ class UndoRedoManager {
             let removedContent = this.undoRedoStack[this.steps - 1].text;
             this.parent.editableElement.innerHTML = removedContent;
             this.parent.editableElement.focus();
+            if (isIDevice$1()) {
+                setEditFrameFocus(this.parent.editableElement, e.selector);
+            }
             range.restore();
             this.steps--;
             if (e.callBack) {
@@ -9386,6 +9480,9 @@ class UndoRedoManager {
             let range = this.undoRedoStack[this.steps + 1].range;
             this.parent.editableElement.innerHTML = this.undoRedoStack[this.steps + 1].text;
             this.parent.editableElement.focus();
+            if (isIDevice$1()) {
+                setEditFrameFocus(this.parent.editableElement, e.selector);
+            }
             range.restore();
             this.steps++;
             if (e.callBack) {
@@ -9755,19 +9852,19 @@ class EditorManager {
     editorKeyUp(e) {
         this.observer.notify(KEY_UP_HANDLER, e);
     }
-    execCommand(command, value, event, callBack, text, exeValue) {
+    execCommand(command, value, event, callBack, text, exeValue, selector) {
         switch (command.toLocaleLowerCase()) {
             case 'lists':
-                this.observer.notify(LIST_TYPE, { subCommand: value, event: event, callBack: callBack });
+                this.observer.notify(LIST_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
                 break;
             case 'formats':
-                this.observer.notify(FORMAT_TYPE, { subCommand: value, event: event, callBack: callBack });
+                this.observer.notify(FORMAT_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
                 break;
             case 'alignments':
-                this.observer.notify(ALIGNMENT_TYPE, { subCommand: value, event: event, callBack: callBack });
+                this.observer.notify(ALIGNMENT_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
                 break;
             case 'indents':
-                this.observer.notify(INDENT_TYPE, { subCommand: value, event: event, callBack: callBack });
+                this.observer.notify(INDENT_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
                 break;
             case 'links':
                 this.observer.notify(LINK, { command: command, value: value, item: exeValue, event: event, callBack: callBack });
@@ -9811,7 +9908,7 @@ class EditorManager {
             case 'style':
             case 'effects':
             case 'casing':
-                this.observer.notify(SELECTION_TYPE, { subCommand: value, event: event, callBack: callBack, value: text });
+                this.observer.notify(SELECTION_TYPE, { subCommand: value, event: event, callBack: callBack, value: text, selector: selector });
                 break;
             case 'inserthtml':
                 this.observer.notify(INSERTHTML_TYPE, { subCommand: value, callBack: callBack, value: text });
@@ -9820,10 +9917,10 @@ class EditorManager {
                 this.observer.notify(INSERT_TEXT_TYPE, { subCommand: value, callBack: callBack, value: text });
                 break;
             case 'clear':
-                this.observer.notify(CLEAR_TYPE, { subCommand: value, event: event, callBack: callBack });
+                this.observer.notify(CLEAR_TYPE, { subCommand: value, event: event, callBack: callBack, selector: selector });
                 break;
             case 'actions':
-                this.observer.notify(ACTION, { subCommand: value, event: event, callBack: callBack });
+                this.observer.notify(ACTION, { subCommand: value, event: event, callBack: callBack, selector: selector });
                 break;
         }
     }
@@ -10159,7 +10256,7 @@ class ContentRender {
     renderPanel() {
         let rteObj = this.parent;
         let div = this.parent.createElement('div', { className: 'e-rte-content', id: this.parent.getID() + 'rte-view' });
-        let rteContent = (rteObj.value !== null && rteObj.value !== '') ? rteObj.value : '<p><br/></p>';
+        let rteContent = getEditValue(rteObj.value, rteObj);
         this.editableElement = this.parent.createElement('div', {
             className: 'e-content',
             id: this.parent.getID() + '_rte-edit-view',
@@ -10295,7 +10392,7 @@ class IframeContentRender extends ContentRender {
      */
     renderPanel() {
         let rteObj = this.parent;
-        let rteContent = (rteObj.value !== null && rteObj.value !== '') ? rteObj.value : '<p><br/></p>';
+        let rteContent = getEditValue(rteObj.value, rteObj);
         let iFrameBodyContent = '<body spellcheck="false" autocorrect="off" contenteditable="true">' +
             rteContent + '</body></html>';
         let iFrameContent = IFRAMEHEADER + iFrameBodyContent;
@@ -10399,7 +10496,7 @@ class HtmlEditor {
     onSelectionRestore(e) {
         this.parent.isBlur = false;
         this.contentRenderer.getEditPanel().focus();
-        if (isNullOrUndefined(e.items) || (e.items && e.items[0].command !== 'Table')) {
+        if (isNullOrUndefined(e.items) || e.items) {
             this.saveSelection.restore();
         }
     }
@@ -10507,6 +10604,9 @@ class HtmlEditor {
         if (closestElement && !closestElement.classList.contains('e-rte-inline-popup')) {
             if (!(item.subCommand === 'SourceCode' || item.subCommand === 'Preview' ||
                 item.subCommand === 'FontColor' || item.subCommand === 'BackgroundColor')) {
+                if (isIDevice$1() && item.command === 'Images') {
+                    this.nodeSelectionObj.restore();
+                }
                 let range = this.nodeSelectionObj.getRange(this.parent.contentModule.getDocument());
                 save = this.nodeSelectionObj.save(range, this.parent.contentModule.getDocument());
                 selectNodeEle = this.nodeSelectionObj.getNodeCollection(range);
@@ -11148,7 +11248,6 @@ class Link {
         this.quickToolObj = this.parent.quickToolbarModule;
         let parentTop = this.parent.element.getBoundingClientRect().top;
         let range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
-        let args = e.args;
         let target;
         [].forEach.call(e.elements, (element, index) => {
             if (index === 0) {
@@ -11164,6 +11263,8 @@ class Link {
             pageY = window.pageYOffset + ((this.parent.iframeSettings.enable) ? (parentTop + tbHeight + linkTop) : (parentTop + linkPos));
         }
         else {
+            let args;
+            args = e.args.touches ? e.args.changedTouches[0] : args = e.args;
             pageX = args.pageX;
             pageY = (this.parent.iframeSettings.enable) ? window.pageYOffset + parentTop + args.clientY : args.pageY;
         }
@@ -11301,7 +11402,7 @@ class Link {
                     click: this.insertlink.bind(selectObj),
                     buttonModel: { content: linkInsert, cssClass: 'e-flat e-insertLink', isPrimary: true }
                 },
-                { click: (e) => { this.cancelDialog(e); }, buttonModel: { cssClass: 'e-flat', content: linkCancel } }],
+                { click: this.cancelDialog.bind(selectObj), buttonModel: { cssClass: 'e-flat', content: linkCancel } }],
             target: (Browser.isDevice) ? document.body : this.parent.element,
             animationSettings: { effect: 'None' },
             close: (event) => {
@@ -11375,6 +11476,12 @@ class Link {
             url: linkUrl, text: linkText, title: linkTitle, target: target,
             selection: this.selection, selectParent: this.selectParent
         };
+        if (document.body.contains(proxy.dialogObj.element)) {
+            this.selfLink.dialogObj.hide({ returnValue: false });
+        }
+        if (isIDevice$1() && proxy.parent.iframeSettings.enable) {
+            select('iframe', proxy.parent.element).contentWindow.focus();
+        }
         if (proxy.parent.editorMode === 'HTML') {
             this.selection.restore();
         }
@@ -11382,9 +11489,6 @@ class Link {
             proxy.parent.formatter.saveData();
         }
         this.selfLink.parent.formatter.process(this.selfLink.parent, this.args, this.args.originalEvent, value);
-        if (document.body.contains(proxy.dialogObj.element)) {
-            this.selfLink.dialogObj.hide({ returnValue: false });
-        }
         this.selfLink.parent.contentModule.getEditPanel().focus();
     }
     isUrl(url) {
@@ -11411,7 +11515,12 @@ class Link {
             selectNode: e.selectNode, selectParent: e.selectParent, selection: e.selection,
             subCommand: e.args.item.subCommand
         });
-        this.contentModule.getEditPanel().focus();
+        if (isIDevice$1() && this.parent.iframeSettings.enable) {
+            select('iframe', this.parent.element).contentWindow.focus();
+        }
+        else {
+            this.contentModule.getEditPanel().focus();
+        }
         this.hideLinkQuickToolbar();
     }
     openLink(e) {
@@ -11441,9 +11550,14 @@ class Link {
         }
     }
     cancelDialog(e) {
-        this.parent.isBlur = false;
-        this.dialogObj.hide({ returnValue: true });
-        this.parent.contentModule.getEditPanel().focus();
+        this.selfLink.parent.isBlur = false;
+        this.selfLink.dialogObj.hide({ returnValue: true });
+        if (isIDevice$1()) {
+            this.selection.restore();
+        }
+        else {
+            this.selfLink.parent.contentModule.getEditPanel().focus();
+        }
     }
     onDocumentClick(e) {
         let target = e.target;
@@ -11846,6 +11960,9 @@ class Image {
         return this.resizeBtnStat = { botLeft: false, botRight: false, topRight: false, topLeft: false };
     }
     onToolbarAction(args) {
+        if (isIDevice$1()) {
+            this.parent.notify(selectionRestore, {});
+        }
         let item = args.args.item;
         switch (item.subCommand) {
             case 'Replace':
@@ -12093,6 +12210,9 @@ class Image {
                 }
                 this.parent.formatter.editorManager.nodeSelection.Clear(this.contentModule.getDocument());
                 this.parent.formatter.editorManager.nodeSelection.setSelectionContents(this.contentModule.getDocument(), target);
+                if (isIDevice$1()) {
+                    this.parent.notify(selectionSave, e);
+                }
                 addClass([target], 'e-img-focus');
                 let items = this.quickToolObj.imageQTBar.toolbarElement.querySelectorAll('.e-toolbar-item');
                 let separator;
@@ -13011,8 +13131,8 @@ class Table {
         this.parent.off(initialEnd, this.afterRender);
         this.parent.off(docClick, this.docClick);
         this.parent.off(editAreaClick, this.editAreaClickHandler);
-        this.parent.on(tableToolbarAction, this.onToolbarAction, this);
-        this.parent.on(dropDownSelect, this.dropdownSelect, this);
+        this.parent.off(tableToolbarAction, this.onToolbarAction);
+        this.parent.off(dropDownSelect, this.dropdownSelect);
         this.parent.off(mouseDown, this.cellSelect);
         this.parent.off(tableColorPickerChanged, this.setBGColor);
         this.parent.off(keyDown, this.keyDown);
@@ -13152,11 +13272,12 @@ class Table {
         }
         if (command === 'Alternate') {
             (this.parent.element.classList.contains(CLS_TB_ALT_BOR)) ?
-                this.parent.element.classList.remove(CLS_TB_DASH_BOR) : this.parent.element.classList.add(CLS_TB_ALT_BOR);
+                this.parent.element.classList.remove(CLS_TB_ALT_BOR) : this.parent.element.classList.add(CLS_TB_ALT_BOR);
             (table.classList.contains(CLS_TB_ALT_BOR)) ? table.classList.remove(CLS_TB_ALT_BOR) :
                 table.classList.add(CLS_TB_ALT_BOR);
         }
         this.parent.formatter.saveData();
+        this.parent.formatter.editorManager.nodeSelection.restore();
     }
     insideList(range) {
         let blockNodes = this.parent.formatter.editorManager.domNode.blockNodes();
@@ -14816,12 +14937,6 @@ let RichTextEditor = class RichTextEditor extends Component {
         divNode.innerText = value.trim();
         return divNode.innerHTML.replace(/<br\s*[\/]?>/gi, '\n');
     }
-    decode(value) {
-        return value.replace(/&amp;/g, '&').replace(/&amp;lt;/g, '<')
-            .replace(/&lt;/g, '<').replace(/&amp;gt;/g, '>')
-            .replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ')
-            .replace(/&amp;nbsp;/g, ' ').replace(/&quot;/g, '');
-    }
     /**
      * For internal use only - To Initialize the component rendering.
      * @private
@@ -14902,14 +15017,19 @@ let RichTextEditor = class RichTextEditor extends Component {
         }
     }
     mouseUp(e) {
-        let touch = (e.touches ? e.changedTouches[0] : e);
         this.notify(mouseUp, { member: 'mouseUp', args: e });
         if (this.inputElement && ((this.editorMode === 'HTML' && this.inputElement.textContent.length !== 0) ||
             (this.editorMode === 'Markdown' && this.inputElement.value.length !== 0))) {
             this.notify(toolbarRefresh, { args: e });
         }
-        if (this.clickPoints.clientX === touch.clientX && this.clickPoints.clientY === touch.clientY) {
+        if (!isIDevice()) {
             this.notify(editAreaClick, { member: 'editAreaClick', args: e });
+        }
+        else {
+            let touch = (e.touches ? e.changedTouches[0] : e);
+            if (this.clickPoints.clientX === touch.clientX && this.clickPoints.clientY === touch.clientY) {
+                this.notify(editAreaClick, { member: 'editAreaClick', args: e });
+            }
         }
     }
     /**
@@ -15089,7 +15209,11 @@ let RichTextEditor = class RichTextEditor extends Component {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'value':
-                    this.value = (this.enableHtmlEncode) ? this.encode(this.decode(newProp[prop])) : newProp[prop];
+                    let nVal = newProp[prop];
+                    let val = this.editorMode === 'HTML' ? getEditValue(nVal, this) : nVal;
+                    if (!isNullOrUndefined(nVal) && nVal !== '') {
+                        this.value = (this.enableHtmlEncode) ? this.encode(decode(val)) : val;
+                    }
                     this.updatePanelValue();
                     this.setPlaceHolder();
                     if (this.showCharCount) {
@@ -15193,12 +15317,12 @@ let RichTextEditor = class RichTextEditor extends Component {
      */
     updateValueData() {
         if (this.enableHtmlEncode) {
-            this.setProperties({ value: this.encode(this.decode(this.inputElement.innerHTML)) });
+            this.setProperties({ value: this.encode(decode(this.inputElement.innerHTML)) });
         }
         else {
             this.setProperties({
                 value: /<[a-z][\s\S]*>/i.test(this.inputElement.innerHTML) ? this.inputElement.innerHTML :
-                    this.decode(this.inputElement.innerHTML)
+                    decode(this.inputElement.innerHTML)
             });
         }
     }
@@ -15216,7 +15340,7 @@ let RichTextEditor = class RichTextEditor extends Component {
         else {
             value = this.value;
         }
-        value = (this.enableHtmlEncode && this.value) ? this.decode(value) : value;
+        value = (this.enableHtmlEncode && this.value) ? decode(value) : value;
         if (value) {
             if (this.valueContainer) {
                 this.valueContainer.value = (this.enableHtmlEncode) ? this.value : value;
@@ -15410,7 +15534,7 @@ let RichTextEditor = class RichTextEditor extends Component {
         this.updateReadOnly();
         this.updatePanelValue();
         if (this.enableHtmlEncode && !isNullOrUndefined(this.value)) {
-            this.setProperties({ value: this.encode(this.decode(this.value)) });
+            this.setProperties({ value: this.encode(decode(this.value)) });
         }
     }
     setIframeSettings() {
@@ -15483,7 +15607,7 @@ let RichTextEditor = class RichTextEditor extends Component {
         }
         else if (this.element.innerHTML.trim() !== '') {
             if (this.element.tagName === 'TEXTAREA') {
-                this.setProperties({ value: this.decode(this.element.innerHTML.trim()) });
+                this.setProperties({ value: decode(this.element.innerHTML.trim()) });
             }
             else {
                 this.setProperties({ value: this.element.innerHTML.trim() });
@@ -15548,7 +15672,7 @@ let RichTextEditor = class RichTextEditor extends Component {
      */
     getBaseToolbarObject() {
         let tbObj;
-        if (this.inlineMode.enable && !Browser.isDevice) {
+        if (this.inlineMode.enable && (!Browser.isDevice || isIDevice())) {
             tbObj = this.quickToolbarModule && this.quickToolbarModule.getInlineBaseToolbar();
         }
         else {
@@ -15619,7 +15743,7 @@ let RichTextEditor = class RichTextEditor extends Component {
             addClass([this.element], [CLS_FOCUS]);
             if (this.editorMode === 'HTML') {
                 this.cloneValue = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.enableHtmlEncode ?
-                    this.encode(this.decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
+                    this.encode(decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
             }
             else {
                 this.cloneValue = this.inputElement.value === '' ? null :
@@ -15640,7 +15764,7 @@ let RichTextEditor = class RichTextEditor extends Component {
         let value;
         if (this.editorMode === 'HTML') {
             value = (this.inputElement.innerHTML === '<p><br></p>') ? null : this.enableHtmlEncode ?
-                this.encode(this.decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
+                this.encode(decode(this.inputElement.innerHTML)) : this.inputElement.innerHTML;
         }
         else {
             value = this.inputElement.value === '' ? null :

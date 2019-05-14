@@ -1313,9 +1313,9 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         var tempEle = this.createElement('div');
         this.compileElement(tempEle, cnt, 'content');
         if (tempEle.childNodes.length !== 0) {
-            for (var item = 0; item < tempEle.childNodes.length; item++) {
-                ele.appendChild(tempEle.childNodes[item]);
-            }
+            [].slice.call(tempEle.childNodes).forEach(function (childEle) {
+                ele.appendChild(childEle);
+            });
         }
     };
     Splitter.prototype.compileElement = function (ele, val, prop) {

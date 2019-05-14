@@ -103,13 +103,13 @@
       }
     }
 
-    &.e-menu-icon-left {
+    &.e-menu-icon-right {
       & .e-menu-header .e-menu-icon {
-        float: left;
+        float: right;
       }
 
       & .e-menu-header .e-menu-title {
-        padding: 0;
+        padding: $menu-header-icon-padding;
       }
     }
 
@@ -125,14 +125,15 @@
 
       & .e-menu-title,
       & .e-menu-icon {
+        display: inline-block;
         line-height: inherit;
-        padding: $menu-header-icon-padding;
       }
 
       & .e-menu-icon {
         cursor: pointer;
-        float: right;
+        float: left;
         outline: none;
+        padding: $menu-header-icon-padding;
       }
     }
 
@@ -436,13 +437,8 @@
     }
 
     & .e-popup.e-menu-popup {
-      @if $skin-name == 'bootstrap4' {
-        border: 0;
-      }
-      @else {
-        border-left: 0;
-        border-right: 0;
-      }
+      border: 0;
+      border-radius: 0;
       box-shadow: none;
       display: block;
       position: relative;
@@ -470,6 +466,20 @@
             display: inline;
             text-indent: 0;
           }
+
+          // sass-lint:disable-all
+          & .e-caret {
+            -webkit-transition: -webkit-transform .3s ease-in-out;
+            transition: -webkit-transform .3s ease-in-out;
+            transition: transform .3s ease-in-out;
+            text-indent: 0;
+          }
+
+          &.e-selected > .e-caret {
+            -webkit-transform: rotate(-180deg);
+            transform: rotate(-180deg);
+          }
+          // sass-lint:enable-all
         }
       }
 
@@ -485,6 +495,7 @@
         padding: 0;
 
         & .e-menu-item {
+          line-height: $menu-li-height;
           text-indent: inherit;
 
           &.e-blankicon {
@@ -505,6 +516,16 @@
         padding: 0;
 
         &.e-menu-caret-icon {
+          padding: 0;
+        }
+
+        & .e-menu-url {
+          display: inline-block;
+          text-indent: 0;
+          width: 100%;
+        }
+
+        &.e-blankicon {
           padding: 0;
         }
 
@@ -541,6 +562,7 @@
 
       & .e-menu-item {
         height: auto;
+        line-height: $menu-bigger-li-height;
         padding: 0;
       }
     }

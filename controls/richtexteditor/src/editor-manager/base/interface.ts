@@ -38,6 +38,10 @@ export interface IHtmlSubCommands {
      * Specifies the originalEvent.
      */
     event?: MouseEvent;
+    /**
+     * Specifies the iframe element selector.
+     */
+    selector?: string;
 }
 
 /**

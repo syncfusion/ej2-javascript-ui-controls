@@ -2158,6 +2158,16 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
         return [];
     };
     /**
+     * Gets the bookmarks.
+     */
+    DocumentEditor.prototype.getBookmarks = function () {
+        var bookmarks = [];
+        if (this.viewer) {
+            bookmarks = this.viewer.getBookmarks(true);
+        }
+        return bookmarks;
+    };
+    /**
      * Shows the dialog.
      * @param {DialogType} dialogType
      * @returns void
@@ -17450,6 +17460,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
         bold = format.bold ? 'bold' : breakCharacterFormat.bold ? 'bold' : '';
         italic = format.italic ? 'italic' : breakCharacterFormat.italic ? 'italic' : '';
         fontSize = fontSize === 0 ? 0.5 : fontSize / (baselineAlignment === 'Normal' ? 1 : 1.5);
+        fontSize = this.isPrinting ? fontSize : fontSize * this.viewer.zoomFactor;
         var strikethrough = format.strikethrough === 'None' ? breakCharacterFormat.strikethrough : format.strikethrough;
         var highlightColor = format.highlightColor === 'NoColor' ? breakCharacterFormat.highlightColor :
             format.highlightColor;
@@ -17463,7 +17474,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
             // tslint:disable-next-line:max-line-length
             this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
         }
-        this.pageContext.font = bold + ' ' + italic + ' ' + fontSize * this.viewer.zoomFactor + 'pt' + ' ' + fontFamily;
+        this.pageContext.font = bold + ' ' + italic + ' ' + fontSize + 'pt' + ' ' + fontFamily;
         if (baselineAlignment === 'Subscript') {
             topMargin += elementBox.height - elementBox.height / 1.5;
         }
@@ -17524,7 +17535,8 @@ var Renderer = /** @__PURE__ @class */ (function () {
         bold = format.bold ? 'bold' : '';
         italic = format.italic ? 'italic' : '';
         fontSize = format.fontSize === 0 ? 0.5 : format.fontSize / (format.baselineAlignment === 'Normal' ? 1 : 1.5);
-        this.pageContext.font = bold + ' ' + italic + ' ' + fontSize * this.viewer.zoomFactor + 'pt' + ' ' + format.fontFamily;
+        fontSize = this.isPrinting ? fontSize : fontSize * this.viewer.zoomFactor;
+        this.pageContext.font = bold + ' ' + italic + ' ' + fontSize + 'pt' + ' ' + format.fontFamily;
         if (format.baselineAlignment === 'Subscript') {
             topMargin += elementBox.height - elementBox.height / 1.5;
         }
@@ -19661,7 +19673,8 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
             this.dialogInternal = new Dialog({
                 target: document.body, showCloseIcon: true,
                 allowDragging: true, enableRtl: isRtl, visible: false,
-                width: '1px', isModal: true, position: { X: 'center', Y: 'center' }, zIndex: 20
+                width: '1px', isModal: true, position: { X: 'center', Y: 'center' }, zIndex: 20,
+                animationSettings: { effect: 'None' }
             });
             this.dialogInternal.open = this.selection.hideCaret;
             this.dialogInternal.beforeClose = this.updateFocus;
@@ -39377,19 +39390,27 @@ var Editor = /** @__PURE__ @class */ (function () {
     };
     /**
      * Insert Hyperlink
-     * @param  {string} url
+     * @param  {string} address
      * @param  {string} displayText
-     * @param  {boolean} remove
      * @private
      */
-    Editor.prototype.insertHyperlink = function (url, displayText, remove, isBookmark) {
+    Editor.prototype.insertHyperlink = function (address, displayText) {
+        if (isNullOrUndefined(displayText)) {
+            displayText = address;
+        }
+        this.insertHyperlinkInternal(address, displayText, this.owner.selection.text !== displayText, false);
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.insertHyperlinkInternal = function (url, displayText, remove, isBookmark) {
         var selection = this.viewer.selection;
         if (selection.start.paragraph.associatedCell !== selection.end.paragraph.associatedCell) {
             return;
         }
         if (remove) {
             //Empty selection Hyperlink insert
-            this.insertHyperlinkInternal(selection, url, displayText, isBookmark);
+            this.insertHyperlinkInternalInternal(selection, url, displayText, isBookmark);
         }
         else {
             //Non-Empty Selection- change the selected text to Field       
@@ -39445,7 +39466,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             }
         }
     };
-    Editor.prototype.insertHyperlinkInternal = function (selection, url, displayText, isBookmark) {
+    Editor.prototype.insertHyperlinkInternalInternal = function (selection, url, displayText, isBookmark) {
         if (isNullOrUndefined(selection.start)) {
             return;
         }
@@ -46396,7 +46417,8 @@ var Editor = /** @__PURE__ @class */ (function () {
         this.pasteContentsInternal(widgets);
     };
     /**
-     * @private
+     * Insert Bookmark at current selection range
+     * @param  {string} name - Name of bookmark
      */
     Editor.prototype.insertBookmark = function (name) {
         var bookmark = new BookmarkElementBox(0);
@@ -55554,7 +55576,7 @@ var HyperlinkDialog = /** @__PURE__ @class */ (function () {
         }
         else {
             var remove = this.owner.selection.text !== displayText && !this.displayTextBox.disabled;
-            this.owner.owner.editorModule.insertHyperlink(address, displayText, remove, isBookmark);
+            this.owner.owner.editorModule.insertHyperlinkInternal(address, displayText, remove, isBookmark);
         }
         this.owner.dialog.hide();
         this.navigationUrl = undefined;
@@ -67389,6 +67411,8 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         if (this.statusBar) {
             this.statusBar.updatePageCount();
         }
+        var eventArgs = { source: this };
+        this.trigger('contentChange', eventArgs);
     };
     /**
      * @private
@@ -67411,6 +67435,8 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         setTimeout(function () {
             _this.showPropertiesPaneOnSelection();
+            var eventArgs = { source: _this };
+            _this.trigger('selectionChange', eventArgs);
         });
     };
     /**
@@ -67581,6 +67607,12 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Event()
     ], DocumentEditorContainer.prototype, "destroyed", void 0);
+    __decorate$1([
+        Event()
+    ], DocumentEditorContainer.prototype, "contentChange", void 0);
+    __decorate$1([
+        Event()
+    ], DocumentEditorContainer.prototype, "selectionChange", void 0);
     DocumentEditorContainer = __decorate$1([
         NotifyPropertyChanges
     ], DocumentEditorContainer);

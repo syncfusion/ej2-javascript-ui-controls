@@ -5,7 +5,7 @@ import { OverflowMode } from '@syncfusion/ej2-navigations';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
 import { RenderType } from '../base/enum';
-import { setToolbarStatus, updateUndoRedoStatus } from '../base/util';
+import { setToolbarStatus, updateUndoRedoStatus, isIDevice } from '../base/util';
 import { IRichTextEditor, IToolbarRenderOptions, IDropDownRenderArgs, IToolbarItemModel, IColorPickerRenderArgs } from '../base/interface';
 import { IToolbarItems, IRenderer, IQuickToolbarOptions, IShowQuickTBarOptions, ISetToolbarStatusArgs } from '../base/interface';
 import { ServiceLocator } from '../services/service-locator';
@@ -185,7 +185,7 @@ export class BaseQuickToolbar {
         let expTBHeight: number = toolbarAvail && this.parent.toolbarModule.getExpandTBarPopHeight();
         let tBarHeight: number = (toolbarAvail) ? (tbHeight + expTBHeight) : 0;
         addClass([this.element], [classes.CLS_HIDE]);
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !isIDevice()) {
             addClass([this.parent.getToolbar()], [classes.CLS_HIDE]);
         }
         if (this.parent.iframeSettings.enable) {
@@ -251,7 +251,7 @@ export class BaseQuickToolbar {
 
     public hidePopup(): void {
         let viewSourcePanel: HTMLElement = <HTMLElement>this.parent.sourceCodeModule.getViewPanel();
-        if (Browser.isDevice) {
+        if (Browser.isDevice && !isIDevice()) {
             removeClass([this.parent.getToolbar()], [classes.CLS_HIDE]);
         }
         if (!isNullOrUndefined(this.parent.getToolbar()) && !this.parent.inlineMode.enable) {

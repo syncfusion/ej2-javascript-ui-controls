@@ -316,7 +316,7 @@ describe('Edit Hyperlink validation without history', () => {
     });
     it('insert Hyperlink without history', () => {
         editor.openBlank();
-        editor.editorModule.insertHyperlink('www.google.com', 'www.google.com', false);
+        editor.editorModule.insertHyperlinkInternal('www.google.com', 'www.google.com', false);
         expect(editor.enableEditorHistory).toBe(false);
     });
     it('Insert Hyperlink on multiple paragraph', () => {

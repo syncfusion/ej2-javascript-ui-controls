@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 17.1.47 (2019-05-14)
+
+### Document Editor
+
+#### New Features
+
+- #142821 - Added API to insert bookmark and fetch all bookmarks in document.
+- #142820 - Added API to insert hyperlink.
+
+#### Bug Fixes
+
+- #230628 - Updated dialog animation.
+
 ## 17.1.44 (2019-05-07)
 
 ### Document Editor

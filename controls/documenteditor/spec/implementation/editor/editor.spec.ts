@@ -152,3 +152,49 @@ describe("Insert and delete table validation", () => {
         expect(editor.pageCount).toBe(2);
     });
 });
+
+describe("Insert Hyperlink and bookmark validation", () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true });
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 750);
+    });
+    it("Insert Hyperlink with display text", () => {
+        editor.editorModule.insertHyperlink('https://syncfusion.com', 'Syncfusion');
+        editor.selection.movePreviousPosition();
+        var field = editor.selection.getHyperlinkField();
+        expect(field).toBeDefined();
+    });
+    it("InsertHyperlik with out display text", () => {
+        editor.openBlank();
+        editor.editorModule.insertHyperlink('https://syncfusion.com');
+        editor.selection.selectAll();
+        expect(editor.selection.text).toBe('https://syncfusion.com\r');
+    });
+    it("Insert bookmark", () => {
+        editor.openBlank();
+        editor.editorModule.insertText("Syncfusion");
+        editor.selection.selectAll();
+        editor.editorModule.insertBookmark("testbookmark");
+        var bookmars = editor.getBookmarks();
+        expect(bookmars.length).toBe(1);
+        expect(bookmars[0]).toBe("testbookmark");
+    });
+});

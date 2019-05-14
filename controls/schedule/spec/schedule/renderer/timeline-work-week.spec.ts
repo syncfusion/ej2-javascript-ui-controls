@@ -2365,7 +2365,7 @@ describe('Schedule timeline work week view', () => {
 
         it('Checking events elements', () => {
             let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            expect(eventElementList.length).toEqual(30);
+            expect(eventElementList.length).toEqual(29);
             let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(10);
         });
@@ -2379,8 +2379,8 @@ describe('Schedule timeline work week view', () => {
 
         it('Checking right icon', () => {
             let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            expect(eventElementList[24].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('All Day Event - Next week');
-            expect(eventElementList[24].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-right-icon'))
+            expect(eventElementList[25].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Next week');
+            expect(eventElementList[25].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-right-icon'))
                 .toBeTruthy();
         });
 
@@ -2393,7 +2393,7 @@ describe('Schedule timeline work week view', () => {
 
         it('More event element checking', () => {
             let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(20);
+            expect(moreIndicatorList.length).toEqual(17);
             expect(moreIndicatorList[0].innerHTML).toEqual('+1&nbsp;more');
             expect(moreIndicatorList[1].innerHTML).toEqual('+1&nbsp;more');
             expect(moreIndicatorList[10].innerHTML).toEqual('+1&nbsp;more');
@@ -2464,7 +2464,7 @@ describe('Schedule timeline work week view', () => {
 
         it('Checking events elements', () => {
             let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            expect(eventElementList.length).toEqual(30);
+            expect(eventElementList.length).toEqual(29);
             let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
             expect(eventWrapperList.length).toEqual(10);
         });
@@ -2478,8 +2478,8 @@ describe('Schedule timeline work week view', () => {
 
         it('Checking right icon', () => {
             let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            expect(eventElementList[24].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('All Day Event - Next week');
-            expect(eventElementList[24].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-right-icon'))
+            expect(eventElementList[25].querySelector('.e-inner-wrap .e-subject').innerHTML).toEqual('Recurrence Event - Next week');
+            expect(eventElementList[25].querySelectorAll('.e-appointment-details .e-indicator')[0].classList.contains('e-right-icon'))
                 .toBeTruthy();
         });
 
@@ -2492,7 +2492,7 @@ describe('Schedule timeline work week view', () => {
 
         it('More event element checking', () => {
             let moreIndicatorList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-more-indicator'));
-            expect(moreIndicatorList.length).toEqual(20);
+            expect(moreIndicatorList.length).toEqual(17);
             expect(moreIndicatorList[0].innerHTML).toEqual('+1&nbsp;more');
             expect(moreIndicatorList[1].innerHTML).toEqual('+1&nbsp;more');
             expect(moreIndicatorList[10].innerHTML).toEqual('+1&nbsp;more');

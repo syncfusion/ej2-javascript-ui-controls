@@ -59,6 +59,11 @@ export declare class Columns extends ChildProperty<Columns> {
      * @default null
      */
     value: string[] | number[] | string | number | boolean | Date;
+    /**
+     * Specifies the category for columns.
+     * @default null
+     */
+    category: string;
 }
 export declare class Rule extends ChildProperty<Rule> {
     /**
@@ -141,7 +146,6 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private btnGroupId;
     private levelColl;
     private isImportRules;
-    private filterIndex;
     private parser;
     private defaultLocale;
     private l10n;
@@ -154,6 +158,8 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private groupElem;
     private dataColl;
     private dataManager;
+    private fields;
+    private selectedColumn;
     /**
      * Triggers when the component is created.
      * @event
@@ -449,6 +455,7 @@ export interface ChangeEventArgs extends BaseEventArgs {
     ruleID?: string;
     value?: string | number | Date | boolean | string[];
     selectedIndex?: number;
+    selectedField?: string;
     cancel?: boolean;
     type?: string;
 }

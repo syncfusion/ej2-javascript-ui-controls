@@ -590,6 +590,7 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
                         this.tooltipModule.tooltipObject.fill = this.tooltipSettings.fill;
                         this.tooltipModule.tooltipObject.border = this.tooltipSettings.border;
                         this.tooltipModule.tooltipObject.textStyle = this.tooltipSettings.textStyle;
+                        this.tooltipModule.tooltipObject.template = this.tooltipSettings.template;
                         this.tooltipModule.tooltipObject.refresh();
                     }
                     break;

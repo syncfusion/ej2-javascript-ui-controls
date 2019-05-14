@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.47 (2019-05-14)
+
+### Tooltip
+
+#### New Features
+
+- #234933 - Now the tooltip is showing while hovering the tooltip content element in hover mode.
+
 ## 17.1.40 (2019-04-09)
 
 ### Dialog

@@ -43,13 +43,8 @@ describe('RTE BASIC PROPERTIES - enableRtl - ', () => {
                     },
                     toolbarSettings: {
                         enable: true,
-                        items: ['Bold', 'Italic', 'Underline', 'StrikeThrough',
-                            'FontName', 'FontSize', 'FontColor', 'BackgroundColor',
-                            'LowerCase', 'UpperCase', '|',
-                            'Formats', 'Alignments', 'OrderedList', 'UnorderedList',
-                            'Outdent', 'Indent', '|',
-                            'CreateLink', 'Image', '|', 'ClearFormat', 'Print',
-                            'SourceCode', 'FullScreen', '|', 'Undo', 'Redo']
+                        items: ['Bold', 'FontName', 'FontSize', 'FontColor', 'BackgroundColor',
+                            'Formats', 'Alignments', 'CreateLink', 'Image']
                     },
                     quickToolbarSettings: { enable: true },
                     value: `<p id="inline">Inline</p>`

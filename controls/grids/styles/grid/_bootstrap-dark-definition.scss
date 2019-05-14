@@ -187,7 +187,7 @@ $grid-header-font-weight: Bold !default;
 $grid-filtercell-both-border-width: 2px 0 0 1px !default;
 $grid-header-border-color: $grey-88 !default;
 $grid-rowcell-line-height: 19px !default;
-$grid-content-font-color: rgba($grey-dark-font, 1) !default;
+$grid-content-font-color: $grey-dark-font !default;
 $grid-hover-content-font-color: $grey-dark-font !default;
 $grid-cell-border-color: $grey-88 !default;
 $grid-content-bg-color: $grey-base !default;
@@ -496,3 +496,6 @@ $grid-rtl-group-sorticon-margin-left: 0 !default;
 $grid-column-menu-padding: 6px !default;
 $grid-rtl-column-menu-left: 5px !default;
 $grid-checkboxfiltertext-width: 150px !default;
+$grid-rtl-column-menu-margin: -20px -18px -18px 1px !default;
+$grid-rtl-textwrap-column-menu-margin: -15px -13px -23px -3px !default;
+

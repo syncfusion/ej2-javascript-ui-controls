@@ -191,6 +191,14 @@ describe('Heatmap Control', () => {
             trigger.mousemoveEvent(tempElement, 0, 0, 60, 20, false);
             expect(document.getElementById('containerCelltooltipcontainer_path').getAttribute("fill")).toBe("Pink");
         });
+        it('Check tooltip template support', function () {
+            heatmap.tooltipSettings.template = "<div>${xValue}</div><div>${yValue}</div>${value}";
+            heatmap.refresh();
+            tempElement = document.getElementById('container_HeatMapRect_0');
+            trigger.mousemoveEvent(tempElement, 0, 0, 60, 20, false);
+            tempElement = document.getElementById('containerCelltooltipcontainerparent_template');
+            expect(tempElement.textContent).toBe("09100");
+        });
     });
     it('memory leak', () => {     
         profile.sample();

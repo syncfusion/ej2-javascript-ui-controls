@@ -2363,6 +2363,10 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             this.trigger(actionComplete, args);
         };
         this.grid.rowDataBound = function (args) {
+            if (args.row instanceof DocumentFragment) {
+                let row = (args.row).querySelector('tr');
+                args.row = row;
+            }
             if (isNullOrUndefined(this.isPrinting)) {
                 setValue('isPrinting', false, args);
             }

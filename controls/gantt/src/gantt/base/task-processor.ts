@@ -31,31 +31,43 @@ export class TaskProcessor extends DateProcessor {
     /**
      * @private
      */
-    public checkDataBinding(): void {
+    public checkDataBinding(isChange?: boolean): void {
+        if (isChange) {
+            this.parent.flatData = [];
+            this.parent.currentViewData = [];
+            this.dataArray = [];
+            this.taskIds = [];
+            this.parent.ids = [];
+            this.recordIndex = 0;
+            this.taskIds = [];
+            this.hierarchyData = [];
+            this.parent.predecessorsCollection = [];
+            this.parent.treeGrid.parentData = [];
+        }
         if (isNullOrUndefined(this.parent.dataSource)) {
             this.parent.dataSource = [];
-            this.parent.renderGantt();
+            this.parent.renderGantt(isChange);
         } else if (this.parent.dataSource instanceof DataManager) {
-            this.initDataSource();
+            this.initDataSource(isChange);
         } else if (this.parent.dataSource.length > 0) {
             this.dataArray = this.parent.dataSource;
             this.cloneDataSource();
-            this.parent.renderGantt();
+            this.parent.renderGantt(isChange);
         } else {
-            this.parent.renderGantt();
+            this.parent.renderGantt(isChange);
         }
     }
-    private initDataSource(): void {
+    private initDataSource(isChange?: boolean): void {
         let queryManager: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
         queryManager.requiresCount();
         let dataManager: DataManager = this.parent.dataSource as DataManager;
         dataManager.executeQuery(queryManager).then((e: ReturnOption) => {
             this.dataArray = <Object[]>e.result;
             this.cloneDataSource();
-            this.parent.renderGantt();
+            this.parent.renderGantt(isChange);
         }).catch((e: ReturnType) => {
             // Trigger action failure event
-            this.parent.renderGantt();
+            this.parent.renderGantt(isChange);
             this.parent.trigger('actionFailure', { error: e });
         });
     }

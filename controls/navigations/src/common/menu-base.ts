@@ -275,7 +275,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     /**
      * Specifies target element selector in which the ContextMenu should be opened.
-     * Not applicable to Menu component.
+     * Specifies target element to open/close Menu while click in Hamburger mode.
      * @default ''
      * @private
      */
@@ -490,15 +490,8 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     }
 
     private mouseDownHandler(e: MouseEvent): void {
-        let isValidLI: boolean = false;
-        if (this.isMenu && !this.showItemOnClick) {
-            let cul: Element = this.getUlByNavIdx();
-            if (cul) {
-                isValidLI = Array.prototype.indexOf.call(cul.children, (e.target as HTMLElement).closest('li')) > -1;
-            }
-        }
         if (closest(e.target as Element, '.e-' + this.getModuleName() + '-wrapper') !== this.getWrapper()
-            && (!closest(e.target as Element, '.e-' + this.getModuleName() + '-popup') || isValidLI)) {
+            && (!closest(e.target as Element, '.e-' + this.getModuleName() + '-popup'))) {
             this.closeMenu(this.isMenu ? null : this.navIdx.length, e);
         }
     }
@@ -1267,18 +1260,16 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                     }
                 }
             } else {
-                if (this.isMenu) {
-                    if (trgt.tagName === 'DIV' && this.navIdx.length && closest(trgt, '.e-menu-vscroll')) {
-                        let popupEle: Element = closest(trgt, '.' + POPUP);
-                        let cIdx: number = Array.prototype.indexOf.call(this.getPopups(), popupEle) + 1;
-                        if (cIdx < this.navIdx.length) {
-                            this.closeMenu(cIdx + 1, e);
-                            this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]);
-                        }
+                if (this.isMenu && trgt.tagName === 'DIV' && this.navIdx.length && closest(trgt, '.e-menu-vscroll')) {
+                    let popupEle: Element = closest(trgt, '.' + POPUP);
+                    let cIdx: number = Array.prototype.indexOf.call(this.getPopups(), popupEle) + 1;
+                    if (cIdx < this.navIdx.length) {
+                        this.closeMenu(cIdx + 1, e);
+                        this.removeLIStateByClass([FOCUSED, SELECTED], [popupEle]);
                     }
-                    if (trgt.tagName === 'SPAN' && trgt.classList.contains('e-menu-icon')) {
-                        this.menuHeaderClickHandler(e);
-                    }
+                } else if (this.isMenu && this.hamburgerMode && trgt.tagName === 'SPAN'
+                    && trgt.classList.contains('e-menu-icon')) {
+                    this.menuHeaderClickHandler(e);
                 } else {
                     if (trgt.tagName !== 'UL' || trgt.parentElement !== wrapper) {
                         if (!cli || !cli.querySelector('.' + CARET)) {

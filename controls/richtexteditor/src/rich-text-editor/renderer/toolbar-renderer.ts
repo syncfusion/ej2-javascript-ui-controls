@@ -319,6 +319,7 @@ export class ToolbarRenderer implements IRenderer {
                 args.element.classList.add(CLS_COLOR_PALETTE);
             },
             change: (colorPickerArgs: IColorPickerEventArgs): void => {
+                if (isIDevice()) { proxy.parent.notify(events.selectionRestore, {}); }
                 /* tslint:disable */
                 let colorpickerValue: string = Browser.info.name === 'msie' || Browser.info.name === 'edge' || isIDevice() ? colorPickerArgs.currentValue.rgba : colorPickerArgs.currentValue.hex;
                 /* tslint:enable */

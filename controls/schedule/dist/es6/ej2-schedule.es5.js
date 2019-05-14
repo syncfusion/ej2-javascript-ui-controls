@@ -3945,15 +3945,41 @@ var EventBase = /** @__PURE__ @class */ (function () {
     };
     EventBase.prototype.filterEventsByResource = function (resourceTdData, appointments) {
         if (appointments === void 0) { appointments = this.parent.eventsProcessed; }
-        var predicate;
         var resourceCollection = this.parent.resourceBase.resourceCollection;
+        var resourceData = [];
+        var events = appointments;
         for (var level = 0; level < resourceCollection.length; level++) {
             var operator = this.parent.activeViewOptions.group.allowGroupEdit && resourceCollection[level].allowMultiple ?
-                'contains' : 'equal';
-            var tempPredicate = new Predicate(resourceCollection[level].field, operator, resourceTdData.groupOrder[level]);
-            predicate = predicate ? predicate.and(tempPredicate) : tempPredicate;
+                contains : equal;
+            var resource = {
+                field: resourceCollection[level].field,
+                operator: operator,
+                value: resourceTdData.groupOrder[level]
+            };
+            resourceData.push(resource);
         }
-        return new DataManager({ json: appointments }).executeLocal(new Query().where(predicate));
+        var app = [];
+        for (var i = 0; i < appointments.length; i++) {
+            var isResourceMatched = true;
+            for (var j = 0; j < resourceData.length; j++) {
+                isResourceMatched = resourceData[j].operator(events[i][resourceData[j].field], resourceData[j].value);
+                if (!isResourceMatched) {
+                    break;
+                }
+            }
+            if (isResourceMatched) {
+                app.push(events[i]);
+            }
+        }
+        function equal(field, fieldValue) {
+            return field === fieldValue;
+        }
+        function contains(field, fieldValue) {
+            var resourceField = ((field instanceof Array) ?
+                field : isNullOrUndefined(field) ? '' : field.toString());
+            return resourceField.indexOf(fieldValue) > -1;
+        }
+        return app;
     };
     EventBase.prototype.sortByTime = function (appointments) {
         var fieldMapping = this.parent.eventFields;

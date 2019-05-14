@@ -10,7 +10,8 @@ import { ImageProperties } from './properties-pane/image-properties-pane';
 import { TocProperties } from './properties-pane/table-of-content-pane';
 import { TableProperties } from './properties-pane/table-properties-pane';
 import { StatusBar } from './properties-pane/status-bar';
-import { ViewChangeEventArgs, RequestNavigateEventArgs } from '../document-editor/base';
+// tslint:disable-next-line:max-line-length
+import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs } from '../document-editor/base';
 import { createSpinner } from '@syncfusion/ej2-popups';
 
 /**
@@ -55,6 +56,20 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     @Event()
     public destroyed: EmitType<Object>;
+
+    /**
+     * Triggers whenever the content changes in the document editor container.
+     * @event
+     */
+    @Event()
+    public contentChange: EmitType<ContainerContentChangeEventArgs>;
+    /**
+     * Triggers whenever selection changes in the document editor container.
+     * @event
+     */
+    @Event()
+    public selectionChange: EmitType<ContainerSelectionChangeEventArgs>;
+
     /**
      * Document editor container's toolbar module
      */
@@ -422,6 +437,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.statusBar) {
             this.statusBar.updatePageCount();
         }
+        let eventArgs: ContainerContentChangeEventArgs = { source: this };
+        this.trigger('contentChange', eventArgs);
     }
     /**
      * @private
@@ -443,6 +460,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     public onSelectionChange(): void {
         setTimeout(() => {
             this.showPropertiesPaneOnSelection();
+            let eventArgs: ContainerSelectionChangeEventArgs = { source: this };
+            this.trigger('selectionChange', eventArgs);
         });
     }
     /**

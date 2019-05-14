@@ -87,6 +87,7 @@ export interface IRichTextEditor extends Component<HTMLElement> {
     placeholder?: string;
     valueContainer?: HTMLTextAreaElement;
     editorMode?: EditorMode;
+    enableHtmlEncode?: boolean;
     formatter?: IFormatter;
     inputElement?: HTMLElement;
     toolbarModule?: Toolbar;
@@ -159,7 +160,7 @@ export interface IRenderer {
 
 export interface NotifyArgs {
     module?: string;
-    args?: KeyboardEvent | MouseEvent | ClickEventArgs | ClipboardEvent;
+    args?: KeyboardEvent | MouseEvent | ClickEventArgs | ClipboardEvent | TouchEvent;
     cancel?: boolean;
     requestType?: Action;
     enable?: boolean;
@@ -180,6 +181,14 @@ export interface NotifyArgs {
     callBack?(args?: string): void;
     file?: Blob;
     insertElement?: Element;
+    touchData?: ITouchData;
+}
+
+export interface ITouchData {
+    prevClientX?: number;
+    prevClientY?: number;
+    clientX?: number;
+    clientY?: number;
 }
 
 export interface IColorPickerModel extends ColorPickerModel {
@@ -214,7 +223,7 @@ export interface IColorPickerRenderArgs {
 
 export interface IImageNotifyArgs {
     module?: string;
-    args?: KeyboardEvent | MouseEvent | ClickEventArgs | IToolbarItemModel | ClipboardEvent;
+    args?: KeyboardEvent | MouseEvent | ClickEventArgs | IToolbarItemModel | ClipboardEvent | TouchEvent;
     cancel?: boolean;
     requestType?: Action;
     enable?: boolean;

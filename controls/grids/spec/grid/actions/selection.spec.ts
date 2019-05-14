@@ -3007,9 +3007,6 @@ describe('Grid Touch Selection', () => {
     describe('Cell Selection Issue Fixes', () =>{
         let gridObj: Grid;
         let cellSelected: EmitType<Object>;
-        let template: Element = createElement('div', { id: 'template' });
-            template.innerHTML = '<div>${CustomerID}</div>';
-            document.body.appendChild(template);
         beforeAll((done) => {
             gridObj = createGrid({
                     dataSource: data,
@@ -3022,7 +3019,7 @@ describe('Grid Touch Selection', () => {
                         { field: 'OrderID', headerText: 'OrderID', width: 180 },
           {
             headerText: 'Employee Image', textAlign: 'Center',
-            template: '#template', width: 150
+            template: '<div>${CustomerID}</div>', width: 150
         },
             { field: 'ShipPostalCode', headerText: 'ShipPostalCode', width: 195, textAlign: 'Right' },
             { field: 'ShipCity', headerText: 'ShipCity', width: 120 },
@@ -3046,7 +3043,7 @@ describe('Grid Touch Selection', () => {
         });
             afterAll(() => {
             destroy(gridObj);
-            gridObj = cellSelected = template = null;
+            gridObj = cellSelected = null;
         });
     });
 

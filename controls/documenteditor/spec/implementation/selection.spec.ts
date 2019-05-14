@@ -4718,7 +4718,7 @@ describe('Insert Hyperlink Validation', () => {
     });
     it('Insert Hyperlink With new display text', () => {
         editor.openBlank();
-        editor.editorModule.insertHyperlink('http://bing.com', 'Bing', true);
+        editor.editorModule.insertHyperlinkInternal('http://bing.com', 'Bing', true);
         let line: LineWidget = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
         expect(line.children.length).toBe(5);
     });
@@ -4731,7 +4731,7 @@ describe('Insert Hyperlink Validation', () => {
         editor.selection.end.location = editor.selection.getPhysicalPositionInline(span, span.text.length, false);
         editor.selection.end.offset = span.text.length;
         editor.selection.end.currentWidget = editor.selection.end.currentWidget;
-        editor.editorModule.insertHyperlink('http://bing.com', 'Google', false);
+        editor.editorModule.insertHyperlinkInternal('http://bing.com', 'Google', false);
         let line2: LineWidget = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
         expect(line2.children.length).toBe(5);
     });
@@ -4745,8 +4745,8 @@ describe('Insert Hyperlink Validation', () => {
         editor.selection.end.location = editor.selection.getPhysicalPositionInline(span, span.text.length, false);
         editor.selection.end.offset = span.text.length;
         editor.selection.end.currentWidget = editor.selection.end.currentWidget;
-        editor.editorModule.insertHyperlink('http://bing.com', 'Bing', true);
-        editor.editorModule.insertHyperlink('http://bing.com', 'Google', true);
+        editor.editorModule.insertHyperlinkInternal('http://bing.com', 'Bing', true);
+        editor.editorModule.insertHyperlinkInternal('http://bing.com', 'Google', true);
         let line2: LineWidget = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
         expect(line2.children.length).toBe(10);
     });
@@ -4760,13 +4760,13 @@ describe('Insert Hyperlink Validation', () => {
         editor.selection.end.location = editor.selection.getPhysicalPositionInline(span, span.text.length, false);
         editor.selection.end.offset = span.text.length;
         editor.selection.end.currentWidget = editor.selection.end.currentWidget;
-        editor.editorModule.insertHyperlink('http://bing.com', 'Google', false);
-        editor.editorModule.insertHyperlink('http://google.com', 'bing', false);
+        editor.editorModule.insertHyperlinkInternal('http://bing.com', 'Google', false);
+        editor.editorModule.insertHyperlinkInternal('http://google.com', 'bing', false);
         editor.selection.start.location = editor.selection.getPhysicalPositionInline(span, 40, false);
         editor.selection.start.offset = 40;
         editor.selection.end.location = editor.selection.getPhysicalPositionInline(span, 40, false);
         editor.selection.end.offset = 40;
-        editor.editorModule.insertHyperlink('http://google.com', 'Google', true);
+        editor.editorModule.insertHyperlinkInternal('http://google.com', 'Google', true);
         let line2: LineWidget = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
         expect(line2.children.length).toBe(15);
     });
@@ -4780,12 +4780,12 @@ describe('Insert Hyperlink Validation', () => {
         editor.selection.end.location = editor.selection.getPhysicalPositionInline(span, span.text.length, false);
         editor.selection.end.offset = span.text.length;
         editor.selection.end.currentWidget = editor.selection.end.currentWidget;
-        editor.editorModule.insertHyperlink('http://bing.com', 'Google', true);
+        editor.editorModule.insertHyperlinkInternal('http://bing.com', 'Google', true);
         editor.selection.start.location = editor.selection.getPhysicalPositionInline(span, 35, false);
         editor.selection.start.offset = 35;
         editor.selection.end.location = editor.selection.getPhysicalPositionInline(span, 35, false);
         editor.selection.end.offset = 35;
-        editor.editorModule.insertHyperlink('http://google.com', 'Bing', true);
+        editor.editorModule.insertHyperlinkInternal('http://google.com', 'Bing', true);
         let line2: LineWidget = (editor.viewer.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
         expect(line2.children.length).toBe(5);
         editor.editorModule.removeHyperlink();
@@ -5005,7 +5005,7 @@ describe('Get previous valid line ', () => {
         expect(selection.getPreviousValidElement(end)).not.toBe(begin);
     });
     it('Validate text position testing', () => {
-        editor.editorModule.insertHyperlink('http://syncfusion.com', 'Syncfusion Software', true);
+        editor.editorModule.insertHyperlinkInternal('http://syncfusion.com', 'Syncfusion Software', true);
 
         let result = editor.selection.start.currentWidget.children[3] as TextElementBox;
         let end = editor.selection.start.currentWidget.children[4];
@@ -5031,7 +5031,7 @@ describe('Get previous valid line ', () => {
         span2.text = 'https://syncfusion.com';
         span2.line = editor.selection.start.currentWidget;
         editor.editorModule.insertInlineInSelection(selection, span2);
-        editor.editorModule.insertHyperlink('http://syncfusion.com', 'Syncfusion Software', true);
+        editor.editorModule.insertHyperlinkInternal('http://syncfusion.com', 'Syncfusion Software', true);
         let paragaph: ParagraphWidget = new ParagraphWidget();
         let begin = editor.selection.start.currentWidget.children[2];
         let span = editor.selection.start.currentWidget.children[3];
@@ -5053,7 +5053,7 @@ describe('Get previous valid line ', () => {
         span2.text = 'https://syncfusion.com';
         span2.line = editor.selection.start.currentWidget;
         editor.editorModule.insertInlineInSelection(selection, span2);
-        editor.editorModule.insertHyperlink('http://syncfusion.com', 'Syncfusion Software', true);
+        editor.editorModule.insertHyperlinkInternal('http://syncfusion.com', 'Syncfusion Software', true);
         let paragaph: ParagraphWidget = new ParagraphWidget();
         let begin = editor.selection.start.currentWidget.children[2];
         let span = editor.selection.start.currentWidget.children[3];
