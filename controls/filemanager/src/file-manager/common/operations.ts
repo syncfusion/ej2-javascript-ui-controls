@@ -96,9 +96,19 @@ function createAjax(
         dataType: getValue('dataType', eventArgs.ajaxSettings),
         contentType: getValue('contentType', eventArgs.ajaxSettings),
         data: getValue('data', eventArgs.ajaxSettings),
+        beforeSend: (args: { cancel: false }) => {
+          if (parent.ajaxSettings.headers) {
+            for (const header in parent.ajaxSettings.headers) {
+              ajax.httpRequest.setRequestHeader(header, parent.ajaxSettings.headers[header]);
+            }
+          }
+        },
         onSuccess: (result: ReadArgs) => {
             if (typeof (result) === 'string') {
                 result = JSON.parse(result);
+            }
+            if (parent.ajaxSettings.onSuccess) {
+              result = parent.ajaxSettings.onSuccess(result);
             }
             parent.notify(events.afterRequest, { action: 'success' });
             if (!isNOU(result.files)) {
