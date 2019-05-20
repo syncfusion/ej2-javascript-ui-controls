@@ -888,6 +888,9 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
         if (!isNullOrUndefined(newProp.ajaxSettings.getImageUrl)) {
             this.setProperties({ ajaxSettings: { getImageUrl: newProp.ajaxSettings.getImageUrl } }, true);
         }
+        if (!isNullOrUndefined(newProp.ajaxSettings.headers)) {
+            this.setProperties({ ajaxSettings: { headers: newProp.ajaxSettings.headers } }, true);
+        }
         this.setProperties({ path: '/' }, true);
         this.setProperties({ selectedItems: [] }, true);
         super.refresh();

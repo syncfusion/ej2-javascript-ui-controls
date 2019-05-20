@@ -1,4 +1,5 @@
 import { Property, ChildProperty } from '@syncfusion/ej2-base';
+import { ReadArgs } from '../base';
 
 /**
  * Interface for a class AjaxSettings
@@ -28,5 +29,18 @@ export interface AjaxSettingsModel {
      * @default null
      */
     url?: string;
+
+    /**
+     * Specifies custom headers like authentication tokens
+     * @default null
+     */
+    headers?: { [header: string]: string };
+
+
+    /**
+     * Specifies a convert function, executed after successfull load
+     * @default null
+     */
+    onSuccess?: (result: unknown) => ReadArgs;
 
 }
