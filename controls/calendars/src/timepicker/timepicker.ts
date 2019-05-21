@@ -290,7 +290,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * Gets or sets the minimum time value that can be allowed to select in TimePicker.
      * > For more details refer to 
      * [`Time Range`](../../timepicker/time-range/) documentation.
-     * @default 00:00
+     * @default null
      */
     @Property(null)
     public min: Date;
@@ -298,7 +298,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * Gets or sets the maximum time value that can be allowed to select in TimePicker.
      * > For more details refer to 
      * [`Time Range`](../../timepicker/time-range/) documentation.
-     * @default 00:00
+     * @default null
      */
     @Property(null)
     public max: Date;

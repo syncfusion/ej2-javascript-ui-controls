@@ -324,7 +324,7 @@ describe('Circular-Gauge Control', () => {
                 done();
             };
             gauge.titleStyle.color = '';
-            gauge.theme = 'Highcontrast';
+            gauge.theme = 'HighContrast';
             gauge.title = 'circular gauge';
             gauge.axes[0].majorTicks.width = 5;
             gauge.refresh();

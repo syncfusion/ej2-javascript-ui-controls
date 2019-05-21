@@ -118,7 +118,8 @@ export class Link {
 
     private editAreaClickHandler(e: IImageNotifyArgs): void {
         let args: MouseEvent = e.args as MouseEvent;
-        if (args.which === 2 || args.which === 3) { return; }
+        let showOnRightClick: boolean = this.parent.quickToolbarSettings.showOnRightClick;
+        if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) { return; }
         if (this.parent.editorMode === 'HTML' && this.parent.quickToolbarModule && this.parent.quickToolbarModule.linkQTBar) {
             this.quickToolObj = this.parent.quickToolbarModule;
             let target: HTMLElement = args.target as HTMLElement;

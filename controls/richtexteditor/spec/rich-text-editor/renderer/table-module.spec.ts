@@ -1,6 +1,6 @@
 import { Browser, closest, isNullOrUndefined } from "@syncfusion/ej2-base";
 import { RichTextEditor } from '../../../src/rich-text-editor/base/rich-text-editor';
-import { renderRTE, destroy, setCursorPoint } from './../render.spec';
+import { renderRTE, destroy, setCursorPoint, androidUA, iPhoneUA, currentBrowserUA } from './../render.spec';
 import { InsertHtml } from '../../../src/editor-manager/plugin/inserthtml';
 import { NodeSelection } from '../../../src/selection/index';
 import { QuickToolbar, MarkdownEditor, HtmlEditor, Table, Toolbar, IRenderer, ToolbarRenderer } from "../../../src/rich-text-editor/index";
@@ -1740,6 +1740,373 @@ the tool bar support, it�s also customiza</p><table class="e-rte-table" style=
                 expect(applied.length === 0).toBe(true);
                 done();
             });
+        });
+    });
+    describe(' Quick Toolbar showOnRightClick property testing', () => {
+        let rteObj: any;
+        let ele: HTMLElement;
+        it(" leftClick with `which` as '2' with quickpopup availability testing ", (done: Function) => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    showOnRightClick: false
+                },
+                value: `<table class="e-rte-table" style="width: 100%;"><tbody><tr><td class="" style="width: 50%;"><ol><li>item 1<br></li><li>item 2<br></li><li>item3</li></ol></td><td style="width: 50%;"><br></td></tr></tbody></table>`
+            });
+            ele = rteObj.element;
+            expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
+            let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            cntTarget.dispatchEvent(clickEvent);
+            let target: HTMLElement = ele.querySelector('.e-rte-table td');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 2 };
+            rteObj.mouseUp(eventsArg);
+            setTimeout(() => {
+                let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+                expect(isNullOrUndefined(quickPop)).toBe(true);
+                done();
+            }, 200);
+        });
+        it(" leftClick with `which` as '3' with quickpopup availability testing ", (done: Function) => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    showOnRightClick: false
+                },
+                value: `<table class="e-rte-table" style="width: 100%;"><tbody><tr><td class="" style="width: 50%;"><ol><li>item 1<br></li><li>item 2<br></li><li>item3</li></ol></td><td style="width: 50%;"><br></td></tr></tbody></table>`
+            });
+            ele = rteObj.element;
+            expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
+            let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            cntTarget.dispatchEvent(clickEvent);
+            let target: HTMLElement = ele.querySelector('.e-rte-table td');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3 };
+            rteObj.contextHandler({ preventDefault: () => { } });
+            rteObj.mouseUp(eventsArg);
+            setTimeout(() => {
+                let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+                expect(isNullOrUndefined(quickPop)).toBe(true);
+                done();
+            }, 200);
+        });
+        it(" leftClick with `which` as '1' with quickpopup availability testing ", (done: Function) => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    showOnRightClick: false
+                },
+                value: `<table class="e-rte-table" style="width: 100%;"><tbody><tr><td class="" style="width: 50%;"><ol><li>item 1<br></li><li>item 2<br></li><li>item3</li></ol></td><td style="width: 50%;"><br></td></tr></tbody></table>`
+            });
+            ele = rteObj.element;
+            expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
+            let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            cntTarget.dispatchEvent(clickEvent);
+            let target: HTMLElement = ele.querySelector('.e-rte-table td');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
+            rteObj.mouseUp(eventsArg);
+            setTimeout(() => {
+                let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
+                expect(quickPop.length > 0).toBe(true);
+                expect(isNullOrUndefined(quickPop[0])).toBe(false);
+                done();
+            }, 200);
+        });
+        it(" rightClick with `which` as '2' with quickpopup availability testing ", (done: Function) => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    showOnRightClick: true
+                },
+                value: `<table class="e-rte-table" style="width: 100%;"><tbody><tr><td class="" style="width: 50%;"><ol><li>item 1<br></li><li>item 2<br></li><li>item3</li></ol></td><td style="width: 50%;"><br></td></tr></tbody></table>`
+            });
+            ele = rteObj.element;
+            expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(true);
+            let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            cntTarget.dispatchEvent(clickEvent);
+            let target: HTMLElement = ele.querySelector('.e-rte-table td');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 2 };
+            rteObj.mouseUp(eventsArg);
+            setTimeout(() => {
+                let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+                expect(isNullOrUndefined(quickPop)).toBe(true);
+                done();
+            }, 200);
+        });
+        it(" rightClick with `which` as '1' with quickpopup availability testing ", (done: Function) => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    showOnRightClick: true
+                },
+                value: `<table class="e-rte-table" style="width: 100%;"><tbody><tr><td class="" style="width: 50%;"><ol><li>item 1<br></li><li>item 2<br></li><li>item3</li></ol></td><td style="width: 50%;"><br></td></tr></tbody></table>`
+            });
+            ele = rteObj.element;
+            expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(true);
+            let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            cntTarget.dispatchEvent(clickEvent);
+            let target: HTMLElement = ele.querySelector('.e-rte-table td');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
+            rteObj.mouseUp(eventsArg);
+            setTimeout(() => {
+                let quickPop: any = <HTMLElement>document.querySelectorAll('.e-rte-quick-popup')[0];
+                expect(isNullOrUndefined(quickPop)).toBe(true);
+                done();
+            }, 200);
+        });
+        it(" rightClick with `which` as '3' with quickpopup availability testing ", (done: Function) => {
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    showOnRightClick: true
+                },
+                value: `<table class="e-rte-table" style="width: 100%;"><tbody><tr><td class="" style="width: 50%;"><ol><li>item 1<br></li><li>item 2<br></li><li>item3</li></ol></td><td style="width: 50%;"><br></td></tr></tbody></table>`
+            });
+            ele = rteObj.element;
+            expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(true);
+            let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            cntTarget.dispatchEvent(clickEvent);
+            let target: HTMLElement = ele.querySelector('.e-rte-table td');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3 };
+            rteObj.mouseUp(eventsArg);
+            setTimeout(() => {
+                let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
+                expect(quickPop.length > 0).toBe(true);
+                expect(isNullOrUndefined(quickPop[0])).toBe(false);
+                done();
+            }, 200);
+        });
+        it(" Android - 'leftClick' with quickpopup availability testing", (done: Function) => {
+            Browser.userAgent = androidUA;
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    showOnRightClick: false
+                },
+                value: `<table class="e-rte-table" style="width: 100%;"><tbody><tr><td class="" style="width: 50%;"><ol><li>item 1<br></li><li>item 2<br></li><li>item3</li></ol></td><td style="width: 50%;"><br></td></tr></tbody></table>`
+            });
+            ele = rteObj.element;
+            expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
+            let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            cntTarget.dispatchEvent(clickEvent);
+            let target: HTMLElement = ele.querySelector('.e-rte-table td');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
+            rteObj.mouseUp(eventsArg);
+            setTimeout(() => {
+                let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
+                expect(quickPop.length > 0).toBe(true);
+                expect(isNullOrUndefined(quickPop[0])).toBe(false);
+                Browser.userAgent = currentBrowserUA;
+                done();
+            }, 400);
+        });
+        it(" Android - 'rightClick' with quickpopup availability testing", (done: Function) => {
+            Browser.userAgent = androidUA;
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    showOnRightClick: true
+                },
+                value: `<table class="e-rte-table" style="width: 100%;"><tbody><tr><td class="" style="width: 50%;"><ol><li>item 1<br></li><li>item 2<br></li><li>item3</li></ol></td><td style="width: 50%;"><br></td></tr></tbody></table>`
+            });
+            ele = rteObj.element;
+            expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(true);
+            let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            cntTarget.dispatchEvent(clickEvent);
+            let target: HTMLElement = ele.querySelector('.e-rte-table td');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3 };
+            rteObj.touchHandler({ originalEvent: eventsArg });
+            rteObj.mouseUp(eventsArg);
+            setTimeout(() => {
+                let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
+                expect(quickPop.length > 0).toBe(true);
+                expect(isNullOrUndefined(quickPop[0])).toBe(false);
+                Browser.userAgent = currentBrowserUA;
+                done();
+            }, 400);
+        });
+        it(" Android - 'rightClick' with onproperty change and quickpopup availability testing", (done: Function) => {
+            Browser.userAgent = androidUA;
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    showOnRightClick: true
+                },
+                value: `<table class="e-rte-table" style="width: 100%;"><tbody><tr><td class="" style="width: 50%;"><ol><li>item 1<br></li><li>item 2<br></li><li>item3</li></ol></td><td style="width: 50%;"><br></td></tr></tbody></table>`
+            });
+            ele = rteObj.element;
+            expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(true);
+            let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            cntTarget.dispatchEvent(clickEvent);
+            let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
+            expect(quickPop.length > 0).toBe(false);
+            rteObj.quickToolbarSettings.showOnRightClick = false;
+            rteObj.dataBind();
+            let target: HTMLElement = ele.querySelector('.e-rte-table td');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1 };
+            expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
+            rteObj.mouseUp(eventsArg);
+            setTimeout(() => {
+                let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
+                expect(quickPop.length > 0).toBe(true);
+                expect(isNullOrUndefined(quickPop[0])).toBe(false);
+                Browser.userAgent = currentBrowserUA;
+                done();
+            }, 400);
+        });
+        it(" Android - 'leftClick' with onproperty change and quickpopup availability testing", (done: Function) => {
+            Browser.userAgent = androidUA;
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    showOnRightClick: false
+                },
+                value: `<table class="e-rte-table" style="width: 100%;"><tbody><tr><td class="" style="width: 50%;"><ol><li>item 1<br></li><li>item 2<br></li><li>item3</li></ol></td><td style="width: 50%;"><br></td></tr></tbody></table>`
+            });
+            ele = rteObj.element;
+            expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
+            let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            cntTarget.dispatchEvent(clickEvent);
+            let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
+            expect(quickPop.length > 0).toBe(false);
+            rteObj.quickToolbarSettings.showOnRightClick = true;
+            rteObj.dataBind();
+            let target: HTMLElement = ele.querySelector('.e-rte-table td');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3 };
+            expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(true);
+            rteObj.touchHandler({ originalEvent: eventsArg });
+            rteObj.mouseUp(eventsArg);
+            setTimeout(() => {
+                let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
+                expect(quickPop.length > 0).toBe(true);
+                expect(isNullOrUndefined(quickPop[0])).toBe(false);
+                Browser.userAgent = currentBrowserUA;
+                done();
+            }, 400);
+        });
+        it(" iPhone - 'leftClick' with quickpopup availability testing", (done: Function) => {
+            Browser.userAgent = iPhoneUA;
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    showOnRightClick: false
+                },
+                value: `<table class="e-rte-table" style="width: 100%;"><tbody><tr><td class="" style="width: 50%;"><ol><li>item 1<br></li><li>item 2<br></li><li>item3</li></ol></td><td style="width: 50%;"><br></td></tr></tbody></table>`
+            });
+            ele = rteObj.element;
+            expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
+            let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            cntTarget.dispatchEvent(clickEvent);
+            let target: HTMLElement = ele.querySelector('.e-rte-table td');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
+            rteObj.mouseUp(eventsArg);
+            setTimeout(() => {
+                let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
+                expect(quickPop.length > 0).toBe(true);
+                expect(isNullOrUndefined(quickPop[0])).toBe(false);
+                Browser.userAgent = currentBrowserUA;
+                done();
+            }, 400);
+        });
+        it(" iPhone - 'rightClick' with quickpopup availability testing", (done: Function) => {
+            Browser.userAgent = iPhoneUA;
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    showOnRightClick: true
+                },
+                value: `<table class="e-rte-table" style="width: 100%;"><tbody><tr><td class="" style="width: 50%;"><ol><li>item 1<br></li><li>item 2<br></li><li>item3</li></ol></td><td style="width: 50%;"><br></td></tr></tbody></table>`
+            });
+            ele = rteObj.element;
+            expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(true);
+            let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            cntTarget.dispatchEvent(clickEvent);
+            let target: HTMLElement = ele.querySelector('.e-rte-table td');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
+            rteObj.touchHandler({ originalEvent: eventsArg });
+            rteObj.mouseUp(eventsArg);
+            setTimeout(() => {
+                let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
+                expect(quickPop.length > 0).toBe(true);
+                expect(isNullOrUndefined(quickPop[0])).toBe(false);
+                Browser.userAgent = currentBrowserUA;
+                done();
+            }, 400);
+        });
+        it(" iPhone - 'rightClick' with onproperty change and quickpopup availability testing", (done: Function) => {
+            Browser.userAgent = iPhoneUA;
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    showOnRightClick: true
+                },
+                value: `<table class="e-rte-table" style="width: 100%;"><tbody><tr><td class="" style="width: 50%;"><ol><li>item 1<br></li><li>item 2<br></li><li>item3</li></ol></td><td style="width: 50%;"><br></td></tr></tbody></table>`
+            });
+            ele = rteObj.element;
+            expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(true);
+            let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            cntTarget.dispatchEvent(clickEvent);
+            let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
+            expect(quickPop.length > 0).toBe(false);
+            rteObj.quickToolbarSettings.showOnRightClick = false;
+            rteObj.dataBind();
+            let target: HTMLElement = ele.querySelector('.e-rte-table td');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 1, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
+            expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
+            rteObj.mouseUp(eventsArg);
+            setTimeout(() => {
+                let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
+                expect(quickPop.length > 0).toBe(true);
+                expect(isNullOrUndefined(quickPop[0])).toBe(false);
+                Browser.userAgent = currentBrowserUA;
+                done();
+            }, 400);
+        });
+        it(" iPhone - 'leftClick' with onproperty change and quickpopup availability testing", (done: Function) => {
+            Browser.userAgent = iPhoneUA;
+            rteObj = renderRTE({
+                quickToolbarSettings: {
+                    showOnRightClick: false
+                },
+                value: `<table class="e-rte-table" style="width: 100%;"><tbody><tr><td class="" style="width: 50%;"><ol><li>item 1<br></li><li>item 2<br></li><li>item3</li></ol></td><td style="width: 50%;"><br></td></tr></tbody></table>`
+            });
+            ele = rteObj.element;
+            expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(false);
+            let cntTarget = <HTMLElement>ele.querySelectorAll(".e-content")[0]
+            let clickEvent: any = document.createEvent("MouseEvents");
+            clickEvent.initEvent("mousedown", false, true);
+            cntTarget.dispatchEvent(clickEvent);
+            let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
+            expect(quickPop.length > 0).toBe(false);
+            rteObj.quickToolbarSettings.showOnRightClick = true;
+            rteObj.dataBind();
+            let target: HTMLElement = ele.querySelector('.e-rte-table td');
+            let eventsArg: any = { pageX: 50, pageY: 300, target: target, which: 3, clientX: rteObj.clickPoints.clientX , clientY: rteObj.clickPoints.clientY };
+            expect(rteObj.quickToolbarSettings.showOnRightClick).toEqual(true);
+            rteObj.touchHandler({ originalEvent: eventsArg });
+            rteObj.mouseUp(eventsArg);
+            setTimeout(() => {
+                let quickPop: any = document.querySelectorAll('.e-rte-quick-popup') as NodeList;
+                expect(quickPop.length > 0).toBe(true);
+                expect(isNullOrUndefined(quickPop[0])).toBe(false);
+                Browser.userAgent = currentBrowserUA;
+                done();
+            }, 400);
+        });
+        afterEach((done: Function) => {
+            destroy(rteObj);
+            done();
         });
     });
 });

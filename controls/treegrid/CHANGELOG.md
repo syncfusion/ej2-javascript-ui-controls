@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.48 (2019-05-21)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- Styling alternate rows of TreeGrid works fine in collapsed state
+
 ## 17.1.47 (2019-05-14)
 
 ### TreeGrid

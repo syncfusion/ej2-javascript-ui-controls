@@ -166,12 +166,13 @@ export class InlineEditRender {
         let gObj: IGrid = this.parent;
         let gLen: number = 0;
         let isDetail: number = !isNullOrUndefined(gObj.detailTemplate) || !isNullOrUndefined(gObj.childGrid) ? 1 : 0;
+        let isDragable: number = gObj.isRowDragable() ? 1 : 0;
         if (gObj.allowGrouping) {
             gLen = gObj.groupSettings.columns.length;
         }
         let td: HTMLTableCellElement = this.parent.createElement('td', {
             className: 'e-editcell e-normaledit',
-            attrs: { colspan: (gObj.getVisibleColumns().length - gObj.getVisibleFrozenColumns() + gLen + isDetail).toString() }
+            attrs: { colspan: (gObj.getVisibleColumns().length - gObj.getVisibleFrozenColumns() + gLen + isDetail + isDragable).toString() }
         }) as HTMLTableCellElement;
         let form: HTMLFormElement = (<{form: HTMLFormElement}>args).form =
         this.parent.createElement('form', { id: gObj.element.id + 'EditForm', className: 'e-gridform' }) as HTMLFormElement;

@@ -1,12 +1,14 @@
 import { Maps, doubleClick, Orientation, ITouches, ZoomSettings } from '../../index';
 import { Point, getElementByID, Size, PathOption, Rect, convertGeoToPoint, CircleOption, convertTileLatLongToPoint } from '../utils/helper';
 import { RectOption, PolygonOption, createTooltip, calculateScale, getTouchCenter, getTouches, targetTouches } from '../utils/helper';
-import { MapLocation, zoomAnimate, smoothTranslate } from '../utils/helper';
+import { MapLocation, zoomAnimate, smoothTranslate , measureText, textTrim } from '../utils/helper';
 import { isNullOrUndefined, EventHandler, Browser, remove, createElement } from '@syncfusion/ej2-base';
 import { MarkerSettings, LayerSettings, changeBorderWidth } from '../index';
 import { IMapZoomEventArgs, IMapPanEventArgs } from '../model/interface';
 import { zoomIn, zoomOut, pan } from '../model/constants';
 import { PanDirection } from '../utils/enum';
+import { DataLabel } from '../layers/data-label';
+import { FontModel } from '../model/base-model';
 
 /**
  * Zoom module used to process the zoom for maps
@@ -50,6 +52,10 @@ export class Zoom {
     private lastScale: number;
     private pinchFactor: number = 1;
     private startTouches: Object[] = [];
+    private shapeZoomLocation: Object = [];
+    private zoomshapewidth: Object;
+    private index: number;
+    public intersect: object[] = [];
     private templateCount: number;
     private distanceX: number;
     private distanceY: number;
@@ -270,6 +276,9 @@ export class Zoom {
     public applyTransform(animate?: boolean): void {
         let layerIndex: number;
         this.templateCount = 0;
+        let layer: LayerSettings;
+        let zoomshapelocation: object;
+        let i: number;
         let scale: number = this.maps.scale;
         let x: number = this.maps.translatePoint.x;
         let y: number = this.maps.translatePoint.y;
@@ -279,8 +288,8 @@ export class Zoom {
                 let layerElement: Element = this.layerCollectionEle.childNodes[i] as Element;
                 if (layerElement.tagName === 'g') {
                     this.templateCount++;
-                    let index: number = layerElement.id.indexOf('_LayerIndex_') > -1 && parseFloat(layerElement.id.split('_LayerIndex_')[1].split('_')[0]);
-                    this.currentLayer = <LayerSettings>this.maps.layersCollection[index];
+                    this.index = layerElement.id.indexOf('_LayerIndex_') > -1 && parseFloat(layerElement.id.split('_LayerIndex_')[1].split('_')[0]);
+                    this.currentLayer = <LayerSettings>this.maps.layersCollection[this.index];
                     let factor: number = this.maps.mapLayerPanel.calculateFactor(this.currentLayer);
                     for (let j: number = 0; j < layerElement.childElementCount; j++) {
                         let currentEle: Element = layerElement.childNodes[j] as Element;
@@ -292,17 +301,19 @@ export class Zoom {
                                 if (layerElement.children.length > 0 && layerElement.children[0]) {
                                     layerElement.insertBefore(
                                         this.maps.navigationLineModule.renderNavigation(
-                                            this.currentLayer, this.maps.tileZoomLevel, index
+                                            this.currentLayer, this.maps.tileZoomLevel, this.index
                                         ),
                                         layerElement.children[0]
                                     );
                                 } else {
-                                    layerElement.appendChild(this.maps.navigationLineModule.renderNavigation(this.currentLayer, this.maps.tileZoomLevel, index));
+                                    layerElement.appendChild(this.maps.navigationLineModule.renderNavigation(this.currentLayer, this.maps.tileZoomLevel, this.index));
                                 }
                             } else {
-                                changeBorderWidth(currentEle, index, scale, this.maps);
+                                changeBorderWidth(currentEle, this.index, scale, this.maps);
                                 this.animateTransform(currentEle, animate, x, y, scale);
+                                this.shapeZoomLocation = currentEle.childNodes;
                             }
+
                         } else if (currentEle.id.indexOf('_Markers_Group') > -1) {
                             for (let k: number = 0; k < currentEle.childElementCount; k++) {
                                 this.markerTranslate(<Element>currentEle.childNodes[k], factor, x, y, scale, 'Marker', animate);
@@ -334,7 +345,9 @@ export class Zoom {
                                 }
                             }
                         } else if (currentEle.id.indexOf('_dataLableIndex_Group') > -1) {
+                            this.intersect = [];
                             for (let k: number = 0; k < currentEle.childElementCount; k++) {
+                                this.zoomshapewidth = this.shapeZoomLocation[k].getBoundingClientRect();
                                 this.dataLabelTranslate(<Element>currentEle.childNodes[k], factor, x, y, scale, 'DataLabel', animate);
                             }
                         }
@@ -370,13 +383,21 @@ export class Zoom {
             }
         }
     }
-
+    //tslint:disable:max-func-body-length
     private dataLabelTranslate(element: Element | HTMLElement, factor: number, x: number, y: number, scale: number, type: string, animate: boolean = false): void {
         let labelCollection: Object[] = this.maps.dataLabelModule.dataLabelCollections;
+        let zoomelement: object = element.getBoundingClientRect();
+        let text: string; let trimmedLable: string;
+        let style: FontModel = this.maps.layers[this.index].dataLabelSettings.textStyle;
+        let zoomtext: string; let zoomtextSize: Size; let zoomtrimLabel: string;
+        let labelPath: string = this.maps.layers[this.index].dataLabelSettings.labelPath;
         let layerIndex: number = parseFloat(element.id.split('_LayerIndex_')[1].split('_')[0]);
         let shapeIndex: number = parseFloat(element.id.split('_shapeIndex_')[1].split('_')[0]);
         let labelIndex: number = parseFloat(element.id.split('_LabelIndex_')[1].split('_')[0]);
         let duration: number = this.currentLayer.animationDuration;
+        let featureData: Object[] = (!isNullOrUndefined(this.maps.layersCollection[this.index].shapeData['geometries']) &&
+            (<Object[]>this.maps.layersCollection[this.index].shapeData['geometries']).length > 0 ? this.maps.layersCollection[this.index].shapeData['geometries'] :
+            this.maps.layersCollection[this.index].shapeData['features']);
         for (let l: number = 0; l < labelCollection.length; l++) {
             let label: Object = labelCollection[l];
             if (label['layerIndex'] === layerIndex && label['shapeIndex'] === shapeIndex
@@ -395,10 +416,90 @@ export class Zoom {
                     (<HTMLElement>element).style.left = x + 'px';
                     (<HTMLElement>element).style.top = y + 'px';
                 } else {
-                    labelX = ((labelX + x) * scale);
-                    labelY = ((labelY + y) * scale);
+                    labelX = ((labelX + x) * scale); labelY = ((labelY + y) * scale);
+                    zoomtext = featureData[l]['properties'][labelPath];
+                    zoomtextSize = measureText(zoomtext, style);
+                    let start: number = labelY - zoomtextSize['height'] / 4;
+                    let end: number = labelY + zoomtextSize['height'] / 4;
+                    let xpositionEnds: number = labelX + zoomtextSize['width'] / 2;
+                    let xpositionStart: number = labelX - zoomtextSize['width'] / 2;
+                    let textLocations: object = { right: xpositionEnds, left: xpositionStart, top: start, bottom: end };
                     if (!animate || duration === 0) {
                         element.setAttribute('transform', 'translate( ' + labelX + ' ' + labelY + ' )');
+                    }
+                    if (this.maps.layers[this.index].dataLabelSettings.smartLabelMode === 'Hide') {
+                        if (scale > 1) {
+                            text = (this.zoomshapewidth['width'] >= zoomtextSize['width']) ? zoomtext : '';
+                            element.innerHTML = text;
+                        } else {
+                            text = (this.maps.dataLabelShape[l] >= zoomtextSize['width']) ? zoomtext : '';
+                            element.innerHTML = text;
+                        }
+                    }
+                    if (this.maps.layers[this.index].dataLabelSettings.smartLabelMode === 'Trim') {
+                        if (scale > 1) {
+                            zoomtrimLabel = textTrim(this.zoomshapewidth['width'], zoomtext, style);
+                            text = zoomtrimLabel; element.innerHTML = text;
+                        } else {
+                            zoomtrimLabel = textTrim(this.maps.dataLabelShape[l], zoomtext, style);
+                            text = zoomtrimLabel; element.innerHTML = text;
+                        }
+                    }
+                    if (this.maps.layers[this.index].dataLabelSettings.intersectionAction === 'Hide') {
+                        for (let m: number = 0; m < this.intersect.length; m++) {
+                            if (!isNullOrUndefined(this.intersect[m])) {
+                                if (textLocations['left'] > this.intersect[m]['right']
+                                    || textLocations['right'] < this.intersect[m]['left']
+                                    || textLocations['top'] > this.intersect[m]['bottom']
+                                    || textLocations['bottom'] < this.intersect[m]['top']) {
+                                    text = !isNullOrUndefined(text) ? text : zoomtext;
+                                    element.innerHTML = text;
+                                } else {
+                                    text = ''; element.innerHTML = text;
+                                    break;
+                                }
+                            }
+                        }
+                        this.intersect.push(textLocations);
+                    }
+                    if (this.maps.layers[this.index].dataLabelSettings.intersectionAction === 'Trim') {
+                        for (let j: number = 0; j < this.intersect.length; j++) {
+                            if (!isNullOrUndefined(this.intersect[j])) {
+                                if (textLocations['right'] < this.intersect[j]['left']
+                                    || textLocations['left'] > this.intersect[j]['right']
+                                    || textLocations['bottom'] < this.intersect[j]['top']
+                                    || textLocations['top'] > this.intersect[j]['bottom']) {
+                                    trimmedLable = !isNullOrUndefined(text) ? text : zoomtext;
+                                    if (scale > 1) {
+                                        trimmedLable = textTrim(this.zoomshapewidth['width'], trimmedLable, style);
+                                    }
+                                    element.innerHTML = trimmedLable;
+                                } else {
+                                    if (textLocations['left'] > this.intersect[j]['left']) {
+                                        let width: number = this.intersect[j]['right'] - textLocations['left'];
+                                        let difference: number = width - (textLocations['right'] - textLocations['left']);
+                                        text = !isNullOrUndefined(text) ? text : zoomtext;
+                                        // difference > zoomtextSize['width'] ? difference : this.zoomshapewidth;
+                                        trimmedLable = textTrim(difference, text, style);
+                                        element.innerHTML = trimmedLable;
+                                        break;
+                                    }
+                                    if (textLocations['left'] < this.intersect[j]['left']) {
+                                        let width: number = textLocations['right'] - this.intersect[j]['left'];
+                                        let difference: number = Math.abs(width - (textLocations['right'] - textLocations['left']));
+                                        text = !isNullOrUndefined(text) ? text : zoomtext;
+                                        trimmedLable = textTrim(difference, text, style);
+                                        element.innerHTML = trimmedLable;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        this.intersect.push(textLocations);
+                        if (isNullOrUndefined(trimmedLable)) {
+                            trimmedLable = textTrim(this.zoomshapewidth['width'], zoomtext, style);
+                            element.innerHTML = trimmedLable;
+                        }
                     } else {
                         smoothTranslate(element, 0, duration, new MapLocation(labelX, labelY));
                     }

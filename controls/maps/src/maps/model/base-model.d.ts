@@ -128,6 +128,25 @@ export interface BorderModel {
 }
 
 /**
+ * Interface for a class CenterPosition
+ */
+export interface CenterPositionModel {
+
+    /**
+     * latitude for the center position of maps
+     * @default null
+     */
+    latitude?: number;
+
+    /**
+     * longitude for the center position of maps
+     * @default null
+     */
+    longitude?: number;
+
+}
+
+/**
  * Interface for a class TooltipSettings
  */
 export interface TooltipSettingsModel {

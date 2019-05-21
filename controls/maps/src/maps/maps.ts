@@ -8,9 +8,9 @@ import { ModuleDeclaration } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Size, createSvg, Point, removeElement, triggerShapeEvent, showTooltip, getElement, removeClass } from './utils/helper';
 import { ZoomSettings, LegendSettings } from './model/base';
-import { LayerSettings, TitleSettings, Border, Margin, MapsAreaSettings, Annotation } from './model/base';
+import { LayerSettings, TitleSettings, Border, Margin, MapsAreaSettings, Annotation, CenterPosition } from './model/base';
 import { ZoomSettingsModel, LegendSettingsModel, LayerSettingsModel, BubbleSettingsModel, MarkerSettingsModel } from './model/base-model';
-import { TitleSettingsModel, BorderModel, MarginModel } from './model/base-model';
+import { TitleSettingsModel, BorderModel, MarginModel, CenterPositionModel } from './model/base-model';
 import { MapsAreaSettingsModel, AnnotationModel } from './model/base-model';
 import { Bubble } from './layers/bubble';
 import { Legend } from './layers/legend';
@@ -201,10 +201,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public tabIndex: number;
     /**
      * To configure the zoom level of maps.
-     * @default { latitude: null, longitude: null}
      */
-    @Property({ latitude: null, longitude: null })
-    public centerPosition: { latitude: number, longitude: number };
+    @Complex<CenterPositionModel>({ latitude: null, longitude: null}, CenterPosition)
+    public centerPosition: CenterPositionModel;
     /**
      * To customization Maps area
      */
@@ -487,6 +486,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public previousScale: number;
     /** @private */
     public previousPoint: Point;
+     /** @public */
+     public dataLabelShape: number[] = [];
 
 
     /**
@@ -631,6 +632,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             this.zoomModule.createZoomingToolbars();
 
         }
+        if (!isNullOrUndefined(this.dataLabelModule)) {
+            this.dataLabelModule.dataLabelCollections = [];
+            this.dataLabelShape = [];
+        }
+
 
         this.mapLayerPanel.measureLayerPanel();
 

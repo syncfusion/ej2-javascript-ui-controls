@@ -1019,6 +1019,7 @@ function createAjax(parent, data, fn, event, navigationPane, operation, targetPa
         data: JSON.stringify(data),
         onSuccess: null,
         onFailure: null,
+        beforeSend: null
     };
     var eventArgs = { action: getValue('action', data), ajaxSettings: ajaxSettings, cancel: false };
     parent.trigger('beforeSend', eventArgs);
@@ -1033,6 +1034,7 @@ function createAjax(parent, data, fn, event, navigationPane, operation, targetPa
         dataType: getValue('dataType', eventArgs.ajaxSettings),
         contentType: getValue('contentType', eventArgs.ajaxSettings),
         data: getValue('data', eventArgs.ajaxSettings),
+        beforeSend: getValue('beforeSend', eventArgs.ajaxSettings),
         onSuccess: function (result) {
             if (typeof (result) === 'string') {
                 result = JSON.parse(result);

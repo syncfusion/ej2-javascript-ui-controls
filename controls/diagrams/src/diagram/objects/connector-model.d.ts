@@ -192,7 +192,6 @@ export interface ConnectorSegmentModel {
      * * Orthogonal - Sets the segment type as Orthogonal
      * * Bezier - Sets the segment type as Bezier
      * @default 'Straight'
-     * @aspType Syncfusion.EJ2.Diagrams.Segments
      */
     type?: Segments;
 
@@ -295,7 +294,7 @@ export interface MultiplicityLabelModel {
 
     /**
      * Defines the type of the Classifier Multiplicity
-     * @default ''
+     * @default true
      * @IgnoreSingular
      */
     optional?: boolean;
@@ -323,7 +322,7 @@ export interface ClassifierMultiplicityModel {
 
     /**
      * Defines the type of the Classifier Multiplicity
-     * @default ''
+     * @default 'OneToOne'
      * @IgnoreSingular
      */
     type?: Multiplicity;
@@ -351,21 +350,21 @@ export interface RelationShipModel extends ConnectorShapeModel{
 
     /**
      * Defines the type of the  UMLConnector
-     * @default ''
+     * @default 'UmlClassifier'
      * @IgnoreSingular
      */
     type?: ConnectionShapes;
 
     /**
      * Defines the association direction
-     * @default ''
+     * @default 'Aggregation'
      * @IgnoreSingular
      */
     relationship?: ClassifierShape;
 
     /**
      * Defines the association direction
-     * @default ''
+     * @default 'Directional'
      * @IgnoreSingular
      */
     associationType?: AssociationFlow;
@@ -481,6 +480,7 @@ export interface ConnectorModel extends NodeBaseModel{
      * * Orthogonal - Sets the segment type as Orthogonal
      * * Bezier - Sets the segment type as Bezier
      * @default 'Straight'
+     * @aspType Syncfusion.EJ2.Diagrams.Segments
      */
     type?: Segments;
 

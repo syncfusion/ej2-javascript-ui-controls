@@ -3359,7 +3359,8 @@ class WParagraphFormat {
      * For internal use
      * @private
      */
-    mergeFormat(format) {
+    mergeFormat(format, isStyle) {
+        isStyle = isNullOrUndefined(isStyle) ? false : isStyle;
         if (isNullOrUndefined(this.getValue('leftIndent'))) {
             this.leftIndent = format.getValue('leftIndent');
         }
@@ -3387,7 +3388,7 @@ class WParagraphFormat {
         if (isNullOrUndefined(this.getValue('outlineLevel'))) {
             this.outlineLevel = format.getValue('outlineLevel');
         }
-        if (isNullOrUndefined(this.getValue('bidi'))) {
+        if (!isStyle && isNullOrUndefined(this.getValue('bidi'))) {
             this.bidi = format.getValue('bidi');
         }
         if (isNullOrUndefined(this.listFormat)) {
@@ -37983,9 +37984,8 @@ class Editor {
     }
     /**
      * Insert Hyperlink
-     * @param  {string} address
-     * @param  {string} displayText
-     * @private
+     * @param  {string} address - Hyperlink URL
+     * @param  {string} displayText - Display text for the hyperlink
      */
     insertHyperlink(address, displayText) {
         if (isNullOrUndefined(displayText)) {
@@ -39824,10 +39824,7 @@ class Editor {
      */
     reLayout(selection, isSelectionChanged) {
         if (!this.viewer.isComposingIME && this.editorHistory && this.editorHistory.isHandledComplexHistory()) {
-            if (isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)
-                || (this.editorHistory.currentBaseHistoryInfo
-                    && !(this.editorHistory.currentBaseHistoryInfo.action === 'ClearCharacterFormat'
-                        || this.editorHistory.currentBaseHistoryInfo.action === 'ClearParagraphFormat'))) {
+            if (this.editorHistory.currentHistoryInfo && this.editorHistory.currentHistoryInfo.action !== 'ClearFormat') {
                 this.startParagraph = undefined;
                 this.endParagraph = undefined;
             }
@@ -41832,8 +41829,8 @@ class Editor {
         let startPageIndex;
         let endPageIndex;
         this.viewer.clearContent();
-        let startSectionIndex = startPosition.paragraph.containerWidget.index;
-        let endSectionIndex = endPosition.paragraph.containerWidget.index;
+        let startSectionIndex = startPosition.paragraph.bodyWidget.sectionIndex;
+        let endSectionIndex = endPosition.paragraph.bodyWidget.sectionIndex;
         for (let i = 0; i < this.viewer.pages.length; i++) {
             if (this.viewer.pages[i].bodyWidgets[0].index === startSectionIndex) {
                 startPageIndex = i;
@@ -46409,16 +46406,17 @@ class Editor {
         if (tocSettings.includeOutlineLevels) {
             this.createOutlineLevels(tocSettings);
         }
+        let sectionFormat = this.selection.start.paragraph.bodyWidget.sectionFormat;
         let widget = tocDomBody.childWidgets[0];
         while (widget !== undefined) {
             // tslint:disable-next-line:max-line-length
             if (widget instanceof ParagraphWidget && (this.isHeadingStyle(widget) || (tocSettings.includeOutlineLevels && this.isOutlineLevelStyle(widget)))) {
                 let bookmarkName = this.insertTocBookmark(widget);
                 // tslint:disable-next-line:max-line-length
-                this.createTOCWidgets(widget, widgets, fieldCode, bookmarkName, tocSettings, isFirstPara, isStartParagraph);
+                this.createTOCWidgets(widget, widgets, fieldCode, bookmarkName, tocSettings, isFirstPara, isStartParagraph, sectionFormat);
                 isFirstPara = false;
             }
-            widget = this.selection.getNextParagraphBlock(widget);
+            widget = this.selection.getNextParagraphBlock(widget.getSplitWidgets().pop());
         }
         this.tocStyles = {};
         return widgets;
@@ -46489,7 +46487,7 @@ class Editor {
      * Updates TOC para
      */
     // tslint:disable-next-line:max-line-length
-    createTOCWidgets(widget, widgets, fieldCode, bookmarkName, tocSettings, isFirstPara, isStartParagraph) {
+    createTOCWidgets(widget, widgets, fieldCode, bookmarkName, tocSettings, isFirstPara, isStartParagraph, sectionFormat) {
         let fieldBegin = undefined;
         let tocPara = undefined;
         let tocLine = undefined;
@@ -46519,7 +46517,7 @@ class Editor {
             //Creates right tab for page number.
             if (tocSettings.rightAlign && tocSettings.includePageNumber) {
                 let tabStop = new WTabStop();
-                tabStop.position = HelperMethods.convertPixelToPoint(this.viewer.clientArea.width);
+                tabStop.position = sectionFormat.pageWidth - (sectionFormat.leftMargin + sectionFormat.rightMargin);
                 tabStop.tabLeader = tocSettings.tabLeader;
                 tabStop.deletePosition = 0;
                 tabStop.tabJustification = 'Right';
@@ -46536,19 +46534,34 @@ class Editor {
             this.createTocFieldElement(tocLine, fieldCode);
         }
         let text = '';
-        for (let lineIndex = 0; lineIndex < widget.childWidgets.length; lineIndex++) {
-            let lineWidget = widget.childWidgets[lineIndex];
-            for (let elementIndex = 0; elementIndex < lineWidget.children.length; elementIndex++) {
-                let element = lineWidget.children[elementIndex];
-                if (element instanceof TextElementBox || element instanceof ListTextElementBox) {
-                    let temp = element.text;
-                    let tabChar = '\t';
-                    if (temp.indexOf(tabChar) !== -1) {
-                        temp = temp.replace(new RegExp(tabChar, 'g'), ' ');
+        let isFieldCode = false;
+        let paragraph = widget;
+        while (paragraph instanceof ParagraphWidget) {
+            for (let lineIndex = 0; lineIndex < paragraph.childWidgets.length; lineIndex++) {
+                let lineWidget = paragraph.childWidgets[lineIndex];
+                for (let elementIndex = 0; elementIndex < lineWidget.children.length; elementIndex++) {
+                    let element = lineWidget.children[elementIndex];
+                    if ((element instanceof FieldElementBox) || (element instanceof BookmarkElementBox) || isFieldCode) {
+                        if (element instanceof FieldElementBox) {
+                            if (element.fieldType === 0) {
+                                isFieldCode = true;
+                            }
+                            else if (element.fieldType === 2) {
+                                isFieldCode = false;
+                            }
+                        }
                     }
-                    text = text + temp;
+                    else if (element instanceof TextElementBox || element instanceof ListTextElementBox) {
+                        let temp = element.text;
+                        let tabChar = '\t';
+                        if (temp.indexOf(tabChar) !== -1) {
+                            temp = temp.replace(new RegExp(tabChar, 'g'), ' ');
+                        }
+                        text = text + temp;
+                    }
                 }
             }
+            paragraph = paragraph.nextSplitWidget;
         }
         if (text !== '') {
             // inserts hyperlink
@@ -46634,10 +46647,18 @@ class Editor {
         let bookmarkName = undefined;
         let lineLength = widget.childWidgets.length;
         if (lineLength > 0) {
-            let startLine = widget.childWidgets[0];
-            let endLine = widget.childWidgets[lineLength - 1];
+            let splitParagraph = widget.getSplitWidgets();
+            let firstParagraph = splitParagraph[0];
+            let lastParagraph = splitParagraph.pop();
+            let startLine = firstParagraph.childWidgets[0];
+            let endLine = lastParagraph.childWidgets[lastParagraph.childWidgets.length - 1];
             if ((startLine !== undefined) && (endLine !== undefined)) {
                 let startElement = startLine.children[0];
+                if (startElement instanceof ListTextElementBox) {
+                    do {
+                        startElement = startElement.nextNode;
+                    } while (startElement instanceof ListTextElementBox);
+                }
                 //Returns the bookmark if already present for paragraph.
                 // tslint:disable-next-line:max-line-length
                 if (!isNullOrUndefined(startElement) && startElement instanceof BookmarkElementBox && startElement.bookmarkType === 0 && (startElement.name.toLowerCase().match('^_toc'))) {
@@ -51819,7 +51840,7 @@ class WordExport {
                 writer.writeAttributeString('w', 'val', this.wNamespace, lf.listLevelNumber.toString());
                 writer.writeEndElement();
             }
-            if (!isNullOrUndefined(lf.listId) && lf.listId !== -1) {
+            if (!isNullOrUndefined(lf.listId)) {
                 writer.writeStartElement(undefined, 'numId', this.wNamespace);
                 writer.writeAttributeString('w', 'val', this.wNamespace, (lf.listId + 1).toString());
                 writer.writeEndElement();
@@ -52339,11 +52360,11 @@ class WordExport {
         writer.writeStartElement(undefined, 'numFmt', this.wNamespace);
         writer.writeAttributeString(undefined, 'val', this.wNamespace, this.getLevelPattern(listLevel.listLevelPattern));
         writer.writeEndElement();
-        if (listLevel.restartLevel > 0) {
-            writer.writeStartElement(undefined, 'lvlRestart', this.wNamespace);
-            writer.writeAttributeString(undefined, 'val', this.wNamespace, '0');
-            writer.writeEndElement();
-        }
+        // if (listLevel.restartLevel > 0) {
+        //     writer.writeStartElement(undefined, 'lvlRestart', this.wNamespace);
+        //     writer.writeAttributeString(undefined, 'val', this.wNamespace, '0');
+        //     writer.writeEndElement();
+        // }
         // if (!isNullOrUndefined(listLevel.paragraphFormat)) {
         //     string name = listLevel.ParaStyleName.Substring(0, 1).ToUpper() + listLevel.ParaStyleName.Remove(0, 1);
         //     writer.WriteStartElement('pStyle', this.wNamespace);
@@ -53230,6 +53251,11 @@ class SfdtExport {
                     let endTable = endCell.getContainerTable();
                     if (startTable.tableFormat === endTable.tableFormat) {
                         this.endCell = endCell;
+                        if (this.endCell.ownerTable !== startCell.ownerTable && startCell.ownerTable.associatedCell
+                            && startCell.ownerTable.associatedCell.ownerTable === this.endCell.ownerTable &&
+                            (startCell.ownerTable.associatedCell.childWidgets.indexOf(startCell.ownerTable) === 0)) {
+                            startCell = startCell.ownerTable.associatedCell;
+                        }
                         this.endColumnIndex = this.endCell.columnIndex + this.endCell.cellFormat.columnSpan;
                         this.startColumnIndex = startCell.columnIndex;
                     }
@@ -53249,6 +53275,21 @@ class SfdtExport {
                 // Todo:continue in next section
             }
             else {
+                // Specially handled for nested table cases
+                // selection start inside table and end in paragraph outside table
+                if (isNullOrUndefined(endCell) && startCell.ownerTable.associatedCell) {
+                    let startTable = startCell.getContainerTable();
+                    let lastRow = startTable.childWidgets[startTable.childWidgets.length - 1];
+                    let endCell = lastRow.childWidgets[lastRow.childWidgets.length - 1];
+                    if (endCell.ownerTable !== startCell.ownerTable && startCell.ownerTable.associatedCell
+                        && (startCell.ownerTable.associatedCell.childWidgets.indexOf(startCell.ownerTable) === 0)) {
+                        while (startCell.ownerTable !== endCell.ownerTable) {
+                            startCell = startCell.ownerTable.associatedCell;
+                        }
+                    }
+                    this.endColumnIndex = endCell.columnIndex + endCell.cellFormat.columnSpan;
+                    this.startColumnIndex = startCell.columnIndex;
+                }
                 let table = this.createTable(startCell.ownerTable);
                 section.blocks.push(table);
                 nextBlock = this.writeTable(startCell.ownerTable, table, startCell.ownerRow.indexInOwner, section.blocks);
@@ -53519,9 +53560,12 @@ class SfdtExport {
     writeListFormat(format, isInline) {
         let listFormat = {};
         let listIdValue = format.getValue('listId');
-        if (!isNullOrUndefined(listIdValue) && listIdValue > -1) {
+        if (!isNullOrUndefined(listIdValue)) {
             listFormat.listId = listIdValue;
-            listFormat.listLevelNumber = format.getValue('listLevelNumber');
+            let listLevelNumber = format.getValue('listLevelNumber');
+            if (!isNullOrUndefined(listLevelNumber)) {
+                listFormat.listLevelNumber = listLevelNumber;
+            }
             if (this.lists.indexOf(format.listId) < 0) {
                 this.lists.push(format.listId);
             }
@@ -55818,6 +55862,8 @@ class ParagraphDialog {
         this.lineSpacingType = undefined;
         this.paragraphFormat = undefined;
         this.bidi = undefined;
+        this.isStyleDialog = false;
+        this.directionDiv = undefined;
         /**
          * @private
          */
@@ -55914,6 +55960,12 @@ class ParagraphDialog {
          * @private
          */
         this.loadParagraphDialog = () => {
+            if (this.isStyleDialog) {
+                this.directionDiv.classList.add('e-de-disabledbutton');
+            }
+            else {
+                this.directionDiv.classList.remove('e-de-disabledbutton');
+            }
             let selectionFormat;
             if (this.paragraphFormat) {
                 selectionFormat = this.paragraphFormat;
@@ -56054,11 +56106,11 @@ class ParagraphDialog {
             id: ownerId + '_DirLabel',
             className: 'e-de-dlg-sub-header', innerHTML: locale.getConstant('Direction')
         });
-        let dirDiv = createElement('div', { id: ownerId + '_DirDiv', styles: 'display:flex' });
+        this.directionDiv = createElement('div', { id: ownerId + '_DirDiv', styles: 'display:flex' });
         let rtlDiv = createElement('div', { id: ownerId + '_DirDiv', className: 'e-de-rtl-btn-div' });
         let rtlInputELe = createElement('input', { id: ownerId + '_rtlEle' });
         rtlDiv.appendChild(rtlInputELe);
-        dirDiv.appendChild(rtlDiv);
+        this.directionDiv.appendChild(rtlDiv);
         let isRtl = this.owner.owner.enableRtl;
         if (isRtl) {
             rtlDiv.classList.add('e-de-rtl');
@@ -56066,9 +56118,9 @@ class ParagraphDialog {
         let ltrDiv = createElement('div', { id: ownerId + '_DirDiv', className: 'e-de-ltr-btn-div' });
         let ltrInputELe = createElement('input', { id: ownerId + '_ltrEle' });
         ltrDiv.appendChild(ltrInputELe);
-        dirDiv.appendChild(ltrDiv);
+        this.directionDiv.appendChild(ltrDiv);
         generalDiv.appendChild(dirLabel);
-        generalDiv.appendChild(dirDiv);
+        generalDiv.appendChild(this.directionDiv);
         this.rtlButton = new RadioButton({
             label: locale.getConstant('Right-to-left'), enableRtl: isRtl,
             value: 'rtl', cssClass: 'e-small', change: this.changeBidirectional
@@ -56251,7 +56303,11 @@ class ParagraphDialog {
      */
     show(paragraphFormat) {
         if (paragraphFormat) {
+            this.isStyleDialog = true;
             this.paragraphFormat = paragraphFormat;
+        }
+        else {
+            this.isStyleDialog = false;
         }
         let local = new L10n('documenteditor', this.owner.owner.defaultLocale);
         local.setLocale(this.owner.owner.locale);
@@ -57175,7 +57231,7 @@ class StyleDialog {
                     if (this.styleType.value === this.localObj.getConstant('Paragraph') || this.styleType.value === this.localObj.getConstant('Linked(Paragraph and Character)')) {
                         this.style.next = this.owner.owner.viewer.styles.findByName(this.styleParagraph.value);
                         this.style.characterFormat.mergeFormat(style.characterFormat);
-                        this.style.paragraphFormat.mergeFormat(style.paragraphFormat);
+                        this.style.paragraphFormat.mergeFormat(style.paragraphFormat, true);
                         this.updateList();
                         // tslint:disable-next-line:max-line-length
                         this.style.link = (this.styleType.value === this.localObj.getConstant('Linked(Paragraph and Character)')) ? this.createLinkStyle(styleName, this.isEdit) : undefined;
@@ -57190,24 +57246,27 @@ class StyleDialog {
                 }
                 else {
                     /* tslint:disable-next-line:no-any */
+                    let tmpStyle = this.getTypeValue() === 'Paragraph' ? new WParagraphStyle() : new WCharacterStyle;
+                    tmpStyle.copyStyle(this.style);
+                    /* tslint:disable-next-line:no-any */
                     let basedOn = this.owner.owner.viewer.styles.findByName(this.styleBasedOn.value);
                     // tslint:disable-next-line:max-line-length
                     if (this.styleType.value === this.localObj.getConstant('Paragraph') || this.styleType.value === this.localObj.getConstant('Linked(Paragraph and Character)')) {
                         if (styleName === this.styleParagraph.value) {
-                            this.style.next = this.style;
+                            tmpStyle.next = tmpStyle;
                         }
                         else {
-                            this.style.next = this.owner.owner.viewer.styles.findByName(this.styleParagraph.value);
+                            tmpStyle.next = this.owner.owner.viewer.styles.findByName(this.styleParagraph.value);
                         }
                         this.updateList();
                     }
                     // tslint:disable-next-line:max-line-length
-                    this.style.link = (this.styleType.value === this.localObj.getConstant('Linked(Paragraph and Character)')) ? this.createLinkStyle(styleName) : undefined;
-                    this.style.type = this.getTypeValue();
-                    this.style.name = styleName;
-                    this.style.basedOn = basedOn;
+                    tmpStyle.link = (this.styleType.value === this.localObj.getConstant('Linked(Paragraph and Character)')) ? this.createLinkStyle(styleName) : undefined;
+                    tmpStyle.type = this.getTypeValue();
+                    tmpStyle.name = styleName;
+                    tmpStyle.basedOn = basedOn;
                     /* tslint:disable-next-line:no-any */
-                    this.owner.owner.viewer.styles.push(this.style);
+                    this.owner.owner.viewer.styles.push(tmpStyle);
                     name = styleName;
                     this.owner.owner.editorModule.applyStyle(name);
                 }
@@ -65116,14 +65175,6 @@ class TableProperties {
     }
     destroy() {
         this.container = undefined;
-        if (this.tableTextProperties) {
-            this.tableTextProperties.destroy();
-            this.tableTextProperties = undefined;
-        }
-        if (this.propertiesTab) {
-            this.propertiesTab.destroy();
-            this.propertiesTab = undefined;
-        }
         if (this.shadingBtn) {
             this.shadingBtn.destroy();
             this.shadingBtn = undefined;
@@ -65151,6 +65202,14 @@ class TableProperties {
         if (this.rightMargin) {
             this.rightMargin.destroy();
             this.rightMargin = undefined;
+        }
+        if (this.tableTextProperties) {
+            this.tableTextProperties.destroy();
+            this.tableTextProperties = undefined;
+        }
+        if (this.propertiesTab) {
+            this.propertiesTab.destroy();
+            this.propertiesTab = undefined;
         }
     }
 }
@@ -65787,26 +65846,6 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
             this.documentEditor.destroy();
         }
         this.documentEditor = undefined;
-        if (this.propertiesPaneContainer && this.editorContainer.parentElement) {
-            this.propertiesPaneContainer.innerHTML = '';
-            this.propertiesPaneContainer.parentElement.removeChild(this.propertiesPaneContainer);
-        }
-        this.propertiesPaneContainer = undefined;
-        if (this.editorContainer && this.editorContainer.parentElement) {
-            this.editorContainer.innerHTML = '';
-            this.editorContainer.parentElement.removeChild(this.editorContainer);
-        }
-        if (this.statusBarElement && this.statusBarElement.parentElement) {
-            this.statusBarElement.innerHTML = '';
-            this.statusBarElement.parentElement.removeChild(this.statusBarElement);
-        }
-        if (this.containerTarget && this.containerTarget.parentElement) {
-            this.containerTarget.innerHTML = '';
-            this.containerTarget.parentElement.removeChild(this.containerTarget);
-        }
-        this.containerTarget = undefined;
-        this.statusBarElement = undefined;
-        this.editorContainer = undefined;
         if (this.textProperties) {
             this.textProperties.destroy();
         }
@@ -65827,6 +65866,26 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
             this.tableProperties.destroy();
         }
         this.tableProperties = undefined;
+        if (this.propertiesPaneContainer && this.editorContainer.parentElement) {
+            this.propertiesPaneContainer.innerHTML = '';
+            this.propertiesPaneContainer.parentElement.removeChild(this.propertiesPaneContainer);
+        }
+        this.propertiesPaneContainer = undefined;
+        if (this.editorContainer && this.editorContainer.parentElement) {
+            this.editorContainer.innerHTML = '';
+            this.editorContainer.parentElement.removeChild(this.editorContainer);
+        }
+        if (this.statusBarElement && this.statusBarElement.parentElement) {
+            this.statusBarElement.innerHTML = '';
+            this.statusBarElement.parentElement.removeChild(this.statusBarElement);
+        }
+        if (this.containerTarget && this.containerTarget.parentElement) {
+            this.containerTarget.innerHTML = '';
+            this.containerTarget.parentElement.removeChild(this.containerTarget);
+        }
+        this.containerTarget = undefined;
+        this.statusBarElement = undefined;
+        this.editorContainer = undefined;
     }
 };
 __decorate$1([

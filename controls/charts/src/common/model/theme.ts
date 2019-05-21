@@ -98,7 +98,6 @@ export function getSeriesColor(theme: ChartTheme | AccumulationTheme): string[] 
                 '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
             break;
         case 'HighContrastLight':
-        case 'Highcontrast':
         case 'HighContrast':
             palette = ['#79ECE4', '#E98272', '#DFE6B6', '#C6E773', '#BA98FF',
                 '#FA83C3', '#00C27A', '#43ACEF', '#D681EF', '#D8BC6E'];
@@ -131,7 +130,6 @@ export function getThemeColor(theme: ChartTheme | AccumulationTheme): IThemeStyl
     let darkBackground: string = theme === 'MaterialDark' ? '#303030' : (theme === 'FabricDark' ? '#201F1F' : '1A1A1A');
     switch (theme) {
         case 'HighContrastLight':
-        case 'Highcontrast':
         case 'HighContrast':
             style = {
                 axisLabel: '#ffffff',

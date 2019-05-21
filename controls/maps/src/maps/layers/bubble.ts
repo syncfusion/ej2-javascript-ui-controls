@@ -70,7 +70,8 @@ export class Bubble {
                 }
             }
         }
-        let center: object = findMidPointOfPolygon(shapePoints[midIndex]);
+        let projectionType : string = this.maps.projectionType;
+        let center: object = findMidPointOfPolygon(shapePoints[midIndex], projectionType);
         if (!isNullOrUndefined(center)) {
             let centerY: number = this.maps.projectionType === 'Mercator' ? center['y'] : (-center['y']);
             let eventArgs: IBubbleRenderingEventArgs = {
@@ -95,8 +96,7 @@ export class Bubble {
                     this.id, eventArgs.fill, eventArgs.border, opacity,
                     new Rect(0, 0, radius * 2, radius * 2), 2, 2
                 );
-                eventArgs.cx -= radius;
-                eventArgs.cy = y;
+                eventArgs.cx -= radius; eventArgs.cy = y;
                 bubbleElement = drawRectangle(this.maps, rectangle, group);
             }
             this.bubbleCollection.push({

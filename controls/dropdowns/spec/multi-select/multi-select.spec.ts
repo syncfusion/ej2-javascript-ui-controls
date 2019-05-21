@@ -3465,6 +3465,29 @@ describe('MultiSelect', () => {
             multiObj.refresh();
         });
     });
+
+    describe('EJ2-245633-ClearIcon is enabled while setting readonly property in mutliselect', () => {
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdown' });
+        let dropDowns: any;
+        beforeAll(() => {
+            document.body.appendChild(element);
+            dropDowns = new MultiSelect({
+                dataSource: ['Java Script', 'AS.NET MVC', 'Java'],
+                value: ['Java Script','Java'],
+                readonly: true,
+            });
+            dropDowns.appendTo(element);
+        });
+        afterAll(() => {
+            element.remove();
+        });
+
+        it('Check whether clear icon is disabled when read only is true', () => {
+           dropDowns.focusIn();
+           expect(dropDowns.overAllClear.style.display).toBe('none');
+        });
+    });
+
     describe('mulitselect chip remove change event', () => {
         let ele: HTMLElement = document.createElement('input');
         ele.id = 'newlist';

@@ -49,8 +49,8 @@ describe('Rte module', () => {
             expect(document.activeElement.tagName === 'DIV').toEqual(true);
         });
         it('Value property testing', () => {
-            expect(editorObj.rteModule.compObj.value === 'test').toEqual(true);
-            expect(editorObj.value === editorObj.rteModule.compObj.value).toEqual(true);
+            expect(editorObj.rteModule.compObj.value === '<p>test</p>').toEqual(true);
+            expect(editorObj.value === 'test').toEqual(true);
         });
         it('Name property testing', () => {
             expect(select('#TextEditor_editor-value', editorObj.element).getAttribute('name')).toEqual('TextEditor');
@@ -59,7 +59,7 @@ describe('Rte module', () => {
             editorObj.rteModule.compObj.value = 'testing';
             editorObj.rteModule.compObj.dataBind();
             editorObj.save();
-            expect(valueEle.innerHTML === 'testing').toEqual(true);
+            expect(valueEle.innerHTML === '<p>testing</p>').toEqual(true);
         });
         it('Without compObj data to update value method testing', () => {
             valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
@@ -67,13 +67,13 @@ describe('Rte module', () => {
             valueEle.click();
             expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
             expect(selectAll('.e-richtexteditor', ele).length === 1).toEqual(true);
-            expect(editorObj.value).toEqual('testing');
-            expect(editorObj.rteModule.compObj.value).toEqual('testing');
+            expect(editorObj.value).toEqual('<p>testing</p>');
+            expect(editorObj.rteModule.compObj.value).toEqual('<p>testing</p>');
             editorObj.rteModule.compObj.value = 'Tested';
             expect(editorObj.rteModule.compObj.value).toEqual('Tested');
             editorObj.rteModule.compObj = undefined;
             editorObj.save();
-            expect(editorObj.value).toEqual('testing');
+            expect(editorObj.value).toEqual('<p>testing</p>');
         });
     });
     describe('Duplicate ID availability testing', () => {
@@ -151,8 +151,8 @@ describe('Rte module', () => {
             expect(editorObj.value).toEqual('Welcome');
             expect((<HTMLElement>select('.e-content', document.body)).innerText.trim()).toEqual('Welcome');
             editorObj.save();
-            expect(editorObj.value).toEqual('Welcome');
-            expect(valueEle.innerHTML).toEqual('Welcome');
+            expect(editorObj.value).toEqual('<p>Welcome</p>');
+            expect(valueEle.innerHTML).toEqual('<p>Welcome</p>');
             editorObj.value = '';
             editorObj.dataBind();
             expect(editorObj.value).toEqual('');
@@ -199,8 +199,8 @@ describe('Rte module', () => {
             expect(editorObj.value).toEqual('Welcome');
             expect((<HTMLElement>select('.e-content', document.body)).innerText.trim()).toEqual('Welcome');
             editorObj.save();
-            expect(editorObj.value).toEqual('Welcome');
-            expect(valueEle.innerHTML).toEqual('Welcome');
+            expect(editorObj.value).toEqual('<p>Welcome</p>');
+            expect(valueEle.innerHTML).toEqual('<p>Welcome</p>');
             editorObj.value = '';
             editorObj.dataBind();
             expect(editorObj.value).toEqual('');
@@ -247,8 +247,8 @@ describe('Rte module', () => {
             expect(editorObj.value).toEqual('Welcome');
             expect((<HTMLElement>select('.e-content', document.body)).innerText.trim()).toEqual('Welcome');
             editorObj.save();
-            expect(editorObj.value).toEqual('Welcome');
-            expect(valueEle.innerHTML).toEqual('Welcome');
+            expect(editorObj.value).toEqual('<p>Welcome</p>');
+            expect(valueEle.innerHTML).toEqual('<p>Welcome</p>');
             editorObj.value = '';
             editorObj.dataBind();
             expect(editorObj.value).toEqual('');
@@ -295,8 +295,8 @@ describe('Rte module', () => {
             expect(editorObj.value).toEqual('Welcome');
             expect((<HTMLElement>select('.e-content', document.body)).innerText.trim()).toEqual('Welcome');
             editorObj.save();
-            expect(editorObj.value).toEqual('Welcome');
-            expect(valueEle.innerHTML).toEqual('Welcome');
+            expect(editorObj.value).toEqual('<p>Welcome</p>');
+            expect(valueEle.innerHTML).toEqual('<p>Welcome</p>');
             editorObj.value = '';
             editorObj.dataBind();
             expect(editorObj.value).toEqual('');
@@ -330,8 +330,8 @@ describe('Rte module', () => {
             expect(selectAll('.e-richtexteditor', document.body).length === 1).toEqual(true);
             expect(editorObj.value).toEqual('RichText');
             editorObj.save();
-            expect(editorObj.value).toEqual('RichText');
-            expect(valueEle.innerHTML).toEqual('RichText');
+            expect(editorObj.value).toEqual('<p>RichText</p>');
+            expect(valueEle.innerHTML).toEqual('<p>RichText</p>');
             editorObj.value = '';
             editorObj.dataBind();
             expect(editorObj.value).toEqual('');
@@ -354,8 +354,8 @@ describe('Rte module', () => {
             expect(editorObj.value).toEqual('RichTextEditor');
             expect((<HTMLElement>select('.e-content', document.body)).innerText.trim()).toEqual('RichTextEditor');
             editorObj.save();
-            expect(editorObj.value).toEqual('RichTextEditor');
-            expect(valueEle.innerHTML).toEqual('RichTextEditor');
+            expect(editorObj.value).toEqual('<p>RichTextEditor</p>');
+            expect(valueEle.innerHTML).toEqual('<p>RichTextEditor</p>');
         });
     });
 

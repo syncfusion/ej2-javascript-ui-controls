@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 17.1.48 (2019-05-21)
+
+### Grid
+
+#### Bug Fixes
+
+- #228547 - White space during normal editing is fixed while enabling the row drag and drop functionality.
+- #232660 - Script error while exporting the grouped Grid with `enableGroupByFormat` has been resolved.
+
+#### New Features
+
+- #144253 - Provided tag helper support for data manager control.
+- #225561 - Provided support to filter records when `ForeignKey` columns and Grid columns have same field names.
+
 ## 17.1.47 (2019-05-14)
 
 ### Grid

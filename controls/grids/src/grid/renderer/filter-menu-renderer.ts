@@ -183,7 +183,7 @@ export class FilterMenuRenderer {
             new this.colTypes[col.type](this.parent, this.serviceLocator, this.parent.filterSettings);
         let columns: PredicateModel[] = this.filterSettings.columns;
         for (let column of columns) {
-            if (col.field === column.field || col.foreignKeyValue === column.field) {
+            if (col.uid === column.uid) {
                 flValue = column.value;
             }
         }

@@ -8,6 +8,7 @@ import { Maps, FontModel, BorderModel, LayerSettings, ProjectionType } from '../
 import { animationComplete, IAnimationCompleteEventArgs, Alignment, LayerSettingsModel } from '../index';
 import { MarkerType, IShapeSelectedEventArgs, ITouches, IShapes, SelectionSettingsModel, HighlightSettingsModel } from '../index';
 import { shapeSelected } from '../model/constants';
+import { CenterPositionModel } from '../model/base-model';
 
 /**
  * Maps internal use of `Size` type
@@ -868,7 +869,7 @@ export function filter(points: MapLocation[], start: number, end: number): MapLo
 /**
  * To find the midpoint of the polygon from points
  */
-export function findMidPointOfPolygon(points: MapLocation[]): object {
+export function findMidPointOfPolygon(points: MapLocation[], type : string): object {
     if (!points.length) {
         return null;
     }
@@ -884,13 +885,13 @@ export function findMidPointOfPolygon(points: MapLocation[]): object {
 
     for (let i: number = min; i <= max - 1; i++) {
         startX = points[i].x;
-        startY = points[i].y;
+        startY = type === 'Mercator' ? points[i].y : -(points[i].y);
         if (i === max - 1) {
             startX1 = points[0].x;
-            startY1 = points[0].y;
+            startY1 = type === 'Mercator' ? points[0].y : -(points[0].y);
         } else {
             startX1 = points[i + 1].x;
-            startY1 = points[i + 1].y;
+            startY1 = type === 'Mercator' ? points[i + 1].y : -(points[i + 1].y);
         }
         sum = sum + Math.abs(((startX * startY1)) - (startX1 * startY));
         xSum = xSum + Math.abs(((startX + startX1) * (((startX * startY1) - (startX1 * startY)))));
@@ -912,6 +913,7 @@ export function findMidPointOfPolygon(points: MapLocation[]): object {
     let height: number = 0;
     for (let i: number = min; i <= max - 1; i++) {
         let point: MapLocation = points[i];
+        point.y = type === 'Mercator' ? point.y : -(point.y);
         if (point.y > ySum) {
             if (point.x < xSum && xSum - point.x < xSum - bottomMinPoint.x) {
                 bottomMinPoint = { x: point.x, y: point.y };
@@ -1034,7 +1036,7 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
     let mapHeight: number = Math.abs(min['y'] - max['y']);
     let factor: number = animate ? 1 : mapObject.zoomSettings.zoomFactor;
     let scaleFactor: number;
-    let center: { latitude: number, longitude: number } = mapObject.centerPosition;
+    let center: CenterPositionModel = mapObject.centerPosition;
     if (!isNullOrUndefined(center.longitude) && !isNullOrUndefined(center.latitude)) {
         let leftPosition: number = ((mapWidth + Math.abs(mapObject.mapAreaRect.width - mapWidth)) / 2) / factor;
         let topPosition: number = ((mapHeight + Math.abs(mapObject.mapAreaRect.height - mapHeight)) / 2) / factor;
@@ -1078,7 +1080,7 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
     let max: Object = mapObject.baseMapRectBounds['max'] as Object;
     let factor: number = mapObject.mapScaleValue; let scaleFactor: number;
     let mapWidth: number = Math.abs(max['x'] - min['x']); let mapHeight: number = Math.abs(min['y'] - max['y']);
-    let center: { latitude: number, longitude: number } = mapObject.centerPosition;
+    let center: CenterPositionModel = mapObject.centerPosition;
     if (!isNullOrUndefined(center.longitude) && !isNullOrUndefined(center.latitude)) {
         let topPosition: number = ((mapHeight + Math.abs(mapObject.mapAreaRect.height - mapHeight)) / 2) / factor;
         let leftPosition: number = ((mapWidth + Math.abs(mapObject.mapAreaRect.width - mapWidth)) / 2) / factor;

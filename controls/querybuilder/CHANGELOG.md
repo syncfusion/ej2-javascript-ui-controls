@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 17.1.48 (2019-05-21)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Provided public method for get the rule by the rule Id.
+- Date format issue in dd/mm/yyyy format.
+- Selected value not maintained properly for radiobutton field.
+
 ## 17.1.47 (2019-05-14)
 
 ### QueryBuilder

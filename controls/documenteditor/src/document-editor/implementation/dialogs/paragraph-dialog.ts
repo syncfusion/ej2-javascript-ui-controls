@@ -42,6 +42,8 @@ export class ParagraphDialog {
     private lineSpacingType: LineSpacingType = undefined;
     private paragraphFormat: WParagraphFormat = undefined;
     private bidi: boolean = undefined;
+    public isStyleDialog: boolean = false;
+    private directionDiv: HTMLElement = undefined;
     /**
      * @private
      */
@@ -83,11 +85,11 @@ export class ParagraphDialog {
             id: ownerId + '_DirLabel',
             className: 'e-de-dlg-sub-header', innerHTML: locale.getConstant('Direction')
         });
-        let dirDiv: HTMLElement = createElement('div', { id: ownerId + '_DirDiv', styles: 'display:flex' });
+        this.directionDiv = createElement('div', { id: ownerId + '_DirDiv', styles: 'display:flex' });
         let rtlDiv: HTMLElement = createElement('div', { id: ownerId + '_DirDiv', className: 'e-de-rtl-btn-div' });
         let rtlInputELe: HTMLElement = createElement('input', { id: ownerId + '_rtlEle' });
         rtlDiv.appendChild(rtlInputELe);
-        dirDiv.appendChild(rtlDiv)
+        this.directionDiv.appendChild(rtlDiv)
         let isRtl: boolean = this.owner.owner.enableRtl;
         if (isRtl) {
             rtlDiv.classList.add('e-de-rtl');
@@ -95,9 +97,9 @@ export class ParagraphDialog {
         let ltrDiv: HTMLElement = createElement('div', { id: ownerId + '_DirDiv', className: 'e-de-ltr-btn-div' });
         let ltrInputELe: HTMLElement = createElement('input', { id: ownerId + '_ltrEle' });
         ltrDiv.appendChild(ltrInputELe);
-        dirDiv.appendChild(ltrDiv)
+        this.directionDiv.appendChild(ltrDiv)
         generalDiv.appendChild(dirLabel);
-        generalDiv.appendChild(dirDiv);
+        generalDiv.appendChild(this.directionDiv);
         this.rtlButton = new RadioButton({
             label: locale.getConstant('Right-to-left'), enableRtl: isRtl,
             value: 'rtl', cssClass: 'e-small', change: this.changeBidirectional
@@ -332,6 +334,11 @@ export class ParagraphDialog {
      * @private
      */
     public loadParagraphDialog = (): void => {
+        if (this.isStyleDialog) {
+            this.directionDiv.classList.add('e-de-disabledbutton');
+        } else {
+            this.directionDiv.classList.remove('e-de-disabledbutton');
+        }
         let selectionFormat: SelectionParagraphFormat | WParagraphFormat;
         if (this.paragraphFormat) {
             selectionFormat = this.paragraphFormat;
@@ -469,7 +476,10 @@ export class ParagraphDialog {
      */
     public show(paragraphFormat?: WParagraphFormat): void {
         if (paragraphFormat) {
+            this.isStyleDialog = true;
             this.paragraphFormat = paragraphFormat;
+        } else {
+            this.isStyleDialog = false;
         }
         let local: L10n = new L10n('documenteditor', this.owner.owner.defaultLocale);
         local.setLocale(this.owner.owner.locale);

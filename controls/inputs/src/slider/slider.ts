@@ -2868,6 +2868,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
      * Calls internally if any of the property value is changed.
      * @private
      */
+    // tslint:disable-next-line
     public onPropertyChanged(newProp: SliderModel, oldProp: SliderModel): void {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -2879,7 +2880,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                         let value: number | number[] = isNullOrUndefined(newProp.value) ?
                             (this.type === 'Range' ? [this.min, this.max] : this.min) : newProp.value;
                         this.setProperties({ 'value': value }, true);
-                        if (oldProp.value.toString() !== value.toString()) {
+                        if (!isNullOrUndefined(oldProp.value) && oldProp.value.toString() !== value.toString()) {
                             this.setValue();
                             this.refreshTooltip(this.tooltipTarget);
                             if (this.type === 'Range') {
@@ -2903,8 +2904,11 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                     }
                     break;
                 case 'type':
-                    this.changeSliderType(oldProp.type);
-                    this.setZindex();
+                    if (!isNullOrUndefined(oldProp) && Object.keys(oldProp).length
+                        && !isNullOrUndefined(oldProp.type)) {
+                        this.changeSliderType(oldProp.type);
+                        this.setZindex();
+                    }
                     break;
                 case 'enableRtl':
                     if (oldProp.enableRtl !== newProp.enableRtl && this.orientation !== 'Vertical') {

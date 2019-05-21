@@ -499,7 +499,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      */
     // tslint:disable-next-line:max-func-body-length
     public onPropertyChanged(newProp: StockChartModel, oldProp: StockChartModel): void {
-        //
+        this.render();
     }
     /**
      * To change the range for chart

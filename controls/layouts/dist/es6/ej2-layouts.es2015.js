@@ -434,13 +434,13 @@ let Splitter = class Splitter extends Component {
         let isVertical = orientation === 'Vertical';
         this.element.classList.remove(isVertical ? HORIZONTAL_PANE : VERTICAL_PANE);
         this.element.classList.add(isVertical ? VERTICAL_PANE : HORIZONTAL_PANE);
-        this.element.removeAttribute('aria-orientation');
-        this.element.setAttribute('aria-orientation', orientation.toLowerCase());
         for (let index = 0; index < this.allPanes.length; index++) {
             this.allPanes[index].classList.remove(isVertical ? SPLIT_H_PANE : SPLIT_V_PANE);
             this.allPanes[index].classList.add(isVertical ? SPLIT_V_PANE : SPLIT_H_PANE);
         }
         for (let index = 0; index < this.allBars.length; index++) {
+            this.allBars[index].removeAttribute('aria-orientation');
+            this.allBars[index].setAttribute('aria-orientation', orientation.toLowerCase());
             this.allBars[index].classList.remove(isVertical ? SPLIT_H_BAR : SPLIT_V_BAR);
             this.allBars[index].classList.add(isVertical ? SPLIT_V_BAR : SPLIT_H_BAR);
         }
@@ -534,6 +534,7 @@ let Splitter = class Splitter extends Component {
                 clonedEle[i].parentNode.appendChild(separator);
                 this.currentSeparator = separator;
                 separator.setAttribute('role', 'separator');
+                separator.setAttribute('aria-orientation', this.orientation.toLowerCase());
                 this.wireClickEvents();
                 if (this.isResizable()) {
                     EventHandler.add(separator, 'mousedown', this.onMouseDown, this);
@@ -1331,7 +1332,6 @@ let Splitter = class Splitter extends Component {
         }
         childCount = target.children.length;
         let child = [].slice.call(target.children);
-        this.element.setAttribute('aria-orientation', this.orientation.toLowerCase());
         this.sizeFlag = false;
         if (childCount > 1) {
             for (let i = 0; i < childCount; i++) {
@@ -3338,13 +3338,20 @@ let DashboardLayout = class DashboardLayout extends Component {
                             }
                         }
                         if (changedPanels.length > 0) {
-                            this.trigger('change', changedPanels);
+                            let changedArgs = { changedPanels: changedPanels };
+                            this.trigger('change', changedArgs);
                         }
+                        this.dragStopEventArgs = { event: args.event, element: args.element };
                         this.trigger('dragStop', args);
                         this.resizeEvents();
                     },
                     drag: (args) => {
-                        this.trigger('drag', args);
+                        this.draggedEventArgs = {
+                            event: args.event,
+                            element: args.element,
+                            target: closest((args.target), '.e-panel')
+                        };
+                        this.trigger('drag', this.draggedEventArgs);
                         this.onDragStart(args);
                     }
                 });
@@ -3361,7 +3368,8 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.sortedPanel();
     }
     onDraggingStart(args) {
-        this.trigger('dragStart', args);
+        this.dragStartArgs = { event: args.event, element: args.element, cancel: false };
+        this.trigger('dragStart', this.dragStartArgs);
         this.panelsInitialModel = this.cloneModels(this.panels);
         this.mainElement = args.element;
         this.cloneObject = JSON.parse(JSON.stringify(this.cloneObject));
@@ -3582,7 +3590,11 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.updateOldRowColumn();
         this.sortedPanel();
         this.updateCloneArrayObject();
-        this.bindEvents();
+        if (this.allowResizing) {
+            for (let i = 0; i < cell.querySelectorAll('.e-resize').length; i++) {
+                EventHandler.add(cell.querySelectorAll('.e-resize')[i], 'mousedown', this.downResizeHandler, this);
+            }
+        }
     }
     updateCloneArrayObject() {
         this.cloneArray = this.sortedArray;

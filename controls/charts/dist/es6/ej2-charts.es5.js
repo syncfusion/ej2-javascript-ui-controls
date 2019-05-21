@@ -102,7 +102,6 @@ function getSeriesColor(theme) {
                 '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
             break;
         case 'HighContrastLight':
-        case 'Highcontrast':
         case 'HighContrast':
             palette = ['#79ECE4', '#E98272', '#DFE6B6', '#C6E773', '#BA98FF',
                 '#FA83C3', '#00C27A', '#43ACEF', '#D681EF', '#D8BC6E'];
@@ -135,7 +134,6 @@ function getThemeColor(theme) {
     var darkBackground = theme === 'MaterialDark' ? '#303030' : (theme === 'FabricDark' ? '#201F1F' : '1A1A1A');
     switch (theme) {
         case 'HighContrastLight':
-        case 'Highcontrast':
         case 'HighContrast':
             style = {
                 axisLabel: '#ffffff',
@@ -27765,8 +27763,8 @@ function getRangeThemeColor(theme, range) {
     var thumbSize = range.navigatorStyleSettings.thumb;
     var thumbWidth = isNullOrUndefined(thumbSize.width) ? (Browser.isDevice ? 15 : 20) : thumbSize.width;
     var thumbHeight = isNullOrUndefined(thumbSize.height) ? (Browser.isDevice ? 15 : 20) : thumbSize.height;
-    var darkAxisColor = (theme === 'Highcontrast' || theme === 'HighContrast') ? '#969696' : '#6F6C6C';
-    var darkGridlineColor = (theme === 'Highcontrast' || theme === 'HighContrast') ? '#4A4848' : '#414040';
+    var darkAxisColor = (theme === 'HighContrast') ? '#969696' : '#6F6C6C';
+    var darkGridlineColor = (theme === 'HighContrast') ? '#4A4848' : '#414040';
     var darkBackground = theme === 'MaterialDark' ? '#303030' : (theme === 'FabricDark' ? '#201F1F' : '1A1A1A');
     var style = {
         gridLineColor: '#E0E0E0',
@@ -27809,7 +27807,6 @@ function getRangeThemeColor(theme, range) {
                 thumbHeight: thumbHeight
             };
             break;
-        case 'Highcontrast':
         case 'HighContrast':
             style = {
                 gridLineColor: darkGridlineColor,
@@ -31427,7 +31424,7 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
      */
     // tslint:disable-next-line:max-func-body-length
     StockChart.prototype.onPropertyChanged = function (newProp, oldProp) {
-        //
+        this.render();
     };
     /**
      * To change the range for chart

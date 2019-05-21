@@ -202,6 +202,7 @@ export class CheckBoxFilter {
         this.options.sortedColumns = options.sortedColumns || this.parent.sortSettings.columns as string[];
         this.options.query = options.query || new Query();
         this.options.allowCaseSensitive = options.allowCaseSensitive || false;
+        this.options.uid = options.column.uid;
         this.values = {};
         this.localeObj = options.localeObj;
         this.isFiltered = options.filteredColumns.length;
@@ -372,17 +373,18 @@ export class CheckBoxFilter {
     private fltrBtnHandler(): void {
         let checked: Element[] = [].slice.call(this.cBox.querySelectorAll('.e-check:not(.e-selectall)'));
         let optr: string = 'equal';
+        let searchInput: HTMLInputElement = this.searchBox.querySelector('.e-searchinput') as HTMLInputElement;
         let caseSen: boolean = this.options.type === 'string' ?
             this.options.allowCaseSensitive : true;
         let defaults: {
-            predicate?: string, field?: string, type?: string,
+            predicate?: string, field?: string, type?: string, uid?: string
             operator?: string, matchCase?: boolean, ignoreAccent?: boolean
         } = {
-                field: this.options.field, predicate: 'or',
+                field: this.options.field, predicate: 'or', uid: this.options.uid,
                 operator: optr, type: this.options.type, matchCase: caseSen, ignoreAccent: this.parent.filterSettings.ignoreAccent
             };
         let isNotEqual: boolean = this.itemsCnt !== checked.length && this.itemsCnt - checked.length < checked.length;
-        if (isNotEqual) {
+        if (isNotEqual && searchInput.value === '') {
             optr = 'notequal';
             checked = [].slice.call(this.cBox.querySelectorAll('.e-uncheck:not(.e-selectall)'));
             defaults.predicate = 'and';
@@ -391,7 +393,6 @@ export class CheckBoxFilter {
         let value: string;
         let fObj: PredicateModel;
         let coll: PredicateModel[] = [];
-        let searchInput: HTMLInputElement = this.searchBox.querySelector('.e-searchinput') as HTMLInputElement;
         if (checked.length !== this.itemsCnt || (searchInput.value && searchInput.value !== '')) {
             for (let i: number = 0; i < checked.length; i++) {
                 value = this.values[parentsUntil(checked[i], 'e-ftrchk').getAttribute('uid')];
@@ -543,7 +544,10 @@ export class CheckBoxFilter {
         let fPredicate: { predicate?: Predicate } = {};
         let foreignColumn: Column[] = this.parent.getForeignKeyColumns();
         for (let prop of Object.keys(predicates)) {
-            let col: Column = getColumnByForeignKeyValue(prop, foreignColumn);
+            let col: Column;
+            if (this.parent.getColumnByField(prop).isForeignColumn()) {
+                col = getColumnByForeignKeyValue(prop, foreignColumn);
+            }
             if (col) {
                 this.parent.notify(events.generateQuery, { predicate: fPredicate, column: col });
                 if (fPredicate.predicate.predicates.length) {
@@ -643,8 +647,9 @@ export class CheckBoxFilter {
         if ((this.options.filteredColumns.length)) {
             let cols: Object[] = [];
             for (let i: number = 0; i < this.options.filteredColumns.length; i++) {
-                if (!((this.options.filteredColumns[i] as { field: string }).field === this.options.field ||
-                    (this.options.filteredColumns[i] as { field: string }).field === this.options.foreignKeyValue)) {
+                let filterColumn:  {uid: string, field: string} = this.options.filteredColumns[i] as {uid: string, field: string};
+                filterColumn.uid = filterColumn.uid || this.parent.getColumnByField(filterColumn.field).uid;
+                if (filterColumn.uid !== this.options.uid) {
                     cols.push(this.options.filteredColumns[i]);
                 }
             }

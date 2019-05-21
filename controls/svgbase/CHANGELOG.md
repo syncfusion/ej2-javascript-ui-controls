@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 17.1.47 (2019-05-14)
+## 17.1.48 (2019-05-21)
+
+### Chart
+
+#### Bug Fixes
+
+- #236117 - Axis labels aligned not properly when using some special characters issue fixed.
+
+## 17.1.41 (2019-04-16)
 
 ### Chart
 

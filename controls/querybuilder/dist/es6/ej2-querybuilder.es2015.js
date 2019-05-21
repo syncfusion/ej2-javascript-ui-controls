@@ -260,7 +260,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             if (args.cancel) {
                 return;
             }
-            let rule = this.getGroup(element);
+            let rule = this.getParentGroup(element);
             rule.condition = args.value;
             this.triggerEvents({ groupID: groupID, type: 'condition', value: rule.condition });
             this.filterRules(beforeRules, this.getValidRules(this.rule), 'condition');
@@ -395,7 +395,7 @@ let QueryBuilder = class QueryBuilder extends Component {
             let validateRule;
             for (i = 0, len = ruleElemCln.length; i < len; i++) {
                 groupElem = closest(ruleElemCln[i], '.e-group-container');
-                rule = this.getGroup(groupElem);
+                rule = this.getParentGroup(groupElem);
                 index = 0;
                 indexElem = tempElem = ruleElemCln[i];
                 dropDownObj = getComponent(ruleElemCln[i].querySelector('.e-rule-field input.e-control'), 'dropdownlist');
@@ -685,7 +685,7 @@ let QueryBuilder = class QueryBuilder extends Component {
     changeField(args) {
         if (args.isInteracted) {
             let groupElem = closest(args.element, '.e-group-container');
-            let rules = this.getGroup(groupElem);
+            let rules = this.getParentGroup(groupElem);
             let ruleElem = closest(args.element, '.e-rule-container');
             let index = 0;
             while (ruleElem && ruleElem.previousElementSibling !== null) {
@@ -996,7 +996,13 @@ let QueryBuilder = class QueryBuilder extends Component {
     renderStringValue(parentId, rule, operator, idx, ruleValElem) {
         let selectedVal;
         let columnData = this.getItemData(parentId);
-        let selectedValue = this.isImportRules ? rule.value : this.setDefaultValue(parentId, false, false);
+        let selectedValue;
+        if (this.isImportRules || this.isPublic) {
+            selectedValue = rule.value;
+        }
+        else {
+            selectedValue = this.setDefaultValue(parentId, false, false);
+        }
         if ((operator === 'in' || operator === 'notin') && (this.dataColl.length || columnData.values)) {
             selectedVal = this.isImportRules ? rule.value : this.setDefaultValue(parentId, true, false);
             this.renderMultiSelect(columnData, parentId, idx, selectedVal, columnData.values);
@@ -1024,7 +1030,7 @@ let QueryBuilder = class QueryBuilder extends Component {
     }
     renderNumberValue(parentId, rule, operator, idx, ruleValElem, itemData, length) {
         let columnData = this.getItemData(parentId);
-        let selectedVal = this.isImportRules ? rule.value : this.setDefaultValue(parentId, false, true);
+        let selectedVal = (this.isImportRules || this.isPublic) ? rule.value : this.setDefaultValue(parentId, false, true);
         if ((operator === 'in' || operator === 'notin') && (this.dataColl.length || columnData.values)) {
             selectedVal = this.isImportRules ? rule.value : this.setDefaultValue(parentId, true, false);
             this.renderMultiSelect(columnData, parentId, idx, selectedVal, columnData.values);
@@ -1078,6 +1084,22 @@ let QueryBuilder = class QueryBuilder extends Component {
             return numArr;
         }
     }
+    parseDate(value, format) {
+        let formatOpt;
+        let selectedValue;
+        if (format) {
+            let dParser = this.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
+            formatOpt = { type: 'dateTime', format: format };
+            selectedValue = dParser(value);
+            if (isNullOrUndefined(selectedValue)) {
+                selectedValue = this.intl.parseDate(value, formatOpt);
+            }
+        }
+        else {
+            selectedValue = new Date(value);
+        }
+        return selectedValue;
+    }
     renderControls(target, itemData, rule, tempRule) {
         addClass([target.parentElement.querySelector('.e-rule-value')], 'e-value');
         if (itemData.template) {
@@ -1085,7 +1107,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         else {
             let length;
-            if (tempRule.type === 'boolean') {
+            if (tempRule.type === 'boolean' && this.selectedColumn.values) {
                 length = this.selectedColumn.values.length;
             }
             else {
@@ -1119,48 +1141,52 @@ let QueryBuilder = class QueryBuilder extends Component {
                             {
                                 let values = itemData.values && itemData.values.length ? itemData.values : ['True', 'False'];
                                 let isCheck = false;
-                                if (itemData.value) {
+                                if (rule.type === 'boolean' && rule.value) {
+                                    isCheck = values[i].toString() === rule.value.toString();
+                                }
+                                else if (itemData.value) {
                                     isCheck = values[i].toString() === itemData.value.toString();
                                 }
-                                else if (rule.value) {
-                                    isCheck = values[i].toString() === rule.value.toString();
+                                else {
+                                    isCheck = true;
                                 }
                                 let radiobutton = new RadioButton({
                                     label: values[i].toString(), name: parentId + 'default', checked: isCheck, value: values[i],
                                     change: this.changeValue.bind(this, i)
                                 });
                                 radiobutton.appendTo('#' + parentId + '_valuekey' + i);
-                                this.updateRules(radiobutton.element, values[i], 0);
+                                if (isCheck) {
+                                    this.updateRules(radiobutton.element, values[i], 0);
+                                }
                             }
                             break;
                         case 'date':
                             {
                                 let selectedValue = new Date();
                                 let selVal;
+                                let column;
+                                let format = itemData.format;
+                                let datepick;
                                 if (itemData.value) {
-                                    selectedValue = itemData.value instanceof Date ?
-                                        itemData.value : new Date(itemData.value);
-                                }
-                                if (this.isImportRules && rule && rule.value) {
-                                    selectedValue = (length > 1) ? new Date(rule.value[i]) : new Date(rule.value);
-                                    let format;
-                                    let column = this.getColumn(rule.field);
-                                    selVal = (length > 1) ? rule.value[i] : rule.value;
-                                    if (column.format) {
-                                        let dParser = this.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
-                                        format = { type: 'dateTime', format: column.format };
-                                        if (selectedValue.toLocaleDateString() === 'Invalid Date') {
-                                            selectedValue = dParser(selVal);
-                                            if (isNullOrUndefined(selectedValue)) {
-                                                selectedValue = this.intl.parseDate(selVal, format);
-                                            }
-                                        }
+                                    if (itemData.value instanceof Date) {
+                                        selectedValue = itemData.value;
+                                    }
+                                    else if (itemData.value instanceof Number) {
+                                        selectedValue = new Date(itemData.value);
+                                    }
+                                    else {
+                                        selectedValue = this.parseDate(itemData.value, itemData.format);
                                     }
                                 }
-                                let datepick;
-                                if (itemData.format) {
+                                if ((this.isImportRules || this.isPublic) && rule && rule.value) {
+                                    column = this.getColumn(rule.field);
+                                    selVal = (length > 1) ? rule.value[i] : rule.value;
+                                    selectedValue = this.parseDate(selVal, column.format);
+                                    format = column.format;
+                                }
+                                if (format) {
                                     datepick =
-                                        new DatePicker({ value: selectedValue, format: itemData.format, change: this.changeValue.bind(this, i) });
+                                        new DatePicker({ value: selectedValue, format: format, change: this.changeValue.bind(this, i) });
                                 }
                                 else {
                                     datepick = new DatePicker({ value: selectedValue, change: this.changeValue.bind(this, i) });
@@ -1246,7 +1272,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         else {
             let inputLen = 1;
-            if (tempRule.type === 'boolean') {
+            if (tempRule.type === 'boolean' && this.selectedColumn.values) {
                 inputLen = this.selectedColumn.values.length;
             }
             else {
@@ -1272,12 +1298,8 @@ let QueryBuilder = class QueryBuilder extends Component {
                 break;
             case 'radio':
                 let radioBtnObj = getComponent(element, controlName);
-                if (!this.selectedColumn.value || (this.selectedColumn.value && this.selectedColumn.value === radioBtnObj.value)) {
-                    radioBtnObj.checked = true;
+                if (radioBtnObj.checked) {
                     rule.value = radioBtnObj.value;
-                }
-                else {
-                    radioBtnObj.checked = false;
                 }
                 radioBtnObj.refresh();
                 break;
@@ -1309,7 +1331,7 @@ let QueryBuilder = class QueryBuilder extends Component {
     }
     updateRules(target, selectedValue, i) {
         let groupElem = closest(target, '.e-group-container');
-        let rule = this.getGroup(groupElem);
+        let rule = this.getParentGroup(groupElem);
         let ruleElem = closest(target, '.e-rule-container');
         let index = 0;
         let dropDownObj;
@@ -1336,7 +1358,12 @@ let QueryBuilder = class QueryBuilder extends Component {
             let element = ruleElement.nextElementSibling.querySelector('input.e-control');
             let operator = getComponent(element, 'dropdownlist').value;
             rule.rules[index].operator = operator;
-            let elementCln = ruleElement.nextElementSibling.nextElementSibling.querySelectorAll('input.e-control');
+            // Value Fields
+            let valueContainer = ruleElement.nextElementSibling.nextElementSibling;
+            let elementCln = valueContainer.querySelectorAll('input.e-control');
+            if (elementCln.length < 1) {
+                elementCln = valueContainer.querySelectorAll('.e-template');
+            }
             for (let i = 0; i < elementCln.length; i++) {
                 if (!elementCln[i]) {
                     elementCln[i] = ruleElement.nextElementSibling.nextElementSibling.querySelector('div.e-control');
@@ -1535,9 +1562,11 @@ let QueryBuilder = class QueryBuilder extends Component {
      */
     addRules(rule, groupID) {
         groupID = this.element.id + '_' + groupID;
+        this.isPublic = true;
         for (let i = 0, len = rule.length; i < len; i++) {
             this.addRuleElement(document.getElementById(groupID), rule[i]);
         }
+        this.isPublic = false;
     }
     /**
      * Adds single or multiple groups, which contains the collection of rules.
@@ -1546,7 +1575,7 @@ let QueryBuilder = class QueryBuilder extends Component {
     addGroups(groups, groupID) {
         groupID = this.element.id + '_' + groupID;
         let groupElem = document.getElementById(groupID);
-        let rule = this.getGroup(groupElem);
+        let rule = this.getParentGroup(groupElem);
         let grouplen = groups.length;
         if (grouplen) {
             for (let i = 0, len = groups.length; i < len; i++) {
@@ -1877,8 +1906,8 @@ let QueryBuilder = class QueryBuilder extends Component {
         let wrapper = this.getWrapper();
         EventHandler.remove(wrapper, 'click', this.clickEventHandler);
     }
-    getGroup(target, isParent) {
-        let groupLevel = this.levelColl[target.id];
+    getParentGroup(target, isParent) {
+        let groupLevel = (target instanceof Element) ? this.levelColl[target.id] : this.levelColl[target];
         let len = isParent ? groupLevel.length - 1 : groupLevel.length;
         let rule = this.rule;
         for (let i = 0; i < len; i++) {
@@ -1889,7 +1918,7 @@ let QueryBuilder = class QueryBuilder extends Component {
     deleteGroup(target) {
         let groupElem = target;
         let groupId = groupElem.id.replace(this.element.id + '_', '');
-        let rule = this.getGroup(groupElem, true);
+        let rule = this.getParentGroup(groupElem, true);
         let index = 0;
         let i;
         let len;
@@ -1932,7 +1961,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         let groupElem = closest(target, '.e-group-container');
         let ruleID;
         let groupID;
-        let rule = this.getGroup(groupElem);
+        let rule = this.getParentGroup(groupElem);
         let ruleElem = closest(target, '.e-rule-container');
         groupID = groupElem.id.replace(this.element.id + '_', '');
         ruleID = closest(target, '.e-rule-container').id.replace(this.element.id + '_', '');
@@ -2035,6 +2064,41 @@ let QueryBuilder = class QueryBuilder extends Component {
      */
     getRules() {
         return this.rule;
+    }
+    /**
+     * Gets the rule.
+     * @returns object.
+     */
+    getRule(elem) {
+        let ruleElem;
+        let ruleId;
+        let index = 0;
+        if (elem instanceof HTMLElement) {
+            ruleElem = closest(elem, '.e-rule-container');
+        }
+        else {
+            ruleId = this.element.id + '_' + elem;
+            ruleElem = document.getElementById(ruleId);
+        }
+        let groupElem = closest(ruleElem, '.e-group-container');
+        let rule = this.getParentGroup(groupElem);
+        while (ruleElem.previousElementSibling !== null) {
+            ruleElem = ruleElem.previousElementSibling;
+            index++;
+        }
+        return rule.rules[index];
+    }
+    /**
+     * Gets the group.
+     * @returns object.
+     */
+    getGroup(target) {
+        if (target instanceof Element && target.className.indexOf('e-group-container') < 1) {
+            target = closest(target, '.e-group-container');
+        }
+        let groupId = (target instanceof Element) ? target.id : this.element.id + '_' + target;
+        let rule = this.getParentGroup(groupId);
+        return { rules: rule.rules, condition: rule.condition };
     }
     /**
      * Deletes the group or groups based on the group ID.

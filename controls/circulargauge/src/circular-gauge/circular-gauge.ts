@@ -522,7 +522,6 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
                 pointer: this.activePointer,
                 currentValue: this.activePointer.currentValue
             } as IPointerDragEventArgs);
-            this.activePointer.value = this.activePointer.currentValue;
             this.activeAxis = null;
             this.activePointer = null;
         }

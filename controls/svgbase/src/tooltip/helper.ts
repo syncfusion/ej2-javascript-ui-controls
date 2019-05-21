@@ -18,7 +18,15 @@ export function measureText(text: string, font: TextStyleModel): Size {
         htmlObject = createElement('text', { id: 'chartmeasuretext' });
         document.body.appendChild(htmlObject);
     }
-
+    if (typeof (text) === 'string' && (text.indexOf('<') > -1 || text.indexOf('>') > -1)) {
+        let textArray: string[] = text.split(' ');
+        for (let i: number = 0; i < textArray.length; i++) {
+            if (textArray[i].indexOf('<br/>') === -1) {
+                textArray[i] = textArray[i].replace(/[<>]/g, '&');
+            }
+        }
+        text = textArray.join(' ');
+    }
     htmlObject.innerHTML = text;
     htmlObject.style.position = 'fixed';
     htmlObject.style.fontSize = font.size;

@@ -513,6 +513,8 @@ export class Axis extends ChildProperty<Axis> {
      * * Category: Renders a category axis.
      * * Logarithmic: Renders a log axis.
      * @default 'Double'
+     * @aspType Syncfusion.EJ2.Charts.ValueType
+     * @isEnumeration true
      */
 
     @Property('Double')

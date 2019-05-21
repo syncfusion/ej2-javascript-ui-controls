@@ -6725,7 +6725,7 @@ let Tab = class Tab extends Component {
             previousIndex: this.prevIndex,
             selectedItem: trg,
             selectedIndex: value,
-            selectedContent: select('#' + CLS_CONTENT$1 + '_' + this.selectedID, this.content),
+            selectedContent: select('#' + CLS_CONTENT$1 + '_' + this.selectingID, this.content),
             isSwiped: this.isSwipeed
         };
         if (!this.initRender || this.selectedItem !== 0) {
@@ -7237,7 +7237,8 @@ let Tab = class Tab extends Component {
             selectingItem: trg,
             selectingIndex: args,
             selectingContent: !isNullOrUndefined(this.content) ? select('#' + CLS_CONTENT$1 + '_' + this.selectingID, this.content) : null,
-            isSwiped: this.isSwipeed
+            isSwiped: this.isSwipeed,
+            cancel: false
         };
         if (!this.initRender || this.selectedItem !== 0) {
             this.trigger('selecting', eventArg);

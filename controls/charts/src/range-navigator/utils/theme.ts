@@ -30,8 +30,8 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
     let thumbSize: ThumbSettingsModel = range.navigatorStyleSettings.thumb;
     let thumbWidth: number = isNullOrUndefined(thumbSize.width) ? (Browser.isDevice ? 15 : 20) : thumbSize.width;
     let thumbHeight: number = isNullOrUndefined(thumbSize.height) ? (Browser.isDevice ? 15 : 20) : thumbSize.height;
-    let darkAxisColor: string = (theme === 'Highcontrast' || theme === 'HighContrast') ? '#969696' : '#6F6C6C';
-    let darkGridlineColor: string = (theme === 'Highcontrast' || theme === 'HighContrast') ? '#4A4848' : '#414040';
+    let darkAxisColor: string = (theme === 'HighContrast') ? '#969696' : '#6F6C6C';
+    let darkGridlineColor: string = (theme === 'HighContrast') ? '#4A4848' : '#414040';
     let darkBackground: string = theme === 'MaterialDark' ? '#303030' : (theme === 'FabricDark' ? '#201F1F' : '1A1A1A');
     let style: IRangeStyle = {
         gridLineColor: '#E0E0E0',
@@ -74,7 +74,6 @@ export function getRangeThemeColor(theme: ChartTheme, range: RangeNavigator): IR
                 thumbHeight: thumbHeight
             };
             break;
-        case 'Highcontrast':
         case 'HighContrast':
             style = {
                 gridLineColor: darkGridlineColor,

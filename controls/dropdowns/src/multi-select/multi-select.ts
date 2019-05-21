@@ -2598,7 +2598,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
     }
     private showOverAllClear(): void {
-        if (((this.value && this.value.length) || this.inputElement.value !== '') && this.showClearButton) {
+        if (((this.value && this.value.length) || this.inputElement.value !== '') && this.showClearButton && this.readonly !== true) {
             this.overAllClear.style.display = '';
         } else {
             this.overAllClear.style.display = 'none';

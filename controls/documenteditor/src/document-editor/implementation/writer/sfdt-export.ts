@@ -99,6 +99,11 @@ export class SfdtExport {
                     let endTable: TableWidget = endCell.getContainerTable();
                     if (startTable.tableFormat === endTable.tableFormat) {
                         this.endCell = endCell;
+                        if (this.endCell.ownerTable !== startCell.ownerTable && startCell.ownerTable.associatedCell
+                            && startCell.ownerTable.associatedCell.ownerTable === this.endCell.ownerTable &&
+                            (startCell.ownerTable.associatedCell.childWidgets.indexOf(startCell.ownerTable) === 0)) {
+                            startCell = startCell.ownerTable.associatedCell;
+                        }
                         this.endColumnIndex = this.endCell.columnIndex + this.endCell.cellFormat.columnSpan;
                         this.startColumnIndex = startCell.columnIndex;
                     }
@@ -116,6 +121,21 @@ export class SfdtExport {
                 }
                 // Todo:continue in next section
             } else {
+                // Specially handled for nested table cases
+                // selection start inside table and end in paragraph outside table
+                if (isNullOrUndefined(endCell) && startCell.ownerTable.associatedCell) {
+                    let startTable: TableWidget = startCell.getContainerTable();
+                    let lastRow: TableRowWidget = startTable.childWidgets[startTable.childWidgets.length - 1] as TableRowWidget;
+                    let endCell: TableCellWidget = lastRow.childWidgets[lastRow.childWidgets.length - 1] as TableCellWidget;
+                    if (endCell.ownerTable !== startCell.ownerTable && startCell.ownerTable.associatedCell
+                        && (startCell.ownerTable.associatedCell.childWidgets.indexOf(startCell.ownerTable) === 0)) {
+                        while (startCell.ownerTable !== endCell.ownerTable) {
+                            startCell = startCell.ownerTable.associatedCell;
+                        }
+                    }
+                    this.endColumnIndex = endCell.columnIndex + endCell.cellFormat.columnSpan;
+                    this.startColumnIndex = startCell.columnIndex;
+                }
                 let table: any = this.createTable(startCell.ownerTable);
                 section.blocks.push(table);
                 nextBlock = this.writeTable(startCell.ownerTable, table, startCell.ownerRow.indexInOwner, section.blocks);
@@ -379,9 +399,12 @@ export class SfdtExport {
     public writeListFormat(format: WListFormat, isInline?: boolean): any {
         let listFormat: any = {};
         let listIdValue: Object = format.getValue('listId');
-        if (!isNullOrUndefined(listIdValue) && listIdValue > -1) {
+        if (!isNullOrUndefined(listIdValue)) {
             listFormat.listId = listIdValue;
-            listFormat.listLevelNumber = format.getValue('listLevelNumber');
+            let listLevelNumber: Object = format.getValue('listLevelNumber');
+            if (!isNullOrUndefined(listLevelNumber)) {
+                listFormat.listLevelNumber = listLevelNumber;
+            }
             if (this.lists.indexOf(format.listId) < 0) {
                 this.lists.push(format.listId);
             }

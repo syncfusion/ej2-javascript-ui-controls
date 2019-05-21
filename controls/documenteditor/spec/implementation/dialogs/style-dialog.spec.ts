@@ -119,23 +119,23 @@ describe('Style dialog validation', () => {
         let downEventArgs: any = { preventDefault: (): void => { }, action: 'down' };
         (styleDialog as any).styleType.keyActionHandler(downEventArgs);
         //Next para disable
-        expect((styleDialog as any).styleParagraph.enabled).toBe(false);       
+        expect((styleDialog as any).styleParagraph.enabled).toBe(false);
 
         //Change to Linked(Paragraph and Character) type
         (styleDialog as any).styleType.keyActionHandler(downEventArgs);
         //Next para disable
-        expect((styleDialog as any).styleParagraph.enabled).toBe(true);        
+        expect((styleDialog as any).styleParagraph.enabled).toBe(true);
 
         //Change to Character
         let upEventArgs: any = { preventDefault: (): void => { }, action: 'up' };
         (styleDialog as any).styleType.keyActionHandler(upEventArgs);
         //Next para disable
-        expect((styleDialog as any).styleParagraph.enabled).toBe(false);                
+        expect((styleDialog as any).styleParagraph.enabled).toBe(false);
 
         //Change to Paragraph
         (styleDialog as any).styleType.keyActionHandler(upEventArgs);
         //Next para disable
-        expect((styleDialog as any).styleParagraph.enabled).toBe(true);       
+        expect((styleDialog as any).styleParagraph.enabled).toBe(true);
 
         styleDialog.closeStyleDialog();
     });
@@ -180,7 +180,7 @@ describe('getStyles API', () => {
     it('GetStyles Validation', () => {
         createDocument(editor);
         let styles: any[] = editor.getStyles('Paragraph');
-        
+
         expect(styles[0].name).toBe('Normal');
         expect(styles[0].style).toBe('{"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000","bidi":false,"bdo":"None","boldBidi":false,"italicBidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}');
 
@@ -594,5 +594,58 @@ describe('Style dialog - Editing', () => {
         expect(style.basedOn.name).toBe('Normal');
         expect(style.next.name).toBe('Normal');
         expect(style.type).toBe('Paragraph');
+    });
+});
+
+describe('Modify Styles for Heading 1 validation', () => {
+    let editor: DocumentEditor;
+    let styleDialog: StyleDialog;
+    let fontDialog: FontDialog;
+    let paragraphDialog: ParagraphDialog;
+    let numBulletDialog: BulletsAndNumberingDialog;
+    let menu: ContextMenu;
+    beforeAll((): void => {
+        editor = undefined;
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, StyleDialog, FontDialog, ParagraphDialog, ContextMenu, EditorHistory);
+        editor = new DocumentEditor({
+            enableEditor: true, enableEditorHistory: true, enableSelection: true, isReadOnly: false, enableContextMenu: true, enableStyleDialog: true,
+            enableFontDialog: true, enableParagraphDialog: true
+        });
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        styleDialog = editor.styleDialogModule;
+        fontDialog = editor.fontDialogModule;
+        paragraphDialog = editor.paragraphDialogModule;
+        menu = editor.contextMenuModule;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        styleDialog = undefined;
+        setTimeout(function () {
+            done();
+        }, 2000);
+    });
+    it('Modify heading 1 style validation', () => {
+        editor.editor.insertText('Heading 1');
+        editor.editor.applyStyle('Heading 1');
+        editor.styleDialogModule.show('Heading 1');
+        editor.styleDialogModule.onOkButtonClick();
+        expect(editor.selection.paragraphFormat.textAlignment).toBe('Left');
+    });
+    it('Open Paragraph dialog validation', () => {
+        editor.openBlank();
+        editor.editor.insertText('Heading 1');
+        editor.editor.applyStyle('Heading 1');
+        editor.styleDialogModule.show('Heading 1');
+        styleDialog.showParagraphDialog();
+        paragraphDialog.closeParagraphDialog();
+        styleDialog.closeStyleDialog();
     });
 });

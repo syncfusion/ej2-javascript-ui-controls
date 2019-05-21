@@ -36,7 +36,7 @@ describe('Diagram Control', () => {
                 ,
                 shape: {
                     type: 'UmlClassifier',
-                    class: {
+                    classShape: {
                         attributes: [
                             { type: 'Date', scope: 'Package', style: { fill: "black", fontSize: 11, strokeColor: 'green', strokeWidth: 4 } },
                             { name: 'sickness', type: 'History', scope: 'Private', isSeparator: true },
@@ -63,7 +63,7 @@ describe('Diagram Control', () => {
                 ,
                 shape: {
                     type: 'UmlClassifier',
-                    class: {
+                    classShape: {
                         attributes: [], methods: [{
                             name: 'getHistory',
                             style: {}, parameters: [{ name: 'Date', style: {} }], type: 'History'
@@ -81,7 +81,7 @@ describe('Diagram Control', () => {
                 }, borderColor: 'white',
                 shape: {
                     type: 'UmlClassifier',
-                    enumeration: {
+                    enumerationShape: {
                         name: 'AccountType',
                         //sets the members of enumeration
                         members: [
@@ -107,7 +107,7 @@ describe('Diagram Control', () => {
                 }, borderColor: 'white',
                 shape: {
                     type: 'UmlClassifier',
-                    enumeration: {
+                    enumerationShape: {
                         name: 'AccountType',
                         //sets the members of enumeration
                         members: []
@@ -124,7 +124,7 @@ describe('Diagram Control', () => {
                 }, borderColor: 'white',
                 shape: {
                     type: 'UmlClassifier',
-                    interface: {
+                    interfaceShape: {
                         name: "Bank Account",
                         attributes: [{
                             name: "owner",
@@ -153,7 +153,7 @@ describe('Diagram Control', () => {
                 }, borderColor: 'white',
                 shape: {
                     type: 'UmlClassifier',
-                    interface: {
+                    interfaceShape: {
                         name: "Bank Account",
                         attributes: [{
                             name: "owner",
@@ -444,7 +444,7 @@ describe('Diagram Control', () => {
                 ,
                 shape: {
                     type: 'UmlClassifier',
-                    class: {
+                    classShape: {
                         attributes: [
                             {
                                 type: 'Date', scope: 'Package',
@@ -504,7 +504,7 @@ describe('Diagram Control', () => {
                 ,
                 shape: {
                     type: 'UmlClassifier',
-                    class: {
+                    classShape: {
                         attributes: [
                             {
                                 type: 'Date', scope: 'Package',
@@ -530,7 +530,7 @@ describe('Diagram Control', () => {
                 ,
                 shape: {
                     type: 'UmlClassifier',
-                    class: {
+                    classShape: {
                         attributes: [
                             {
                                 type: 'Date', scope: 'Package',

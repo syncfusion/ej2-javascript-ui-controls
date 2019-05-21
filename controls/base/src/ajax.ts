@@ -86,7 +86,8 @@ export class Ajax {
     public send(data?: string | Object): Promise<Ajax> {
         this.data = isNullOrUndefined(data) ? this.data : data;
         let eventArgs: BeforeSendEventArgs = {
-            cancel: false
+            cancel: false,
+            httpRequest: null
         };
         let promise: Promise<Ajax> = new Promise((resolve: Function, reject: Function) => {
             this.httpRequest = new XMLHttpRequest();
@@ -112,13 +113,14 @@ export class Ajax {
             }
             this.httpRequest.open(this.type, this.url, this.mode);
             // Set default headers
-            if (!isNullOrUndefined(this.data) && this.contentType !== null ) {
+            if (!isNullOrUndefined(this.data) && this.contentType !== null) {
                 this.httpRequest.setRequestHeader('Content-Type', this.contentType || 'application/json; charset=utf-8');
             }
             if (this.beforeSend) {
+                eventArgs.httpRequest = this.httpRequest;
                 this.beforeSend(eventArgs);
             }
-            if (!eventArgs.cancel)  {
+            if (!eventArgs.cancel) {
                 this.httpRequest.send(!isNullOrUndefined(this.data) ? this.data as Document : null);
             }
         });
@@ -175,7 +177,7 @@ export class Ajax {
                     reject(new Error(this.failureHandler(this.httpRequest.statusText)));
                 } else {
                     resolve();
-                 }
+                }
             }
         }
     }
@@ -205,12 +207,15 @@ export interface HeaderOptions {
     overrideMimeType?: Function;
 }
 
-    /**
-     * Specifies the ajax beforeSend event arguments 
-     * @event
-     */
+/**
+ * Specifies the ajax beforeSend event arguments 
+ * @event
+ */
 export interface BeforeSendEventArgs {
 
     /** To cancel the ajax request in beforeSend */
     cancel?: boolean;
+
+    /** Returns the request sent from the client end */
+    httpRequest?: XMLHttpRequest;
 }

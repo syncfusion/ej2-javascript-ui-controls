@@ -611,14 +611,6 @@ export class TableProperties {
     }
     public destroy(): void {
         this.container = undefined;
-        if (this.tableTextProperties) {
-            this.tableTextProperties.destroy();
-            this.tableTextProperties = undefined;
-        }
-        if (this.propertiesTab) {
-            this.propertiesTab.destroy();
-            this.propertiesTab = undefined;
-        }
         if (this.shadingBtn) {
             this.shadingBtn.destroy();
             this.shadingBtn = undefined;
@@ -646,6 +638,14 @@ export class TableProperties {
         if (this.rightMargin) {
             this.rightMargin.destroy();
             this.rightMargin = undefined;
+        }
+        if (this.tableTextProperties) {
+            this.tableTextProperties.destroy();
+            this.tableTextProperties = undefined;
+        }
+        if (this.propertiesTab) {
+            this.propertiesTab.destroy();
+            this.propertiesTab = undefined;
         }
     }
 }

@@ -3479,4 +3479,26 @@ describe('Splitter Control', () => {
                 expect(splitterObj.element.querySelectorAll('.e-pane')[2].innerHTML).toEqual('');
             });
         });
+
+    // aria-orientation
+    describe('HTML5 validation', () => {
+        let splitterObj: any;
+        beforeAll((): void => {
+        let element: HTMLElement = createElement('div', { id: 'default'});
+        let child1: HTMLElement = createElement('div');
+        let child2: HTMLElement = createElement('div');
+        element.appendChild(child1);
+        element.appendChild(child2);
+        document.body.appendChild(element);
+        splitterObj = new Splitter({ height: '400px', width: '400px', paneSettings: [{ size: '50%' }, {}]});
+        splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+        document.body.innerHTML = '';
+        });
+
+        it('aria-orientation', () => {
+            expect(splitterObj.element.querySelectorAll('.e-split-bar.e-split-bar-horizontal')[0].getAttribute("aria-orientation")).toBe('horizontal');
+        });
+    });
  });

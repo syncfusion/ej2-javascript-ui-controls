@@ -117,7 +117,7 @@ export interface TimePickerModel extends ComponentModel{
      * Gets or sets the minimum time value that can be allowed to select in TimePicker.
      * > For more details refer to 
      * [`Time Range`](../../timepicker/time-range/) documentation.
-     * @default 00:00
+     * @default null
      */
     min?: Date;
 
@@ -125,7 +125,7 @@ export interface TimePickerModel extends ComponentModel{
      * Gets or sets the maximum time value that can be allowed to select in TimePicker.
      * > For more details refer to 
      * [`Time Range`](../../timepicker/time-range/) documentation.
-     * @default 00:00
+     * @default null
      */
     max?: Date;
 

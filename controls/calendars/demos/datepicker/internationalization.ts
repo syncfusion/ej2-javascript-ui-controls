@@ -26,12 +26,22 @@ L10n.load({
 
 /*Load culturefiles from cldr main folder*/
 function loadCultureFiles(name: string): void {
+ 
     let files: string[] =
         ['ca-gregorian.json', 'numbers.json', 'timeZoneNames.json', 'currencies.json'];
-    for (let prop of files) {
+
+    if (name === 'ar') {
+        files.push('numberingSystems.json');
+    }
+    for (let prop = 0; prop < files.length; prop++) {
         let val: Object;
         let ajax: Ajax;
-        ajax = new Ajax('../../spec/cldr/main/' + name + '/' + prop, 'GET', false);
+
+        if (name === 'ar' && prop === files.length - 1) {
+            ajax = new Ajax('../../spec/cldr/supplemental/' + files[prop], 'GET', false);
+        } else {
+        ajax = new Ajax('../../spec/cldr/main/' + name + '/' + files[prop], 'GET', false);
+        }
         ajax.onSuccess = (value: JSON) => {
             val = value;
         };
@@ -52,6 +62,11 @@ function changeLocale(): void {
     let culture: string = (document.getElementById('cultures') as HTMLSelectElement).value;
     if (culture !== 'en') {
         loadCultureFiles(culture);
+    }
+    if(culture == 'ar') {
+        datepicker.enableRtl = true;
+    } else {
+        datepicker.enableRtl = false;
     }
     datepicker.locale = culture;
     datepicker.dataBind();

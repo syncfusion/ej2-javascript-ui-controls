@@ -369,7 +369,7 @@ export interface FlowShapeModel extends ShapeModel{
      * * ManualInput - Sets the type of the flow shape as ManualInput
      * * LoopLimit - Sets the type of the flow shape as LoopLimit
      * * StoredData - Sets the type of the flow shape as StoredData
-     * @default ''
+     * @default 'Terminator'
      */
     shape?: FlowShapes;
 
@@ -924,7 +924,7 @@ export interface BpmnShapeModel extends ShapeModel{
 
     /**
      * Defines the type of node shape
-     * @default 'Bpmn'
+     * @default 'Basic'
      */
     type?: Shapes;
 
@@ -1243,19 +1243,19 @@ export interface UmlClassifierShapeModel extends ShapeModel{
      * Defines the text of the bpmn annotation collection
      * @default 'None'
      */
-    class?: UmlClassModel;
+    classShape?: UmlClassModel;
 
     /**
      * Defines the text of the bpmn annotation collection
      * @default 'None'
      */
-    interface?: UmlInterfaceModel;
+    interfaceShape?: UmlInterfaceModel;
 
     /**
      * Defines the text of the bpmn annotation collection
      * @default 'None'
      */
-    enumeration?: UmlEnumerationModel;
+    enumerationShape?: UmlEnumerationModel;
 
     /**
      * Defines the type of classifier

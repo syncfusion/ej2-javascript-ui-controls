@@ -231,6 +231,7 @@ export function isDiagramChild(htmlLayer: HTMLElement): boolean {
     return false;
 }
 
+
 /** @private */
 export function groupHasType(node: NodeModel, type: Shapes, nameTable: {}): boolean {
     let contains: boolean = false;

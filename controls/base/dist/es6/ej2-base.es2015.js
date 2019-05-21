@@ -444,7 +444,8 @@ class Ajax {
     send(data) {
         this.data = isNullOrUndefined(data) ? this.data : data;
         let eventArgs = {
-            cancel: false
+            cancel: false,
+            httpRequest: null
         };
         let promise = new Promise((resolve, reject) => {
             this.httpRequest = new XMLHttpRequest();
@@ -474,6 +475,7 @@ class Ajax {
                 this.httpRequest.setRequestHeader('Content-Type', this.contentType || 'application/json; charset=utf-8');
             }
             if (this.beforeSend) {
+                eventArgs.httpRequest = this.httpRequest;
                 this.beforeSend(eventArgs);
             }
             if (!eventArgs.cancel) {
@@ -6537,6 +6539,14 @@ function evalExp(str, nameSpace, helper) {
      * Variable containing Local Keys
      */
     let localKeys = [];
+    let isClass = str.match(/class="([^\"]+|)\s{2}/g);
+    let singleSpace = '';
+    if (isClass) {
+        isClass.forEach((value) => {
+            singleSpace = value.replace(/\s\s+/g, ' ');
+            str = str.replace(value, singleSpace);
+        });
+    }
     return str.replace(LINES, '').replace(DBL_QUOTED_STR, '\'$1\'').replace(exp, (match, cnt, offset, matchStr) => {
         let matches = cnt.match(CALL_FUNCTION);
         // matches to detect any function calls

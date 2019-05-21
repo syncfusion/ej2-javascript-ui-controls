@@ -6749,7 +6749,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         }
     }
     showOverAllClear() {
-        if (((this.value && this.value.length) || this.inputElement.value !== '') && this.showClearButton) {
+        if (((this.value && this.value.length) || this.inputElement.value !== '') && this.showClearButton && this.readonly !== true) {
             this.overAllClear.style.display = '';
         }
         else {
@@ -8459,7 +8459,7 @@ let ListBox = class ListBox extends DropDownBase {
     addItems(items, itemIndex) {
         super.addItem(items, itemIndex);
     }
-    selectAllItems(state) {
+    selectAllItems(state, event) {
         [].slice.call(this.getItems()).forEach((li) => {
             if (!li.classList.contains(cssClass.disabled)) {
                 if (this.selectionSettings.showCheckbox) {
@@ -8479,7 +8479,8 @@ let ListBox = class ListBox extends DropDownBase {
             }
         });
         this.updateSelectedOptions();
-        this.triggerSelectAndChange(this.getSelectedItems(), this.selectionSettings.showCheckbox && this.selectionSettings.showSelectAll ?
+        this.triggerSelectAndChange(this.getSelectedItems(), this.getSelectedItems(), event, this.selectionSettings.showCheckbox &&
+            this.selectionSettings.showSelectAll ?
             this.isSelected(this.list.firstElementChild) : state);
     }
     wireEvents() {
@@ -8572,14 +8573,14 @@ let ListBox = class ListBox extends DropDownBase {
                 this.notify('updatelist', { li: li, e: e });
             }
             this.updateSelectedOptions();
-            this.triggerSelectAndChange(selectedLi, isSelect);
+            this.triggerSelectAndChange(selectedLi, this.getSelectedItems(), e, isSelect);
         }
     }
-    triggerSelectAndChange(selectedLi, isSelect) {
+    triggerSelectAndChange(selectedLi, selectedLis, event, isSelect) {
         if (isSelect) {
             this.trigger('select', { elements: selectedLi, items: this.getDataByElems(selectedLi) });
         }
-        this.trigger('change', { value: this.value });
+        this.trigger('change', { elements: selectedLis, items: this.getDataByElems(selectedLis), value: this.value, event: event });
     }
     getDataByElems(elems) {
         let data = [];
@@ -9096,6 +9097,9 @@ __decorate$5([
 __decorate$5([
     Event()
 ], ListBox.prototype, "select", void 0);
+__decorate$5([
+    Event()
+], ListBox.prototype, "change", void 0);
 __decorate$5([
     Event()
 ], ListBox.prototype, "dragStart", void 0);

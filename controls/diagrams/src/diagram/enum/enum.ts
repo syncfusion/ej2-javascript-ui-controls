@@ -2478,6 +2478,5 @@ export type AssociationFlow = 'Default' | 'Directional' | 'BiDirectional';
  * * OneToOne - Indicates the connector multiplicity is OneToOne.
  * * OneToMany - Indicates the connector multiplicity is OneToMany.
  * * ManyToOne - Indicates the connector multiplicity is ManyToOne.
- * * ManyToOne - Indicates the connector multiplicity is ManyToOne.
  */
-export type Multiplicity = 'OneToOne' | 'OneToMany' | 'ManyToOne' | 'ManyToOne';
+export type Multiplicity = 'OneToOne' | 'OneToMany' | 'ManyToOne';

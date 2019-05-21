@@ -1465,7 +1465,7 @@
   }
 
   .e-de-style-bold-button-size {
-    height: $e-de-style-input-text-height;
+    height: 31px;
     margin-left: 6px;
     margin-right: 8px;
   }
@@ -1965,6 +1965,11 @@
   .e-para-dlg-sub-height {
     height: 145px;
    }
+
+  .e-de-disabledbutton {
+    opacity: $de-paradialog-dir-div;
+    pointer-events: none;
+  }
 
   .e-bigger {
     .e-de-insert-table {

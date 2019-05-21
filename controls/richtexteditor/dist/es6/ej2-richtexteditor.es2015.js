@@ -1,4 +1,4 @@
-import { Base, Browser, ChildProperty, Complex, Component, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Observer, Property, addClass, append, attributes, closest, compile, createElement, debounce, detach, extend, formatUnit, getEnumValue, getInstance, getUniqueID, isNullOrUndefined, prepend, print, removeClass, select, selectAll, setStyleAttribute } from '@syncfusion/ej2-base';
+import { Base, Browser, ChildProperty, Complex, Component, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Observer, Property, Touch, addClass, append, attributes, closest, compile, createElement, debounce, detach, extend, formatUnit, getEnumValue, getInstance, getUniqueID, isNullOrUndefined, prepend, print, removeClass, select, selectAll, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Toolbar } from '@syncfusion/ej2-navigations';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { Dialog, Popup, getScrollableParent, isCollide } from '@syncfusion/ej2-popups';
@@ -10771,6 +10771,11 @@ class HtmlEditor {
  */
 class PasteCleanup {
     constructor(parent, serviceLocator) {
+        this.inlineNode = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
+            'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'i', 'iframe', 'img', 'input',
+            'ins', 'kbd', 'label', 'map', 'mark', 'meter', 'noscript', 'object', 'output', 'picture', 'progress',
+            'q', 'ruby', 's', 'samp', 'script', 'select', 'slot', 'small', 'span', 'strong', 'sub', 'sup', 'svg',
+            'template', 'textarea', 'time', 'u', 'tt', 'var', 'video', 'wbr'];
         this.parent = parent;
         this.locator = serviceLocator;
         this.renderFactory = this.locator.getService('rendererFactory');
@@ -10955,29 +10960,65 @@ class PasteCleanup {
     }
     //Plain Formatting
     plainFormatting(value) {
-        let clipBoardElem = this.parent.createElement('span');
+        let clipBoardElem = this.parent.createElement('div');
         clipBoardElem.innerHTML = value;
+        this.detachInlineElements(clipBoardElem);
         let text = this.getTextContent(clipBoardElem);
         let resultElement = this.parent.createElement('span');
         resultElement.innerHTML = text;
         this.saveSelection.restore();
         this.parent.executeCommand('insertHTML', resultElement);
     }
+    detachInlineElements(element) {
+        while (!isNullOrUndefined(element)) {
+            element = element.firstElementChild ? element.firstElementChild : element;
+            let isInlineElement = false;
+            for (let j = 0; j < this.inlineNode.length && !isInlineElement; j++) {
+                if (element.tagName.toLocaleLowerCase() === this.inlineNode[j]) {
+                    let node = element.nextElementSibling ?
+                        element.nextElementSibling : element.parentElement.nextElementSibling;
+                    if (!isNullOrUndefined(element.childNodes[0]) && element.childNodes[0].textContent !== '') {
+                        element.parentElement.insertBefore(this.getTextNode(element.childNodes[0]), element);
+                    }
+                    detach(element);
+                    element = node;
+                    isInlineElement = true;
+                }
+            }
+            if (!isNullOrUndefined(element) && element.children.length > 0 || isInlineElement) {
+                element = element;
+            }
+            else if (element.nextElementSibling) {
+                element = element.nextElementSibling;
+            }
+            else if (element.parentElement.nextElementSibling) {
+                element = element.parentElement.nextElementSibling;
+            }
+            else {
+                element = null;
+            }
+        }
+    }
+    getTextNode(element) {
+        let rootElement = this.parent.createElement('span');
+        rootElement.innerHTML = element.textContent;
+        return rootElement.childNodes[0];
+    }
     getTextContent(element) {
         let result;
         let text;
         result = '';
-        for (let i = 0; i < element.childNodes.length; i++) {
-            text = null;
-            if (element.childNodes[i].nodeType === 1) {
-                text = this.getTextContent(element.childNodes[i]);
-            }
-            else if (element.childNodes[i].nodeType === 3) {
-                text = element.childNodes[i].nodeValue;
-            }
-            if (text) {
-                if (/\S$/.test(result) && /^\S/.test(text)) {
-                    text = ' ' + text;
+        if (element.children.length === 0 && element.textContent.trim() !== '') {
+            text = '<p>' + element.textContent + '</p>';
+            result += text;
+        }
+        else {
+            for (let i = 0; i < element.children.length; i++) {
+                if (!isNullOrUndefined(element.children[i])) {
+                    text = this.getTextContent(element.children[i]);
+                }
+                else {
+                    text = '<p>' + element.children[i].textContent + '</p>';
                 }
                 result += text;
             }
@@ -11279,7 +11320,8 @@ class Link {
     }
     editAreaClickHandler(e) {
         let args = e.args;
-        if (args.which === 2 || args.which === 3) {
+        let showOnRightClick = this.parent.quickToolbarSettings.showOnRightClick;
+        if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) {
             return;
         }
         if (this.parent.editorMode === 'HTML' && this.parent.quickToolbarModule && this.parent.quickToolbarModule.linkQTBar) {
@@ -12196,7 +12238,8 @@ class Image {
     }
     editAreaClickHandler(e) {
         let args = e.args;
-        if (args.which === 2 || args.which === 3) {
+        let showOnRightClick = this.parent.quickToolbarSettings.showOnRightClick;
+        if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) {
             return;
         }
         if (this.parent.editorMode === 'HTML' && this.parent.quickToolbarModule && this.parent.quickToolbarModule.imageQTBar) {
@@ -13407,7 +13450,8 @@ class Table {
     }
     editAreaClickHandler(e) {
         let args = e.args;
-        if (args.which === 2 || args.which === 3) {
+        let showOnRightClick = this.parent.quickToolbarSettings.showOnRightClick;
+        if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) {
             return;
         }
         if (this.parent.editorMode === 'HTML' && this.parent.quickToolbarModule && this.parent.quickToolbarModule.tableQTBar) {
@@ -14407,6 +14451,9 @@ __decorate$2([
     Property(true)
 ], QuickToolbarSettings.prototype, "enable", void 0);
 __decorate$2([
+    Property(false)
+], QuickToolbarSettings.prototype, "showOnRightClick", void 0);
+__decorate$2([
     Property('hide')
 ], QuickToolbarSettings.prototype, "actionOnScroll", void 0);
 __decorate$2([
@@ -15016,12 +15063,7 @@ let RichTextEditor = class RichTextEditor extends Component {
             this.setProperties({ value: value });
         }
     }
-    mouseUp(e) {
-        this.notify(mouseUp, { member: 'mouseUp', args: e });
-        if (this.inputElement && ((this.editorMode === 'HTML' && this.inputElement.textContent.length !== 0) ||
-            (this.editorMode === 'Markdown' && this.inputElement.value.length !== 0))) {
-            this.notify(toolbarRefresh, { args: e });
-        }
+    triggerEditArea(e) {
         if (!isIDevice()) {
             this.notify(editAreaClick, { member: 'editAreaClick', args: e });
         }
@@ -15031,6 +15073,25 @@ let RichTextEditor = class RichTextEditor extends Component {
                 this.notify(editAreaClick, { member: 'editAreaClick', args: e });
             }
         }
+    }
+    notifyMouseUp(e) {
+        this.notify(mouseUp, { member: 'mouseUp', args: e });
+        if (this.inputElement && ((this.editorMode === 'HTML' && this.inputElement.textContent.length !== 0) ||
+            (this.editorMode === 'Markdown' && this.inputElement.value.length !== 0))) {
+            this.notify(toolbarRefresh, { args: e });
+        }
+        this.triggerEditArea(e);
+    }
+    mouseUp(e) {
+        if (this.quickToolbarSettings.showOnRightClick && Browser.isDevice) {
+            let target = e.target;
+            let closestTable = closest(target, 'table');
+            if (target && target.nodeName === 'A' || target.nodeName === 'IMG' || (target.nodeName === 'TD' || target.nodeName === 'TH' ||
+                target.nodeName === 'TABLE' || (closestTable && this.contentModule.getEditPanel().contains(closestTable)))) {
+                return;
+            }
+        }
+        this.notifyMouseUp(e);
     }
     /**
      * @hidden
@@ -15305,6 +15366,10 @@ let RichTextEditor = class RichTextEditor extends Component {
                 case 'undoRedoSteps':
                 case 'undoRedoTimer':
                     this.formatter.editorManager.observer.notify(MODEL_CHANGED, { newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'quickToolbarSettings':
+                    newProp.quickToolbarSettings.showOnRightClick ? this.wireContextEvent() : this.unWireContextEvent();
+                    this.notify(modelChanged, { newProp: newProp, oldProp: oldProp });
                     break;
                 default:
                     this.notify(modelChanged, { newProp: newProp, oldProp: oldProp });
@@ -15842,6 +15907,20 @@ let RichTextEditor = class RichTextEditor extends Component {
             EventHandler.add(element, 'scroll', this.scrollHandler, this);
         }
     }
+    wireContextEvent() {
+        if (this.quickToolbarSettings.showOnRightClick) {
+            EventHandler.add(this.inputElement, 'contextmenu', this.contextHandler, this);
+            if (Browser.isDevice) {
+                this.touchModule = new Touch(this.inputElement, { tapHold: this.touchHandler.bind(this), tapHoldThreshold: 500 });
+            }
+        }
+    }
+    unWireContextEvent() {
+        EventHandler.remove(this.inputElement, 'contextmenu', this.contextHandler);
+        if (Browser.isDevice && this.touchModule) {
+            this.touchModule.destroy();
+        }
+    }
     /**
      * @hidden
      */
@@ -15850,6 +15929,13 @@ let RichTextEditor = class RichTextEditor extends Component {
         for (let element of this.scrollParentElements) {
             EventHandler.remove(element, 'scroll', this.scrollHandler);
         }
+    }
+    touchHandler(e) {
+        this.notifyMouseUp(e.originalEvent);
+        this.triggerEditArea(e.originalEvent);
+    }
+    contextHandler(e) {
+        e.preventDefault();
     }
     resetHandler() {
         this.setProperties({ value: this.valueContainer.defaultValue === '' ? null : this.valueContainer.defaultValue });
@@ -15886,7 +15972,8 @@ let RichTextEditor = class RichTextEditor extends Component {
     }
     bindEvents() {
         this.keyboardModule = new KeyboardEvents$1(this.inputElement, {
-            keyAction: this.keyDown.bind(this), keyConfigs: this.formatter.keyConfig, eventName: 'keydown'
+            keyAction: this.keyDown.bind(this), keyConfigs: Object.assign({}, this.formatter.keyConfig, this.keyConfig),
+            eventName: 'keydown'
         });
         let formElement = closest(this.valueContainer, 'form');
         if (formElement) {
@@ -15896,6 +15983,7 @@ let RichTextEditor = class RichTextEditor extends Component {
         EventHandler.add(this.inputElement, 'paste', this.onPaste, this);
         EventHandler.add(this.inputElement, Browser.touchEndEvent, debounce(this.mouseUp, 30), this);
         EventHandler.add(this.inputElement, Browser.touchStartEvent, this.mouseDownHandler, this);
+        this.wireContextEvent();
         this.formatter.editorManager.observer.on(KEY_DOWN_HANDLER, this.editorKeyDown, this);
         this.element.ownerDocument.defaultView.addEventListener('resize', this.onResizeHandler, true);
         if (this.iframeSettings.enable) {
@@ -15946,6 +16034,7 @@ let RichTextEditor = class RichTextEditor extends Component {
         EventHandler.remove(this.inputElement, 'paste', this.onPaste);
         EventHandler.remove(this.inputElement, Browser.touchEndEvent, debounce(this.mouseUp, 30));
         EventHandler.remove(this.inputElement, Browser.touchStartEvent, this.mouseDownHandler);
+        this.unWireContextEvent();
         if (this.formatter) {
             this.formatter.editorManager.observer.off(KEY_DOWN_HANDLER, this.editorKeyDown);
         }

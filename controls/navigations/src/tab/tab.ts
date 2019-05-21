@@ -1094,7 +1094,7 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             previousIndex: this.prevIndex,
             selectedItem: trg,
             selectedIndex: value,
-            selectedContent: <HTEle> select('#' + CLS_CONTENT + '_' + this.selectedID, this.content),
+            selectedContent: <HTEle> select('#' + CLS_CONTENT + '_' + this.selectingID, this.content),
             isSwiped: this.isSwipeed
         };
         if (!this.initRender || this.selectedItem !== 0 ) {
@@ -1517,7 +1517,8 @@ export class Tab extends Component<HTMLElement> implements INotifyPropertyChange
             selectingItem: trg,
             selectingIndex: args as number,
             selectingContent: !isNOU(this.content) ? <HTEle> select('#' + CLS_CONTENT + '_' + this.selectingID, this.content) : null,
-            isSwiped: this.isSwipeed
+            isSwiped: this.isSwipeed,
+            cancel: false
         };
         if (!this.initRender || this.selectedItem !== 0 ) {
         this.trigger('selecting', eventArg); }

@@ -1,4 +1,5 @@
 import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, isUndefined } from '@syncfusion/ej2-base';import { Collection, Draggable, isNullOrUndefined, DragEventArgs, append } from '@syncfusion/ej2-base';import { EmitType, Event, formatUnit, ChildProperty, compile, closest } from '@syncfusion/ej2-base';import { setStyleAttribute as setStyle, addClass, detach, removeClass, EventHandler } from '@syncfusion/ej2-base';
+import {ChangeEventArgs,DragStartArgs,DraggedEventArgs,DragStopArgs,ResizeArgs} from "./dashboard-layout";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -211,43 +212,43 @@ export interface DashboardLayoutModel extends ComponentModel{
      * Triggers whenever the panels positions are changed.
      * @event
      */
-    change?: EmitType<object>;
+    change?: EmitType<ChangeEventArgs>;
 
     /**
      * Triggers when a panel is about to drag.
      * @event
      */
-    dragStart?: EmitType<DragEventArgs>;
+    dragStart?: EmitType<DragStartArgs>;
 
     /**
      * Triggers while a panel is dragged continuously.
      * @event
      */
-    drag?: EmitType<DragEventArgs>;
+    drag?: EmitType<DraggedEventArgs>;
 
     /**
      * Triggers when a dragged panel is dropped.
      * @event
      */
-    dragStop?: EmitType<DragEventArgs>;
+    dragStop?: EmitType<DragStopArgs>;
 
     /**
      * Triggers when a panel is about to resize.
      * @event
      */
-    resizeStart?: EmitType<Object>;
+    resizeStart?: EmitType<ResizeArgs>;
 
     /**
      * Triggers when a panel is being resized continuously.
      * @event
      */
-    resize?: EmitType<Object>;
+    resize?: EmitType<ResizeArgs>;
 
     /**
      * Triggers when a panel resize ends.
      * @event
      */
-    resizeStop?: EmitType<Object>;
+    resizeStop?: EmitType<ResizeArgs>;
 
     /**
      * Triggers when Dashboard Layout is created.

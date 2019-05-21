@@ -1854,6 +1854,7 @@ class CheckBoxFilter {
         this.options.sortedColumns = options.sortedColumns || this.parent.sortSettings.columns;
         this.options.query = options.query || new Query();
         this.options.allowCaseSensitive = options.allowCaseSensitive || false;
+        this.options.uid = options.column.uid;
         this.values = {};
         this.localeObj = options.localeObj;
         this.isFiltered = options.filteredColumns.length;
@@ -2012,14 +2013,15 @@ class CheckBoxFilter {
     fltrBtnHandler() {
         let checked = [].slice.call(this.cBox.querySelectorAll('.e-check:not(.e-selectall)'));
         let optr = 'equal';
+        let searchInput = this.searchBox.querySelector('.e-searchinput');
         let caseSen = this.options.type === 'string' ?
             this.options.allowCaseSensitive : true;
         let defaults = {
-            field: this.options.field, predicate: 'or',
+            field: this.options.field, predicate: 'or', uid: this.options.uid,
             operator: optr, type: this.options.type, matchCase: caseSen, ignoreAccent: this.parent.filterSettings.ignoreAccent
         };
         let isNotEqual = this.itemsCnt !== checked.length && this.itemsCnt - checked.length < checked.length;
-        if (isNotEqual) {
+        if (isNotEqual && searchInput.value === '') {
             optr = 'notequal';
             checked = [].slice.call(this.cBox.querySelectorAll('.e-uncheck:not(.e-selectall)'));
             defaults.predicate = 'and';
@@ -2028,7 +2030,6 @@ class CheckBoxFilter {
         let value;
         let fObj;
         let coll = [];
-        let searchInput = this.searchBox.querySelector('.e-searchinput');
         if (checked.length !== this.itemsCnt || (searchInput.value && searchInput.value !== '')) {
             for (let i = 0; i < checked.length; i++) {
                 value = this.values[parentsUntil(checked[i], 'e-ftrchk').getAttribute('uid')];
@@ -2175,7 +2176,10 @@ class CheckBoxFilter {
         let fPredicate = {};
         let foreignColumn = this.parent.getForeignKeyColumns();
         for (let prop of Object.keys(predicates)) {
-            let col = getColumnByForeignKeyValue(prop, foreignColumn);
+            let col;
+            if (this.parent.getColumnByField(prop).isForeignColumn()) {
+                col = getColumnByForeignKeyValue(prop, foreignColumn);
+            }
             if (col) {
                 this.parent.notify(generateQuery, { predicate: fPredicate, column: col });
                 if (fPredicate.predicate.predicates.length) {
@@ -2266,8 +2270,9 @@ class CheckBoxFilter {
         if ((this.options.filteredColumns.length)) {
             let cols = [];
             for (let i = 0; i < this.options.filteredColumns.length; i++) {
-                if (!(this.options.filteredColumns[i].field === this.options.field ||
-                    this.options.filteredColumns[i].field === this.options.foreignKeyValue)) {
+                let filterColumn = this.options.filteredColumns[i];
+                filterColumn.uid = filterColumn.uid || this.parent.getColumnByField(filterColumn.field).uid;
+                if (filterColumn.uid !== this.options.uid) {
                     cols.push(this.options.filteredColumns[i]);
                 }
             }
@@ -2755,7 +2760,10 @@ class Data {
             if (checkBoxCols.length) {
                 let excelPredicate = CheckBoxFilter.getPredicate(checkBoxCols);
                 for (let prop of Object.keys(excelPredicate)) {
-                    let col = getColumnByForeignKeyValue(prop, foreignColumn);
+                    let col;
+                    if (this.parent.getColumnByField(prop).isForeignColumn()) {
+                        col = getColumnByForeignKeyValue(prop, foreignColumn);
+                    }
                     if (!col) {
                         this.parent.log('initial_action', { moduleName: 'filter', columnName: prop });
                     }
@@ -2770,13 +2778,13 @@ class Data {
             }
             if (defaultFltrCols.length) {
                 for (let col of defaultFltrCols) {
-                    let column = this.getColumnByField(col.field) ||
-                        getColumnByForeignKeyValue(col.field, this.parent.getForeignKeyColumns());
+                    col.uid = col.uid || this.parent.getColumnByField(col.field).uid;
+                    let column = this.parent.getColumnByUid(col.uid);
                     if (!column) {
                         this.parent.log('initial_action', { moduleName: 'filter', columnName: col.field });
                     }
                     let sType = column.type;
-                    if (getColumnByForeignKeyValue(col.field, foreignColumn) && !skipFoerign) {
+                    if (column.isForeignColumn() && getColumnByForeignKeyValue(col.field, foreignColumn) && !skipFoerign) {
                         actualFilter.push(col);
                         predicateList = this.fGeneratePredicate(column, predicateList);
                     }
@@ -5720,7 +5728,7 @@ class Render {
         return columns.some((col) => {
             let fbool = false;
             fbool = this.parent.filterSettings.columns.some((value) => {
-                return col.foreignKeyValue === value.field;
+                return col.uid === value.uid;
             });
             return !!(fbool || this.parent.searchSettings.key.length);
         });
@@ -6908,14 +6916,15 @@ class ContentFocus {
         let table = this.getTable();
         return (rowIndex, cellIndex, action) => {
             let cell = table.rows[rowIndex].cells[cellIndex];
+            let isCellWidth = cell.getBoundingClientRect().width !== 0;
             if (action === 'enter' || action === 'shiftEnter') {
-                return cell.classList.contains('e-rowcell');
+                return isCellWidth && cell.classList.contains('e-rowcell');
             }
             if ((action === 'shiftUp' || action === 'shiftDown') && cell.classList.contains('e-rowcell')) {
-                return true;
+                return isCellWidth;
             }
             else if (action !== 'shiftUp' && action !== 'shiftDown') {
-                return cell.getBoundingClientRect().width !== 0;
+                return isCellWidth;
             }
             return false;
         };
@@ -10484,6 +10493,9 @@ __decorate([
 __decorate([
     Property()
 ], Predicate$1.prototype, "ejpredicate", void 0);
+__decorate([
+    Property()
+], Predicate$1.prototype, "uid", void 0);
 /**
  * Configures the filtering behavior of the Grid.
  */
@@ -15782,7 +15794,7 @@ class FilterMenuRenderer {
         let instanceofFilterUI = new this.colTypes[col.type](this.parent, this.serviceLocator, this.parent.filterSettings);
         let columns = this.filterSettings.columns;
         for (let column of columns) {
-            if (col.field === column.field || col.foreignKeyValue === column.field) {
+            if (col.uid === column.uid) {
                 flValue = column.value;
             }
         }
@@ -16670,7 +16682,7 @@ class Filter {
         let col = this.parent.getColumnByField(this.fieldName);
         let field = col.isForeignColumn() ? col.foreignKeyValue : this.fieldName;
         this.currentFilterObject = {
-            field: field, operator: this.operator, value: this.value, predicate: this.predicate,
+            field: field, uid: col.uid, operator: this.operator, value: this.value, predicate: this.predicate,
             matchCase: this.matchCase, ignoreAccent: this.ignoreAccent, actualFilterValue: {}, actualOperator: {}
         };
         let index = this.getFilteredColsIndexByField(col);
@@ -16686,7 +16698,7 @@ class Filter {
     getFilteredColsIndexByField(col) {
         let cols = this.filterSettings.columns;
         for (let i = 0, len = cols.length; i < len; i++) {
-            if (cols[i].field === col.field || (col.isForeignColumn() && cols[i].field === col.foreignKeyValue)) {
+            if (cols[i].uid === col.uid || (col.isForeignColumn() && this.parent.getColumnByUid(col.uid).field === col.foreignKeyValue)) {
                 return i;
             }
         }
@@ -16890,8 +16902,7 @@ class Filter {
     refreshFilterSettings() {
         if (this.filterSettings.type === 'FilterBar') {
             for (let i = 0; i < this.filterSettings.columns.length; i++) {
-                this.column = this.parent.getColumnByField(this.filterSettings.columns[i].field) ||
-                    getColumnByForeignKeyValue(this.filterSettings.columns[i].field, this.parent.getForeignKeyColumns());
+                this.column = this.parent.getColumnByUid(this.filterSettings.columns[i].uid);
                 let filterValue = this.filterSettings.columns[i].value;
                 filterValue = !isNullOrUndefined(filterValue) && filterValue.toString();
                 if (!isNullOrUndefined(this.column.format)) {
@@ -16901,10 +16912,10 @@ class Filter {
                     let key = this.filterSettings.columns[i].field;
                     this.values[key] = this.filterSettings.columns[i].value;
                 }
-                let filterElement = this.getFilterBarElement(this.filterSettings.columns[i].field);
+                let filterElement = this.getFilterBarElement(this.column.field);
                 if (filterElement) {
                     if (!isNullOrUndefined(this.cellText[this.filterSettings.columns[i].field])) {
-                        filterElement.value = this.cellText[this.filterSettings.columns[i].field];
+                        filterElement.value = this.cellText[this.column.field];
                     }
                     else {
                         filterElement.value = this.filterSettings.columns[i].value;
@@ -16948,11 +16959,14 @@ class Filter {
             this.parent.notify(preventBatch, { instance: this, handler: this.clearFiltering });
             return;
         }
-        let colName = cols.map((f) => f.field);
-        let filteredcols = colName.filter((item, pos) => colName.indexOf(item) === pos);
+        cols.forEach((col) => {
+            col.uid = col.uid || this.parent.getColumnByField(col.field).uid;
+        });
+        let colUid = cols.map((f) => f.uid);
+        let filteredcols = colUid.filter((item, pos) => colUid.indexOf(item) === pos);
         this.refresh = false;
         for (let i = 0, len = filteredcols.length; i < len; i++) {
-            this.removeFilteredColsByField(filteredcols[i], false);
+            this.removeFilteredColsByField(this.parent.getColumnByUid(filteredcols[i]).field, false);
         }
         this.refresh = true;
         this.parent.renderModule.refresh();
@@ -17021,15 +17035,15 @@ class Filter {
             this.parent.notify(preventBatch, args);
             return;
         }
-        let colName = cols.map((f) => f.field);
-        let filteredcols = colName.filter((item, pos) => colName.indexOf(item) === pos);
-        for (let i = 0, len = filteredcols.length; i < len; i++) {
+        let colUid = cols.map((f) => f.uid);
+        let filteredColsUid = colUid.filter((item, pos) => colUid.indexOf(item) === pos);
+        for (let i = 0, len = filteredColsUid.length; i < len; i++) {
+            cols[i].uid = cols[i].uid || this.parent.getColumnByField(cols[i].field).uid;
             let len = cols.length;
-            let column = this.parent.getColumnByField(field) ||
-                getColumnByForeignKeyValue(field, this.parent.getForeignKeyColumns());
-            if (filteredcols[i] === field || filteredcols[i] === column.foreignKeyValue) {
+            let column = this.parent.getColumnByUid(filteredColsUid[i]);
+            if (column.field === field || (column.field === column.foreignKeyValue && column.isForeignColumn())) {
                 if (this.filterSettings.type === 'FilterBar' && !isClearFilterBar) {
-                    let selector = '[id=\'' + cols[i].field + '_filterBarcell\']';
+                    let selector = '[id=\'' + column.field + '_filterBarcell\']';
                     fCell = this.parent.getHeaderContent().querySelector(selector);
                     if (fCell) {
                         fCell.value = '';
@@ -17037,7 +17051,7 @@ class Filter {
                     }
                 }
                 while (len--) {
-                    if (cols[len].field === field) {
+                    if (cols[len].uid === column.uid) {
                         cols.splice(len, 1);
                     }
                 }
@@ -17107,8 +17121,7 @@ class Filter {
             if (columns.length > 0 && this.filterStatusMsg !== this.l10n.getConstant('InvalidFilterMessage')) {
                 this.filterStatusMsg = '';
                 for (let index = 0; index < columns.length; index++) {
-                    column = gObj.getColumnByField(columns[index].field) ||
-                        getColumnByForeignKeyValue(columns[index].field, this.parent.getForeignKeyColumns());
+                    column = gObj.getColumnByUid(columns[index].uid);
                     if (index) {
                         this.filterStatusMsg += ' && ';
                     }
@@ -17410,11 +17423,11 @@ class Filter {
                 fieldName = getColumnByForeignKeyValue(cols[i].field, this.parent.getForeignKeyColumns()).field;
             }
             /* tslint:disable-next-line:max-line-length */
-            this.refreshFilterIcon(fieldName, cols[i].operator, cols[i].value, cols[i].type, cols[i].predicate, cols[i].matchCase, cols[i].ignoreAccent);
+            this.refreshFilterIcon(fieldName, cols[i].operator, cols[i].value, cols[i].type, cols[i].predicate, cols[i].matchCase, cols[i].ignoreAccent, cols[i].uid);
         }
     }
     /* tslint:disable-next-line:max-line-length */
-    refreshFilterIcon(fieldName, operator, value, type, predicate, matchCase, ignoreAccent) {
+    refreshFilterIcon(fieldName, operator, value, type, predicate, matchCase, ignoreAccent, uid) {
         let obj;
         obj = {
             field: fieldName,
@@ -17426,7 +17439,8 @@ class Filter {
             type: type
         };
         this.actualPredicate[fieldName] ? this.actualPredicate[fieldName].push(obj) : this.actualPredicate[fieldName] = [obj];
-        this.addFilteredClass(fieldName);
+        let field = uid ? this.parent.getColumnByUid(uid).field : fieldName;
+        this.addFilteredClass(field);
     }
     addFilteredClass(fieldName) {
         let filterIconElement;
@@ -21685,12 +21699,13 @@ class InlineEditRender {
         let gObj = this.parent;
         let gLen = 0;
         let isDetail = !isNullOrUndefined(gObj.detailTemplate) || !isNullOrUndefined(gObj.childGrid) ? 1 : 0;
+        let isDragable = gObj.isRowDragable() ? 1 : 0;
         if (gObj.allowGrouping) {
             gLen = gObj.groupSettings.columns.length;
         }
         let td = this.parent.createElement('td', {
             className: 'e-editcell e-normaledit',
-            attrs: { colspan: (gObj.getVisibleColumns().length - gObj.getVisibleFrozenColumns() + gLen + isDetail).toString() }
+            attrs: { colspan: (gObj.getVisibleColumns().length - gObj.getVisibleFrozenColumns() + gLen + isDetail + isDragable).toString() }
         });
         let form = args.form =
             this.parent.createElement('form', { id: gObj.element.id + 'EditForm', className: 'e-gridform' });
@@ -25742,7 +25757,7 @@ class ExcelExport {
                 isForeignKey: col.isForeignColumn(),
             };
             cell.value = gObj.getColumnByField(item.field).headerText +
-                ': ' + this.exportValueFormatter.formatCellValue(args) + ' - ';
+                ': ' + (!col.enableGroupByFormat ? this.exportValueFormatter.formatCellValue(args) : item.key) + ' - ';
             if (item.count > 1) {
                 cell.value += item.count + ' items';
             }
@@ -26558,7 +26573,7 @@ class PdfExport {
                 isForeignKey: col.isForeignColumn(),
             };
             /* tslint:disable-next-line:max-line-length */
-            let value = this.parent.getColumnByField(dataSourceItems.field).headerText + ': ' + this.exportValueFormatter.formatCellValue(args) + ' - ' + dataSourceItems.count + (dataSource.count > 1 ? ' items' : ' item');
+            let value = this.parent.getColumnByField(dataSourceItems.field).headerText + ': ' + (!col.enableGroupByFormat ? this.exportValueFormatter.formatCellValue(args) : dataSourceItems.key) + ' - ' + dataSourceItems.count + (dataSource.count > 1 ? ' items' : ' item');
             row.cells.getCell(groupIndex).value = value;
             row.cells.getCell(groupIndex + 1).style.stringFormat = new PdfStringFormat(PdfTextAlignment.Left);
             row.style.setBorder(border);

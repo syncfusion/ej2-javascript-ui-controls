@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 17.1.48 (2019-05-21)
+
+### Schedule
+
+#### Bug Fixes
+
+- #143979 - Events not rendered properly with `allowGroupEdit` when the resource id is two digit issue has been fixed.
+- #234916 - Delete key not working properly in IE11 issue has been fixed.
+
 ## 17.1.44 (2019-05-07)
 
 ### Schedule
@@ -11,7 +20,6 @@
 - #233286 - An issue with event not rendered properly in start and end time date format as string in agenda view is fixed.
 - #234231 - An issue with setting the different work hours in timeline week is fixed.
 - #143531 - An issue with event not loaded properly in agenda virtual scrolling is fixed.
-- #143979 - Events not rendered properly with `allowGroupEdit` when the resource id is two digit issue has been fixed.
 
 ## 17.1.43 (2019-04-30)
 

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.48 (2019-05-21)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- #144602 - Issue on panel resizing after adding a new panel dynamically has been fixed.
+
 ## 17.1.43 (2019-04-30)
 
 ### Dashboard Layout

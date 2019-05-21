@@ -23,13 +23,13 @@ export interface MaskedTextBoxModel extends ComponentModel{
     /**
      * Gets or sets the string shown as a hint/placeholder when the MaskedTextBox is empty.
      * It acts as a label and floats above the MaskedTextBox based on the
-     * <b><a href="#floatlabeltype-string" target="_blank">floatLabelType.</a></b>
+     * <b><a href="#floatlabeltype" target="_blank">floatLabelType.</a></b>
      * @default null
      */
     placeholder?: string;
 
     /**
-     * The <b><a href="#placeholder-string" target="_blank">placeholder</a></b> acts as a label
+     * The <b><a href="#placeholder" target="_blank">placeholder</a></b> acts as a label
      * and floats above the MaskedTextBox based on the below values.
      * Possible values are:
      * * Never - The floating label will not be enable when the placeholder is available.

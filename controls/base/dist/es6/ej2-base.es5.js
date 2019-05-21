@@ -453,7 +453,8 @@ var Ajax = /** @__PURE__ @class */ (function () {
         var _this = this;
         this.data = isNullOrUndefined(data) ? this.data : data;
         var eventArgs = {
-            cancel: false
+            cancel: false,
+            httpRequest: null
         };
         var promise = new Promise(function (resolve, reject) {
             _this.httpRequest = new XMLHttpRequest();
@@ -483,6 +484,7 @@ var Ajax = /** @__PURE__ @class */ (function () {
                 _this.httpRequest.setRequestHeader('Content-Type', _this.contentType || 'application/json; charset=utf-8');
             }
             if (_this.beforeSend) {
+                eventArgs.httpRequest = _this.httpRequest;
                 _this.beforeSend(eventArgs);
             }
             if (!eventArgs.cancel) {
@@ -6815,6 +6817,14 @@ function evalExp(str, nameSpace, helper) {
      * Variable containing Local Keys
      */
     var localKeys = [];
+    var isClass = str.match(/class="([^\"]+|)\s{2}/g);
+    var singleSpace = '';
+    if (isClass) {
+        isClass.forEach(function (value) {
+            singleSpace = value.replace(/\s\s+/g, ' ');
+            str = str.replace(value, singleSpace);
+        });
+    }
     return str.replace(LINES, '').replace(DBL_QUOTED_STR, '\'$1\'').replace(exp, function (match, cnt, offset, matchStr) {
         var matches = cnt.match(CALL_FUNCTION);
         // matches to detect any function calls

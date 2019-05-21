@@ -540,7 +540,7 @@ export class LayerPanel {
             let animate: boolean = duration !== 0 || isNullOrUndefined(this.mapObject.zoomModule);
             this.mapObject.baseTranslatePoint = this.mapObject.zoomTranslatePoint;
             let translate: Object;
-            if (this.mapObject.zoomSettings.zoomFactor > 1) {
+            if (this.mapObject.zoomSettings.zoomFactor > 1 && !isNullOrUndefined(this.mapObject.zoomModule)) {
                 translate = getZoomTranslate(this.mapObject, this.currentLayer, animate);
             } else {
                 translate = getTranslate(this.mapObject, this.currentLayer, animate);

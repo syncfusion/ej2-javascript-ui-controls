@@ -98,7 +98,7 @@ describe('TreeGrid Row module', () => {
         destroy(gridObj);
       });
     });
-});
+
 
 describe('height set through setmodel', () => {
   let gridObj: TreeGrid;
@@ -122,6 +122,33 @@ it('height set through setmodel method', () => {
   afterAll(() => {
     destroy(gridObj);
   });
+});
+
+describe('alt row without paging', () => {
+  let gridObj: TreeGrid;
+  let rows: Element[];
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress'],
+      },
+      done
+    );
+  });
+  it('checking alt row without paging', () => {
+    gridObj.enableAltRow = true;
+    rows = gridObj.getRows();
+    expect(rows[11].classList.contains('e-altrow')).toBe(true);
+    (rows[5].getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+    expect(rows[11].classList.contains('e-altrow')).toBe(false);
+  });
+afterAll(() => {
+    destroy(gridObj);
+  });
+});
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

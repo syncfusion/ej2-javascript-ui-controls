@@ -3050,3 +3050,38 @@ describe('EJ2-23854 - Redo action occurs for keyboard shortcuts copy command wit
         expect(item.parentElement.classList.contains("e-overlay")).toBe(true);
     });
 });
+describe("keyConfig property testing", () => {
+    let rteObj: RichTextEditor;
+    let rteEle: HTMLElement;
+    var keyboardEventArgs = {
+        preventDefault: function () { },
+        ctrlKey: true,
+        charCode: 71,
+        keyCode: 71,
+        which: 71,
+        code: 71,
+        action: 'bold',
+        type: 'keydown'
+    };
+    beforeAll(() => {
+        rteObj = renderRTE({
+            keyConfig: { 'bold': 'ctrl+g' },
+            value: '<p id="pnode1">Sample</p>' +
+                '<p id="pnode4">Sample</p>' +
+                '<p id="pnode2">Sample</p>' +
+                '<p id="pnode3">Sample</p>'
+        });
+        rteEle = rteObj.element;
+    });
+
+    afterAll(() => {
+        destroy(rteObj);
+    });
+    it('check bold using ctrl+q shortcut key', () => {
+        let nodeSelection: NodeSelection = new NodeSelection();
+        let node: HTMLElement = document.getElementById("pnode1");
+        nodeSelection.setSelectionText(document, node.childNodes[0], node.childNodes[0], 1, 1);
+        (<any>rteObj).keyDown(keyboardEventArgs);
+        expect(node.childNodes[0].nodeName.toLocaleLowerCase()).toBe('strong');
+    });
+});

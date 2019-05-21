@@ -212,6 +212,7 @@ export interface ActiveLabel {
     id: string;
     parentId: string;
     isGroup: boolean;
+    text: string;
 }
 
 /** @private */

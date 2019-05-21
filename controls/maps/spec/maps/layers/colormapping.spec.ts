@@ -28,7 +28,7 @@ describe('Map layer testing', () => {
             ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
             document.body.appendChild(ele);
             colormap = new Maps({
-                theme: 'Highcontrast',
+                theme: 'HighContrast',
                 zoomSettings: {
                     enable: true
                 },
@@ -266,7 +266,7 @@ describe('Map layer testing', () => {
             ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
             document.body.appendChild(ele);
             colormap = new Maps({
-                theme: 'Highcontrast',
+                theme: 'HighContrast',
                 zoomSettings: {
                     enable: true
                 },

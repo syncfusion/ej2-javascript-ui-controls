@@ -1875,6 +1875,7 @@ export interface IFilterArgs {
     foreignKeyValue?: string;
     column?: Column;
     actualPredicate?: { [key: string]: PredicateModel[] };
+    uid?: string;
 }
 
 export interface PdfExportProperties {

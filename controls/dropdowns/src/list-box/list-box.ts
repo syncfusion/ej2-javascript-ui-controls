@@ -145,6 +145,13 @@ export class ListBox extends DropDownBase {
     public select: EmitType<SelectEventArgs>;
 
     /**
+     * Triggers while select / unselect the list item.
+     * @event
+     */
+    @Event()
+    public change: EmitType<ListBoxChangeEventArgs>;
+
+    /**
      * Triggers after dragging the list item.
      * @event
      */
@@ -592,7 +599,7 @@ export class ListBox extends DropDownBase {
         super.addItem(items, itemIndex);
     }
 
-    private selectAllItems(state: boolean): void {
+    private selectAllItems(state: boolean, event?: MouseEvent): void {
         [].slice.call(this.getItems()).forEach((li: Element) => {
             if (!li.classList.contains(cssClass.disabled)) {
                 if (this.selectionSettings.showCheckbox) {
@@ -611,7 +618,8 @@ export class ListBox extends DropDownBase {
         });
         this.updateSelectedOptions();
         this.triggerSelectAndChange(
-            this.getSelectedItems(), this.selectionSettings.showCheckbox && this.selectionSettings.showSelectAll ?
+            this.getSelectedItems(), this.getSelectedItems(), event, this.selectionSettings.showCheckbox &&
+                this.selectionSettings.showSelectAll ?
                 this.isSelected(this.list.firstElementChild) : state);
     }
 
@@ -706,15 +714,15 @@ export class ListBox extends DropDownBase {
                 this.notify('updatelist', { li: li, e: e });
             }
             this.updateSelectedOptions();
-            this.triggerSelectAndChange(selectedLi, isSelect);
+            this.triggerSelectAndChange(selectedLi, this.getSelectedItems(), e as MouseEvent, isSelect);
         }
     }
 
-    private triggerSelectAndChange(selectedLi: Element[], isSelect?: Boolean): void {
+    private triggerSelectAndChange(selectedLi: Element[], selectedLis: Element[], event: MouseEvent, isSelect?: Boolean): void {
         if (isSelect) {
             this.trigger('select', { elements: selectedLi, items: this.getDataByElems(selectedLi) });
         }
-        this.trigger('change', { value: this.value });
+        this.trigger('change', { elements: selectedLis, items: this.getDataByElems(selectedLis), value: this.value, event: event });
     }
 
     private getDataByElems(elems: Element[]): Object[] {
@@ -1256,7 +1264,17 @@ export interface DragEventArgs {
 /**
  * Interface for select event args.
  */
-export interface ListBoxSelectEventArgs {
+export interface ListBoxSelectEventArgs extends BaseEventArgs {
     elements: Element[];
     items: Object[];
+}
+
+/**
+ * Interface for change event args.
+ */
+export interface ListBoxChangeEventArgs extends BaseEventArgs {
+    elements: Element[];
+    items: Object[];
+    value: number | string | boolean;
+    event: Event;
 }

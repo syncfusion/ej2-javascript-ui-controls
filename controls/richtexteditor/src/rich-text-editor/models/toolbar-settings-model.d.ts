@@ -146,7 +146,7 @@ export interface TableSettingsModel {
 
     /**
      * Defines the minimum Width of the table.
-     * @default 0
+     * @default '0'
      */
     minWidth?: string | number;
 
@@ -168,6 +168,12 @@ export interface QuickToolbarSettingsModel {
      * @default true
      */
     enable?: boolean;
+
+    /**
+     * Specifies whether to opens a quick toolbar on the right click.
+     * @default false
+     */
+    showOnRightClick?: boolean;
 
     /**
      * Specifies the action that should happen when scroll the target-parent container.

@@ -682,7 +682,6 @@ function getThemeStyle(theme) {
                 needleTailColor: '#9A9A9A'
             };
             break;
-        case 'Highcontrast':
         case 'HighContrast':
             style = {
                 backgroundColor: '#000000',
@@ -792,10 +791,10 @@ __decorate$2([
 class Range extends ChildProperty {
 }
 __decorate$2([
-    Property(null)
+    Property(0)
 ], Range.prototype, "start", void 0);
 __decorate$2([
-    Property(null)
+    Property(0)
 ], Range.prototype, "end", void 0);
 __decorate$2([
     Property(null)
@@ -821,7 +820,7 @@ __decorate$2([
 class Tick extends ChildProperty {
 }
 __decorate$2([
-    Property(null)
+    Property(2)
 ], Tick.prototype, "width", void 0);
 __decorate$2([
     Property(null)
@@ -2452,7 +2451,6 @@ let CircularGauge = class CircularGauge extends Component {
                 pointer: this.activePointer,
                 currentValue: this.activePointer.currentValue
             });
-            this.activePointer.value = this.activePointer.currentValue;
             this.activeAxis = null;
             this.activePointer = null;
         }

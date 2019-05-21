@@ -502,7 +502,7 @@ export class FlowShape extends Shape {
      * * ManualInput - Sets the type of the flow shape as ManualInput
      * * LoopLimit - Sets the type of the flow shape as LoopLimit
      * * StoredData - Sets the type of the flow shape as StoredData
-     * @default ''
+     * @default 'Terminator'
      */
     @Property('Terminator')
     public shape: FlowShapes;
@@ -1173,7 +1173,7 @@ export class BpmnAnnotation extends ChildProperty<BpmnAnnotation> {
 export class BpmnShape extends Shape {
     /**
      * Defines the type of node shape
-     * @default 'Bpmn'
+     * @default 'Basic'
      */
     @Property('Bpmn')
     public type: Shapes;
@@ -1577,19 +1577,19 @@ export class UmlClassifierShape extends Shape {
      * @default 'None'
      */
     @Complex<UmlClassModel>({} as UmlClass, UmlClass)
-    public class: UmlClassModel;
+    public classShape: UmlClassModel;
     /**
      * Defines the text of the bpmn annotation collection
      * @default 'None'
      */
     @Complex<UmlInterfaceModel>({} as UmlInterface, UmlInterface)
-    public interface: UmlInterfaceModel;
+    public interfaceShape: UmlInterfaceModel;
     /**
      * Defines the text of the bpmn annotation collection
      * @default 'None'
      */
     @Complex<UmlEnumerationModel>({} as UmlEnumeration, UmlEnumeration)
-    public enumeration: UmlEnumerationModel;
+    public enumerationShape: UmlEnumerationModel;
     /**
      * Defines the type of classifier
      * @default 'Class'

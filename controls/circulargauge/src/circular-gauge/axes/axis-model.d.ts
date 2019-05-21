@@ -95,7 +95,7 @@ export interface RangeModel {
     /**
      * Specifies the minimum value of the range.
      * @aspDefaultValueIgnore
-     * @default null
+     * @default 0
      */
 
     start?: number;
@@ -103,7 +103,7 @@ export interface RangeModel {
     /**
      * Specifies the maximum value of the range.
      * @aspDefaultValueIgnore
-     * @default null
+     * @default 0
      */
 
     end?: number;
@@ -161,7 +161,7 @@ export interface TickModel {
     /**
      * The width of the ticks in pixels.
      * @aspDefaultValueIgnore
-     * @default null
+     * @default 2
      */
 
     width?: number;
@@ -522,12 +522,14 @@ export interface AxisModel {
 
     /**
      * Options for customizing the major tick lines.
+     * @default { width: 2, height: 10 }
      */
 
     majorTicks?: TickModel;
 
     /**
      * Options for customizing the minor tick lines.
+     * @default { width: 2, height: 5 }
      */
 
     minorTicks?: TickModel;

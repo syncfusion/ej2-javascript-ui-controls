@@ -628,7 +628,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             var tdEle = this.dayCell(localDate);
             var title = this.globalize.formatDate(localDate, { type: 'date', skeleton: 'full' });
             var dayLink = this.createElement('span');
-            dayLink.textContent = this.globalize.formatDate(localDate, { type: 'date', skeleton: 'd' });
+            dayLink.textContent = this.globalize.formatDate(localDate, { format: 'd', type: 'date', skeleton: 'yMd' });
             var disabled = (this.min > localDate) || (this.max < localDate);
             if (disabled) {
                 addClass([tdEle], DISABLED);
@@ -805,6 +805,10 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             dayLink.textContent = this.globalize.formatDate(localDate, { type: 'dateTime', skeleton: 'y' });
             if ((year < startFullYr) || (year > endFullYr)) {
                 addClass([tdEle], OTHERDECADE);
+                if (year < new Date(this.checkValue(this.min)).getFullYear() ||
+                    year > new Date(this.checkValue(this.max)).getFullYear()) {
+                    addClass([tdEle], DISABLED);
+                }
             }
             else if (year < new Date(this.checkValue(this.min)).getFullYear() ||
                 year > new Date(this.checkValue(this.max)).getFullYear()) {

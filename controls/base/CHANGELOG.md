@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 17.1.48 (2019-05-21)
+
+### Common
+
+#### Bug Fixes
+
+- Resolved Multiple space between class Names for template Engine support.
+
+#### New Features
+
+- Added the `httpRequest` argument to Ajax `beforeSend` event arguments.
+
 ## 17.1.43 (2019-04-30)
 
 ### Common

@@ -17,8 +17,6 @@ export type SmithchartTheme =
     /**  Render a smithchart with Fabric Dark theme. */
     'FabricDark'|
     /**  Render a smithchart with Highcontrast Dark theme. */
-    'Highcontrast'|
-    /**  Render a smithchart with Highcontrast Dark theme. */
     'HighContrast'|
     /**  Render a smithchart with Bootstrap Dark theme. */
     'BootstrapDark'|

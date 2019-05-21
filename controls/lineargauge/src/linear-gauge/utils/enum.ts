@@ -42,8 +42,6 @@ export type LinearGaugeTheme =
     'MaterialDark' |
     /**  Render a gauge with Fabric Dark theme. */
     'FabricDark' |
-    /**  Render a gauge with HighContrast Dark theme. */
-    'Highcontrast' |
     /**  Render a gauge with Highcontrast Dark theme. */
     'HighContrast'|
     /**  Render a gauge with Bootstrap Dark theme. */

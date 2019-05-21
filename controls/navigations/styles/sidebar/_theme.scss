@@ -26,7 +26,6 @@
     &.e-right.e-close {
       box-shadow: none;
       transform: translateX(100%);
-      transition: transform .5s ease, visibility 500ms;
       visibility: hidden;
         }
 
@@ -44,13 +43,6 @@
     &.e-left.e-close {
       box-shadow: none;
       transform: translateX(-100%);
-      visibility: hidden;
-        }
-
-    &.e-right.e-close {
-      box-shadow: none;
-      transform: translateX(100%);
-      transition: transform .5s ease, visibility 500ms;
       visibility: hidden;
         }
 
@@ -130,6 +122,10 @@
       box-sizing: border-box;
       overflow: auto;
       user-select: none;
+    }
+
+    &.e-disable-animation {
+      transition: none;
     }
 }
 

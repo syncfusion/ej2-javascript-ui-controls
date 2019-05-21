@@ -911,7 +911,6 @@ function colorMap(colorMapping, equalValue, value, weightValuePath) {
         }
         else if ((!isNullOrUndefined(colorMapping[i].from) && !isNullOrUndefined(colorMapping[i].to))
             || !isNullOrUndefined((colorMapping[i].value))) {
-            colorMapping[i].value = !isNullOrUndefined(colorMapping[i].value) ? colorMapping[i].value.toString() : colorMapping[i].value;
             if ((value >= colorMapping[i].from && colorMapping[i].to >= value) || (colorMapping[i].value === equalValue)) {
                 if (colorMapping[i].value === equalValue) {
                     isEqualColor = true;
@@ -2182,7 +2181,6 @@ function getThemeStyle(theme) {
                 legendTextColor: '#DADADA'
             };
             break;
-        case 'Highcontrast':
         case 'HighContrast':
             style = {
                 backgroundColor: '#000000',

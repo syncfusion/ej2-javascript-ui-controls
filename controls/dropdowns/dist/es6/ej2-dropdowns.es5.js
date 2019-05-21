@@ -6862,7 +6862,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         }
     };
     MultiSelect.prototype.showOverAllClear = function () {
-        if (((this.value && this.value.length) || this.inputElement.value !== '') && this.showClearButton) {
+        if (((this.value && this.value.length) || this.inputElement.value !== '') && this.showClearButton && this.readonly !== true) {
             this.overAllClear.style.display = '';
         }
         else {
@@ -8611,7 +8611,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     ListBox.prototype.addItems = function (items, itemIndex) {
         _super.prototype.addItem.call(this, items, itemIndex);
     };
-    ListBox.prototype.selectAllItems = function (state) {
+    ListBox.prototype.selectAllItems = function (state, event) {
         var _this = this;
         [].slice.call(this.getItems()).forEach(function (li) {
             if (!li.classList.contains(cssClass.disabled)) {
@@ -8632,7 +8632,8 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             }
         });
         this.updateSelectedOptions();
-        this.triggerSelectAndChange(this.getSelectedItems(), this.selectionSettings.showCheckbox && this.selectionSettings.showSelectAll ?
+        this.triggerSelectAndChange(this.getSelectedItems(), this.getSelectedItems(), event, this.selectionSettings.showCheckbox &&
+            this.selectionSettings.showSelectAll ?
             this.isSelected(this.list.firstElementChild) : state);
     };
     ListBox.prototype.wireEvents = function () {
@@ -8725,14 +8726,14 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                 this.notify('updatelist', { li: li, e: e });
             }
             this.updateSelectedOptions();
-            this.triggerSelectAndChange(selectedLi, isSelect);
+            this.triggerSelectAndChange(selectedLi, this.getSelectedItems(), e, isSelect);
         }
     };
-    ListBox.prototype.triggerSelectAndChange = function (selectedLi, isSelect) {
+    ListBox.prototype.triggerSelectAndChange = function (selectedLi, selectedLis, event, isSelect) {
         if (isSelect) {
             this.trigger('select', { elements: selectedLi, items: this.getDataByElems(selectedLi) });
         }
-        this.trigger('change', { value: this.value });
+        this.trigger('change', { elements: selectedLis, items: this.getDataByElems(selectedLis), value: this.value, event: event });
     };
     ListBox.prototype.getDataByElems = function (elems) {
         var _this = this;
@@ -9260,6 +9261,9 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     __decorate$5([
         Event()
     ], ListBox.prototype, "select", void 0);
+    __decorate$5([
+        Event()
+    ], ListBox.prototype, "change", void 0);
     __decorate$5([
         Event()
     ], ListBox.prototype, "dragStart", void 0);

@@ -1254,6 +1254,100 @@ describe('QueryBuilder', () => {
         });
     });
 
+    describe('Customer_Bugs', () => {
+        beforeEach((): void => {
+            document.body.appendChild(createElement('div', { id: 'querybuilder' }));
+        });
+        afterEach(() => {
+            remove(queryBuilder.element.nextElementSibling);
+            remove(queryBuilder.element);
+            queryBuilder.destroy();
+        });
+        it('EJ2-26551-Selected value not maintained properly for field checkbox in querybuilder', () => {
+            let cData: ColumnsModel [] = [
+                { field: 'EmployeeID', label: 'Employee ID', type: 'number', value: 101 },
+                { field: 'FirstName', label: 'FirstName', type: 'string', value: 'Mohan'},
+                { field: 'Title Of Courtesy', label: 'Title Of Courtesy', type: 'boolean', values: ['Mr.', 'Mrs.'], value: 'Mrs.' },
+                { field: 'Title', label: 'Title', type: 'string', value: 'MMM'},
+                { field: 'HireDate', label: 'HireDate', type: 'date', format: 'dd/MM/yyyy', value: '2/07/1991' },
+                { field: 'Country', label: 'Country', type: 'string' , value: 'India'},
+                { field: 'City', label: 'City', type: 'string' , value: 'MS'},
+            ];
+            let iRules: RuleModel = {
+                'condition': 'and',
+                    'rules': [{
+                        'label': 'Title Of Courtesy',
+                        'field': 'Title Of Courtesy',
+                        'type': 'boolean',
+                        'operator': 'equal',
+                        'value': ['Mr.']
+                    }]
+                };
+            queryBuilder = new QueryBuilder({
+                columns: cData,
+                rule: iRules
+            }, '#querybuilder');
+            expect(queryBuilder.rule.rules[0].value).toEqual('Mr.');
+            //Operator change
+           let operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
+           operatorElem[0].showPopup();
+           let itemsCln: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
+           itemsCln[1].click();
+           expect(operatorElem[0].value).toEqual('notequal');
+           expect(queryBuilder.rule.rules[0].operator).toEqual('notequal');
+           expect(queryBuilder.rule.rules[0].value).toEqual('Mr.');
+           let radioBtnCln: NodeListOf<HTMLElement> = document.querySelectorAll('.e-radio');
+           radioBtnCln[1].click();
+           expect(queryBuilder.rule.rules[0].value).toEqual('Mrs.');
+           itemsCln[0].click();
+           expect(operatorElem[0].value).toEqual('equal');
+           expect(queryBuilder.rule.rules[0].operator).toEqual('equal');
+           expect(queryBuilder.rule.rules[0].value).toEqual('Mrs.');
+
+           // repeat 
+           radioBtnCln[0].click();
+           expect(queryBuilder.rule.rules[0].value).toEqual('Mr.');
+           itemsCln[1].click();
+           expect(operatorElem[0].value).toEqual('notequal');
+           expect(queryBuilder.rule.rules[0].operator).toEqual('notequal');
+           expect(queryBuilder.rule.rules[0].value).toEqual('Mr.');
+        });
+
+        it('EJ2-25995-To enable groupBy support for column field', () => {
+            let cData: ColumnsModel [] = [
+                { field: 'EmployeeID', label: 'Employee ID', type: 'number', value: 101, category: 'Employee Details' },
+                { field: 'FirstName', label: 'FirstName', type: 'string', value: 'Mohan', category: 'Employee Details'},
+                { field: 'Title Of Courtesy', label: 'Title Of Courtesy', type: 'boolean', values: ['Mr.', 'Mrs.'], value: 'Mrs.', category: 'Title Details' },
+                { field: 'Title', label: 'Title', type: 'string', value: 'MMM', category: 'Title Details'},
+                { field: 'HireDate', label: 'HireDate', type: 'date', format: 'dd/MM/yyyy', value: '2/07/1991', category: 'Title Details' },
+                { field: 'Country', label: 'Country', type: 'string' , value: 'India'},
+                { field: 'City', label: 'City', type: 'string' , value: 'MS'},
+            ];
+            let iRules: RuleModel = {
+                'condition': 'and',
+                    'rules': [{
+                        'label': 'Title Of Courtesy',
+                        'field': 'Title Of Courtesy',
+                        'type': 'boolean',
+                        'operator': 'equal',
+                        'value': ['Mr.']
+                    }]
+                };
+            queryBuilder = new QueryBuilder({
+                columns: cData,
+                rule: iRules
+            }, '#querybuilder');
+             //Change the field
+			let filterElem: DropDownList = queryBuilder.element.querySelector('.e-rule-filter .e-control').ej2_instances[0];
+            filterElem.showPopup();
+            let items: NodeListOf<HTMLElement> = document.getElementById('querybuilder_group0_rule0_filterkey_options').querySelectorAll('li');
+            expect(items[0].textContent).toEqual('Employee Details');
+            expect(items[3].textContent).toEqual('Title Details');
+            expect(items[7].textContent).toEqual('Other Fields'); 
+        });
+
+    });
+
     describe('Events', () => {
         afterEach(() => {
             queryBuilder.destroy();

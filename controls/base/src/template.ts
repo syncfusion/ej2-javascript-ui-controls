@@ -72,6 +72,15 @@ function evalExp(str: string, nameSpace: string, helper?: Object): string {
      */
     let localKeys: string[] = [];
 
+    let isClass: string[] = str.match(/class="([^\"]+|)\s{2}/g);
+    let singleSpace: string = '';
+    if (isClass) {
+        isClass.forEach((value: string) => {
+            singleSpace = value.replace(/\s\s+/g, ' ');
+            str = str.replace(value, singleSpace);
+        });
+    }
+
     return str.replace(LINES, '').replace(DBL_QUOTED_STR, '\'$1\'').replace(
 
         exp,

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.48 (2019-05-21)
+
+### Pdf Export
+
+#### Bug Fixes
+
+- Preservation issue in headers and footers with section is fixed.
+
 ## 17.1.1-beta (2019-01-29)
 
 ### Pdf Export

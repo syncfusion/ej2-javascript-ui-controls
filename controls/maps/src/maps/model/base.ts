@@ -149,6 +149,26 @@ export class Border extends ChildProperty<Border> {
 
 }
 /**
+ * Configures the center position in the maps.
+ */
+export class CenterPosition extends ChildProperty<CenterPosition> {
+
+    /**
+     * latitude for the center position of maps
+     * @default null
+     */
+    @Property(null)
+    public latitude: number;
+
+    /**
+     * longitude for the center position of maps
+     * @default null
+     */
+    @Property(null)
+    public longitude: number;
+
+}
+/**
  * To configure the tooltip settings of the maps.
  */
 export class TooltipSettings extends ChildProperty<TooltipSettings> {

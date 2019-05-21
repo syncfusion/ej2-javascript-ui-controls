@@ -1499,13 +1499,13 @@ var MultiSelect$1 = /** @__PURE__ @class */ (function () {
     return MultiSelect$$1;
 }());
 
-RichTextEditor.Inject(HtmlEditor, MarkdownEditor, Toolbar, Link, Image, QuickToolbar, Table);
 /**
  * The `RTE` module is used configure the properties of RTE type editor.
  */
 var Rte = /** @__PURE__ @class */ (function () {
     function Rte(parent) {
         this.compObj = undefined;
+        RichTextEditor.Inject(HtmlEditor, MarkdownEditor, Toolbar, Link, Image, QuickToolbar, Table);
         this.parent = parent;
         this.parent.rteModule = this;
         this.base = new Base(this.parent, this);

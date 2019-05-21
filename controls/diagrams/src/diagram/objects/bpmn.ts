@@ -182,6 +182,7 @@ export class BpmnDiagrams {
         gatewayTypeNode.id = node.id + '_1_gatewayType';
         //set style - opacity
         gatewayTypeNode.style.opacity = node.style.opacity;
+        gatewayTypeNode.style.strokeColor = node.style.strokeColor;
         gatewayTypeNode.horizontalAlignment = 'Center';
         gatewayTypeNode.verticalAlignment = 'Center';
         gatewayTypeNode.relativeMode = 'Object';
@@ -420,7 +421,7 @@ export class BpmnDiagrams {
                 innerEvtNode.style.fill = event !== 'End' ? 'white' : 'black';
                 innerEvtNode.style.gradient = null;
                 triggerNode.style.fill = 'black';
-                triggerNode.style.strokeColor = node.style.fill;
+                triggerNode.style.strokeColor = node.style.strokeColor;
                 break;
         }
         //append child and set style
@@ -498,7 +499,7 @@ export class BpmnDiagrams {
         }
         let collapsedShape: PathElement = new PathElement();
         collapsedShape.id = node.id + '_0_collapsed'; collapsedShape.width = 12; collapsedShape.height = 12;
-        collapsedShape.style.fill = 'black'; collapsedShape.margin.bottom = 5;
+        collapsedShape.style.fill = 'black'; collapsedShape.style.strokeColor = node.style.strokeColor; collapsedShape.margin.bottom = 5;
         collapsedShape.horizontalAlignment = 'Left'; collapsedShape.verticalAlignment = 'Bottom';
         collapsedShape.setOffsetWithRespectToBounds(0, 1, 'Fraction'); collapsedShape.relativeMode = 'Point';
         collapsedShape.data = getBpmnShapePathData('collapsedShape');
@@ -624,6 +625,7 @@ export class BpmnDiagrams {
         subprocessLoop.setOffsetWithRespectToBounds(0, 1, 'Fraction'); subprocessLoop.relativeMode = 'Point';
         subprocessLoop.margin.bottom = 5;
         subprocessLoop.style.fill = 'transparent';
+        subprocessLoop.style.strokeColor = node.style.strokeColor;
         return subprocessLoop;
     }
     /** @private */
@@ -842,6 +844,7 @@ export class BpmnDiagrams {
         compensationNode.id = node.id + '_0_compensation';
         compensationNode.width = 12; compensationNode.height = 12;
         compensationNode.margin.bottom = 5; compensationNode.style.fill = 'transparent';
+        compensationNode.style.strokeColor = node.style.strokeColor;
         compensationNode.horizontalAlignment = 'Left';
         compensationNode.verticalAlignment = 'Bottom';
         compensationNode.relativeMode = 'Object';
@@ -899,6 +902,7 @@ export class BpmnDiagrams {
         adhocNode.id = node.id + '_0_adhoc';
         adhocNode.width = 12; adhocNode.height = 8;
         adhocNode.style.fill = 'black';
+        adhocNode.style.strokeColor = node.style.strokeColor;
         adhocNode.margin.bottom = 5;
         adhocNode.horizontalAlignment = 'Left';
         adhocNode.verticalAlignment = 'Bottom';
@@ -1443,8 +1447,30 @@ export class BpmnDiagrams {
                 elementWrapper instanceof Container ? ((actualObject.shape as BpmnShape).shape === 'Activity') ?
                     (elementWrapper.children[0] as Container).children[0] :
                     elementWrapper.children[0] : elementWrapper);
+
+            if (changedProp.style && changedProp.style.strokeColor) {
+                if ((elementWrapper as Container).children.length > 0) {
+                    if ((actualObject.shape as BpmnShape).shape === 'Activity' &&
+                        (actualObject.shape as BpmnShape).activity.activity === 'SubProcess') {
+                        let child: DiagramElement = (elementWrapper as Container).children[0];
+                        this.updateBPMNStyle(child, changedProp.style.strokeColor);
+                    } else if ((actualObject.shape as BpmnShape).shape === 'Gateway' ||
+                        (actualObject.shape as BpmnShape).shape === 'Event') {
+                        this.updateBPMNStyle(elementWrapper, changedProp.style.strokeColor);
+                    }
+                }
+            }
         }
     }
+
+    /** @private */
+    public updateBPMNStyle(elementWrapper: DiagramElement, changedProp: string): void {
+        for (let i: number = 0; i < (elementWrapper as Container).children.length; i++) {
+            let child: DiagramElement = (elementWrapper as Container).children[i];
+            updateStyle({ strokeColor: changedProp }, child);
+        }
+    }
+
     /** @private */
     public updateBPMNGateway(node: Node, changedProp: Node): void {
         let bpmnShape: BpmnShapeModel = node.shape as BpmnShapeModel;

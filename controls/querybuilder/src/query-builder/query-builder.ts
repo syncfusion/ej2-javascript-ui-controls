@@ -180,6 +180,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private btnGroupId: number;
     private levelColl: Level;
     private isImportRules: boolean;
+    private isPublic: boolean;
     private parser: string[][];
     private defaultLocale: Object;
     private l10n: L10n;
@@ -473,7 +474,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             if (args.cancel) {
                 return;
             }
-            let rule: RuleModel = this.getGroup(element);
+            let rule: RuleModel = this.getParentGroup(element);
             rule.condition = args.value as string;
             this.triggerEvents({ groupID: groupID, type: 'condition', value: rule.condition });
             this.filterRules(beforeRules, this.getValidRules(this.rule), 'condition');
@@ -591,7 +592,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             let ruleElemCln: NodeListOf<Element> = this.element.querySelectorAll('.e-rule-container'); let validateRule: Validation;
             for (i = 0, len = ruleElemCln.length; i < len; i++) {
                 groupElem = closest(ruleElemCln[i], '.e-group-container');
-                rule = this.getGroup(groupElem);
+                rule = this.getParentGroup(groupElem);
                 index = 0;
                 indexElem = tempElem = ruleElemCln[i];
                 dropDownObj = getComponent(ruleElemCln[i].querySelector('.e-rule-field input.e-control') as HTMLElement, 'dropdownlist');
@@ -860,7 +861,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private changeField(args: DropDownChangeEventArgs): void {
         if (args.isInteracted) {
             let groupElem: Element = closest(args.element, '.e-group-container');
-            let rules: RuleModel = this.getGroup(groupElem);
+            let rules: RuleModel = this.getParentGroup(groupElem);
             let ruleElem: Element = closest(args.element, '.e-rule-container');
             let index: number = 0;
             while (ruleElem && ruleElem.previousElementSibling !== null) {
@@ -1149,8 +1150,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         return itemData.value;
      }
     private renderStringValue(parentId: string, rule: RuleModel, operator: string, idx: number, ruleValElem: HTMLElement): void {
-        let selectedVal: string[]; let columnData: ColumnsModel = this.getItemData(parentId);
-        let selectedValue: string = this.isImportRules ? rule.value as string : this.setDefaultValue(parentId, false, false) as string;
+        let selectedVal: string[]; let columnData: ColumnsModel = this.getItemData(parentId); let selectedValue: string;
+        if (this.isImportRules || this.isPublic) {
+            selectedValue = rule.value as string;
+        } else {
+            selectedValue = this.setDefaultValue(parentId, false, false) as string;
+        }
         if ((operator === 'in' || operator === 'notin') && (this.dataColl.length || columnData.values )) {
             selectedVal = this.isImportRules ? rule.value as string[] : this.setDefaultValue(parentId, true, false) as string[];
             this.renderMultiSelect(columnData, parentId, idx, selectedVal, columnData.values);
@@ -1179,7 +1184,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         length: number): void {
         let columnData: ColumnsModel = this.getItemData(parentId);
         let selectedVal: number | number[] =
-        this.isImportRules ? rule.value as number : this.setDefaultValue(parentId, false, true) as number;
+        (this.isImportRules || this.isPublic) ? rule.value as number : this.setDefaultValue(parentId, false, true) as number;
         if ((operator === 'in' || operator === 'notin') && (this.dataColl.length || columnData.values)) {
             selectedVal = this.isImportRules ? rule.value as number[] : this.setDefaultValue(parentId, true, false) as number[];
             this.renderMultiSelect(columnData, parentId, idx, selectedVal, columnData.values);
@@ -1229,13 +1234,27 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             return numArr;
         }
     }
+    private parseDate(value: string, format?: string): Date {
+        let formatOpt: DateFormatOptions; let selectedValue: Date;
+        if (format) {
+            let dParser: Function = this.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
+            formatOpt = { type: 'dateTime', format: format } as DateFormatOptions;
+            selectedValue = dParser(value);
+            if (isNullOrUndefined(selectedValue)) {
+                selectedValue = this.intl.parseDate(value, formatOpt);
+            }
+        } else {
+            selectedValue = new Date(value);
+        }
+        return selectedValue;
+    }
     private renderControls(target: Element, itemData: ColumnsModel, rule: RuleModel, tempRule: RuleModel): void {
         addClass([target.parentElement.querySelector('.e-rule-value')], 'e-value');
         if (itemData.template) {
             this.processTemplate(target, itemData, rule, tempRule);
         } else {
             let length: number;
-            if (tempRule.type === 'boolean') {
+            if (tempRule.type === 'boolean' && this.selectedColumn.values) {
                 length = this.selectedColumn.values.length;
             } else {
                 length = tempRule.operator && tempRule.operator.toLowerCase().indexOf('between') > -1 ? 2 : 1;
@@ -1264,51 +1283,50 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                             let values: string[] =
                                 itemData.values && itemData.values.length ? itemData.values as string[] : ['True', 'False'];
                             let isCheck: boolean = false;
-                            if (itemData.value) {
-                                isCheck = values[i].toString() === itemData.value.toString();
-                            } else if (rule.value) {
+                            if (rule.type === 'boolean' && rule.value) {
                                 isCheck = values[i].toString() === rule.value.toString();
+                            } else if (itemData.value) {
+                                isCheck = values[i].toString() === itemData.value.toString();
+                            } else {
+                                isCheck = true;
                             }
                             let radiobutton: RadioButton = new RadioButton({
                                 label: values[i].toString(), name: parentId + 'default', checked: isCheck, value: values[i],
                                 change: this.changeValue.bind(this, i)
                             });
                             radiobutton.appendTo('#' + parentId + '_valuekey' + i);
-                            this.updateRules(radiobutton.element, values[i], 0);
+                            if (isCheck) {
+                                this.updateRules(radiobutton.element, values[i], 0);
+                            }
                         }
                             break;
                         case 'date': {
-                            let selectedValue: Date = new Date(); let selVal: string;
+                            let selectedValue: Date = new Date(); let selVal: string; let column: ColumnsModel;
+                            let format: string = itemData.format; let datepick: DatePicker;
                             if (itemData.value) {
-                                selectedValue =  itemData.value instanceof Date ?
-                                itemData.value : new Date(itemData.value as string | number);
-                            }
-                            if (this.isImportRules && rule && rule.value) {
-                                selectedValue = (length > 1) ? new Date(rule.value[i] as string) : new Date(rule.value as string);
-                                let format: DateFormatOptions;
-                                let column: ColumnsModel = this.getColumn(rule.field);
-                                selVal = (length > 1) ? rule.value[i] as string : rule.value as string;
-                                if (column.format) {
-                                    let dParser: Function = this.intl.getDateParser({skeleton: 'full', type: 'dateTime'});
-                                    format = { type: 'dateTime', format: column.format } as DateFormatOptions;
-                                    if (selectedValue.toLocaleDateString() === 'Invalid Date') {
-                                        selectedValue = dParser(selVal);
-                                        if (isNullOrUndefined(selectedValue)) {
-                                            selectedValue = this.intl.parseDate(selVal, format);
-                                        }
-                                    }
+                                if (itemData.value instanceof Date) {
+                                    selectedValue = itemData.value as Date;
+                                } else if (itemData.value instanceof Number) {
+                                    selectedValue = new Date(itemData.value as number) as Date;
+                                } else {
+                                    selectedValue = this.parseDate(itemData.value as string, itemData.format);
                                 }
                             }
-                            let  datepick: DatePicker;
-                            if (itemData.format) {
+                            if ((this.isImportRules || this.isPublic) && rule && rule.value) {
+                                column = this.getColumn(rule.field);
+                                selVal = (length > 1) ? rule.value[i] as string : rule.value as string;
+                                selectedValue = this.parseDate(selVal, column.format);
+                                format = column.format;
+                            }
+                            if (format) {
                                 datepick =
-                                new DatePicker({ value: selectedValue, format: itemData.format, change: this.changeValue.bind(this, i) });
+                                new DatePicker({ value: selectedValue, format: format, change: this.changeValue.bind(this, i) });
                             } else {
                                 datepick = new DatePicker({ value: selectedValue, change: this.changeValue.bind(this, i) });
                             }
                             datepick.appendTo('#' + parentId + '_valuekey' + i);
                             if (!rule.value) {
-                              this.updateRules(document.getElementById(parentId + '_valuekey' + i), selectedValue);
+                                this.updateRules(document.getElementById(parentId + '_valuekey' + i), selectedValue);
                              }
                         }
                             break;
@@ -1384,7 +1402,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
         } else {
             let inputLen: number = 1;
-            if (tempRule.type === 'boolean') {
+            if (tempRule.type === 'boolean' && this.selectedColumn.values) {
                 inputLen = this.selectedColumn.values.length;
             } else {
                 inputLen = (tempRule.operator && tempRule.operator.toLowerCase().indexOf('between') > -1) ? 2 : 1;
@@ -1409,11 +1427,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 break;
             case 'radio':
                 let radioBtnObj: RadioButton = getComponent(element, controlName) as RadioButton;
-                if (!this.selectedColumn.value || (this.selectedColumn.value && this.selectedColumn.value === radioBtnObj.value)) {
-                    radioBtnObj.checked = true;
+                if (radioBtnObj.checked) {
                     rule.value = radioBtnObj.value;
-                } else {
-                    radioBtnObj.checked = false;
                 }
                 radioBtnObj.refresh();
                 break;
@@ -1444,7 +1459,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
     private updateRules(
         target: Element, selectedValue: string | number | Date | boolean | string[] | number[] | Date[] | Element, i?: number): void {
-        let groupElem: Element = closest(target, '.e-group-container'); let rule: RuleModel = this.getGroup(groupElem);
+        let groupElem: Element = closest(target, '.e-group-container'); let rule: RuleModel = this.getParentGroup(groupElem);
         let ruleElem: Element = closest(target, '.e-rule-container'); let index: number = 0; let dropDownObj: DropDownList;
         let eventsArgs: ChangeEventArgs; let groupID: string = groupElem.id.replace(this.element.id + '_', ''); let ruleID: string;
         let beforeRules: RuleModel = this.getValidRules(this.rule);
@@ -1465,7 +1480,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             let element: HTMLElement = ruleElement.nextElementSibling.querySelector('input.e-control') as HTMLElement;
             let operator: string = (getComponent(element, 'dropdownlist') as DropDownList).value as string;
             rule.rules[index].operator = operator;
-            let elementCln: NodeListOf<HTMLElement> = ruleElement.nextElementSibling.nextElementSibling.querySelectorAll('input.e-control');
+            // Value Fields
+            let valueContainer: HTMLElement = ruleElement.nextElementSibling.nextElementSibling as HTMLElement;
+            let elementCln: NodeListOf<HTMLElement> = valueContainer.querySelectorAll('input.e-control');
+            if (elementCln.length < 1) {
+                elementCln = valueContainer.querySelectorAll('.e-template');
+            }
             for (let i: number = 0; i < elementCln.length; i++) {
                 if (!elementCln[i]) {
                     elementCln[i] = ruleElement.nextElementSibling.nextElementSibling.querySelector('div.e-control') as HTMLElement;
@@ -1648,9 +1668,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      */
     public addRules(rule: RuleModel[], groupID: string): void {
         groupID = this.element.id + '_' + groupID;
+        this.isPublic = true;
         for (let i: number = 0, len: number = rule.length; i < len; i++) {
             this.addRuleElement(document.getElementById(groupID), rule[i]);
         }
+        this.isPublic = false;
     }
     /**
      * Adds single or multiple groups, which contains the collection of rules.
@@ -1659,7 +1681,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     public addGroups(groups: RuleModel[], groupID: string): void {
         groupID = this.element.id + '_' + groupID;
         let groupElem: Element = document.getElementById(groupID);
-        let rule: RuleModel = this.getGroup(groupElem); let grouplen: number = groups.length;
+        let rule: RuleModel = this.getParentGroup(groupElem); let grouplen: number = groups.length;
         if (grouplen) {
             for (let i: number = 0, len: number = groups.length; i < len; i++) {
                 this.importRules(groups[i], groupElem);
@@ -1972,8 +1994,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         let wrapper: Element = this.getWrapper();
         EventHandler.remove(wrapper, 'click', this.clickEventHandler);
     }
-    private getGroup(target: Element, isParent?: boolean): RuleModel {
-        let groupLevel: number[] = this.levelColl[target.id];
+    private getParentGroup(target: Element| string, isParent ?: boolean): RuleModel {
+        let groupLevel: number[] = (target instanceof Element) ? this.levelColl[target.id] : this.levelColl[target];
         let len: number = isParent ? groupLevel.length - 1 : groupLevel.length;
         let rule: RuleModel = this.rule;
         for (let i: number = 0; i < len; i++) {
@@ -1983,7 +2005,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
     private deleteGroup(target: Element): void {
         let groupElem: Element = target; let groupId: string = groupElem.id.replace(this.element.id + '_', '');
-        let rule: RuleModel = this.getGroup(groupElem, true);
+        let rule: RuleModel = this.getParentGroup(groupElem, true);
         let index: number = 0; let i: number; let len: number;
         let args: ChangeEventArgs = { groupID: groupId, cancel: false, type: 'deleteGroup' };
         let beforeRules: RuleModel = this.getValidRules(this.rule);
@@ -2022,7 +2044,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
     private deleteRule(target: Element): void {
         let groupElem: Element = closest(target, '.e-group-container'); let ruleID: string; let groupID: string;
-        let rule: RuleModel = this.getGroup(groupElem); let ruleElem: Element = closest(target, '.e-rule-container');
+        let rule: RuleModel = this.getParentGroup(groupElem); let ruleElem: Element = closest(target, '.e-rule-container');
         groupID = groupElem.id.replace(this.element.id + '_', '');
         ruleID = closest(target, '.e-rule-container').id.replace(this.element.id + '_', '');
         let beforeRules: RuleModel = this.getValidRules(this.rule);
@@ -2121,6 +2143,38 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      */
     public getRules(): RuleModel {
         return this.rule;
+    }
+    /**
+     * Gets the rule.
+     * @returns object.
+     */
+    public getRule(elem: string | HTMLElement): RuleModel {
+        let ruleElem: Element; let ruleId: string; let index: number = 0;
+        if (elem instanceof HTMLElement) {
+            ruleElem = closest(elem, '.e-rule-container');
+        } else {
+            ruleId = this.element.id + '_' + elem;
+            ruleElem = document.getElementById(ruleId);
+        }
+        let groupElem: Element = closest(ruleElem, '.e-group-container');
+        let rule: RuleModel = this.getParentGroup(groupElem);
+        while (ruleElem.previousElementSibling !== null) {
+            ruleElem = ruleElem.previousElementSibling;
+            index++;
+       }
+        return rule.rules[index];
+    }
+    /**
+     * Gets the group.
+     * @returns object.
+     */
+    public getGroup(target: Element | string): RuleModel {
+        if (target instanceof Element && target.className.indexOf('e-group-container') < 1) {
+            target = closest(target, '.e-group-container');
+        }
+        let groupId: string = (target instanceof Element) ? target.id : this.element.id + '_' + target;
+        let rule: RuleModel = this.getParentGroup(groupId);
+        return { rules: rule.rules, condition: rule.condition };
     }
     /**
      * Deletes the group or groups based on the group ID.

@@ -731,7 +731,7 @@ function filter(points, start, end) {
 /**
  * To find the midpoint of the polygon from points
  */
-function findMidPointOfPolygon(points) {
+function findMidPointOfPolygon(points, type) {
     if (!points.length) {
         return null;
     }
@@ -746,14 +746,14 @@ function findMidPointOfPolygon(points) {
     let ySum = 0;
     for (let i = min; i <= max - 1; i++) {
         startX = points[i].x;
-        startY = points[i].y;
+        startY = type === 'Mercator' ? points[i].y : -(points[i].y);
         if (i === max - 1) {
             startX1 = points[0].x;
-            startY1 = points[0].y;
+            startY1 = type === 'Mercator' ? points[0].y : -(points[0].y);
         }
         else {
             startX1 = points[i + 1].x;
-            startY1 = points[i + 1].y;
+            startY1 = type === 'Mercator' ? points[i + 1].y : -(points[i + 1].y);
         }
         sum = sum + Math.abs(((startX * startY1)) - (startX1 * startY));
         xSum = xSum + Math.abs(((startX + startX1) * (((startX * startY1) - (startX1 * startY)))));
@@ -774,6 +774,7 @@ function findMidPointOfPolygon(points) {
     let height = 0;
     for (let i = min; i <= max - 1; i++) {
         let point = points[i];
+        point.y = type === 'Mercator' ? point.y : -(point.y);
         if (point.y > ySum) {
             if (point.x < xSum && xSum - point.x < xSum - bottomMinPoint.x) {
                 bottomMinPoint = { x: point.x, y: point.y };
@@ -1891,7 +1892,6 @@ function getThemeStyle(theme) {
             };
             break;
         case 'HighContrast':
-        case 'Highcontrast':
             style = {
                 backgroundColor: '#000000',
                 areaBackgroundColor: '#000000',
@@ -2026,6 +2026,17 @@ __decorate$1([
 __decorate$1([
     Property(0)
 ], Border.prototype, "width", void 0);
+/**
+ * Configures the center position in the maps.
+ */
+class CenterPosition extends ChildProperty {
+}
+__decorate$1([
+    Property(null)
+], CenterPosition.prototype, "latitude", void 0);
+__decorate$1([
+    Property(null)
+], CenterPosition.prototype, "longitude", void 0);
 /**
  * To configure the tooltip settings of the maps.
  */
@@ -3712,7 +3723,7 @@ class LayerPanel {
             let animate$$1 = duration !== 0 || isNullOrUndefined(this.mapObject.zoomModule);
             this.mapObject.baseTranslatePoint = this.mapObject.zoomTranslatePoint;
             let translate;
-            if (this.mapObject.zoomSettings.zoomFactor > 1) {
+            if (this.mapObject.zoomSettings.zoomFactor > 1 && !isNullOrUndefined(this.mapObject.zoomModule)) {
                 translate = getZoomTranslate(this.mapObject, this.currentLayer, animate$$1);
             }
             else {
@@ -4175,6 +4186,8 @@ let Maps = class Maps extends Component {
         this.baseTileTranslatePoint = new Point(0, 0);
         /** @private */
         this.isDevice = false;
+        /** @public */
+        this.dataLabelShape = [];
     }
     /**
      * Gets the localized label by locale keyword.
@@ -4287,6 +4300,10 @@ let Maps = class Maps extends Component {
         this.createTile();
         if (this.zoomSettings.enable && this.zoomModule) {
             this.zoomModule.createZoomingToolbars();
+        }
+        if (!isNullOrUndefined(this.dataLabelModule)) {
+            this.dataLabelModule.dataLabelCollections = [];
+            this.dataLabelShape = [];
         }
         this.mapLayerPanel.measureLayerPanel();
         this.element.appendChild(this.svgObject);
@@ -5150,7 +5167,7 @@ __decorate([
     Property(1)
 ], Maps.prototype, "tabIndex", void 0);
 __decorate([
-    Property({ latitude: null, longitude: null })
+    Complex({ latitude: null, longitude: null }, CenterPosition)
 ], Maps.prototype, "centerPosition", void 0);
 __decorate([
     Complex({}, MapsAreaSettings)
@@ -5298,7 +5315,8 @@ class Bubble {
                 }
             }
         }
-        let center = findMidPointOfPolygon(shapePoints[midIndex]);
+        let projectionType = this.maps.projectionType;
+        let center = findMidPointOfPolygon(shapePoints[midIndex], projectionType);
         if (!isNullOrUndefined(center)) {
             let centerY = this.maps.projectionType === 'Mercator' ? center['y'] : (-center['y']);
             let eventArgs = {
@@ -5520,7 +5538,8 @@ class DataLabel {
             }
         }
         text = (!isNullOrUndefined(datasrcObj)) ? datasrcObj[labelpath].toString() : shapeData['properties'][labelpath];
-        location = findMidPointOfPolygon(shapePoint[midIndex]);
+        let projectionType = this.maps.projectionType;
+        location = findMidPointOfPolygon(shapePoint[midIndex], projectionType);
         if (!isNullOrUndefined(text) && !isNullOrUndefined(location)) {
             location['y'] = (this.maps.projectionType === 'Mercator') ? location['y'] : (-location['y']);
             if (!isNullOrUndefined(this.maps.format) && !isNaN(parseFloat(text))) {
@@ -5538,6 +5557,9 @@ class DataLabel {
             this.maps.trigger(dataLabelRendering, eventargs);
             let position = [];
             let width = location['rightMax']['x'] - location['leftMax']['x'];
+            if (!isNullOrUndefined(this.maps.dataLabelShape)) {
+                this.maps.dataLabelShape.push(width);
+            }
             let textSize = measureText(text, style);
             let trimmedLable = textTrim(width, text, style);
             let elementSize = measureText(trimmedLable, style);
@@ -5548,7 +5570,7 @@ class DataLabel {
             position = filter(shapePoint[midIndex], startY, endY);
             if (position.length > 5 && (shapeData['geometry']['type'] !== 'MultiPolygon') &&
                 (shapeData['type'] !== 'MultiPolygon')) {
-                let location1 = findMidPointOfPolygon(position);
+                let location1 = findMidPointOfPolygon(position, projectionType);
                 location['x'] = location1['x'];
                 width = location1['rightMax']['x'] - location1['leftMax']['x'];
             }
@@ -5584,7 +5606,7 @@ class DataLabel {
                     options = new TextOption(labelId, (textLocation.x), (textLocation.y), 'middle', text, '', '');
                 }
                 text = options['text'];
-                if (dataLabelSettings.intersectionAction === 'Hide') {
+                if (dataLabelSettings.intersectionAction === 'Hide' && this.maps.scale < 2) {
                     for (let i = 0; i < intersect.length; i++) {
                         if (!isNullOrUndefined(intersect[i])) {
                             if (this.value[index]['leftWidth'] > intersect[i]['rightWidth']
@@ -7695,6 +7717,8 @@ class Zoom {
         this.handled = false;
         this.pinchFactor = 1;
         this.startTouches = [];
+        this.shapeZoomLocation = [];
+        this.intersect = [];
         this.maps = maps;
         this.wheelEvent = this.browserName === 'mozilla' ? (this.isPointer ? 'mousewheel' : 'DOMMouseScroll') : 'mousewheel';
         this.cancelEvent = this.isPointer ? 'pointerleave' : 'mouseleave';
@@ -7914,8 +7938,8 @@ class Zoom {
                 let layerElement = this.layerCollectionEle.childNodes[i];
                 if (layerElement.tagName === 'g') {
                     this.templateCount++;
-                    let index = layerElement.id.indexOf('_LayerIndex_') > -1 && parseFloat(layerElement.id.split('_LayerIndex_')[1].split('_')[0]);
-                    this.currentLayer = this.maps.layersCollection[index];
+                    this.index = layerElement.id.indexOf('_LayerIndex_') > -1 && parseFloat(layerElement.id.split('_LayerIndex_')[1].split('_')[0]);
+                    this.currentLayer = this.maps.layersCollection[this.index];
                     let factor = this.maps.mapLayerPanel.calculateFactor(this.currentLayer);
                     for (let j = 0; j < layerElement.childElementCount; j++) {
                         let currentEle = layerElement.childNodes[j];
@@ -7924,15 +7948,16 @@ class Zoom {
                             if (this.maps.isTileMap && (currentEle.id.indexOf('_line_Group') > -1)) {
                                 currentEle.remove();
                                 if (layerElement.children.length > 0 && layerElement.children[0]) {
-                                    layerElement.insertBefore(this.maps.navigationLineModule.renderNavigation(this.currentLayer, this.maps.tileZoomLevel, index), layerElement.children[0]);
+                                    layerElement.insertBefore(this.maps.navigationLineModule.renderNavigation(this.currentLayer, this.maps.tileZoomLevel, this.index), layerElement.children[0]);
                                 }
                                 else {
-                                    layerElement.appendChild(this.maps.navigationLineModule.renderNavigation(this.currentLayer, this.maps.tileZoomLevel, index));
+                                    layerElement.appendChild(this.maps.navigationLineModule.renderNavigation(this.currentLayer, this.maps.tileZoomLevel, this.index));
                                 }
                             }
                             else {
-                                changeBorderWidth(currentEle, index, scale, this.maps);
+                                changeBorderWidth(currentEle, this.index, scale, this.maps);
                                 this.animateTransform(currentEle, animate$$1, x, y, scale);
+                                this.shapeZoomLocation = currentEle.childNodes;
                             }
                         }
                         else if (currentEle.id.indexOf('_Markers_Group') > -1) {
@@ -7969,7 +7994,9 @@ class Zoom {
                             }
                         }
                         else if (currentEle.id.indexOf('_dataLableIndex_Group') > -1) {
+                            this.intersect = [];
                             for (let k = 0; k < currentEle.childElementCount; k++) {
+                                this.zoomshapewidth = this.shapeZoomLocation[k].getBoundingClientRect();
                                 this.dataLabelTranslate(currentEle.childNodes[k], factor, x, y, scale, 'DataLabel', animate$$1);
                             }
                         }
@@ -8005,12 +8032,24 @@ class Zoom {
             }
         }
     }
+    //tslint:disable:max-func-body-length
     dataLabelTranslate(element, factor, x, y, scale, type, animate$$1 = false) {
         let labelCollection = this.maps.dataLabelModule.dataLabelCollections;
+        let zoomelement = element.getBoundingClientRect();
+        let text;
+        let trimmedLable;
+        let style = this.maps.layers[this.index].dataLabelSettings.textStyle;
+        let zoomtext;
+        let zoomtextSize;
+        let zoomtrimLabel;
+        let labelPath = this.maps.layers[this.index].dataLabelSettings.labelPath;
         let layerIndex = parseFloat(element.id.split('_LayerIndex_')[1].split('_')[0]);
         let shapeIndex = parseFloat(element.id.split('_shapeIndex_')[1].split('_')[0]);
         let labelIndex = parseFloat(element.id.split('_LabelIndex_')[1].split('_')[0]);
         let duration = this.currentLayer.animationDuration;
+        let featureData = (!isNullOrUndefined(this.maps.layersCollection[this.index].shapeData['geometries']) &&
+            this.maps.layersCollection[this.index].shapeData['geometries'].length > 0 ? this.maps.layersCollection[this.index].shapeData['geometries'] :
+            this.maps.layersCollection[this.index].shapeData['features']);
         for (let l = 0; l < labelCollection.length; l++) {
             let label = labelCollection[l];
             if (label['layerIndex'] === layerIndex && label['shapeIndex'] === shapeIndex
@@ -8032,8 +8071,96 @@ class Zoom {
                 else {
                     labelX = ((labelX + x) * scale);
                     labelY = ((labelY + y) * scale);
+                    zoomtext = featureData[l]['properties'][labelPath];
+                    zoomtextSize = measureText(zoomtext, style);
+                    let start = labelY - zoomtextSize['height'] / 4;
+                    let end = labelY + zoomtextSize['height'] / 4;
+                    let xpositionEnds = labelX + zoomtextSize['width'] / 2;
+                    let xpositionStart = labelX - zoomtextSize['width'] / 2;
+                    let textLocations = { right: xpositionEnds, left: xpositionStart, top: start, bottom: end };
                     if (!animate$$1 || duration === 0) {
                         element.setAttribute('transform', 'translate( ' + labelX + ' ' + labelY + ' )');
+                    }
+                    if (this.maps.layers[this.index].dataLabelSettings.smartLabelMode === 'Hide') {
+                        if (scale > 1) {
+                            text = (this.zoomshapewidth['width'] >= zoomtextSize['width']) ? zoomtext : '';
+                            element.innerHTML = text;
+                        }
+                        else {
+                            text = (this.maps.dataLabelShape[l] >= zoomtextSize['width']) ? zoomtext : '';
+                            element.innerHTML = text;
+                        }
+                    }
+                    if (this.maps.layers[this.index].dataLabelSettings.smartLabelMode === 'Trim') {
+                        if (scale > 1) {
+                            zoomtrimLabel = textTrim(this.zoomshapewidth['width'], zoomtext, style);
+                            text = zoomtrimLabel;
+                            element.innerHTML = text;
+                        }
+                        else {
+                            zoomtrimLabel = textTrim(this.maps.dataLabelShape[l], zoomtext, style);
+                            text = zoomtrimLabel;
+                            element.innerHTML = text;
+                        }
+                    }
+                    if (this.maps.layers[this.index].dataLabelSettings.intersectionAction === 'Hide') {
+                        for (let m = 0; m < this.intersect.length; m++) {
+                            if (!isNullOrUndefined(this.intersect[m])) {
+                                if (textLocations['left'] > this.intersect[m]['right']
+                                    || textLocations['right'] < this.intersect[m]['left']
+                                    || textLocations['top'] > this.intersect[m]['bottom']
+                                    || textLocations['bottom'] < this.intersect[m]['top']) {
+                                    text = !isNullOrUndefined(text) ? text : zoomtext;
+                                    element.innerHTML = text;
+                                }
+                                else {
+                                    text = '';
+                                    element.innerHTML = text;
+                                    break;
+                                }
+                            }
+                        }
+                        this.intersect.push(textLocations);
+                    }
+                    if (this.maps.layers[this.index].dataLabelSettings.intersectionAction === 'Trim') {
+                        for (let j = 0; j < this.intersect.length; j++) {
+                            if (!isNullOrUndefined(this.intersect[j])) {
+                                if (textLocations['right'] < this.intersect[j]['left']
+                                    || textLocations['left'] > this.intersect[j]['right']
+                                    || textLocations['bottom'] < this.intersect[j]['top']
+                                    || textLocations['top'] > this.intersect[j]['bottom']) {
+                                    trimmedLable = !isNullOrUndefined(text) ? text : zoomtext;
+                                    if (scale > 1) {
+                                        trimmedLable = textTrim(this.zoomshapewidth['width'], trimmedLable, style);
+                                    }
+                                    element.innerHTML = trimmedLable;
+                                }
+                                else {
+                                    if (textLocations['left'] > this.intersect[j]['left']) {
+                                        let width = this.intersect[j]['right'] - textLocations['left'];
+                                        let difference = width - (textLocations['right'] - textLocations['left']);
+                                        text = !isNullOrUndefined(text) ? text : zoomtext;
+                                        // difference > zoomtextSize['width'] ? difference : this.zoomshapewidth;
+                                        trimmedLable = textTrim(difference, text, style);
+                                        element.innerHTML = trimmedLable;
+                                        break;
+                                    }
+                                    if (textLocations['left'] < this.intersect[j]['left']) {
+                                        let width = textLocations['right'] - this.intersect[j]['left'];
+                                        let difference = Math.abs(width - (textLocations['right'] - textLocations['left']));
+                                        text = !isNullOrUndefined(text) ? text : zoomtext;
+                                        trimmedLable = textTrim(difference, text, style);
+                                        element.innerHTML = trimmedLable;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        this.intersect.push(textLocations);
+                        if (isNullOrUndefined(trimmedLable)) {
+                            trimmedLable = textTrim(this.zoomshapewidth['width'], zoomtext, style);
+                            element.innerHTML = trimmedLable;
+                        }
                     }
                     else {
                         smoothTranslate(element, 0, duration, new MapLocation(labelX, labelY));
@@ -8659,5 +8786,5 @@ class Zoom {
  * exporting all modules from maps index
  */
 
-export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClick, markerMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, TooltipSettings, Margin, ColorMappingSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getZoomTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
+export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClick, markerMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, ColorMappingSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getZoomTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
 //# sourceMappingURL=ej2-maps.es2015.js.map

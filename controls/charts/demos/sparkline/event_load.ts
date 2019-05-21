@@ -6,7 +6,7 @@ import { ISparklineLoadEventArgs, SparklineTooltip, SparklineTheme} from '../../
 import { EmitType } from '@syncfusion/ej2-base';
 Sparkline.Inject(SparklineTooltip);
 let sparkload: EmitType<ISparklineLoadEventArgs> = (args: ISparklineLoadEventArgs) => {
-    args.sparkline.theme = 'Highcontrast';
+    args.sparkline.theme = 'HighContrast';
 };
 let sparkline: Sparkline = new Sparkline({
     height: '50px',

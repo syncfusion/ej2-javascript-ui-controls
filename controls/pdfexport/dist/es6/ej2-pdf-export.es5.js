@@ -18232,10 +18232,9 @@ var PdfSection = /** @__PURE__ @class */ (function () {
      * @returns True - if some content should be printed on the layer, False otherwise.
      */
     PdfSection.prototype.containsTemplates = function (document, page, foreground) {
-        var documentHeaders = this.getDocumentTemplates(document, page, true, foreground);
-        var documentTemplates = this.getDocumentTemplates(document, page, false, foreground);
-        var contains = (documentHeaders.length > 0 || documentTemplates.length > 0);
-        return contains;
+        var documentHeaders = this.getDocumentTemplates(document, page, foreground);
+        var sectionTemplates = this.getSectionTemplates(page, foreground);
+        return (documentHeaders.length > 0 || sectionTemplates.length > 0);
     };
     /**
      * Returns array of the document templates.
@@ -18247,28 +18246,62 @@ var PdfSection = /** @__PURE__ @class */ (function () {
      * @returns Returns array of the document templates.
      */
     /* tslint:disable */
-    PdfSection.prototype.getDocumentTemplates = function (document, page, headers, foreground) {
+    PdfSection.prototype.getDocumentTemplates = function (document, page, foreground) {
         var templates = [];
-        if (headers) {
-            if (this.template.applyDocumentTopTemplate && document.template.getTop(page) != null) {
-                if ((!(document.template.getTop(page).foreground || foreground)) || (document.template.getTop(page).foreground && foreground)) {
-                    templates.push(document.template.getTop(page));
-                }
+        if (this.template.applyDocumentTopTemplate && document.template.getTop(page) != null) {
+            if ((!(document.template.getTop(page).foreground || foreground)) || (document.template.getTop(page).foreground && foreground)) {
+                templates.push(document.template.getTop(page));
             }
-            if (this.template.applyDocumentBottomTemplate && document.template.getBottom(page) != null) {
-                if ((!(document.template.getBottom(page).foreground || foreground)) || (document.template.getBottom(page).foreground && foreground)) {
-                    templates.push(document.template.getBottom(page));
-                }
+        }
+        if (this.template.applyDocumentBottomTemplate && document.template.getBottom(page) != null) {
+            if ((!(document.template.getBottom(page).foreground || foreground)) || (document.template.getBottom(page).foreground && foreground)) {
+                templates.push(document.template.getBottom(page));
             }
-            if (this.template.applyDocumentLeftTemplate && document.template.getLeft(page) != null) {
-                if ((!(document.template.getLeft(page).foreground || foreground)) || (document.template.getLeft(page).foreground && foreground)) {
-                    templates.push(document.template.getLeft(page));
-                }
+        }
+        if (this.template.applyDocumentLeftTemplate && document.template.getLeft(page) != null) {
+            if ((!(document.template.getLeft(page).foreground || foreground)) || (document.template.getLeft(page).foreground && foreground)) {
+                templates.push(document.template.getLeft(page));
             }
-            if (this.template.applyDocumentRightTemplate && document.template.getRight(page) != null) {
-                if ((!(document.template.getRight(page).foreground || foreground)) || (document.template.getRight(page).foreground && foreground)) {
-                    templates.push(document.template.getRight(page));
-                }
+        }
+        if (this.template.applyDocumentRightTemplate && document.template.getRight(page) != null) {
+            if ((!(document.template.getRight(page).foreground || foreground)) || (document.template.getRight(page).foreground && foreground)) {
+                templates.push(document.template.getRight(page));
+            }
+        }
+        return templates;
+    };
+    /**
+     * Returns array of the section templates.
+     * @private
+     * @param page The parent page.
+     * @param foreground If true - return foreground templates, if false - return background templates.
+     * @returns Returns array of the section templates.
+     */
+    /* tslint:disable */
+    PdfSection.prototype.getSectionTemplates = function (page, foreground) {
+        var templates = [];
+        if (this.template.getTop(page) != null) {
+            var pageTemplate = this.template.getTop(page);
+            if ((!(pageTemplate.foreground || foreground)) || (pageTemplate.foreground && foreground)) {
+                templates.push(pageTemplate);
+            }
+        }
+        if (this.template.getBottom(page) != null) {
+            var pageTemplate = this.template.getBottom(page);
+            if ((!(pageTemplate.foreground || foreground)) || (pageTemplate.foreground && foreground)) {
+                templates.push(pageTemplate);
+            }
+        }
+        if (this.template.getLeft(page) != null) {
+            var pageTemplate = this.template.getLeft(page);
+            if ((!(pageTemplate.foreground || foreground)) || (pageTemplate.foreground && foreground)) {
+                templates.push(pageTemplate);
+            }
+        }
+        if (this.template.getRight(page) != null) {
+            var pageTemplate = this.template.getRight(page);
+            if ((!(pageTemplate.foreground || foreground)) || (pageTemplate.foreground && foreground)) {
+                templates.push(pageTemplate);
             }
         }
         return templates;
@@ -18487,16 +18520,10 @@ var PdfSection = /** @__PURE__ @class */ (function () {
      * @private
      */
     PdfSection.prototype.drawTemplates = function (page, layer, document, foreground) {
-        var documentHeaders = this.getDocumentTemplates(document, page, true, foreground);
-        var documentTemplates = this.getDocumentTemplates(document, page, false, foreground);
-        if (foreground) {
-            this.drawTemplatesHelper(layer, document, documentHeaders);
-            this.drawTemplatesHelper(layer, document, documentTemplates);
-        }
-        else {
-            this.drawTemplatesHelper(layer, document, documentHeaders);
-            this.drawTemplatesHelper(layer, document, documentTemplates);
-        }
+        var documentHeaders = this.getDocumentTemplates(document, page, foreground);
+        var sectionHeaders = this.getSectionTemplates(page, foreground);
+        this.drawTemplatesHelper(layer, document, documentHeaders);
+        this.drawTemplatesHelper(layer, document, sectionHeaders);
     };
     /**
      * Draws page templates on the page.

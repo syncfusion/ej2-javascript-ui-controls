@@ -711,4 +711,150 @@ describe('Diagram Control', () => {
         });
         
     });
+
+    describe('Undo/redo not working for node annotation fontSize changed at runtime -update fix', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        let mouseEvents: MouseEvents = new MouseEvents();
+        var centerX = 0 / 2;
+        var interval = [
+            1, 9, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75, 0.25, 9.75
+        ];
+        var gridlines = { lineColor: '#e0e0e0', lineIntervals: interval };
+        var nodes:NodeModel[] = [
+            {
+                id: 'NewIdea', height: 60, offsetX: centerX - 50, offsetY: 80,
+                shape: { type: 'Flow', shape: 'Terminator' }, annotations: [{ content: 'Place Order' }]
+            }, {
+                id: 'Meeting', height: 60, offsetX: centerX - 50, offsetY: 160,
+                shape: { type: 'Flow', shape: 'Process' }, annotations: [{ content: 'Start Transaction' }]
+            }, {
+                id: 'BoardDecision', height: 60, offsetX: centerX - 50, offsetY: 240,
+                shape: { type: 'Flow', shape: 'Process' }, annotations: [{ content: 'Verification' }]
+            }, {
+                id: 'Project', height: 60, offsetX: centerX - 50, offsetY: 330,
+                shape: { type: 'Flow', shape: 'Decision' }, annotations: [{ content: 'Credit card valid?' }]
+            }, {
+                id: 'End', height: 60, offsetX: centerX - 50, offsetY: 430,
+                shape: { type: 'Flow', shape: 'Decision' }, annotations: [{ content: 'Funds available?' }]
+            }, {
+                id: 'node11', height: 60, offsetX: (centerX - 50) + 230, offsetY: 330,
+                shape: { type: 'Flow', shape: 'Process' }, annotations: [{ content: 'Enter payment method' }]
+            }, {
+                id: 'transaction_entered', height: 60, offsetX: (centerX - 50), offsetY: 630,
+                shape: { type: 'Flow', shape: 'Terminator' }, annotations: [{ content: 'Log transaction' }]
+            }, {
+                id: 'node12', height: 60, offsetX: (centerX - 50) + 180, offsetY: 630,
+                shape: { type: 'Flow', shape: 'Process' }, annotations: [{ content: 'Reconcile the entries' }]
+            }, {
+                id: 'transaction_completed', height: 60, offsetX: (centerX - 50), offsetY: 530,
+                shape: { type: 'Flow', shape: 'Process' }, annotations: [{ content: 'Complete Transaction' }]
+            }, {
+                id: 'Data', height: 45, offsetX: (centerX - 50) - 190, offsetY: 530,
+                shape: { type: 'Flow', shape: 'Data' }, annotations: [{ content: 'Send e-mail', margin: { left: 25, right: 25 } }]
+            }, {
+                id: 'node10', height: 70, offsetX: (centerX - 50) + 175, offsetY: 530,
+                shape: { type: 'Flow', shape: 'DirectData' }, annotations: [{ content: 'Customer Database', margin: { left: 25, right: 25 } }]
+            }
+        ];
+        var connectors:ConnectorModel[] = [
+            { id: 'connector1', sourceID: 'NewIdea', targetID: 'Meeting' },
+            { id: 'connector2', sourceID: 'Meeting', targetID: 'BoardDecision' },
+            { id: 'connector3', sourceID: 'BoardDecision', targetID: 'Project' },
+            { id: 'connector4', sourceID: 'Project', annotations: [{ content: 'Yes', style: { fill: 'white' } }], targetID: 'End' },
+            {
+                id: 'connector5', sourceID: 'End',
+                annotations: [{ content: 'Yes', style: { fill: 'white' } }], targetID: 'transaction_completed'
+            },
+            { id: 'connector6', sourceID: 'transaction_completed', targetID: 'transaction_entered' },
+            { id: 'connector7', sourceID: 'transaction_completed', targetID: 'Data' },
+            { id: 'connector8', sourceID: 'transaction_completed', targetID: 'node10' },
+            { id: 'connector9', sourceID: 'node11', targetID: 'Meeting', segments: [{ direction: 'Top', type: 'Orthogonal', length: 120 }] },
+            {
+                id: 'connector10', sourceID: 'End', annotations: [{ content: 'No', style: { fill: 'white' } }],
+                targetID: 'node11', segments: [{ direction: 'Right', type: 'Orthogonal', length: 100 }]
+            },
+            { id: 'connector11', sourceID: 'Project', annotations: [{ content: 'No', style: { fill: 'white' } }], targetID: 'node11' },
+            { id: 'connector12', style: { strokeDashArray: '2,2' }, sourceID: 'transaction_entered', targetID: 'node12' }
+        ];
+        function getPorts():any {
+            var ports = [
+                { id: 'port1', shape: 'Circle', offset: { x: 0, y: 0.5 } },
+                { id: 'port2', shape: 'Circle', offset: { x: 0.5, y: 1 } },
+                { id: 'port3', shape: 'Circle', offset: { x: 1, y: .5 } },
+                { id: 'port4', shape: 'Circle', offset: { x: .5, y: 0 } }
+            ];
+            return ports;
+        }
+        function getNodeDefaults(node:NodeModel) {
+            var obj = {};
+            if ((obj as NodeModel).width === undefined) {
+                (obj as NodeModel).width = 145;
+            }
+            else {
+                var ratio = 100 / (obj as NodeModel).width;
+                (obj as NodeModel).width = 100;
+                (obj as NodeModel).height *= ratio;
+            }
+            (obj as NodeModel).style = { fill: '#357BD2', strokeColor: 'white' };
+            (obj as NodeModel).annotations = [{ style: { color: 'white', fill: 'transparent' } }];
+            (obj as NodeModel).ports = getPorts();
+            return obj;
+        }
+        function getConnectorDefaults(obj:ConnectorModel) {
+            if (obj.id.indexOf('connector') !== -1) {
+                obj.type = 'Orthogonal';
+                obj.targetDecorator = { shape: 'Arrow', width: 10, height: 10 };
+            }
+            return obj;
+        }
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+            if (!isDef(window.performance)) {
+                console.log("Unsupported environment, window.performance.memory is unavailable");
+                this.skip(); //Skips test (in Chai)
+                return;
+            }
+            ele = createElement('div', { id: 'diagram4' });
+            document.body.appendChild(ele);
+           
+            diagram = new Diagram({
+                width: '100%', height: '700px', nodes: nodes, connectors: connectors,
+                snapSettings: { horizontalGridlines: gridlines, verticalGridlines: gridlines },
+                getNodeDefaults: getNodeDefaults,
+                getConnectorDefaults: getConnectorDefaults,
+            });
+
+            diagram.appendTo('#diagram4');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Undo/redo not working for node annotation fontSize changed at runtime', (done: Function) => {
+            diagram.add({
+                height: 60,
+                offsetX: 300, offsetY: 400,
+                shape: { type: 'Flow', shape: 'Terminator' }, annotations: [{
+                    content: 'Runtime Node'
+                }]
+            })
+            diagram.dataBind()
+            let annotation = diagram.nodes[11].annotations[0]
+            annotation.style.fontSize = 20;
+            diagram.dataBind();
+            let e = document.getElementById(diagram.nodes[11].id + '_groupElement')
+            expect(e.children[2].children[1].getAttribute('style') === 'font-style: normal; font-weight: normal; font-size: 20px; font-family: Arial;').toBe(true);
+           
+            diagram.undo();
+            expect(e.children[2].children[1].getAttribute('style') === 'font-style: normal; font-weight: normal; font-size: 12px; font-family: Arial;').toBe(true);
+            
+            done();
+        });
+        
+    });
 });

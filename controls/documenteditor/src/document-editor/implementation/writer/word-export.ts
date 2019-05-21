@@ -2036,7 +2036,7 @@ export class WordExport {
                 writer.writeEndElement();
             }
 
-            if (!isNullOrUndefined(lf.listId) && lf.listId !== -1) {
+            if (!isNullOrUndefined(lf.listId)) {
                 writer.writeStartElement(undefined, 'numId', this.wNamespace);
                 writer.writeAttributeString('w', 'val', this.wNamespace, (lf.listId + 1).toString());
                 writer.writeEndElement();
@@ -2594,11 +2594,11 @@ export class WordExport {
         writer.writeAttributeString(undefined, 'val', this.wNamespace, this.getLevelPattern(listLevel.listLevelPattern));
         writer.writeEndElement();
 
-        if (listLevel.restartLevel > 0) {
-            writer.writeStartElement(undefined, 'lvlRestart', this.wNamespace);
-            writer.writeAttributeString(undefined, 'val', this.wNamespace, '0');
-            writer.writeEndElement();
-        }
+        // if (listLevel.restartLevel > 0) {
+        //     writer.writeStartElement(undefined, 'lvlRestart', this.wNamespace);
+        //     writer.writeAttributeString(undefined, 'val', this.wNamespace, '0');
+        //     writer.writeEndElement();
+        // }
 
         // if (!isNullOrUndefined(listLevel.paragraphFormat)) {
         //     string name = listLevel.ParaStyleName.Substring(0, 1).ToUpper() + listLevel.ParaStyleName.Remove(0, 1);

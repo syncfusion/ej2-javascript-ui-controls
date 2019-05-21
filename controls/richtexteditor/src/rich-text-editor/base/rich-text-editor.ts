@@ -2,6 +2,7 @@ import { Component, ModuleDeclaration, EventHandler, Complex, Browser, EmitType,
 import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L10n, closest } from '@syncfusion/ej2-base';
 import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, compile, append, extend, debounce } from '@syncfusion/ej2-base';
+import { Touch as EJ2Touch, TapEventArgs } from '@syncfusion/ej2-base';
 import { getScrollableParent } from '@syncfusion/ej2-popups';
 import { RichTextEditorModel } from './rich-text-editor-model';
 import * as events from '../base/constant';
@@ -68,6 +69,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     private onBlurHandler: EventListenerOrEventListenerObject;
     private onResizeHandler: EventListenerOrEventListenerObject;
     private timeInterval: number;
+    private touchModule: EJ2Touch;
     /**
      * @hidden
      */
@@ -893,12 +895,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
 
-    private mouseUp(e: MouseEvent | TouchEvent): void {
-        this.notify(events.mouseUp, { member: 'mouseUp', args: e });
-        if (this.inputElement && ((this.editorMode === 'HTML' && this.inputElement.textContent.length !== 0) ||
-            (this.editorMode === 'Markdown' && (this.inputElement as HTMLTextAreaElement).value.length !== 0))) {
-            this.notify(events.toolbarRefresh, { args: e });
-        }
+    private triggerEditArea(e: MouseEvent | TouchEvent): void {
         if (!isIDevice()) {
             this.notify(events.editAreaClick, { member: 'editAreaClick', args: e });
         } else {
@@ -908,6 +905,28 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
         }
     }
+
+    private notifyMouseUp(e: MouseEvent | TouchEvent): void {
+        this.notify(events.mouseUp, { member: 'mouseUp', args: e });
+        if (this.inputElement && ((this.editorMode === 'HTML' && this.inputElement.textContent.length !== 0) ||
+            (this.editorMode === 'Markdown' && (this.inputElement as HTMLTextAreaElement).value.length !== 0))) {
+            this.notify(events.toolbarRefresh, { args: e });
+        }
+        this.triggerEditArea(e);
+    }
+
+    private mouseUp(e: MouseEvent | TouchEvent): void {
+        if (this.quickToolbarSettings.showOnRightClick && Browser.isDevice) {
+            let target: Element = e.target as Element;
+            let closestTable: Element = closest(target, 'table');
+            if (target && target.nodeName === 'A' || target.nodeName === 'IMG' || (target.nodeName === 'TD' || target.nodeName === 'TH' ||
+                target.nodeName === 'TABLE' || (closestTable && this.contentModule.getEditPanel().contains(closestTable)))) {
+                    return;
+            }
+        }
+        this.notifyMouseUp(e);
+    }
+
 
     /** 
      * @hidden
@@ -1177,6 +1196,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                 case 'undoRedoSteps':
                 case 'undoRedoTimer':
                     this.formatter.editorManager.observer.notify(CONSTANT.MODEL_CHANGED, { newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'quickToolbarSettings':
+                    newProp.quickToolbarSettings.showOnRightClick ? this.wireContextEvent() : this.unWireContextEvent();
+                    this.notify(events.modelChanged, { newProp: newProp, oldProp: oldProp });
                     break;
                 default:
                     this.notify(events.modelChanged, { newProp: newProp, oldProp: oldProp });
@@ -1706,6 +1729,20 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
 
+    private wireContextEvent(): void {
+        if (this.quickToolbarSettings.showOnRightClick) {
+            EventHandler.add(this.inputElement, 'contextmenu', this.contextHandler, this);
+            if (Browser.isDevice) {
+                this.touchModule = new EJ2Touch(this.inputElement, { tapHold: this.touchHandler.bind(this), tapHoldThreshold: 500 });
+            }
+        }
+    }
+
+    private unWireContextEvent(): void {
+        EventHandler.remove(this.inputElement, 'contextmenu', this.contextHandler);
+        if (Browser.isDevice && this.touchModule) { this.touchModule.destroy(); }
+    }
+
     /**
      * @hidden
      */
@@ -1715,6 +1752,16 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             EventHandler.remove(element, 'scroll', this.scrollHandler);
         }
     }
+
+    private touchHandler(e: TapEventArgs): void {
+        this.notifyMouseUp(e.originalEvent);
+        this.triggerEditArea(e.originalEvent);
+    }
+
+    private contextHandler(e: MouseEvent): void {
+        e.preventDefault();
+    }
+
     private resetHandler(): void {
         this.setProperties({ value: this.valueContainer.defaultValue === '' ? null : this.valueContainer.defaultValue });
     }
@@ -1748,7 +1795,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     private bindEvents(): void {
         this.keyboardModule = new KeyboardEvents(this.inputElement, {
-            keyAction: this.keyDown.bind(this), keyConfigs: this.formatter.keyConfig, eventName: 'keydown'
+            keyAction: this.keyDown.bind(this), keyConfigs: {...this.formatter.keyConfig, ...this.keyConfig},
+            eventName: 'keydown'
         });
         let formElement: Element = closest(this.valueContainer, 'form');
         if (formElement) {
@@ -1758,6 +1806,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         EventHandler.add(this.inputElement, 'paste', this.onPaste, this);
         EventHandler.add(this.inputElement, Browser.touchEndEvent, debounce(this.mouseUp, 30), this);
         EventHandler.add(this.inputElement, Browser.touchStartEvent, this.mouseDownHandler, this);
+        this.wireContextEvent();
         this.formatter.editorManager.observer.on(CONSTANT.KEY_DOWN_HANDLER, this.editorKeyDown, this);
         this.element.ownerDocument.defaultView.addEventListener('resize', this.onResizeHandler, true);
         if (this.iframeSettings.enable) {
@@ -1810,6 +1859,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         EventHandler.remove(this.inputElement, 'paste', this.onPaste);
         EventHandler.remove(this.inputElement, Browser.touchEndEvent, debounce(this.mouseUp, 30));
         EventHandler.remove(this.inputElement, Browser.touchStartEvent, this.mouseDownHandler);
+        this.unWireContextEvent();
         if (this.formatter) {
             this.formatter.editorManager.observer.off(CONSTANT.KEY_DOWN_HANDLER, this.editorKeyDown);
         }

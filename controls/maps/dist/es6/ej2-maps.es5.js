@@ -784,7 +784,7 @@ function filter(points, start, end) {
 /**
  * To find the midpoint of the polygon from points
  */
-function findMidPointOfPolygon(points) {
+function findMidPointOfPolygon(points, type) {
     if (!points.length) {
         return null;
     }
@@ -799,14 +799,14 @@ function findMidPointOfPolygon(points) {
     var ySum = 0;
     for (var i = min; i <= max - 1; i++) {
         startX = points[i].x;
-        startY = points[i].y;
+        startY = type === 'Mercator' ? points[i].y : -(points[i].y);
         if (i === max - 1) {
             startX1 = points[0].x;
-            startY1 = points[0].y;
+            startY1 = type === 'Mercator' ? points[0].y : -(points[0].y);
         }
         else {
             startX1 = points[i + 1].x;
-            startY1 = points[i + 1].y;
+            startY1 = type === 'Mercator' ? points[i + 1].y : -(points[i + 1].y);
         }
         sum = sum + Math.abs(((startX * startY1)) - (startX1 * startY));
         xSum = xSum + Math.abs(((startX + startX1) * (((startX * startY1) - (startX1 * startY)))));
@@ -827,6 +827,7 @@ function findMidPointOfPolygon(points) {
     var height = 0;
     for (var i = min; i <= max - 1; i++) {
         var point = points[i];
+        point.y = type === 'Mercator' ? point.y : -(point.y);
         if (point.y > ySum) {
             if (point.x < xSum && xSum - point.x < xSum - bottomMinPoint.x) {
                 bottomMinPoint = { x: point.x, y: point.y };
@@ -1947,7 +1948,6 @@ function getThemeStyle(theme) {
             };
             break;
         case 'HighContrast':
-        case 'Highcontrast':
             style = {
                 backgroundColor: '#000000',
                 areaBackgroundColor: '#000000',
@@ -2114,6 +2114,22 @@ var Border = /** @__PURE__ @class */ (function (_super) {
         Property(0)
     ], Border.prototype, "width", void 0);
     return Border;
+}(ChildProperty));
+/**
+ * Configures the center position in the maps.
+ */
+var CenterPosition = /** @__PURE__ @class */ (function (_super) {
+    __extends$2(CenterPosition, _super);
+    function CenterPosition() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$1([
+        Property(null)
+    ], CenterPosition.prototype, "latitude", void 0);
+    __decorate$1([
+        Property(null)
+    ], CenterPosition.prototype, "longitude", void 0);
+    return CenterPosition;
 }(ChildProperty));
 /**
  * To configure the tooltip settings of the maps.
@@ -3908,7 +3924,7 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
             var animate$$1 = duration !== 0 || isNullOrUndefined(this.mapObject.zoomModule);
             this.mapObject.baseTranslatePoint = this.mapObject.zoomTranslatePoint;
             var translate = void 0;
-            if (this.mapObject.zoomSettings.zoomFactor > 1) {
+            if (this.mapObject.zoomSettings.zoomFactor > 1 && !isNullOrUndefined(this.mapObject.zoomModule)) {
                 translate = getZoomTranslate(this.mapObject, this.currentLayer, animate$$1);
             }
             else {
@@ -4396,6 +4412,8 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         _this.baseTileTranslatePoint = new Point(0, 0);
         /** @private */
         _this.isDevice = false;
+        /** @public */
+        _this.dataLabelShape = [];
         return _this;
     }
     /**
@@ -4511,6 +4529,10 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         this.createTile();
         if (this.zoomSettings.enable && this.zoomModule) {
             this.zoomModule.createZoomingToolbars();
+        }
+        if (!isNullOrUndefined(this.dataLabelModule)) {
+            this.dataLabelModule.dataLabelCollections = [];
+            this.dataLabelShape = [];
         }
         this.mapLayerPanel.measureLayerPanel();
         this.element.appendChild(this.svgObject);
@@ -5388,7 +5410,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         Property(1)
     ], Maps.prototype, "tabIndex", void 0);
     __decorate([
-        Property({ latitude: null, longitude: null })
+        Complex({ latitude: null, longitude: null }, CenterPosition)
     ], Maps.prototype, "centerPosition", void 0);
     __decorate([
         Complex({}, MapsAreaSettings)
@@ -5538,7 +5560,8 @@ var Bubble = /** @__PURE__ @class */ (function () {
                 }
             }
         }
-        var center = findMidPointOfPolygon(shapePoints[midIndex]);
+        var projectionType = this.maps.projectionType;
+        var center = findMidPointOfPolygon(shapePoints[midIndex], projectionType);
         if (!isNullOrUndefined(center)) {
             var centerY = this.maps.projectionType === 'Mercator' ? center['y'] : (-center['y']);
             var eventArgs = {
@@ -5761,7 +5784,8 @@ var DataLabel = /** @__PURE__ @class */ (function () {
             }
         }
         text = (!isNullOrUndefined(datasrcObj)) ? datasrcObj[labelpath].toString() : shapeData['properties'][labelpath];
-        location = findMidPointOfPolygon(shapePoint[midIndex]);
+        var projectionType = this.maps.projectionType;
+        location = findMidPointOfPolygon(shapePoint[midIndex], projectionType);
         if (!isNullOrUndefined(text) && !isNullOrUndefined(location)) {
             location['y'] = (this.maps.projectionType === 'Mercator') ? location['y'] : (-location['y']);
             if (!isNullOrUndefined(this.maps.format) && !isNaN(parseFloat(text))) {
@@ -5779,6 +5803,9 @@ var DataLabel = /** @__PURE__ @class */ (function () {
             this.maps.trigger(dataLabelRendering, eventargs);
             var position = [];
             var width = location['rightMax']['x'] - location['leftMax']['x'];
+            if (!isNullOrUndefined(this.maps.dataLabelShape)) {
+                this.maps.dataLabelShape.push(width);
+            }
             var textSize = measureText(text, style);
             var trimmedLable = textTrim(width, text, style);
             var elementSize = measureText(trimmedLable, style);
@@ -5789,7 +5816,7 @@ var DataLabel = /** @__PURE__ @class */ (function () {
             position = filter(shapePoint[midIndex], startY, endY);
             if (position.length > 5 && (shapeData['geometry']['type'] !== 'MultiPolygon') &&
                 (shapeData['type'] !== 'MultiPolygon')) {
-                var location1 = findMidPointOfPolygon(position);
+                var location1 = findMidPointOfPolygon(position, projectionType);
                 location['x'] = location1['x'];
                 width = location1['rightMax']['x'] - location1['leftMax']['x'];
             }
@@ -5825,7 +5852,7 @@ var DataLabel = /** @__PURE__ @class */ (function () {
                     options = new TextOption(labelId, (textLocation.x), (textLocation.y), 'middle', text, '', '');
                 }
                 text = options['text'];
-                if (dataLabelSettings.intersectionAction === 'Hide') {
+                if (dataLabelSettings.intersectionAction === 'Hide' && this.maps.scale < 2) {
                     for (var i = 0; i < intersect.length; i++) {
                         if (!isNullOrUndefined(intersect[i])) {
                             if (this.value[index]['leftWidth'] > intersect[i]['rightWidth']
@@ -7960,6 +7987,8 @@ var Zoom = /** @__PURE__ @class */ (function () {
         this.handled = false;
         this.pinchFactor = 1;
         this.startTouches = [];
+        this.shapeZoomLocation = [];
+        this.intersect = [];
         this.maps = maps;
         this.wheelEvent = this.browserName === 'mozilla' ? (this.isPointer ? 'mousewheel' : 'DOMMouseScroll') : 'mousewheel';
         this.cancelEvent = this.isPointer ? 'pointerleave' : 'mouseleave';
@@ -8175,12 +8204,12 @@ var Zoom = /** @__PURE__ @class */ (function () {
         var x = this.maps.translatePoint.x;
         var y = this.maps.translatePoint.y;
         if (this.layerCollectionEle) {
-            for (var i = 0; i < this.layerCollectionEle.childElementCount; i++) {
-                var layerElement = this.layerCollectionEle.childNodes[i];
+            for (var i_1 = 0; i_1 < this.layerCollectionEle.childElementCount; i_1++) {
+                var layerElement = this.layerCollectionEle.childNodes[i_1];
                 if (layerElement.tagName === 'g') {
                     this.templateCount++;
-                    var index = layerElement.id.indexOf('_LayerIndex_') > -1 && parseFloat(layerElement.id.split('_LayerIndex_')[1].split('_')[0]);
-                    this.currentLayer = this.maps.layersCollection[index];
+                    this.index = layerElement.id.indexOf('_LayerIndex_') > -1 && parseFloat(layerElement.id.split('_LayerIndex_')[1].split('_')[0]);
+                    this.currentLayer = this.maps.layersCollection[this.index];
                     var factor = this.maps.mapLayerPanel.calculateFactor(this.currentLayer);
                     for (var j = 0; j < layerElement.childElementCount; j++) {
                         var currentEle = layerElement.childNodes[j];
@@ -8189,15 +8218,16 @@ var Zoom = /** @__PURE__ @class */ (function () {
                             if (this.maps.isTileMap && (currentEle.id.indexOf('_line_Group') > -1)) {
                                 currentEle.remove();
                                 if (layerElement.children.length > 0 && layerElement.children[0]) {
-                                    layerElement.insertBefore(this.maps.navigationLineModule.renderNavigation(this.currentLayer, this.maps.tileZoomLevel, index), layerElement.children[0]);
+                                    layerElement.insertBefore(this.maps.navigationLineModule.renderNavigation(this.currentLayer, this.maps.tileZoomLevel, this.index), layerElement.children[0]);
                                 }
                                 else {
-                                    layerElement.appendChild(this.maps.navigationLineModule.renderNavigation(this.currentLayer, this.maps.tileZoomLevel, index));
+                                    layerElement.appendChild(this.maps.navigationLineModule.renderNavigation(this.currentLayer, this.maps.tileZoomLevel, this.index));
                                 }
                             }
                             else {
-                                changeBorderWidth(currentEle, index, scale, this.maps);
+                                changeBorderWidth(currentEle, this.index, scale, this.maps);
                                 this.animateTransform(currentEle, animate$$1, x, y, scale);
+                                this.shapeZoomLocation = currentEle.childNodes;
                             }
                         }
                         else if (currentEle.id.indexOf('_Markers_Group') > -1) {
@@ -8234,7 +8264,9 @@ var Zoom = /** @__PURE__ @class */ (function () {
                             }
                         }
                         else if (currentEle.id.indexOf('_dataLableIndex_Group') > -1) {
+                            this.intersect = [];
                             for (var k = 0; k < currentEle.childElementCount; k++) {
+                                this.zoomshapewidth = this.shapeZoomLocation[k].getBoundingClientRect();
                                 this.dataLabelTranslate(currentEle.childNodes[k], factor, x, y, scale, 'DataLabel', animate$$1);
                             }
                         }
@@ -8270,13 +8302,25 @@ var Zoom = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    //tslint:disable:max-func-body-length
     Zoom.prototype.dataLabelTranslate = function (element, factor, x, y, scale, type, animate$$1) {
         if (animate$$1 === void 0) { animate$$1 = false; }
         var labelCollection = this.maps.dataLabelModule.dataLabelCollections;
+        var zoomelement = element.getBoundingClientRect();
+        var text;
+        var trimmedLable;
+        var style = this.maps.layers[this.index].dataLabelSettings.textStyle;
+        var zoomtext;
+        var zoomtextSize;
+        var zoomtrimLabel;
+        var labelPath = this.maps.layers[this.index].dataLabelSettings.labelPath;
         var layerIndex = parseFloat(element.id.split('_LayerIndex_')[1].split('_')[0]);
         var shapeIndex = parseFloat(element.id.split('_shapeIndex_')[1].split('_')[0]);
         var labelIndex = parseFloat(element.id.split('_LabelIndex_')[1].split('_')[0]);
         var duration = this.currentLayer.animationDuration;
+        var featureData = (!isNullOrUndefined(this.maps.layersCollection[this.index].shapeData['geometries']) &&
+            this.maps.layersCollection[this.index].shapeData['geometries'].length > 0 ? this.maps.layersCollection[this.index].shapeData['geometries'] :
+            this.maps.layersCollection[this.index].shapeData['features']);
         for (var l = 0; l < labelCollection.length; l++) {
             var label = labelCollection[l];
             if (label['layerIndex'] === layerIndex && label['shapeIndex'] === shapeIndex
@@ -8298,8 +8342,96 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 else {
                     labelX = ((labelX + x) * scale);
                     labelY = ((labelY + y) * scale);
+                    zoomtext = featureData[l]['properties'][labelPath];
+                    zoomtextSize = measureText(zoomtext, style);
+                    var start = labelY - zoomtextSize['height'] / 4;
+                    var end = labelY + zoomtextSize['height'] / 4;
+                    var xpositionEnds = labelX + zoomtextSize['width'] / 2;
+                    var xpositionStart = labelX - zoomtextSize['width'] / 2;
+                    var textLocations = { right: xpositionEnds, left: xpositionStart, top: start, bottom: end };
                     if (!animate$$1 || duration === 0) {
                         element.setAttribute('transform', 'translate( ' + labelX + ' ' + labelY + ' )');
+                    }
+                    if (this.maps.layers[this.index].dataLabelSettings.smartLabelMode === 'Hide') {
+                        if (scale > 1) {
+                            text = (this.zoomshapewidth['width'] >= zoomtextSize['width']) ? zoomtext : '';
+                            element.innerHTML = text;
+                        }
+                        else {
+                            text = (this.maps.dataLabelShape[l] >= zoomtextSize['width']) ? zoomtext : '';
+                            element.innerHTML = text;
+                        }
+                    }
+                    if (this.maps.layers[this.index].dataLabelSettings.smartLabelMode === 'Trim') {
+                        if (scale > 1) {
+                            zoomtrimLabel = textTrim(this.zoomshapewidth['width'], zoomtext, style);
+                            text = zoomtrimLabel;
+                            element.innerHTML = text;
+                        }
+                        else {
+                            zoomtrimLabel = textTrim(this.maps.dataLabelShape[l], zoomtext, style);
+                            text = zoomtrimLabel;
+                            element.innerHTML = text;
+                        }
+                    }
+                    if (this.maps.layers[this.index].dataLabelSettings.intersectionAction === 'Hide') {
+                        for (var m = 0; m < this.intersect.length; m++) {
+                            if (!isNullOrUndefined(this.intersect[m])) {
+                                if (textLocations['left'] > this.intersect[m]['right']
+                                    || textLocations['right'] < this.intersect[m]['left']
+                                    || textLocations['top'] > this.intersect[m]['bottom']
+                                    || textLocations['bottom'] < this.intersect[m]['top']) {
+                                    text = !isNullOrUndefined(text) ? text : zoomtext;
+                                    element.innerHTML = text;
+                                }
+                                else {
+                                    text = '';
+                                    element.innerHTML = text;
+                                    break;
+                                }
+                            }
+                        }
+                        this.intersect.push(textLocations);
+                    }
+                    if (this.maps.layers[this.index].dataLabelSettings.intersectionAction === 'Trim') {
+                        for (var j = 0; j < this.intersect.length; j++) {
+                            if (!isNullOrUndefined(this.intersect[j])) {
+                                if (textLocations['right'] < this.intersect[j]['left']
+                                    || textLocations['left'] > this.intersect[j]['right']
+                                    || textLocations['bottom'] < this.intersect[j]['top']
+                                    || textLocations['top'] > this.intersect[j]['bottom']) {
+                                    trimmedLable = !isNullOrUndefined(text) ? text : zoomtext;
+                                    if (scale > 1) {
+                                        trimmedLable = textTrim(this.zoomshapewidth['width'], trimmedLable, style);
+                                    }
+                                    element.innerHTML = trimmedLable;
+                                }
+                                else {
+                                    if (textLocations['left'] > this.intersect[j]['left']) {
+                                        var width = this.intersect[j]['right'] - textLocations['left'];
+                                        var difference = width - (textLocations['right'] - textLocations['left']);
+                                        text = !isNullOrUndefined(text) ? text : zoomtext;
+                                        // difference > zoomtextSize['width'] ? difference : this.zoomshapewidth;
+                                        trimmedLable = textTrim(difference, text, style);
+                                        element.innerHTML = trimmedLable;
+                                        break;
+                                    }
+                                    if (textLocations['left'] < this.intersect[j]['left']) {
+                                        var width = textLocations['right'] - this.intersect[j]['left'];
+                                        var difference = Math.abs(width - (textLocations['right'] - textLocations['left']));
+                                        text = !isNullOrUndefined(text) ? text : zoomtext;
+                                        trimmedLable = textTrim(difference, text, style);
+                                        element.innerHTML = trimmedLable;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        this.intersect.push(textLocations);
+                        if (isNullOrUndefined(trimmedLable)) {
+                            trimmedLable = textTrim(this.zoomshapewidth['width'], zoomtext, style);
+                            element.innerHTML = trimmedLable;
+                        }
                     }
                     else {
                         smoothTranslate(element, 0, duration, new MapLocation(labelX, labelY));
@@ -8927,5 +9059,5 @@ var Zoom = /** @__PURE__ @class */ (function () {
  * exporting all modules from maps index
  */
 
-export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClick, markerMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, TooltipSettings, Margin, ColorMappingSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getZoomTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
+export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClick, markerMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, ColorMappingSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, convertElementFromLabel, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, getTranslate, getZoomTranslate, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
 //# sourceMappingURL=ej2-maps.es5.js.map

@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 17.1.48 (2019-05-21)
+
+### Maps
+
+#### New Features
+
+- #I233127 - The issue with recalculating the data labels when zooming the maps has been fixed.
+
 ## 17.1.44 (2019-05-07)
 
 ### Maps

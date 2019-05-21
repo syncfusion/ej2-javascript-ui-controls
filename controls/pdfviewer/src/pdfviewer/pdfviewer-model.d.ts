@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { Print } from './index';import { IUnloadEventArgs, ILoadEventArgs, ILoadFailedEventArgs, IAjaxRequestFailureEventArgs, IPageChangeEventArgs, IPageClickEventArgs, IZoomChangeEventArgs, IHyperlinkClickEventArgs } from './index';import { IAnnotationAddEventArgs, IAnnotationRemoveEventArgs, IAnnotationPropertiesChangeEventArgs } from './index';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { Print } from './index';import { LoadEventArgs, UnloadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs } from './index';
 import {IAjaxHeaders} from "./pdfviewer";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -341,66 +341,66 @@ export interface PdfViewerModel extends ComponentModel{
      * Triggers while loading document into PdfViewer.
      * @event
      */
-    documentLoad?: EmitType<ILoadEventArgs>;
+    documentLoad?: EmitType<LoadEventArgs>;
 
     /**
      * Triggers while close the document
      * @event
      */
-    documentUnload?: EmitType<IUnloadEventArgs>;
+    documentUnload?: EmitType<UnloadEventArgs>;
 
     /**
      * Triggers while loading document got failed in PdfViewer.
      * @event
      */
-    documentLoadFailed?: EmitType<ILoadFailedEventArgs>;
+    documentLoadFailed?: EmitType<LoadFailedEventArgs>;
 
     /**
      * Triggers when the AJAX request is failed.
      * @event
      */
-    ajaxRequestFailed?: EmitType<IAjaxRequestFailureEventArgs>;
+    ajaxRequestFailed?: EmitType<AjaxRequestFailureEventArgs>;
 
     /**
      * Triggers when the mouse click is performed over the page of the PDF document.
      * @event
      */
-    pageClick?: EmitType<IPageClickEventArgs>;
+    pageClick?: EmitType<PageClickEventArgs>;
 
     /**
      * Triggers when there is change in current page number.
      * @event
      */
-    pageChange?: EmitType<IPageChangeEventArgs>;
+    pageChange?: EmitType<PageChangeEventArgs>;
 
     /**
      * Triggers when hyperlink in the PDF Document is clicked
      * @event
      */
-    hyperlinkClick?: EmitType<IHyperlinkClickEventArgs>;
+    hyperlinkClick?: EmitType<HyperlinkClickEventArgs>;
 
     /**
      * Triggers when there is change in the magnification value.
      * @event
      */
-    zoomChange?: EmitType<IZoomChangeEventArgs>;
+    zoomChange?: EmitType<ZoomChangeEventArgs>;
 
     /**
      * Triggers when an annotation is added over the page of the PDF document.
      * @event
      */
-    annotationAdd?: EmitType<IAnnotationAddEventArgs>;
+    annotationAdd?: EmitType<AnnotationAddEventArgs>;
 
     /**
      * Triggers when an annotation is removed from the page of the PDF document.
      * @event 
      */
-    annotationRemove?: EmitType<IAnnotationRemoveEventArgs>;
+    annotationRemove?: EmitType<AnnotationRemoveEventArgs>;
 
     /**
      * Triggers when the property of the annotation is changed in the page of the PDF document.
      * @event
      */
-    annotationPropertiesChange?: EmitType<IAnnotationPropertiesChangeEventArgs>;
+    annotationPropertiesChange?: EmitType<AnnotationPropertiesChangeEventArgs>;
 
 }

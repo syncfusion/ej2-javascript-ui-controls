@@ -782,7 +782,7 @@ var CanvasRenderer = /** @__PURE__ @class */ (function () {
 function getTooltipThemeColor(theme) {
     var style;
     switch (theme) {
-        case 'Highcontrast':
+        case 'HighContrast':
             style = {
                 tooltipFill: '#ffffff',
                 tooltipBoldLabel: '#000000',
@@ -846,6 +846,15 @@ function measureText(text, font) {
     if (htmlObject === null) {
         htmlObject = createElement('text', { id: 'chartmeasuretext' });
         document.body.appendChild(htmlObject);
+    }
+    if (typeof (text) === 'string' && (text.indexOf('<') > -1 || text.indexOf('>') > -1)) {
+        var textArray = text.split(' ');
+        for (var i = 0; i < textArray.length; i++) {
+            if (textArray[i].indexOf('<br/>') === -1) {
+                textArray[i] = textArray[i].replace(/[<>]/g, '&');
+            }
+        }
+        text = textArray.join(' ');
     }
     htmlObject.innerHTML = text;
     htmlObject.style.position = 'fixed';

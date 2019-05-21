@@ -578,11 +578,12 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             clearTimeout(this.resizeTo);
         }
         if (this.element.classList.contains('e-lineargauge')) {
-            this.resizeTo = setTimeout(
+            this.resizeTo = window.setTimeout(
                 (): void => {
                     this.gaugeResized = true;
                     this.createSvg();
-                    this.refreshing = true;
+                    this.calculateBounds();
+                    this.renderGaugeElements();
                     args.currentSize = new Size(this.availableSize.width, this.availableSize.height);
                     this.trigger(resized, args);
                     this.render();

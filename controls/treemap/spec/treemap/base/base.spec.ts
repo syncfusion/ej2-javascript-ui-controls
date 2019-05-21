@@ -110,7 +110,7 @@ describe('TreeMap Component Base Spec', () => {
             treemap.titleSettings.subtitleSettings.textStyle.color = null;
             treemap.legendSettings.textStyle.color = null;
             treemap.legendSettings.titleStyle.color = null;
-            treemap.theme = 'Highcontrast';
+            treemap.theme = 'HighContrast';
             treemap.refresh();
         });
 

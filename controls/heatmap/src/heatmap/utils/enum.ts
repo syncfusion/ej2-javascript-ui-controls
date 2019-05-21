@@ -32,8 +32,6 @@ export type HeatMapTheme =
     'MaterialDark' |
     /**  Render a HeatMap with Fabric Dark theme. */
     'FabricDark' |
-    /**  Render a HeatMap with Highcontrast theme. */
-    'Highcontrast'|
      /**  Render a HeatMap with HighContrast theme. */
     'HighContrast'|
     /**  Render a HeatMap with Bootstrap Dark theme. */

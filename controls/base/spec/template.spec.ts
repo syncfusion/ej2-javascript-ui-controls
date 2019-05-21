@@ -7,6 +7,7 @@ import {  createElement} from '../src/dom';
 let dsJSONArray: any = [{ name: 'one', info: { id: '01' } }, { name: 'two', info: { id: '02' } }];
 let dsSubArray: any = [{ name: 'one', items: ['AR Item1', 'AR Item2'] }, { name: 'two', items: ['AR Item1', 'AR Item2'] }];
 let dsJSONSubArray: any = [{ name: 'one', info: { id: '01', items: ['AR Item1', 'AR Item2'] } }, { name: 'two', info: { id: '02', items: ['AR Item1', 'AR Item2'] } }];
+let JSONArray: any = [{ name:'one   two', info: { id:'01' } }, { name:'two three', info: { id:'02' } }];
 
 let tempObj: any;
 
@@ -39,6 +40,54 @@ describe('Template', () => {
         result.push(createElement('div', { innerHTML: 'one' }));
         result.push(createElement('div', { innerHTML: 'two' }));
         expect(outDOM(template.compile(templateStr), dsJSONArray)).toEqual(result);
+    });
+
+    it('JSON Array Input With two space between class Names', () => {
+        let templateStr: string = '<div class="class1  class2  class3">${name}</div>';
+        let result: Element[] = [];
+        result.push(createElement('div', { innerHTML: 'one', className:'class1 class2 class3' }));
+        result.push(createElement('div', { innerHTML: 'two', className:'class1 class2 class3' }));
+        expect(outDOM(template.compile(templateStr), dsJSONArray)).toEqual(result);
+    });
+
+    it('JSON Array Input With more than two space between two class Names', () => {
+        let templateStr: string = '<div class="class1    class2">${name}</div>';
+        let result: Element[] = [];
+        result.push(createElement('div', { innerHTML: 'one', className:'class1 class2' }));
+        result.push(createElement('div', { innerHTML: 'two', className:'class1 class2' }));
+        expect(outDOM(template.compile(templateStr), dsJSONArray)).toEqual(result);
+    });
+
+    it('JSON Array Input With more than two space between three class Names', () => {
+        let templateStr: string = '<div class="class1    class2    class3">${name}</div>';
+        let result: Element[] = [];
+        result.push(createElement('div', { innerHTML: 'one', className:'class1 class2 class3' }));
+        result.push(createElement('div', { innerHTML: 'two', className:'class1 class2 class3' }));
+        expect(outDOM(template.compile(templateStr), dsJSONArray)).toEqual(result);
+    });
+
+    it('JSON Array Input With more than two space in first class name', () => {
+        let templateStr: string = '<div class="   class1">${name}</div>';
+        let result: Element[] = [];
+        result.push(createElement('div', { innerHTML: 'one', className:' class1' }));
+        result.push(createElement('div', { innerHTML: 'two', className:' class1' }));
+        expect(outDOM(template.compile(templateStr), dsJSONArray)).toEqual(result);
+    });
+
+    it('JSON Array Input With two space in first class name and multiple space between three class names', () => {
+        let templateStr: string = '<div class="  class1    class2   class3">${name}</div>';
+        let result: Element[] = [];
+        result.push(createElement('div', { innerHTML: 'one', className:' class1 class2 class3' }));
+        result.push(createElement('div', { innerHTML: 'two', className:' class1 class2 class3' }));
+        expect(outDOM(template.compile(templateStr), dsJSONArray)).toEqual(result);
+    });
+
+    it('JSON Array Input With multiple sapce between inner text', () => {
+        let templateStr: string = '<div class=" class1   class2    class3">${name}</div>';
+        let result: Element[] = [];
+        result.push(createElement('div', { innerHTML: 'one   two', className:' class1 class2 class3' }));
+        result.push(createElement('div', { innerHTML: 'two three', className:' class1 class2 class3' }));
+        expect(outDOM(template.compile(templateStr), JSONArray)).toEqual(result);
     });
 
     it('JSON Array input with multiple key mapping String', () => {

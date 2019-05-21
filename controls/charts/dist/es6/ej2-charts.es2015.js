@@ -102,7 +102,6 @@ function getSeriesColor(theme) {
                 '#7953ac', '#b99b4f', '#407c92', '#5ea716', '#b91c52'];
             break;
         case 'HighContrastLight':
-        case 'Highcontrast':
         case 'HighContrast':
             palette = ['#79ECE4', '#E98272', '#DFE6B6', '#C6E773', '#BA98FF',
                 '#FA83C3', '#00C27A', '#43ACEF', '#D681EF', '#D8BC6E'];
@@ -135,7 +134,6 @@ function getThemeColor(theme) {
     let darkBackground = theme === 'MaterialDark' ? '#303030' : (theme === 'FabricDark' ? '#201F1F' : '1A1A1A');
     switch (theme) {
         case 'HighContrastLight':
-        case 'Highcontrast':
         case 'HighContrast':
             style = {
                 axisLabel: '#ffffff',
@@ -25963,8 +25961,8 @@ function getRangeThemeColor(theme, range) {
     let thumbSize = range.navigatorStyleSettings.thumb;
     let thumbWidth = isNullOrUndefined(thumbSize.width) ? (Browser.isDevice ? 15 : 20) : thumbSize.width;
     let thumbHeight = isNullOrUndefined(thumbSize.height) ? (Browser.isDevice ? 15 : 20) : thumbSize.height;
-    let darkAxisColor = (theme === 'Highcontrast' || theme === 'HighContrast') ? '#969696' : '#6F6C6C';
-    let darkGridlineColor = (theme === 'Highcontrast' || theme === 'HighContrast') ? '#4A4848' : '#414040';
+    let darkAxisColor = (theme === 'HighContrast') ? '#969696' : '#6F6C6C';
+    let darkGridlineColor = (theme === 'HighContrast') ? '#4A4848' : '#414040';
     let darkBackground = theme === 'MaterialDark' ? '#303030' : (theme === 'FabricDark' ? '#201F1F' : '1A1A1A');
     let style = {
         gridLineColor: '#E0E0E0',
@@ -26007,7 +26005,6 @@ function getRangeThemeColor(theme, range) {
                 thumbHeight: thumbHeight
             };
             break;
-        case 'Highcontrast':
         case 'HighContrast':
             style = {
                 gridLineColor: darkGridlineColor,
@@ -29426,7 +29423,7 @@ class StockChart extends Component {
      */
     // tslint:disable-next-line:max-func-body-length
     onPropertyChanged(newProp, oldProp) {
-        //
+        this.render();
     }
     /**
      * To change the range for chart

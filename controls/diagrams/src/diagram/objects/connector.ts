@@ -279,7 +279,6 @@ export class ConnectorSegment extends ChildProperty<ConnectorSegment> {
      * * Orthogonal - Sets the segment type as Orthogonal
      * * Bezier - Sets the segment type as Bezier
      * @default 'Straight'
-     * @aspType Syncfusion.EJ2.Diagrams.Segments
      */
     @Property('Straight')
     public type: Segments;
@@ -563,7 +562,7 @@ export function bezierPoints(
 export class MultiplicityLabel extends ChildProperty<MultiplicityLabel>  {
     /**
      * Defines the type of the Classifier Multiplicity
-     * @default ''
+     * @default true
      * @IgnoreSingular
      */
     @Property(true)
@@ -589,10 +588,10 @@ export class MultiplicityLabel extends ChildProperty<MultiplicityLabel>  {
 export class ClassifierMultiplicity extends ChildProperty<ClassifierMultiplicity>  {
     /**
      * Defines the type of the Classifier Multiplicity
-     * @default ''
+     * @default 'OneToOne'
      * @IgnoreSingular
      */
-    @Property('')
+    @Property('OneToOne')
     public type: Multiplicity;
     /**
      * Defines the type of the Classifier Multiplicity
@@ -615,21 +614,21 @@ export class ClassifierMultiplicity extends ChildProperty<ClassifierMultiplicity
 export class RelationShip extends ConnectorShape {
     /**
      * Defines the type of the  UMLConnector
-     * @default ''
+     * @default 'UmlClassifier'
      * @IgnoreSingular
      */
     @Property('UmlClassifier')
     public type: ConnectionShapes;
     /**
      * Defines the association direction
-     * @default ''
+     * @default 'Aggregation'
      * @IgnoreSingular
      */
     @Property('Aggregation')
     public relationship: ClassifierShape;
     /**
      * Defines the association direction
-     * @default ''
+     * @default 'Directional'
      * @IgnoreSingular
      */
     @Property('Directional')
@@ -761,6 +760,7 @@ export class Connector extends NodeBase implements IElement {
      * * Orthogonal - Sets the segment type as Orthogonal
      * * Bezier - Sets the segment type as Bezier
      * @default 'Straight'
+     * @aspType Syncfusion.EJ2.Diagrams.Segments
      */
     @Property('Straight')
     public type: Segments;

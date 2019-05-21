@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 17.1.48 (2019-05-21)
+
+### Sidebar
+
+#### Bug Fixes
+
+- #236219 - On initial rendering, right positioned sidebar opens and closes irrespective of type and isOpen properties has been fixed.
+
+### Tab
+
+#### Bug Fixes
+
+- #235397 - The cancel parameter is exposed in tab selecting event.
+
+- #235274 - Incorrect selected content had been getting in tab selected event issue has been fixed.
+
 ## 17.1.47 (2019-05-14)
 
 ### Menu

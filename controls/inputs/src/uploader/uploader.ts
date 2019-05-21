@@ -2994,7 +2994,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             postRawFile: true
         };
         let index: number;
-        if (this.isForm) {
+        if (this.isForm && (isNullOrUndefined(this.asyncSettings.removeUrl) || this.asyncSettings.removeUrl === '' )) {
             eventArgs.filesData = this.getFilesData();
             this.trigger('removing', eventArgs);
             if (!eventArgs.cancel) {

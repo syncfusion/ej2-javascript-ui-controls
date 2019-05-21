@@ -23,7 +23,6 @@ export function getThemeStyle(theme: LinearGaugeTheme): IThemeStyle {
                 pointerColor: '#9A9A9A'
             };
             break;
-        case 'Highcontrast':
         case 'HighContrast':
             style = {
                 backgroundColor: '#000000',

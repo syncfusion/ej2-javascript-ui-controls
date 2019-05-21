@@ -693,6 +693,7 @@ export class EventBase {
         let guid: string = target.getAttribute('data-guid');
         if (isMultiple) {
             this.addSelectedAppointments([].slice.call(this.parent.element.querySelectorAll('div[data-guid="' + guid + '"]')));
+            (target as HTMLElement).focus();
         }
         let eventObject: { [key: string]: Object } = this.getEventByGuid(guid) as { [key: string]: Object };
         if (eventObject && eventObject.isSpanned) {

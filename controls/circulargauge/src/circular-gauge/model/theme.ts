@@ -49,7 +49,6 @@ export function getThemeStyle(theme: GaugeTheme): IThemeStyle {
                 needleTailColor: '#9A9A9A'
             };
             break;
-        case 'Highcontrast':
         case 'HighContrast':
             style = {
                 backgroundColor: '#000000',

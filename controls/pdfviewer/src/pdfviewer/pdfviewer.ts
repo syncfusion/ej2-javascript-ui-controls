@@ -17,8 +17,8 @@ import { TextSelection } from './index';
 import { TextSearch } from './index';
 import { Print } from './index';
 // tslint:disable-next-line:max-line-length
-import { IUnloadEventArgs, ILoadEventArgs, ILoadFailedEventArgs, IAjaxRequestFailureEventArgs, IPageChangeEventArgs, IPageClickEventArgs, IZoomChangeEventArgs, IHyperlinkClickEventArgs } from './index';
-import { IAnnotationAddEventArgs, IAnnotationRemoveEventArgs, IAnnotationPropertiesChangeEventArgs } from './index';
+import { LoadEventArgs, UnloadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs } from './index';
+import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs } from './index';
 
 /**
  * The `ToolbarSettings` module is used to provide the toolbar settings of PDF viewer.
@@ -561,77 +561,77 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @event
      */
     @Event()
-    public documentLoad: EmitType<ILoadEventArgs>;
+    public documentLoad: EmitType<LoadEventArgs>;
 
     /**
      * Triggers while close the document
      * @event
      */
     @Event()
-    public documentUnload: EmitType<IUnloadEventArgs>;
+    public documentUnload: EmitType<UnloadEventArgs>;
 
     /**
      * Triggers while loading document got failed in PdfViewer.
      * @event
      */
     @Event()
-    public documentLoadFailed: EmitType<ILoadFailedEventArgs>;
+    public documentLoadFailed: EmitType<LoadFailedEventArgs>;
 
     /**
      * Triggers when the AJAX request is failed.
      * @event
      */
     @Event()
-    public ajaxRequestFailed: EmitType<IAjaxRequestFailureEventArgs>;
+    public ajaxRequestFailed: EmitType<AjaxRequestFailureEventArgs>;
 
     /**
      * Triggers when the mouse click is performed over the page of the PDF document.
      * @event
      */
     @Event()
-    public pageClick: EmitType<IPageClickEventArgs>;
+    public pageClick: EmitType<PageClickEventArgs>;
 
     /**
      * Triggers when there is change in current page number.
      * @event
      */
     @Event()
-    public pageChange: EmitType<IPageChangeEventArgs>;
+    public pageChange: EmitType<PageChangeEventArgs>;
 
     /**
      * Triggers when hyperlink in the PDF Document is clicked
      * @event
      */
     @Event()
-    public hyperlinkClick: EmitType<IHyperlinkClickEventArgs>;
+    public hyperlinkClick: EmitType<HyperlinkClickEventArgs>;
 
     /**
      * Triggers when there is change in the magnification value.
      * @event
      */
     @Event()
-    public zoomChange: EmitType<IZoomChangeEventArgs>;
+    public zoomChange: EmitType<ZoomChangeEventArgs>;
 
     /**
      * Triggers when an annotation is added over the page of the PDF document.
      * @event
      */
     @Event()
-    public annotationAdd: EmitType<IAnnotationAddEventArgs>;
+    public annotationAdd: EmitType<AnnotationAddEventArgs>;
 
     /**
      * Triggers when an annotation is removed from the page of the PDF document.
      * @event 
      */
     @Event()
-    public annotationRemove: EmitType<IAnnotationRemoveEventArgs>;
+    public annotationRemove: EmitType<AnnotationRemoveEventArgs>;
 
     /**
      * Triggers when the property of the annotation is changed in the page of the PDF document.
      * @event
      */
     @Event()
-    public annotationPropertiesChange : EmitType<IAnnotationPropertiesChangeEventArgs>;
+    public annotationPropertiesChange : EmitType<AnnotationPropertiesChangeEventArgs>;
 
     constructor(options?: PdfViewerModel, element?: string | HTMLElement) {
         super(options, <HTMLElement | string>element);
@@ -881,7 +881,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public fireDocumentLoad(): void {
-        let eventArgs: ILoadEventArgs = { name: 'documentLoad', documentName: this.fileName };
+        let eventArgs: LoadEventArgs = { name: 'documentLoad', documentName: this.fileName };
         this.trigger('documentLoad', eventArgs);
     }
 
@@ -889,7 +889,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public fireDocumentUnload(fileName: string): void {
-        let eventArgs: ILoadEventArgs = { name: 'documentUnload', documentName: fileName };
+        let eventArgs: UnloadEventArgs = { name: 'documentUnload', documentName: fileName };
         this.trigger('documentUnload', eventArgs);
     }
 
@@ -898,7 +898,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     public fireDocumentLoadFailed(isPasswordRequired: boolean, password: string): void {
         // tslint:disable-next-line:max-line-length
-        let eventArgs: ILoadFailedEventArgs = { name: 'documentLoadFailed', documentName: this.fileName, isPasswordRequired: isPasswordRequired, password: password };
+        let eventArgs: LoadFailedEventArgs = { name: 'documentLoadFailed', documentName: this.fileName, isPasswordRequired: isPasswordRequired, password: password };
         this.trigger('documentLoadFailed', eventArgs);
     }
 
@@ -907,7 +907,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     public fireAjaxRequestFailed(errorStatusCode: number, errorMessage: string): void {
         // tslint:disable-next-line:max-line-length
-        let eventArgs: IAjaxRequestFailureEventArgs = { name: 'ajaxRequestFailed', documentName: this.fileName, errorStatusCode: errorStatusCode, errorMessage: errorMessage };
+        let eventArgs: AjaxRequestFailureEventArgs = { name: 'ajaxRequestFailed', documentName: this.fileName, errorStatusCode: errorStatusCode, errorMessage: errorMessage };
         this.trigger('ajaxRequestFailed', eventArgs);
     }
 
@@ -915,7 +915,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public firePageClick(x: number, y: number, pageNumber: number): void {
-        let eventArgs: IPageClickEventArgs = { name: 'pageClick', documentName: this.fileName, x: x, y: y, pageNumber: pageNumber };
+        let eventArgs: PageClickEventArgs = { name: 'pageClick', documentName: this.fileName, x: x, y: y, pageNumber: pageNumber };
         this.trigger('pageClick', eventArgs);
     }
 
@@ -924,7 +924,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     public firePageChange(previousPageNumber: number): void {
         // tslint:disable-next-line:max-line-length
-        let eventArgs: IPageChangeEventArgs = { name: 'pageChange', documentName: this.fileName, currentPageNumber: this.viewerBase.currentPageNumber, previousPageNumber: previousPageNumber };
+        let eventArgs: PageChangeEventArgs = { name: 'pageChange', documentName: this.fileName, currentPageNumber: this.viewerBase.currentPageNumber, previousPageNumber: previousPageNumber };
         this.trigger('pageChange', eventArgs);
     }
 
@@ -933,7 +933,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     public fireZoomChange(): void {
         // tslint:disable-next-line:max-line-length
-        let eventArgs: IZoomChangeEventArgs = { name: 'zoomChange', zoomValue: this.magnificationModule.zoomFactor * 100, previousZoomValue: this.magnificationModule.previousZoomFactor * 100 };
+        let eventArgs: ZoomChangeEventArgs = { name: 'zoomChange', zoomValue: this.magnificationModule.zoomFactor * 100, previousZoomValue: this.magnificationModule.previousZoomFactor * 100 };
         this.trigger('zoomChange', eventArgs);
     }
 
@@ -942,7 +942,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     public fireHyperlinkClick(hyperlink: string): void {
         // tslint:disable-next-line:max-line-length
-        let eventArgs: IHyperlinkClickEventArgs = { name: 'hyperlinkClick', hyperlink: hyperlink };
+        let eventArgs: HyperlinkClickEventArgs = { name: 'hyperlinkClick', hyperlink: hyperlink };
         this.trigger('hyperlinkClick', eventArgs);
     }
 
@@ -951,7 +951,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     // tslint:disable-next-line
     public fireAnnotationAdd(pageNumber: number, index: number, type: AnnotationType, bounds: any, settings: any): void {
-        let eventArgs: IAnnotationAddEventArgs = { name: 'annotationAdd', pageIndex: pageNumber, annotationId: index, annotationType: type, annotationBound: bounds, annotationSettings: settings };
+        let eventArgs: AnnotationAddEventArgs = { name: 'annotationAdd', pageIndex: pageNumber, annotationId: index, annotationType: type, annotationBound: bounds, annotationSettings: settings };
         this.trigger('annotationAdd', eventArgs);
     }
 
@@ -960,7 +960,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     public fireAnnotationRemove(pageNumber: number, index: number, type: AnnotationType): void {
         // tslint:disable-next-line:max-line-length
-        let eventArgs: IAnnotationRemoveEventArgs = { name: 'annotationRemove', pageIndex: pageNumber, annotationId: index, annotationType: type };
+        let eventArgs: AnnotationRemoveEventArgs = { name: 'annotationRemove', pageIndex: pageNumber, annotationId: index, annotationType: type };
         this.trigger('annotationRemove', eventArgs);
     }
 
@@ -969,7 +969,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     // tslint:disable-next-line:max-line-length
     public fireAnnotationPropertiesChange(pageNumber: number, index: number, type: AnnotationType, isColorChanged: boolean, isOpacityChanged: boolean): void {
-        let eventArgs: IAnnotationPropertiesChangeEventArgs = { name: 'annotationPropertiesChange', pageIndex: pageNumber, annotationId: index, annotationType: type, isColorChanged: isColorChanged, isOpacityChanged: isOpacityChanged };
+        let eventArgs: AnnotationPropertiesChangeEventArgs = { name: 'annotationPropertiesChange', pageIndex: pageNumber, annotationId: index, annotationType: type, isColorChanged: isColorChanged, isOpacityChanged: isOpacityChanged };
         this.trigger('annotationPropertiesChange', eventArgs);
     }
 }

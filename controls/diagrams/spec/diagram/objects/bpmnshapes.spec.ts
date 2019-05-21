@@ -9,6 +9,7 @@ import { BpmnDiagrams } from '../../../src/diagram/objects/bpmn';
 import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
 import { ConnectorModel } from '../../../src';
 import { HierarchicalTree, } from '../../../src/diagram/index';
+
 Diagram.Inject(BpmnDiagrams,HierarchicalTree);
 
 /**
@@ -767,6 +768,70 @@ describe('Diagram Control', () => {
             let ele2 = document.getElementById('node1-processesTaskBpmn_groupElement')
            expect(ele2.children[0].getAttribute('transform')==='rotate(0,248,200.5)translate(248,200.5)').toBe(true);
  done();
+        });
+    });
+    describe('Style for inner elements of BPMN Gateway and subprocess Shapes', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+
+        beforeAll((): void => {
+            const isDef = (o: any) => o !== undefined && o !== null;
+                if (!isDef(window.performance)) {
+                    console.log("Unsupported environment, window.performance.memory is unavailable");
+                    this.skip(); //Skips test (in Chai)
+                    return;
+                }
+            ele = createElement('div', { id: 'diagram' });
+            document.body.appendChild(ele);
+             
+              let nodes: NodeModel[] = [
+                 {
+                    id: 'node1', width: 100, height: 100, offsetX: 300, offsetY: 100,
+                    style: {strokeColor: 'red'},
+                    shape: { type: 'Bpmn', shape: 'Gateway', gateway: { type: 'Exclusive' } as BpmnGatewayModel },
+                 },
+                 {
+                    id: 'node2', width: 100, height: 100, offsetX: 700, offsetY: 100,
+                    style: {strokeColor: 'red'},
+                    shape: { type: 'Bpmn', shape: 'Activity',  activity: {
+                        activity: 'SubProcess',
+                        subProcess: {
+                            collapsed: true
+                        } 
+                    }
+                 }
+                }
+              ];
+               diagram = new Diagram({
+                width: 1000, height: 500, nodes: nodes
+            });
+            diagram.appendTo('#diagram');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Strokecolor for BPMN Gateway and subprocess initial rendering', (done: Function) => { 
+             let gatewayElement = document.getElementById('node1_1_gatewayType_groupElement');
+             expect(gatewayElement.firstElementChild.getAttribute('stroke') === 'red').toBe(true);
+             let subprocessElement = document.getElementById('node2_0_collapsed_groupElement');
+             expect(subprocessElement.firstElementChild.getAttribute('stroke') === 'red').toBe(true);
+             done();
+        });
+        it('Strokecolor for BPMN Gateway and subprocess runtime', (done: Function) => { 
+            let node = diagram.nodes[0];
+            node.style.strokeColor = 'green';
+            diagram.dataBind();
+            let gatewayElement = document.getElementById('node1_1_gatewayType_groupElement');
+            expect(gatewayElement.firstElementChild.getAttribute('stroke') === 'green').toBe(true);
+            let node1 = diagram.nodes[1];
+            node1.style.strokeColor = 'green';
+            diagram.dataBind();
+            let subprocessElement = document.getElementById('node2_0_collapsed_groupElement');
+            expect(subprocessElement.firstElementChild.getAttribute('stroke') === 'green').toBe(true);
+            done();
         });
     });
 });

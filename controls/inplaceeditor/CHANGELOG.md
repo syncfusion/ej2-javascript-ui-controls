@@ -2,7 +2,13 @@
 
 ## [Unreleased]
 
-## 17.1.47 (2019-05-14)
+## 17.1.48 (2019-05-21)
+
+### In-place Editor
+
+#### Bug Fixes
+
+- #235175 - Issue with modules injection in Angular production mode that issue has been resolved.
 
 ### In-place Editor
 

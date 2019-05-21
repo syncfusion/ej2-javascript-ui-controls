@@ -132,7 +132,7 @@ describe('Linear gauge control', () => {
             element = createElement('div', { id: 'container' });
             document.body.appendChild(element);
             gauge = new LinearGauge({
-                theme : 'Highcontrast'
+                theme : 'HighContrast'
             });
             gauge.appendTo('#container');
         });

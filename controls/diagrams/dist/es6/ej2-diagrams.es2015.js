@@ -7106,7 +7106,7 @@ __decorate$9([
 class ClassifierMultiplicity extends ChildProperty {
 }
 __decorate$9([
-    Property('')
+    Property('OneToOne')
 ], ClassifierMultiplicity.prototype, "type", void 0);
 __decorate$9([
     Complex({}, MultiplicityLabel)
@@ -9243,13 +9243,13 @@ function getULMClassifierShapes(content, node, diagram) {
     let classifier;
     let textWrap = 'NoWrap';
     if (node.shape.classifier === 'Class') {
-        classifier = node.shape.class;
+        classifier = node.shape.classShape;
     }
     else if (node.shape.classifier === 'Enumeration') {
-        classifier = node.shape.enumeration;
+        classifier = node.shape.enumerationShape;
     }
     else if (node.shape.classifier === 'Interface') {
-        classifier = node.shape.interface;
+        classifier = node.shape.interfaceShape;
     }
     node.container = { type: 'Stack', orientation: 'Vertical' };
     node.constraints = (NodeConstraints.Default | NodeConstraints.HideThumbs) &
@@ -12228,13 +12228,13 @@ __decorate$4([
 ], UmlClassifierShape.prototype, "type", void 0);
 __decorate$4([
     Complex({}, UmlClass)
-], UmlClassifierShape.prototype, "class", void 0);
+], UmlClassifierShape.prototype, "classShape", void 0);
 __decorate$4([
     Complex({}, UmlInterface)
-], UmlClassifierShape.prototype, "interface", void 0);
+], UmlClassifierShape.prototype, "interfaceShape", void 0);
 __decorate$4([
     Complex({}, UmlEnumeration)
-], UmlClassifierShape.prototype, "enumeration", void 0);
+], UmlClassifierShape.prototype, "enumerationShape", void 0);
 __decorate$4([
     Property('Class')
 ], UmlClassifierShape.prototype, "classifier", void 0);
@@ -20096,7 +20096,8 @@ class MoveTool extends ToolBase {
     /**   @private  */
     mouseDown(args) {
         if (args.source instanceof Node || args.source instanceof Connector) {
-            this.commandHandler.selectObjects([args.source], args.info && args.info.ctrlKey);
+            let arrayNodes = this.commandHandler.getSelectedObject();
+            this.commandHandler.selectObjects([args.source], args.info && args.info.ctrlKey, arrayNodes);
             let selectedObject = { nodes: [], connectors: [] };
             if (args.source instanceof Node) {
                 selectedObject.nodes.push(cloneObject(args.source));
@@ -28395,7 +28396,7 @@ class Diagram extends Component {
         /** @private */
         this.groupTable = {};
         /** @private */
-        this.activeLabel = { id: '', parentId: '', isGroup: false };
+        this.activeLabel = { id: '', parentId: '', isGroup: false, text: undefined };
         /** @private */
         this.textEditing = false;
         /** @private */
@@ -29619,6 +29620,8 @@ class Diagram extends Component {
      */
     add(obj, group) {
         let newObj;
+        let propertyChangeValue = this.isProtectedOnChange;
+        this.protectPropertyChange(true);
         if (obj) {
             obj = cloneObject(obj);
             let args = {
@@ -29701,6 +29704,7 @@ class Diagram extends Component {
                 }
             }
         }
+        this.protectPropertyChange(propertyChangeValue);
         this.resetDiagramActions(DiagramAction.PublicMethod);
         if (newObj && this.layers.length > 1) {
             this.moveNode(newObj);
@@ -30214,6 +30218,7 @@ class Diagram extends Component {
                     let textEditing = document.getElementById(this.element.id + '_editTextBoxDiv');
                     let textArea = document.getElementById(this.element.id + '_editBox');
                     text = textArea ? textArea.value : textWrapper.content;
+                    this.activeLabel.text = text;
                     if (!textEditing && !textArea) {
                         textEditing = createHtmlElement('div', {});
                         textArea = createHtmlElement('textarea', {});
@@ -32378,7 +32383,7 @@ class Diagram extends Component {
             else {
                 this.diagramRenderer.renderResizeHandle(selectorModel.wrapper, selectorElement, selectorModel.thumbsConstraints, this.scroller.currentZoom, selectorModel.constraints, this.scroller.transform, undefined, canMove(selectorModel));
             }
-            if (!(selectorModel.annotation)) {
+            if (!(selectorModel.annotation) && !this.currentSymbol) {
                 this.diagramRenderer.renderUserHandler(selectorModel, selectorElement, this.scroller.transform);
             }
         }
@@ -32418,7 +32423,7 @@ class Diagram extends Component {
                     this.updateThumbConstraints(selector.nodes, selector);
                     this.updateThumbConstraints(selector.connectors, selector, true);
                 }
-                if ((this.selectedItems.constraints & SelectorConstraints.UserHandle) && (!(selector.annotation))) {
+                if ((this.selectedItems.constraints & SelectorConstraints.UserHandle) && (!(selector.annotation)) && !this.currentSymbol) {
                     this.diagramRenderer.renderUserHandler(selector, selectorEle, this.scroller.transform);
                 }
                 if (selector.annotation) {
@@ -32577,7 +32582,7 @@ class Diagram extends Component {
             EventHandler.remove(textArea, 'input', this.eventHandler.inputChange);
             EventHandler.remove(textArea, 'focusout', this.focusOutEdit);
             let element = document.getElementById(this.element.id + '_editTextBoxDiv');
-            let args = { oldValue: element.textContent, newValue: text, cancel: false };
+            let args = { oldValue: this.activeLabel.text, newValue: text, cancel: false };
             let bpmnAnnotation = false;
             let node;
             element.parentNode.removeChild(element);
@@ -32587,7 +32592,7 @@ class Diagram extends Component {
                 textWrapper = this.bpmnModule.getTextAnnotationWrapper(node, this.activeLabel.id);
                 bpmnAnnotation = node ? true : false;
                 if (bpmnAnnotation) {
-                    if (element.textContent !== text) {
+                    if (element.textContent !== text || text !== this.activeLabel.text) {
                         this.triggerEvent(DiagramEvent.textEdit, args);
                         if (!args.cancel) {
                             this.bpmnModule.updateTextAnnotationContent(node, this.activeLabel, text, this);
@@ -32598,7 +32603,7 @@ class Diagram extends Component {
             if (!bpmnAnnotation) {
                 node = this.nameTable[this.activeLabel.parentId];
                 let deleteNode = this.eventHandler.isAddTextNode(node, true);
-                if (!deleteNode && element.textContent !== text) {
+                if (!deleteNode && (element.textContent !== text || text !== this.activeLabel.text)) {
                     this.triggerEvent(DiagramEvent.textEdit, args);
                 }
                 if (!textWrapper) {
@@ -32665,7 +32670,7 @@ class Diagram extends Component {
             if (this.activeLabel.isGroup) {
                 this.endGroupAction();
             }
-            this.activeLabel = { id: '', parentId: '', isGroup: false };
+            this.activeLabel = { id: '', parentId: '', isGroup: false, text: undefined };
         }
     }
     /** @private */
@@ -36186,6 +36191,7 @@ class BpmnDiagrams {
         gatewayTypeNode.id = node.id + '_1_gatewayType';
         //set style - opacity
         gatewayTypeNode.style.opacity = node.style.opacity;
+        gatewayTypeNode.style.strokeColor = node.style.strokeColor;
         gatewayTypeNode.horizontalAlignment = 'Center';
         gatewayTypeNode.verticalAlignment = 'Center';
         gatewayTypeNode.relativeMode = 'Object';
@@ -36465,7 +36471,7 @@ class BpmnDiagrams {
                 innerEvtNode.style.fill = event !== 'End' ? 'white' : 'black';
                 innerEvtNode.style.gradient = null;
                 triggerNode.style.fill = 'black';
-                triggerNode.style.strokeColor = node.style.fill;
+                triggerNode.style.strokeColor = node.style.strokeColor;
                 break;
         }
         //append child and set style
@@ -36551,6 +36557,7 @@ class BpmnDiagrams {
         collapsedShape.width = 12;
         collapsedShape.height = 12;
         collapsedShape.style.fill = 'black';
+        collapsedShape.style.strokeColor = node.style.strokeColor;
         collapsedShape.margin.bottom = 5;
         collapsedShape.horizontalAlignment = 'Left';
         collapsedShape.verticalAlignment = 'Bottom';
@@ -36708,6 +36715,7 @@ class BpmnDiagrams {
         subprocessLoop.relativeMode = 'Point';
         subprocessLoop.margin.bottom = 5;
         subprocessLoop.style.fill = 'transparent';
+        subprocessLoop.style.strokeColor = node.style.strokeColor;
         return subprocessLoop;
     }
     /** @private */
@@ -36930,6 +36938,7 @@ class BpmnDiagrams {
         compensationNode.height = 12;
         compensationNode.margin.bottom = 5;
         compensationNode.style.fill = 'transparent';
+        compensationNode.style.strokeColor = node.style.strokeColor;
         compensationNode.horizontalAlignment = 'Left';
         compensationNode.verticalAlignment = 'Bottom';
         compensationNode.relativeMode = 'Object';
@@ -36989,6 +36998,7 @@ class BpmnDiagrams {
         adhocNode.width = 12;
         adhocNode.height = 8;
         adhocNode.style.fill = 'black';
+        adhocNode.style.strokeColor = node.style.strokeColor;
         adhocNode.margin.bottom = 5;
         adhocNode.horizontalAlignment = 'Left';
         adhocNode.verticalAlignment = 'Bottom';
@@ -37502,6 +37512,26 @@ class BpmnDiagrams {
             updateStyle(changedProp.style, elementWrapper instanceof Container ? (actualObject.shape.shape === 'Activity') ?
                 elementWrapper.children[0].children[0] :
                 elementWrapper.children[0] : elementWrapper);
+            if (changedProp.style && changedProp.style.strokeColor) {
+                if (elementWrapper.children.length > 0) {
+                    if (actualObject.shape.shape === 'Activity' &&
+                        actualObject.shape.activity.activity === 'SubProcess') {
+                        let child = elementWrapper.children[0];
+                        this.updateBPMNStyle(child, changedProp.style.strokeColor);
+                    }
+                    else if (actualObject.shape.shape === 'Gateway' ||
+                        actualObject.shape.shape === 'Event') {
+                        this.updateBPMNStyle(elementWrapper, changedProp.style.strokeColor);
+                    }
+                }
+            }
+        }
+    }
+    /** @private */
+    updateBPMNStyle(elementWrapper, changedProp) {
+        for (let i = 0; i < elementWrapper.children.length; i++) {
+            let child = elementWrapper.children[i];
+            updateStyle({ strokeColor: changedProp }, child);
         }
     }
     /** @private */

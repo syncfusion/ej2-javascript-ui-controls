@@ -299,7 +299,6 @@ export function getThemeStyle(theme: MapsTheme): IThemeStyle {
             };
             break;
         case 'HighContrast':
-        case 'Highcontrast':
             style = {
                 backgroundColor: '#000000',
                 areaBackgroundColor: '#000000',

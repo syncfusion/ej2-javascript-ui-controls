@@ -324,7 +324,7 @@ export class PdfExport {
                 isForeignKey: col.isForeignColumn(),
             };
             /* tslint:disable-next-line:max-line-length */
-            let value: string = this.parent.getColumnByField(dataSourceItems.field).headerText + ': ' + this.exportValueFormatter.formatCellValue(args) + ' - ' + dataSourceItems.count + (dataSource.count > 1 ? ' items' : ' item');
+            let value: string = this.parent.getColumnByField(dataSourceItems.field).headerText + ': ' + (!col.enableGroupByFormat ? this.exportValueFormatter.formatCellValue(args) : dataSourceItems.key) + ' - ' + dataSourceItems.count + (dataSource.count > 1 ? ' items' : ' item');
             row.cells.getCell(groupIndex).value = value;
             row.cells.getCell(groupIndex + 1).style.stringFormat = new PdfStringFormat(PdfTextAlignment.Left);
             row.style.setBorder(border);

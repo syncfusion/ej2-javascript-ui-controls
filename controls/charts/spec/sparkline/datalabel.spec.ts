@@ -348,7 +348,7 @@ describe('Sparkline ', () => {
             expect(rect.height === 16 || rect.height === 15).toBe(true);
         });
         it('Sparkline datalabel color for theme highcontrast checking', () => {
-            sparkline.theme = 'Highcontrast';
+            sparkline.theme = 'HighContrast';
             sparkline.dataLabelSettings.textStyle.color = null;
             sparkline.dataBind();
             ele = getIdElement(id + '_sparkline_label_text_5');

@@ -1581,9 +1581,8 @@ export class Editor {
     }
     /**
      * Insert Hyperlink 
-     * @param  {string} address 
-     * @param  {string} displayText
-     * @private
+     * @param  {string} address - Hyperlink URL
+     * @param  {string} displayText - Display text for the hyperlink
      */
     public insertHyperlink(address: string, displayText?: string): void {
         if (isNullOrUndefined(displayText)) {
@@ -3389,10 +3388,7 @@ export class Editor {
      */
     public reLayout(selection: Selection, isSelectionChanged?: boolean): void {
         if (!this.viewer.isComposingIME && this.editorHistory && this.editorHistory.isHandledComplexHistory()) {
-            if (isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)
-                || (this.editorHistory.currentBaseHistoryInfo
-                    && !(this.editorHistory.currentBaseHistoryInfo.action === 'ClearCharacterFormat'
-                        || this.editorHistory.currentBaseHistoryInfo.action === 'ClearParagraphFormat'))) {
+            if (this.editorHistory.currentHistoryInfo && this.editorHistory.currentHistoryInfo.action !== 'ClearFormat') {
                 this.startParagraph = undefined;
                 this.endParagraph = undefined;
             }
@@ -5326,8 +5322,8 @@ export class Editor {
         let startPageIndex: number;
         let endPageIndex: number;
         this.viewer.clearContent();
-        let startSectionIndex: number = (startPosition.paragraph.containerWidget as BodyWidget).index;
-        let endSectionIndex: number = (endPosition.paragraph.containerWidget as BodyWidget).index;
+        let startSectionIndex: number = startPosition.paragraph.bodyWidget.sectionIndex;
+        let endSectionIndex: number = endPosition.paragraph.bodyWidget.sectionIndex;
         for (let i: number = 0; i < this.viewer.pages.length; i++) {
             if (this.viewer.pages[i].bodyWidgets[0].index === startSectionIndex) {
                 startPageIndex = i;
@@ -9768,17 +9764,17 @@ export class Editor {
         if (tocSettings.includeOutlineLevels) {
             this.createOutlineLevels(tocSettings);
         }
-
+        let sectionFormat: WSectionFormat = this.selection.start.paragraph.bodyWidget.sectionFormat;
         let widget: IWidget = tocDomBody.childWidgets[0];
         while (widget !== undefined) {
             // tslint:disable-next-line:max-line-length
             if (widget instanceof ParagraphWidget && (this.isHeadingStyle(widget) || (tocSettings.includeOutlineLevels && this.isOutlineLevelStyle(widget)))) {
                 let bookmarkName: string = this.insertTocBookmark(widget);
                 // tslint:disable-next-line:max-line-length
-                this.createTOCWidgets(widget, widgets, fieldCode, bookmarkName, tocSettings, isFirstPara, isStartParagraph);
+                this.createTOCWidgets(widget, widgets, fieldCode, bookmarkName, tocSettings, isFirstPara, isStartParagraph, sectionFormat);
                 isFirstPara = false;
             }
-            widget = this.selection.getNextParagraphBlock(widget as ParagraphWidget);
+            widget = this.selection.getNextParagraphBlock((widget as ParagraphWidget).getSplitWidgets().pop() as ParagraphWidget);
         }
         this.tocStyles = {};
         return widgets;
@@ -9855,7 +9851,7 @@ export class Editor {
      * Updates TOC para
      */
     // tslint:disable-next-line:max-line-length
-    private createTOCWidgets(widget: ParagraphWidget, widgets: ParagraphWidget[], fieldCode: string, bookmarkName: string, tocSettings: TableOfContentsSettings, isFirstPara?: boolean, isStartParagraph?: boolean): void {
+    private createTOCWidgets(widget: ParagraphWidget, widgets: ParagraphWidget[], fieldCode: string, bookmarkName: string, tocSettings: TableOfContentsSettings, isFirstPara?: boolean, isStartParagraph?: boolean, sectionFormat?: WSectionFormat): void {
         let fieldBegin: FieldElementBox = undefined;
         let tocPara: ParagraphWidget = undefined;
         let tocLine: LineWidget = undefined;
@@ -9884,7 +9880,7 @@ export class Editor {
             //Creates right tab for page number.
             if (tocSettings.rightAlign && tocSettings.includePageNumber) {
                 let tabStop: WTabStop = new WTabStop();
-                tabStop.position = HelperMethods.convertPixelToPoint(this.viewer.clientArea.width);
+                tabStop.position = sectionFormat.pageWidth - (sectionFormat.leftMargin + sectionFormat.rightMargin);
                 tabStop.tabLeader = tocSettings.tabLeader;
                 tabStop.deletePosition = 0;
                 tabStop.tabJustification = 'Right';
@@ -9902,19 +9898,33 @@ export class Editor {
             this.createTocFieldElement(tocLine, fieldCode);
         }
         let text: string = '';
-        for (let lineIndex: number = 0; lineIndex < widget.childWidgets.length; lineIndex++) {
-            let lineWidget: LineWidget = widget.childWidgets[lineIndex] as LineWidget;
-            for (let elementIndex: number = 0; elementIndex < lineWidget.children.length; elementIndex++) {
-                let element: ElementBox = lineWidget.children[elementIndex];
-                if (element instanceof TextElementBox || element instanceof ListTextElementBox) {
-                    let temp: string = element.text;
-                    let tabChar: string = '\t';
-                    if (temp.indexOf(tabChar) !== -1) {
-                        temp = temp.replace(new RegExp(tabChar, 'g'), ' ');
+        let isFieldCode: boolean = false;
+        let paragraph: ParagraphWidget = widget;
+        while (paragraph instanceof ParagraphWidget) {
+            for (let lineIndex: number = 0; lineIndex < paragraph.childWidgets.length; lineIndex++) {
+                let lineWidget: LineWidget = paragraph.childWidgets[lineIndex] as LineWidget;
+                for (let elementIndex: number = 0; elementIndex < lineWidget.children.length; elementIndex++) {
+                    let element: ElementBox = lineWidget.children[elementIndex];
+                    if ((element instanceof FieldElementBox) || (element instanceof BookmarkElementBox) || isFieldCode) {
+                        if (element instanceof FieldElementBox) {
+                            if (element.fieldType === 0) {
+                                isFieldCode = true;
+                            } else if (element.fieldType === 2) {
+                                isFieldCode = false;
+                            }
+                        }
+                    } else if (element instanceof TextElementBox || element instanceof ListTextElementBox) {
+                        let temp: string = element.text;
+                        let tabChar: string = '\t';
+                        if (temp.indexOf(tabChar) !== -1) {
+                            temp = temp.replace(new RegExp(tabChar, 'g'), ' ');
+                        }
+                        text = text + temp;
                     }
-                    text = text + temp;
+
                 }
             }
+            paragraph = paragraph.nextSplitWidget as ParagraphWidget;
         }
         if (text !== '') {
             // inserts hyperlink
@@ -10003,10 +10013,18 @@ export class Editor {
         let bookmarkName: string = undefined;
         let lineLength: number = widget.childWidgets.length;
         if (lineLength > 0) {
-            let startLine: LineWidget = widget.childWidgets[0] as LineWidget;
-            let endLine: LineWidget = widget.childWidgets[lineLength - 1] as LineWidget;
+            let splitParagraph: ParagraphWidget[] = widget.getSplitWidgets() as ParagraphWidget[];
+            let firstParagraph: ParagraphWidget = splitParagraph[0];
+            let lastParagraph: ParagraphWidget = splitParagraph.pop();
+            let startLine: LineWidget = firstParagraph.childWidgets[0] as LineWidget;
+            let endLine: LineWidget = lastParagraph.childWidgets[lastParagraph.childWidgets.length - 1] as LineWidget;
             if ((startLine !== undefined) && (endLine !== undefined)) {
                 let startElement: ElementBox = startLine.children[0];
+                if (startElement instanceof ListTextElementBox) {
+                    do {
+                        startElement = startElement.nextNode;
+                    } while (startElement instanceof ListTextElementBox);
+                }
                 //Returns the bookmark if already present for paragraph.
                 // tslint:disable-next-line:max-line-length
                 if (!isNullOrUndefined(startElement) && startElement instanceof BookmarkElementBox && (startElement as BookmarkElementBox).bookmarkType === 0 && ((startElement as BookmarkElementBox).name.toLowerCase().match('^_toc'))) {

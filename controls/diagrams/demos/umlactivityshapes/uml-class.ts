@@ -29,7 +29,7 @@ let node1: NodeModel = {
     ,
     shape: {
         type: 'UmlClassifier',
-        class: {
+        classShape: {
             property: [
                 { name: 'accepted', type: 'Date', style: {} },
                 { name: 'sickness', type: 'History' },
@@ -51,7 +51,7 @@ let node2: NodeModel = {
     }, borderColor: 'white',
     shape: {
         type: 'UmlClassifier',
-        enumeration: {
+        enumerationShape: {
             name: 'AccountType',
             //sets the members of enumeration
             members: [
@@ -78,7 +78,7 @@ let node3: NodeModel = {
     }, borderColor: 'white',
     shape: {
         type: 'UmlClassifier',
-        interface: {
+        interfaceShape: {
             name: "Bank Account",
             property: [{
                 name: "owner",

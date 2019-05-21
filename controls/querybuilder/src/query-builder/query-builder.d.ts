@@ -146,6 +146,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private btnGroupId;
     private levelColl;
     private isImportRules;
+    private isPublic;
     private parser;
     private defaultLocale;
     private l10n;
@@ -303,6 +304,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private renderStringValue;
     private renderNumberValue;
     private processValueString;
+    private parseDate;
     private renderControls;
     private getOperatorIndex;
     private renderValues;
@@ -340,7 +342,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private initControl;
     protected wireEvents(): void;
     protected unWireEvents(): void;
-    private getGroup;
+    private getParentGroup;
     private deleteGroup;
     private deleteRule;
     private setGroupRules;
@@ -360,6 +362,16 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      * @returns object.
      */
     getRules(): RuleModel;
+    /**
+     * Gets the rule.
+     * @returns object.
+     */
+    getRule(elem: string | HTMLElement): RuleModel;
+    /**
+     * Gets the group.
+     * @returns object.
+     */
+    getGroup(target: Element | string): RuleModel;
     /**
      * Deletes the group or groups based on the group ID.
      * @returns void.

@@ -18,11 +18,11 @@ export function getULMClassifierShapes(content: DiagramElement, node: NodeModel,
     let classifier: UmlClassModel;
     let textWrap: TextWrap = 'NoWrap';
     if ((node.shape as UmlClassifierShapeModel).classifier === 'Class') {
-        classifier = (node.shape as UmlClassifierShapeModel).class;
+        classifier = (node.shape as UmlClassifierShapeModel).classShape;
     } else if ((node.shape as UmlClassifierShapeModel).classifier === 'Enumeration') {
-        classifier = (node.shape as UmlClassifierShapeModel).enumeration;
+        classifier = (node.shape as UmlClassifierShapeModel).enumerationShape;
     } else if ((node.shape as UmlClassifierShapeModel).classifier === 'Interface') {
-        classifier = (node.shape as UmlClassifierShapeModel).interface;
+        classifier = (node.shape as UmlClassifierShapeModel).interfaceShape;
     }
     let attributeText: string = '';
     node.container = { type: 'Stack', orientation: 'Vertical' };

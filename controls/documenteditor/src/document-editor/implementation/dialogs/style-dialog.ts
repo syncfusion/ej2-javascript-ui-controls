@@ -580,7 +580,7 @@ export class StyleDialog {
                 if (this.styleType.value === this.localObj.getConstant('Paragraph') || this.styleType.value === this.localObj.getConstant('Linked(Paragraph and Character)')) {
                     this.style.next = this.owner.owner.viewer.styles.findByName(this.styleParagraph.value as string) as WStyle;
                     (this.style as WParagraphStyle).characterFormat.mergeFormat((style as WParagraphStyle).characterFormat);
-                    (this.style as WParagraphStyle).paragraphFormat.mergeFormat((style as WParagraphStyle).paragraphFormat);
+                    (this.style as WParagraphStyle).paragraphFormat.mergeFormat((style as WParagraphStyle).paragraphFormat, true);
                     this.updateList();
                     // tslint:disable-next-line:max-line-length
                     this.style.link = (this.styleType.value === this.localObj.getConstant('Linked(Paragraph and Character)')) ? this.createLinkStyle(styleName, this.isEdit) : undefined;
@@ -596,23 +596,26 @@ export class StyleDialog {
                 this.owner.owner.isShiftingEnabled = false;
             } else {
                 /* tslint:disable-next-line:no-any */
+                let tmpStyle: any = this.getTypeValue() === 'Paragraph' ? new WParagraphStyle() : new WCharacterStyle;
+                tmpStyle.copyStyle(this.style);
+                /* tslint:disable-next-line:no-any */
                 let basedOn: any = this.owner.owner.viewer.styles.findByName(this.styleBasedOn.value as string) as WStyle;
                 // tslint:disable-next-line:max-line-length
                 if (this.styleType.value === this.localObj.getConstant('Paragraph') || this.styleType.value === this.localObj.getConstant('Linked(Paragraph and Character)')) {
                     if (styleName === this.styleParagraph.value) {
-                        this.style.next = this.style;
+                        tmpStyle.next = tmpStyle;
                     } else {
-                        this.style.next = this.owner.owner.viewer.styles.findByName(this.styleParagraph.value as string) as WStyle;
+                        tmpStyle.next = this.owner.owner.viewer.styles.findByName(this.styleParagraph.value as string) as WStyle;
                     }
                     this.updateList();
                 }
                 // tslint:disable-next-line:max-line-length
-                this.style.link = (this.styleType.value === this.localObj.getConstant('Linked(Paragraph and Character)')) ? this.createLinkStyle(styleName) : undefined;
-                this.style.type = this.getTypeValue();
-                this.style.name = styleName;
-                this.style.basedOn = basedOn;
+                tmpStyle.link = (this.styleType.value === this.localObj.getConstant('Linked(Paragraph and Character)')) ? this.createLinkStyle(styleName) : undefined;
+                tmpStyle.type = this.getTypeValue();
+                tmpStyle.name = styleName;
+                tmpStyle.basedOn = basedOn;
                 /* tslint:disable-next-line:no-any */
-                this.owner.owner.viewer.styles.push(this.style as any);
+                this.owner.owner.viewer.styles.push(tmpStyle as any);
                 name = styleName;
                 this.owner.owner.editorModule.applyStyle(name);
             }

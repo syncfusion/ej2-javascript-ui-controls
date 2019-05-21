@@ -3571,7 +3571,8 @@ var WParagraphFormat = /** @__PURE__ @class */ (function () {
      * For internal use
      * @private
      */
-    WParagraphFormat.prototype.mergeFormat = function (format) {
+    WParagraphFormat.prototype.mergeFormat = function (format, isStyle) {
+        isStyle = isNullOrUndefined(isStyle) ? false : isStyle;
         if (isNullOrUndefined(this.getValue('leftIndent'))) {
             this.leftIndent = format.getValue('leftIndent');
         }
@@ -3599,7 +3600,7 @@ var WParagraphFormat = /** @__PURE__ @class */ (function () {
         if (isNullOrUndefined(this.getValue('outlineLevel'))) {
             this.outlineLevel = format.getValue('outlineLevel');
         }
-        if (isNullOrUndefined(this.getValue('bidi'))) {
+        if (!isStyle && isNullOrUndefined(this.getValue('bidi'))) {
             this.bidi = format.getValue('bidi');
         }
         if (isNullOrUndefined(this.listFormat)) {
@@ -39390,9 +39391,8 @@ var Editor = /** @__PURE__ @class */ (function () {
     };
     /**
      * Insert Hyperlink
-     * @param  {string} address
-     * @param  {string} displayText
-     * @private
+     * @param  {string} address - Hyperlink URL
+     * @param  {string} displayText - Display text for the hyperlink
      */
     Editor.prototype.insertHyperlink = function (address, displayText) {
         if (isNullOrUndefined(displayText)) {
@@ -41231,10 +41231,7 @@ var Editor = /** @__PURE__ @class */ (function () {
      */
     Editor.prototype.reLayout = function (selection, isSelectionChanged) {
         if (!this.viewer.isComposingIME && this.editorHistory && this.editorHistory.isHandledComplexHistory()) {
-            if (isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)
-                || (this.editorHistory.currentBaseHistoryInfo
-                    && !(this.editorHistory.currentBaseHistoryInfo.action === 'ClearCharacterFormat'
-                        || this.editorHistory.currentBaseHistoryInfo.action === 'ClearParagraphFormat'))) {
+            if (this.editorHistory.currentHistoryInfo && this.editorHistory.currentHistoryInfo.action !== 'ClearFormat') {
                 this.startParagraph = undefined;
                 this.endParagraph = undefined;
             }
@@ -43241,8 +43238,8 @@ var Editor = /** @__PURE__ @class */ (function () {
         var startPageIndex;
         var endPageIndex;
         this.viewer.clearContent();
-        var startSectionIndex = startPosition.paragraph.containerWidget.index;
-        var endSectionIndex = endPosition.paragraph.containerWidget.index;
+        var startSectionIndex = startPosition.paragraph.bodyWidget.sectionIndex;
+        var endSectionIndex = endPosition.paragraph.bodyWidget.sectionIndex;
         for (var i = 0; i < this.viewer.pages.length; i++) {
             if (this.viewer.pages[i].bodyWidgets[0].index === startSectionIndex) {
                 startPageIndex = i;
@@ -47819,16 +47816,17 @@ var Editor = /** @__PURE__ @class */ (function () {
         if (tocSettings.includeOutlineLevels) {
             this.createOutlineLevels(tocSettings);
         }
+        var sectionFormat = this.selection.start.paragraph.bodyWidget.sectionFormat;
         var widget = tocDomBody.childWidgets[0];
         while (widget !== undefined) {
             // tslint:disable-next-line:max-line-length
             if (widget instanceof ParagraphWidget && (this.isHeadingStyle(widget) || (tocSettings.includeOutlineLevels && this.isOutlineLevelStyle(widget)))) {
                 var bookmarkName = this.insertTocBookmark(widget);
                 // tslint:disable-next-line:max-line-length
-                this.createTOCWidgets(widget, widgets, fieldCode, bookmarkName, tocSettings, isFirstPara, isStartParagraph);
+                this.createTOCWidgets(widget, widgets, fieldCode, bookmarkName, tocSettings, isFirstPara, isStartParagraph, sectionFormat);
                 isFirstPara = false;
             }
-            widget = this.selection.getNextParagraphBlock(widget);
+            widget = this.selection.getNextParagraphBlock(widget.getSplitWidgets().pop());
         }
         this.tocStyles = {};
         return widgets;
@@ -47900,7 +47898,7 @@ var Editor = /** @__PURE__ @class */ (function () {
      * Updates TOC para
      */
     // tslint:disable-next-line:max-line-length
-    Editor.prototype.createTOCWidgets = function (widget, widgets, fieldCode, bookmarkName, tocSettings, isFirstPara, isStartParagraph) {
+    Editor.prototype.createTOCWidgets = function (widget, widgets, fieldCode, bookmarkName, tocSettings, isFirstPara, isStartParagraph, sectionFormat) {
         var fieldBegin = undefined;
         var tocPara = undefined;
         var tocLine = undefined;
@@ -47930,7 +47928,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             //Creates right tab for page number.
             if (tocSettings.rightAlign && tocSettings.includePageNumber) {
                 var tabStop = new WTabStop();
-                tabStop.position = HelperMethods.convertPixelToPoint(this.viewer.clientArea.width);
+                tabStop.position = sectionFormat.pageWidth - (sectionFormat.leftMargin + sectionFormat.rightMargin);
                 tabStop.tabLeader = tocSettings.tabLeader;
                 tabStop.deletePosition = 0;
                 tabStop.tabJustification = 'Right';
@@ -47947,19 +47945,34 @@ var Editor = /** @__PURE__ @class */ (function () {
             this.createTocFieldElement(tocLine, fieldCode);
         }
         var text = '';
-        for (var lineIndex = 0; lineIndex < widget.childWidgets.length; lineIndex++) {
-            var lineWidget = widget.childWidgets[lineIndex];
-            for (var elementIndex = 0; elementIndex < lineWidget.children.length; elementIndex++) {
-                var element = lineWidget.children[elementIndex];
-                if (element instanceof TextElementBox || element instanceof ListTextElementBox) {
-                    var temp = element.text;
-                    var tabChar = '\t';
-                    if (temp.indexOf(tabChar) !== -1) {
-                        temp = temp.replace(new RegExp(tabChar, 'g'), ' ');
+        var isFieldCode = false;
+        var paragraph = widget;
+        while (paragraph instanceof ParagraphWidget) {
+            for (var lineIndex = 0; lineIndex < paragraph.childWidgets.length; lineIndex++) {
+                var lineWidget = paragraph.childWidgets[lineIndex];
+                for (var elementIndex = 0; elementIndex < lineWidget.children.length; elementIndex++) {
+                    var element = lineWidget.children[elementIndex];
+                    if ((element instanceof FieldElementBox) || (element instanceof BookmarkElementBox) || isFieldCode) {
+                        if (element instanceof FieldElementBox) {
+                            if (element.fieldType === 0) {
+                                isFieldCode = true;
+                            }
+                            else if (element.fieldType === 2) {
+                                isFieldCode = false;
+                            }
+                        }
                     }
-                    text = text + temp;
+                    else if (element instanceof TextElementBox || element instanceof ListTextElementBox) {
+                        var temp = element.text;
+                        var tabChar = '\t';
+                        if (temp.indexOf(tabChar) !== -1) {
+                            temp = temp.replace(new RegExp(tabChar, 'g'), ' ');
+                        }
+                        text = text + temp;
+                    }
                 }
             }
+            paragraph = paragraph.nextSplitWidget;
         }
         if (text !== '') {
             // inserts hyperlink
@@ -48046,10 +48059,18 @@ var Editor = /** @__PURE__ @class */ (function () {
         var bookmarkName = undefined;
         var lineLength = widget.childWidgets.length;
         if (lineLength > 0) {
-            var startLine = widget.childWidgets[0];
-            var endLine = widget.childWidgets[lineLength - 1];
+            var splitParagraph = widget.getSplitWidgets();
+            var firstParagraph = splitParagraph[0];
+            var lastParagraph = splitParagraph.pop();
+            var startLine = firstParagraph.childWidgets[0];
+            var endLine = lastParagraph.childWidgets[lastParagraph.childWidgets.length - 1];
             if ((startLine !== undefined) && (endLine !== undefined)) {
                 var startElement = startLine.children[0];
+                if (startElement instanceof ListTextElementBox) {
+                    do {
+                        startElement = startElement.nextNode;
+                    } while (startElement instanceof ListTextElementBox);
+                }
                 //Returns the bookmark if already present for paragraph.
                 // tslint:disable-next-line:max-line-length
                 if (!isNullOrUndefined(startElement) && startElement instanceof BookmarkElementBox && startElement.bookmarkType === 0 && (startElement.name.toLowerCase().match('^_toc'))) {
@@ -53374,7 +53395,7 @@ var WordExport = /** @__PURE__ @class */ (function () {
                 writer.writeAttributeString('w', 'val', this.wNamespace, lf.listLevelNumber.toString());
                 writer.writeEndElement();
             }
-            if (!isNullOrUndefined(lf.listId) && lf.listId !== -1) {
+            if (!isNullOrUndefined(lf.listId)) {
                 writer.writeStartElement(undefined, 'numId', this.wNamespace);
                 writer.writeAttributeString('w', 'val', this.wNamespace, (lf.listId + 1).toString());
                 writer.writeEndElement();
@@ -53894,11 +53915,11 @@ var WordExport = /** @__PURE__ @class */ (function () {
         writer.writeStartElement(undefined, 'numFmt', this.wNamespace);
         writer.writeAttributeString(undefined, 'val', this.wNamespace, this.getLevelPattern(listLevel.listLevelPattern));
         writer.writeEndElement();
-        if (listLevel.restartLevel > 0) {
-            writer.writeStartElement(undefined, 'lvlRestart', this.wNamespace);
-            writer.writeAttributeString(undefined, 'val', this.wNamespace, '0');
-            writer.writeEndElement();
-        }
+        // if (listLevel.restartLevel > 0) {
+        //     writer.writeStartElement(undefined, 'lvlRestart', this.wNamespace);
+        //     writer.writeAttributeString(undefined, 'val', this.wNamespace, '0');
+        //     writer.writeEndElement();
+        // }
         // if (!isNullOrUndefined(listLevel.paragraphFormat)) {
         //     string name = listLevel.ParaStyleName.Substring(0, 1).ToUpper() + listLevel.ParaStyleName.Remove(0, 1);
         //     writer.WriteStartElement('pStyle', this.wNamespace);
@@ -54787,6 +54808,11 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
                     var endTable = endCell.getContainerTable();
                     if (startTable.tableFormat === endTable.tableFormat) {
                         this.endCell = endCell;
+                        if (this.endCell.ownerTable !== startCell.ownerTable && startCell.ownerTable.associatedCell
+                            && startCell.ownerTable.associatedCell.ownerTable === this.endCell.ownerTable &&
+                            (startCell.ownerTable.associatedCell.childWidgets.indexOf(startCell.ownerTable) === 0)) {
+                            startCell = startCell.ownerTable.associatedCell;
+                        }
                         this.endColumnIndex = this.endCell.columnIndex + this.endCell.cellFormat.columnSpan;
                         this.startColumnIndex = startCell.columnIndex;
                     }
@@ -54806,6 +54832,21 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
                 // Todo:continue in next section
             }
             else {
+                // Specially handled for nested table cases
+                // selection start inside table and end in paragraph outside table
+                if (isNullOrUndefined(endCell) && startCell.ownerTable.associatedCell) {
+                    var startTable = startCell.getContainerTable();
+                    var lastRow = startTable.childWidgets[startTable.childWidgets.length - 1];
+                    var endCell_1 = lastRow.childWidgets[lastRow.childWidgets.length - 1];
+                    if (endCell_1.ownerTable !== startCell.ownerTable && startCell.ownerTable.associatedCell
+                        && (startCell.ownerTable.associatedCell.childWidgets.indexOf(startCell.ownerTable) === 0)) {
+                        while (startCell.ownerTable !== endCell_1.ownerTable) {
+                            startCell = startCell.ownerTable.associatedCell;
+                        }
+                    }
+                    this.endColumnIndex = endCell_1.columnIndex + endCell_1.cellFormat.columnSpan;
+                    this.startColumnIndex = startCell.columnIndex;
+                }
                 var table = this.createTable(startCell.ownerTable);
                 section.blocks.push(table);
                 nextBlock = this.writeTable(startCell.ownerTable, table, startCell.ownerRow.indexInOwner, section.blocks);
@@ -55076,9 +55117,12 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
     SfdtExport.prototype.writeListFormat = function (format, isInline) {
         var listFormat = {};
         var listIdValue = format.getValue('listId');
-        if (!isNullOrUndefined(listIdValue) && listIdValue > -1) {
+        if (!isNullOrUndefined(listIdValue)) {
             listFormat.listId = listIdValue;
-            listFormat.listLevelNumber = format.getValue('listLevelNumber');
+            var listLevelNumber = format.getValue('listLevelNumber');
+            if (!isNullOrUndefined(listLevelNumber)) {
+                listFormat.listLevelNumber = listLevelNumber;
+            }
             if (this.lists.indexOf(format.listId) < 0) {
                 this.lists.push(format.listId);
             }
@@ -57387,6 +57431,8 @@ var ParagraphDialog = /** @__PURE__ @class */ (function () {
         this.lineSpacingType = undefined;
         this.paragraphFormat = undefined;
         this.bidi = undefined;
+        this.isStyleDialog = false;
+        this.directionDiv = undefined;
         /**
          * @private
          */
@@ -57483,6 +57529,12 @@ var ParagraphDialog = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.loadParagraphDialog = function () {
+            if (_this.isStyleDialog) {
+                _this.directionDiv.classList.add('e-de-disabledbutton');
+            }
+            else {
+                _this.directionDiv.classList.remove('e-de-disabledbutton');
+            }
             var selectionFormat;
             if (_this.paragraphFormat) {
                 selectionFormat = _this.paragraphFormat;
@@ -57623,11 +57675,11 @@ var ParagraphDialog = /** @__PURE__ @class */ (function () {
             id: ownerId + '_DirLabel',
             className: 'e-de-dlg-sub-header', innerHTML: locale.getConstant('Direction')
         });
-        var dirDiv = createElement('div', { id: ownerId + '_DirDiv', styles: 'display:flex' });
+        this.directionDiv = createElement('div', { id: ownerId + '_DirDiv', styles: 'display:flex' });
         var rtlDiv = createElement('div', { id: ownerId + '_DirDiv', className: 'e-de-rtl-btn-div' });
         var rtlInputELe = createElement('input', { id: ownerId + '_rtlEle' });
         rtlDiv.appendChild(rtlInputELe);
-        dirDiv.appendChild(rtlDiv);
+        this.directionDiv.appendChild(rtlDiv);
         var isRtl = this.owner.owner.enableRtl;
         if (isRtl) {
             rtlDiv.classList.add('e-de-rtl');
@@ -57635,9 +57687,9 @@ var ParagraphDialog = /** @__PURE__ @class */ (function () {
         var ltrDiv = createElement('div', { id: ownerId + '_DirDiv', className: 'e-de-ltr-btn-div' });
         var ltrInputELe = createElement('input', { id: ownerId + '_ltrEle' });
         ltrDiv.appendChild(ltrInputELe);
-        dirDiv.appendChild(ltrDiv);
+        this.directionDiv.appendChild(ltrDiv);
         generalDiv.appendChild(dirLabel);
-        generalDiv.appendChild(dirDiv);
+        generalDiv.appendChild(this.directionDiv);
         this.rtlButton = new RadioButton({
             label: locale.getConstant('Right-to-left'), enableRtl: isRtl,
             value: 'rtl', cssClass: 'e-small', change: this.changeBidirectional
@@ -57820,7 +57872,11 @@ var ParagraphDialog = /** @__PURE__ @class */ (function () {
      */
     ParagraphDialog.prototype.show = function (paragraphFormat) {
         if (paragraphFormat) {
+            this.isStyleDialog = true;
             this.paragraphFormat = paragraphFormat;
+        }
+        else {
+            this.isStyleDialog = false;
         }
         var local = new L10n('documenteditor', this.owner.owner.defaultLocale);
         local.setLocale(this.owner.owner.locale);
@@ -58782,7 +58838,7 @@ var StyleDialog = /** @__PURE__ @class */ (function () {
                     if (_this.styleType.value === _this.localObj.getConstant('Paragraph') || _this.styleType.value === _this.localObj.getConstant('Linked(Paragraph and Character)')) {
                         _this.style.next = _this.owner.owner.viewer.styles.findByName(_this.styleParagraph.value);
                         _this.style.characterFormat.mergeFormat(style.characterFormat);
-                        _this.style.paragraphFormat.mergeFormat(style.paragraphFormat);
+                        _this.style.paragraphFormat.mergeFormat(style.paragraphFormat, true);
                         _this.updateList();
                         // tslint:disable-next-line:max-line-length
                         _this.style.link = (_this.styleType.value === _this.localObj.getConstant('Linked(Paragraph and Character)')) ? _this.createLinkStyle(styleName, _this.isEdit) : undefined;
@@ -58797,24 +58853,27 @@ var StyleDialog = /** @__PURE__ @class */ (function () {
                 }
                 else {
                     /* tslint:disable-next-line:no-any */
+                    var tmpStyle = _this.getTypeValue() === 'Paragraph' ? new WParagraphStyle() : new WCharacterStyle;
+                    tmpStyle.copyStyle(_this.style);
+                    /* tslint:disable-next-line:no-any */
                     var basedOn = _this.owner.owner.viewer.styles.findByName(_this.styleBasedOn.value);
                     // tslint:disable-next-line:max-line-length
                     if (_this.styleType.value === _this.localObj.getConstant('Paragraph') || _this.styleType.value === _this.localObj.getConstant('Linked(Paragraph and Character)')) {
                         if (styleName === _this.styleParagraph.value) {
-                            _this.style.next = _this.style;
+                            tmpStyle.next = tmpStyle;
                         }
                         else {
-                            _this.style.next = _this.owner.owner.viewer.styles.findByName(_this.styleParagraph.value);
+                            tmpStyle.next = _this.owner.owner.viewer.styles.findByName(_this.styleParagraph.value);
                         }
                         _this.updateList();
                     }
                     // tslint:disable-next-line:max-line-length
-                    _this.style.link = (_this.styleType.value === _this.localObj.getConstant('Linked(Paragraph and Character)')) ? _this.createLinkStyle(styleName) : undefined;
-                    _this.style.type = _this.getTypeValue();
-                    _this.style.name = styleName;
-                    _this.style.basedOn = basedOn;
+                    tmpStyle.link = (_this.styleType.value === _this.localObj.getConstant('Linked(Paragraph and Character)')) ? _this.createLinkStyle(styleName) : undefined;
+                    tmpStyle.type = _this.getTypeValue();
+                    tmpStyle.name = styleName;
+                    tmpStyle.basedOn = basedOn;
                     /* tslint:disable-next-line:no-any */
-                    _this.owner.owner.viewer.styles.push(_this.style);
+                    _this.owner.owner.viewer.styles.push(tmpStyle);
                     name_1 = styleName;
                     _this.owner.owner.editorModule.applyStyle(name_1);
                 }
@@ -66846,14 +66905,6 @@ var TableProperties = /** @__PURE__ @class */ (function () {
     };
     TableProperties.prototype.destroy = function () {
         this.container = undefined;
-        if (this.tableTextProperties) {
-            this.tableTextProperties.destroy();
-            this.tableTextProperties = undefined;
-        }
-        if (this.propertiesTab) {
-            this.propertiesTab.destroy();
-            this.propertiesTab = undefined;
-        }
         if (this.shadingBtn) {
             this.shadingBtn.destroy();
             this.shadingBtn = undefined;
@@ -66881,6 +66932,14 @@ var TableProperties = /** @__PURE__ @class */ (function () {
         if (this.rightMargin) {
             this.rightMargin.destroy();
             this.rightMargin = undefined;
+        }
+        if (this.tableTextProperties) {
+            this.tableTextProperties.destroy();
+            this.tableTextProperties = undefined;
+        }
+        if (this.propertiesTab) {
+            this.propertiesTab.destroy();
+            this.propertiesTab = undefined;
         }
     };
     return TableProperties;
@@ -67545,26 +67604,6 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
             this.documentEditor.destroy();
         }
         this.documentEditor = undefined;
-        if (this.propertiesPaneContainer && this.editorContainer.parentElement) {
-            this.propertiesPaneContainer.innerHTML = '';
-            this.propertiesPaneContainer.parentElement.removeChild(this.propertiesPaneContainer);
-        }
-        this.propertiesPaneContainer = undefined;
-        if (this.editorContainer && this.editorContainer.parentElement) {
-            this.editorContainer.innerHTML = '';
-            this.editorContainer.parentElement.removeChild(this.editorContainer);
-        }
-        if (this.statusBarElement && this.statusBarElement.parentElement) {
-            this.statusBarElement.innerHTML = '';
-            this.statusBarElement.parentElement.removeChild(this.statusBarElement);
-        }
-        if (this.containerTarget && this.containerTarget.parentElement) {
-            this.containerTarget.innerHTML = '';
-            this.containerTarget.parentElement.removeChild(this.containerTarget);
-        }
-        this.containerTarget = undefined;
-        this.statusBarElement = undefined;
-        this.editorContainer = undefined;
         if (this.textProperties) {
             this.textProperties.destroy();
         }
@@ -67585,6 +67624,26 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
             this.tableProperties.destroy();
         }
         this.tableProperties = undefined;
+        if (this.propertiesPaneContainer && this.editorContainer.parentElement) {
+            this.propertiesPaneContainer.innerHTML = '';
+            this.propertiesPaneContainer.parentElement.removeChild(this.propertiesPaneContainer);
+        }
+        this.propertiesPaneContainer = undefined;
+        if (this.editorContainer && this.editorContainer.parentElement) {
+            this.editorContainer.innerHTML = '';
+            this.editorContainer.parentElement.removeChild(this.editorContainer);
+        }
+        if (this.statusBarElement && this.statusBarElement.parentElement) {
+            this.statusBarElement.innerHTML = '';
+            this.statusBarElement.parentElement.removeChild(this.statusBarElement);
+        }
+        if (this.containerTarget && this.containerTarget.parentElement) {
+            this.containerTarget.innerHTML = '';
+            this.containerTarget.parentElement.removeChild(this.containerTarget);
+        }
+        this.containerTarget = undefined;
+        this.statusBarElement = undefined;
+        this.editorContainer = undefined;
     };
     __decorate$1([
         Property(false)

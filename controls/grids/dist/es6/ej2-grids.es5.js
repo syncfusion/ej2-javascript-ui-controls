@@ -1876,6 +1876,7 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         this.options.sortedColumns = options.sortedColumns || this.parent.sortSettings.columns;
         this.options.query = options.query || new Query();
         this.options.allowCaseSensitive = options.allowCaseSensitive || false;
+        this.options.uid = options.column.uid;
         this.values = {};
         this.localeObj = options.localeObj;
         this.isFiltered = options.filteredColumns.length;
@@ -2034,14 +2035,15 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
     CheckBoxFilter.prototype.fltrBtnHandler = function () {
         var checked = [].slice.call(this.cBox.querySelectorAll('.e-check:not(.e-selectall)'));
         var optr = 'equal';
+        var searchInput = this.searchBox.querySelector('.e-searchinput');
         var caseSen = this.options.type === 'string' ?
             this.options.allowCaseSensitive : true;
         var defaults = {
-            field: this.options.field, predicate: 'or',
+            field: this.options.field, predicate: 'or', uid: this.options.uid,
             operator: optr, type: this.options.type, matchCase: caseSen, ignoreAccent: this.parent.filterSettings.ignoreAccent
         };
         var isNotEqual = this.itemsCnt !== checked.length && this.itemsCnt - checked.length < checked.length;
-        if (isNotEqual) {
+        if (isNotEqual && searchInput.value === '') {
             optr = 'notequal';
             checked = [].slice.call(this.cBox.querySelectorAll('.e-uncheck:not(.e-selectall)'));
             defaults.predicate = 'and';
@@ -2050,7 +2052,6 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         var value;
         var fObj;
         var coll = [];
-        var searchInput = this.searchBox.querySelector('.e-searchinput');
         if (checked.length !== this.itemsCnt || (searchInput.value && searchInput.value !== '')) {
             for (var i = 0; i < checked.length; i++) {
                 value = this.values[parentsUntil(checked[i], 'e-ftrchk').getAttribute('uid')];
@@ -2199,7 +2200,10 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         var foreignColumn = this.parent.getForeignKeyColumns();
         for (var _i = 0, _a = Object.keys(predicates); _i < _a.length; _i++) {
             var prop = _a[_i];
-            var col = getColumnByForeignKeyValue(prop, foreignColumn);
+            var col = void 0;
+            if (this.parent.getColumnByField(prop).isForeignColumn()) {
+                col = getColumnByForeignKeyValue(prop, foreignColumn);
+            }
             if (col) {
                 this.parent.notify(generateQuery, { predicate: fPredicate, column: col });
                 if (fPredicate.predicate.predicates.length) {
@@ -2292,8 +2296,9 @@ var CheckBoxFilter = /** @__PURE__ @class */ (function () {
         if ((this.options.filteredColumns.length)) {
             var cols = [];
             for (var i = 0; i < this.options.filteredColumns.length; i++) {
-                if (!(this.options.filteredColumns[i].field === this.options.field ||
-                    this.options.filteredColumns[i].field === this.options.foreignKeyValue)) {
+                var filterColumn = this.options.filteredColumns[i];
+                filterColumn.uid = filterColumn.uid || this.parent.getColumnByField(filterColumn.field).uid;
+                if (filterColumn.uid !== this.options.uid) {
                     cols.push(this.options.filteredColumns[i]);
                 }
             }
@@ -2789,7 +2794,10 @@ var Data = /** @__PURE__ @class */ (function () {
                 var excelPredicate = CheckBoxFilter.getPredicate(checkBoxCols);
                 for (var _c = 0, _d = Object.keys(excelPredicate); _c < _d.length; _c++) {
                     var prop = _d[_c];
-                    var col = getColumnByForeignKeyValue(prop, foreignColumn);
+                    var col = void 0;
+                    if (this.parent.getColumnByField(prop).isForeignColumn()) {
+                        col = getColumnByForeignKeyValue(prop, foreignColumn);
+                    }
                     if (!col) {
                         this.parent.log('initial_action', { moduleName: 'filter', columnName: prop });
                     }
@@ -2805,13 +2813,13 @@ var Data = /** @__PURE__ @class */ (function () {
             if (defaultFltrCols.length) {
                 for (var _e = 0, defaultFltrCols_1 = defaultFltrCols; _e < defaultFltrCols_1.length; _e++) {
                     var col = defaultFltrCols_1[_e];
-                    var column_1 = this.getColumnByField(col.field) ||
-                        getColumnByForeignKeyValue(col.field, this.parent.getForeignKeyColumns());
+                    col.uid = col.uid || this.parent.getColumnByField(col.field).uid;
+                    var column_1 = this.parent.getColumnByUid(col.uid);
                     if (!column_1) {
                         this.parent.log('initial_action', { moduleName: 'filter', columnName: col.field });
                     }
                     var sType = column_1.type;
-                    if (getColumnByForeignKeyValue(col.field, foreignColumn) && !skipFoerign) {
+                    if (column_1.isForeignColumn() && getColumnByForeignKeyValue(col.field, foreignColumn) && !skipFoerign) {
                         actualFilter.push(col);
                         predicateList = this.fGeneratePredicate(column_1, predicateList);
                     }
@@ -6013,7 +6021,7 @@ var Render = /** @__PURE__ @class */ (function () {
         return columns.some(function (col) {
             var fbool = false;
             fbool = _this.parent.filterSettings.columns.some(function (value) {
-                return col.foreignKeyValue === value.field;
+                return col.uid === value.uid;
             });
             return !!(fbool || _this.parent.searchSettings.key.length);
         });
@@ -7243,14 +7251,15 @@ var ContentFocus = /** @__PURE__ @class */ (function () {
         var table = this.getTable();
         return function (rowIndex, cellIndex, action) {
             var cell = table.rows[rowIndex].cells[cellIndex];
+            var isCellWidth = cell.getBoundingClientRect().width !== 0;
             if (action === 'enter' || action === 'shiftEnter') {
-                return cell.classList.contains('e-rowcell');
+                return isCellWidth && cell.classList.contains('e-rowcell');
             }
             if ((action === 'shiftUp' || action === 'shiftDown') && cell.classList.contains('e-rowcell')) {
-                return true;
+                return isCellWidth;
             }
             else if (action !== 'shiftUp' && action !== 'shiftDown') {
-                return cell.getBoundingClientRect().width !== 0;
+                return isCellWidth;
             }
             return false;
         };
@@ -10945,6 +10954,9 @@ var Predicate$1 = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property()
     ], Predicate$$1.prototype, "ejpredicate", void 0);
+    __decorate([
+        Property()
+    ], Predicate$$1.prototype, "uid", void 0);
     return Predicate$$1;
 }(ChildProperty));
 /**
@@ -16363,7 +16375,7 @@ var FilterMenuRenderer = /** @__PURE__ @class */ (function () {
         var columns = this.filterSettings.columns;
         for (var _i = 0, columns_1 = columns; _i < columns_1.length; _i++) {
             var column = columns_1[_i];
-            if (col.field === column.field || col.foreignKeyValue === column.field) {
+            if (col.uid === column.uid) {
                 flValue = column.value;
             }
         }
@@ -17273,7 +17285,7 @@ var Filter = /** @__PURE__ @class */ (function () {
         var col = this.parent.getColumnByField(this.fieldName);
         var field = col.isForeignColumn() ? col.foreignKeyValue : this.fieldName;
         this.currentFilterObject = {
-            field: field, operator: this.operator, value: this.value, predicate: this.predicate,
+            field: field, uid: col.uid, operator: this.operator, value: this.value, predicate: this.predicate,
             matchCase: this.matchCase, ignoreAccent: this.ignoreAccent, actualFilterValue: {}, actualOperator: {}
         };
         var index = this.getFilteredColsIndexByField(col);
@@ -17289,7 +17301,7 @@ var Filter = /** @__PURE__ @class */ (function () {
     Filter.prototype.getFilteredColsIndexByField = function (col) {
         var cols = this.filterSettings.columns;
         for (var i = 0, len = cols.length; i < len; i++) {
-            if (cols[i].field === col.field || (col.isForeignColumn() && cols[i].field === col.foreignKeyValue)) {
+            if (cols[i].uid === col.uid || (col.isForeignColumn() && this.parent.getColumnByUid(col.uid).field === col.foreignKeyValue)) {
                 return i;
             }
         }
@@ -17495,8 +17507,7 @@ var Filter = /** @__PURE__ @class */ (function () {
     Filter.prototype.refreshFilterSettings = function () {
         if (this.filterSettings.type === 'FilterBar') {
             for (var i = 0; i < this.filterSettings.columns.length; i++) {
-                this.column = this.parent.getColumnByField(this.filterSettings.columns[i].field) ||
-                    getColumnByForeignKeyValue(this.filterSettings.columns[i].field, this.parent.getForeignKeyColumns());
+                this.column = this.parent.getColumnByUid(this.filterSettings.columns[i].uid);
                 var filterValue = this.filterSettings.columns[i].value;
                 filterValue = !isNullOrUndefined(filterValue) && filterValue.toString();
                 if (!isNullOrUndefined(this.column.format)) {
@@ -17506,10 +17517,10 @@ var Filter = /** @__PURE__ @class */ (function () {
                     var key = this.filterSettings.columns[i].field;
                     this.values[key] = this.filterSettings.columns[i].value;
                 }
-                var filterElement = this.getFilterBarElement(this.filterSettings.columns[i].field);
+                var filterElement = this.getFilterBarElement(this.column.field);
                 if (filterElement) {
                     if (!isNullOrUndefined(this.cellText[this.filterSettings.columns[i].field])) {
-                        filterElement.value = this.cellText[this.filterSettings.columns[i].field];
+                        filterElement.value = this.cellText[this.column.field];
                     }
                     else {
                         filterElement.value = this.filterSettings.columns[i].value;
@@ -17548,16 +17559,20 @@ var Filter = /** @__PURE__ @class */ (function () {
      * @return {void}
      */
     Filter.prototype.clearFiltering = function () {
+        var _this = this;
         var cols = getActualPropFromColl(this.filterSettings.columns);
         if (isActionPrevent(this.parent)) {
             this.parent.notify(preventBatch, { instance: this, handler: this.clearFiltering });
             return;
         }
-        var colName = cols.map(function (f) { return f.field; });
-        var filteredcols = colName.filter(function (item, pos) { return colName.indexOf(item) === pos; });
+        cols.forEach(function (col) {
+            col.uid = col.uid || _this.parent.getColumnByField(col.field).uid;
+        });
+        var colUid = cols.map(function (f) { return f.uid; });
+        var filteredcols = colUid.filter(function (item, pos) { return colUid.indexOf(item) === pos; });
         this.refresh = false;
         for (var i = 0, len = filteredcols.length; i < len; i++) {
-            this.removeFilteredColsByField(filteredcols[i], false);
+            this.removeFilteredColsByField(this.parent.getColumnByUid(filteredcols[i]).field, false);
         }
         this.refresh = true;
         this.parent.renderModule.refresh();
@@ -17627,15 +17642,15 @@ var Filter = /** @__PURE__ @class */ (function () {
             this.parent.notify(preventBatch, args);
             return;
         }
-        var colName = cols.map(function (f) { return f.field; });
-        var filteredcols = colName.filter(function (item, pos) { return colName.indexOf(item) === pos; });
-        for (var i = 0, len = filteredcols.length; i < len; i++) {
+        var colUid = cols.map(function (f) { return f.uid; });
+        var filteredColsUid = colUid.filter(function (item, pos) { return colUid.indexOf(item) === pos; });
+        for (var i = 0, len = filteredColsUid.length; i < len; i++) {
+            cols[i].uid = cols[i].uid || this.parent.getColumnByField(cols[i].field).uid;
             var len_1 = cols.length;
-            var column = this.parent.getColumnByField(field) ||
-                getColumnByForeignKeyValue(field, this.parent.getForeignKeyColumns());
-            if (filteredcols[i] === field || filteredcols[i] === column.foreignKeyValue) {
+            var column = this.parent.getColumnByUid(filteredColsUid[i]);
+            if (column.field === field || (column.field === column.foreignKeyValue && column.isForeignColumn())) {
                 if (this.filterSettings.type === 'FilterBar' && !isClearFilterBar) {
-                    var selector = '[id=\'' + cols[i].field + '_filterBarcell\']';
+                    var selector = '[id=\'' + column.field + '_filterBarcell\']';
                     fCell = this.parent.getHeaderContent().querySelector(selector);
                     if (fCell) {
                         fCell.value = '';
@@ -17643,7 +17658,7 @@ var Filter = /** @__PURE__ @class */ (function () {
                     }
                 }
                 while (len_1--) {
-                    if (cols[len_1].field === field) {
+                    if (cols[len_1].uid === column.uid) {
                         cols.splice(len_1, 1);
                     }
                 }
@@ -17713,8 +17728,7 @@ var Filter = /** @__PURE__ @class */ (function () {
             if (columns.length > 0 && this.filterStatusMsg !== this.l10n.getConstant('InvalidFilterMessage')) {
                 this.filterStatusMsg = '';
                 for (var index = 0; index < columns.length; index++) {
-                    column = gObj.getColumnByField(columns[index].field) ||
-                        getColumnByForeignKeyValue(columns[index].field, this.parent.getForeignKeyColumns());
+                    column = gObj.getColumnByUid(columns[index].uid);
                     if (index) {
                         this.filterStatusMsg += ' && ';
                     }
@@ -18018,11 +18032,11 @@ var Filter = /** @__PURE__ @class */ (function () {
                 fieldName = getColumnByForeignKeyValue(cols[i].field, this.parent.getForeignKeyColumns()).field;
             }
             /* tslint:disable-next-line:max-line-length */
-            this.refreshFilterIcon(fieldName, cols[i].operator, cols[i].value, cols[i].type, cols[i].predicate, cols[i].matchCase, cols[i].ignoreAccent);
+            this.refreshFilterIcon(fieldName, cols[i].operator, cols[i].value, cols[i].type, cols[i].predicate, cols[i].matchCase, cols[i].ignoreAccent, cols[i].uid);
         }
     };
     /* tslint:disable-next-line:max-line-length */
-    Filter.prototype.refreshFilterIcon = function (fieldName, operator, value, type, predicate, matchCase, ignoreAccent) {
+    Filter.prototype.refreshFilterIcon = function (fieldName, operator, value, type, predicate, matchCase, ignoreAccent, uid) {
         var obj;
         obj = {
             field: fieldName,
@@ -18034,7 +18048,8 @@ var Filter = /** @__PURE__ @class */ (function () {
             type: type
         };
         this.actualPredicate[fieldName] ? this.actualPredicate[fieldName].push(obj) : this.actualPredicate[fieldName] = [obj];
-        this.addFilteredClass(fieldName);
+        var field = uid ? this.parent.getColumnByUid(uid).field : fieldName;
+        this.addFilteredClass(field);
     };
     Filter.prototype.addFilteredClass = function (fieldName) {
         var filterIconElement;
@@ -22415,12 +22430,13 @@ var InlineEditRender = /** @__PURE__ @class */ (function () {
         var gObj = this.parent;
         var gLen = 0;
         var isDetail = !isNullOrUndefined(gObj.detailTemplate) || !isNullOrUndefined(gObj.childGrid) ? 1 : 0;
+        var isDragable = gObj.isRowDragable() ? 1 : 0;
         if (gObj.allowGrouping) {
             gLen = gObj.groupSettings.columns.length;
         }
         var td = this.parent.createElement('td', {
             className: 'e-editcell e-normaledit',
-            attrs: { colspan: (gObj.getVisibleColumns().length - gObj.getVisibleFrozenColumns() + gLen + isDetail).toString() }
+            attrs: { colspan: (gObj.getVisibleColumns().length - gObj.getVisibleFrozenColumns() + gLen + isDetail + isDragable).toString() }
         });
         var form = args.form =
             this.parent.createElement('form', { id: gObj.element.id + 'EditForm', className: 'e-gridform' });
@@ -26551,7 +26567,7 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
                 isForeignKey: col.isForeignColumn(),
             };
             cell.value = gObj.getColumnByField(item.field).headerText +
-                ': ' + this.exportValueFormatter.formatCellValue(args) + ' - ';
+                ': ' + (!col.enableGroupByFormat ? this.exportValueFormatter.formatCellValue(args) : item.key) + ' - ';
             if (item.count > 1) {
                 cell.value += item.count + ' items';
             }
@@ -27381,7 +27397,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
                 isForeignKey: col.isForeignColumn(),
             };
             /* tslint:disable-next-line:max-line-length */
-            var value = this.parent.getColumnByField(dataSourceItems.field).headerText + ': ' + this.exportValueFormatter.formatCellValue(args) + ' - ' + dataSourceItems.count + (dataSource.count > 1 ? ' items' : ' item');
+            var value = this.parent.getColumnByField(dataSourceItems.field).headerText + ': ' + (!col.enableGroupByFormat ? this.exportValueFormatter.formatCellValue(args) : dataSourceItems.key) + ' - ' + dataSourceItems.count + (dataSource.count > 1 ? ' items' : ' item');
             row.cells.getCell(groupIndex).value = value;
             row.cells.getCell(groupIndex + 1).style.stringFormat = new PdfStringFormat(PdfTextAlignment.Left);
             row.style.setBorder(border);

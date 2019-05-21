@@ -745,7 +745,6 @@ function getThemeStyle(theme) {
                 needleTailColor: '#9A9A9A'
             };
             break;
-        case 'Highcontrast':
         case 'HighContrast':
             style = {
                 backgroundColor: '#000000',
@@ -881,10 +880,10 @@ var Range = /** @__PURE__ @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate$2([
-        Property(null)
+        Property(0)
     ], Range.prototype, "start", void 0);
     __decorate$2([
-        Property(null)
+        Property(0)
     ], Range.prototype, "end", void 0);
     __decorate$2([
         Property(null)
@@ -915,7 +914,7 @@ var Tick = /** @__PURE__ @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate$2([
-        Property(null)
+        Property(2)
     ], Tick.prototype, "width", void 0);
     __decorate$2([
         Property(null)
@@ -2610,7 +2609,6 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
                 pointer: this.activePointer,
                 currentValue: this.activePointer.currentValue
             });
-            this.activePointer.value = this.activePointer.currentValue;
             this.activeAxis = null;
             this.activePointer = null;
         }

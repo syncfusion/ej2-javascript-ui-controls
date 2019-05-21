@@ -455,13 +455,13 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         var isVertical = orientation === 'Vertical';
         this.element.classList.remove(isVertical ? HORIZONTAL_PANE : VERTICAL_PANE);
         this.element.classList.add(isVertical ? VERTICAL_PANE : HORIZONTAL_PANE);
-        this.element.removeAttribute('aria-orientation');
-        this.element.setAttribute('aria-orientation', orientation.toLowerCase());
         for (var index = 0; index < this.allPanes.length; index++) {
             this.allPanes[index].classList.remove(isVertical ? SPLIT_H_PANE : SPLIT_V_PANE);
             this.allPanes[index].classList.add(isVertical ? SPLIT_V_PANE : SPLIT_H_PANE);
         }
         for (var index = 0; index < this.allBars.length; index++) {
+            this.allBars[index].removeAttribute('aria-orientation');
+            this.allBars[index].setAttribute('aria-orientation', orientation.toLowerCase());
             this.allBars[index].classList.remove(isVertical ? SPLIT_H_BAR : SPLIT_V_BAR);
             this.allBars[index].classList.add(isVertical ? SPLIT_V_BAR : SPLIT_H_BAR);
         }
@@ -555,6 +555,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
                 clonedEle[i].parentNode.appendChild(separator);
                 this.currentSeparator = separator;
                 separator.setAttribute('role', 'separator');
+                separator.setAttribute('aria-orientation', this.orientation.toLowerCase());
                 this.wireClickEvents();
                 if (this.isResizable()) {
                     EventHandler.add(separator, 'mousedown', this.onMouseDown, this);
@@ -1353,7 +1354,6 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         }
         childCount = target.children.length;
         var child = [].slice.call(target.children);
-        this.element.setAttribute('aria-orientation', this.orientation.toLowerCase());
         this.sizeFlag = false;
         if (childCount > 1) {
             for (var i = 0; i < childCount; i++) {
@@ -3405,13 +3405,20 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                             }
                         }
                         if (changedPanels.length > 0) {
-                            _this.trigger('change', changedPanels);
+                            var changedArgs = { changedPanels: changedPanels };
+                            _this.trigger('change', changedArgs);
                         }
+                        _this.dragStopEventArgs = { event: args.event, element: args.element };
                         _this.trigger('dragStop', args);
                         _this.resizeEvents();
                     },
                     drag: function (args) {
-                        _this.trigger('drag', args);
+                        _this.draggedEventArgs = {
+                            event: args.event,
+                            element: args.element,
+                            target: closest((args.target), '.e-panel')
+                        };
+                        _this.trigger('drag', _this.draggedEventArgs);
                         _this.onDragStart(args);
                     }
                 });
@@ -3428,7 +3435,8 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.sortedPanel();
     };
     DashboardLayout.prototype.onDraggingStart = function (args) {
-        this.trigger('dragStart', args);
+        this.dragStartArgs = { event: args.event, element: args.element, cancel: false };
+        this.trigger('dragStart', this.dragStartArgs);
         this.panelsInitialModel = this.cloneModels(this.panels);
         this.mainElement = args.element;
         this.cloneObject = JSON.parse(JSON.stringify(this.cloneObject));
@@ -3649,7 +3657,11 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.updateOldRowColumn();
         this.sortedPanel();
         this.updateCloneArrayObject();
-        this.bindEvents();
+        if (this.allowResizing) {
+            for (var i = 0; i < cell.querySelectorAll('.e-resize').length; i++) {
+                EventHandler.add(cell.querySelectorAll('.e-resize')[i], 'mousedown', this.downResizeHandler, this);
+            }
+        }
     };
     DashboardLayout.prototype.updateCloneArrayObject = function () {
         this.cloneArray = this.sortedArray;

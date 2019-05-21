@@ -380,7 +380,7 @@ export class ExcelExport {
             };
 
             cell.value = gObj.getColumnByField(item.field).headerText +
-            ': ' + this.exportValueFormatter.formatCellValue(args) + ' - ';
+            ': ' + (!col.enableGroupByFormat ? this.exportValueFormatter.formatCellValue(args) : item.key) + ' - ';
             if (item.count > 1) {
                 cell.value += item.count + ' items';
             } else {

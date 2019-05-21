@@ -172,7 +172,7 @@ export class Render {
         return columns.some((col: Column) => {
             let fbool: boolean = false;
             fbool = this.parent.filterSettings.columns.some((value: PredicateModel) => {
-                return col.foreignKeyValue === value.field;
+                return col.uid === value.uid;
             });
             return !!(fbool || this.parent.searchSettings.key.length);
         });

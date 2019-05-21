@@ -689,9 +689,12 @@ export class KeyboardInteraction {
         }
     }
     private processDelete(e: KeyboardEventArgs): void {
-        if (document.activeElement.classList.contains(cls.APPOINTMENT_CLASS)) {
+        if (document.activeElement && document.activeElement.classList.contains(cls.APPOINTMENT_CLASS)) {
             addClass([document.activeElement], cls.APPOINTMENT_BORDER);
             this.parent.activeEventData = this.parent.eventBase.getSelectedEvents();
+            if (this.parent.activeViewOptions.readonly || document.activeElement.classList.contains('e-read-only')) {
+                return;
+            }
             this.parent.quickPopup.deleteClick();
         }
     }

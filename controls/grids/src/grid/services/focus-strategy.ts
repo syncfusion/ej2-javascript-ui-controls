@@ -607,13 +607,14 @@ export class ContentFocus implements IFocus {
         let table: HTMLTableElement = this.getTable();
         return (rowIndex: number, cellIndex: number, action?: string) => {
             let cell: HTMLElement = table.rows[rowIndex].cells[cellIndex];
+            let isCellWidth: boolean = cell.getBoundingClientRect().width !== 0;
             if (action === 'enter' || action === 'shiftEnter') {
-                return cell.classList.contains('e-rowcell');
+                return isCellWidth && cell.classList.contains('e-rowcell');
             }
             if ((action === 'shiftUp' || action === 'shiftDown') && cell.classList.contains('e-rowcell')) {
-                return true;
+                return isCellWidth;
             } else if (action !== 'shiftUp' && action !== 'shiftDown') {
-                return cell.getBoundingClientRect().width !== 0;
+                return isCellWidth;
             }
             return false;
         };

@@ -1340,7 +1340,7 @@ describe('Quick Popups', () => {
         });
         it('Single appointment select using click or tap', () => {
             let target: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
-            (target[target.length - 1] as HTMLElement).click();
+            (target[2] as HTMLElement).click();
             let eventPopup: HTMLElement = schObj.element.querySelector('.e-quick-popup-wrapper') as HTMLElement;
             expect(eventPopup).toBeTruthy();
         });

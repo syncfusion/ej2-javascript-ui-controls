@@ -455,8 +455,7 @@ export class VerticalEvent extends EventBase {
                 this.overlapEvents = [];
                 this.overlapEvents.push([record]);
             }
-            let width: number = this.parent.currentView === 'Day' ? 97 : 94;
-            appWidth = ((width - this.overlapEvents.length) / this.overlapEvents.length) + '%';
+            appWidth = this.getEventWidth();
             let argsData: ElementData = {
                 index: appIndex, left: appLeft, width: appWidth,
                 day: dayIndex, dayIndex: dayCount, record: record, resource: resource
@@ -479,6 +478,17 @@ export class VerticalEvent extends EventBase {
             this.appendEvent(eventObj, appointmentElement, index, tempData.appLeft as string);
             this.wireAppointmentEvents(appointmentElement, false, eventObj);
         }
+    }
+
+    private getEventWidth(): string {
+        let width: number = this.parent.currentView === 'Day' ? 97 : 94;
+        let tempWidth: number = ((width - this.overlapEvents.length) / this.overlapEvents.length);
+        return (tempWidth < 0 ? 0 : tempWidth) + '%';
+    }
+
+    private getEventLeft(appWidth: string, index: number): string {
+        let tempLeft: number = (parseFloat(appWidth) + 1) * index;
+        return (tempLeft > 99 ? 99 : tempLeft) + '%';
     }
 
     private getTopValue(date: Date, day: number, resource: number): number {
@@ -550,19 +560,18 @@ export class VerticalEvent extends EventBase {
                         if (element.querySelectorAll('div[data-guid="' + eleGuid + '"]').length > 0 && eleGuid !== args.record.Guid) {
                             let apps: HTMLElement = element.querySelector('div[data-guid="' + eleGuid + '"]') as HTMLElement;
                             if (parseFloat(args.width) <= parseFloat(apps.style.width)) {
-                                (this.parent.enableRtl) ? apps.style.right = ((parseFloat(args.width) + 1) * i) + '%' :
-                                    apps.style.left = ((parseFloat(args.width) + 1) * i) + '%';
+                                (this.parent.enableRtl) ? apps.style.right = this.getEventLeft(args.width, i) :
+                                    apps.style.left = this.getEventLeft(args.width, i);
                                 apps.style.width = ((parseFloat(args.width))) + '%';
                                 data.appWidth = apps.style.width;
                             }
                         } else {
                             let appWidth: string = args.width;
                             if (isNullOrUndefined(this.overlapEvents[i - 1])) {
-                                let width: number = this.parent.currentView === 'Day' ? 97 : 94;
-                                appWidth = ((width - this.overlapEvents.length) / this.overlapEvents.length) + '%';
+                                appWidth = this.getEventWidth();
                             }
                             data.appWidth = appWidth;
-                            data.appLeft = ((parseInt(appWidth, 0) + 1) * args.index) + '%';
+                            data.appLeft = this.getEventLeft(appWidth, args.index);
                         }
                     }
                 }

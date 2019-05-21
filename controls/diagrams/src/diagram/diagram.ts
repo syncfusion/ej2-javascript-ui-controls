@@ -1133,7 +1133,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /** @private */
     public commands: {};
     /** @private */
-    public activeLabel: ActiveLabel = { id: '', parentId: '', isGroup: false };
+    public activeLabel: ActiveLabel = { id: '', parentId: '', isGroup: false, text: undefined };
     /** @private */
     public activeLayer: LayerModel;
     /** @private */
@@ -2468,6 +2468,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public add(obj: NodeModel | ConnectorModel, group?: boolean): Node | Connector {
         let newObj: Node | Connector;
+        let propertyChangeValue: boolean = this.isProtectedOnChange;
+        this.protectPropertyChange(true);
         if (obj) {
             obj = cloneObject(obj);
             let args: ICollectionChangeEventArgs = {
@@ -2550,6 +2552,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
         }
+        this.protectPropertyChange(propertyChangeValue);
         this.resetDiagramActions(DiagramAction.PublicMethod);
         if (newObj && this.layers.length > 1) {
             this.moveNode(newObj);
@@ -3018,8 +3021,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (!canZoomPan(this) || canSingleSelect(this)) {
             this.textEditing = true;
             let transform: TransformFactor = this.scroller.transform;
-            let scale: number = canZoomTextEdit(this) ? transform.scale : 1;
-            let minWidth: number = 90;
+            let scale: number = canZoomTextEdit(this) ? transform.scale : 1; let minWidth: number = 90;
             let text: string; let bounds: Size; let attributes: Object;
             let x: number; let y: number; let textWrapper: DiagramElement;
             if (!node) {
@@ -3054,6 +3056,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     let textEditing: HTMLElement = document.getElementById(this.element.id + '_editTextBoxDiv');
                     let textArea: HTMLTextAreaElement = document.getElementById(this.element.id + '_editBox') as HTMLTextAreaElement;
                     text = textArea ? textArea.value : (textWrapper as TextElement).content;
+                    this.activeLabel.text = text;
                     if (!textEditing && !textArea) {
                         textEditing = createHtmlElement('div', {});
                         textArea = createHtmlElement('textarea', {}) as HTMLTextAreaElement;
@@ -5314,7 +5317,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     selectorModel.wrapper, selectorElement, selectorModel.thumbsConstraints, this.scroller.currentZoom,
                     selectorModel.constraints, this.scroller.transform, undefined, canMove(selectorModel));
             }
-            if (!(selectorModel.annotation)) {
+            if (!(selectorModel.annotation) && !this.currentSymbol) {
                 this.diagramRenderer.renderUserHandler(selectorModel, selectorElement, this.scroller.transform);
             }
         }
@@ -5354,7 +5357,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     this.updateThumbConstraints(selector.nodes, selector);
                     this.updateThumbConstraints(selector.connectors, selector, true);
                 }
-                if ((this.selectedItems.constraints & SelectorConstraints.UserHandle) && (!(selector.annotation))) {
+                if ((this.selectedItems.constraints & SelectorConstraints.UserHandle) && (!(selector.annotation)) && !this.currentSymbol) {
                     this.diagramRenderer.renderUserHandler(selector, selectorEle, this.scroller.transform);
                 }
                 if (selector.annotation) {
@@ -5469,6 +5472,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
+
     /** @private */
     public getWrapper(nodes: Container, id: string): DiagramElement {
         let wrapper: DiagramElement;
@@ -5531,7 +5535,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             EventHandler.remove(textArea, 'input', this.eventHandler.inputChange);
             EventHandler.remove(textArea, 'focusout', this.focusOutEdit);
             let element: HTMLElement = document.getElementById(this.element.id + '_editTextBoxDiv');
-            let args: ITextEditEventArgs = { oldValue: element.textContent, newValue: text, cancel: false };
+            let args: ITextEditEventArgs = { oldValue: this.activeLabel.text, newValue: text, cancel: false };
             let bpmnAnnotation: boolean = false;
             let node: NodeModel;
             element.parentNode.removeChild(element);
@@ -5541,7 +5545,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 textWrapper = this.bpmnModule.getTextAnnotationWrapper(node, this.activeLabel.id);
                 bpmnAnnotation = node ? true : false;
                 if (bpmnAnnotation) {
-                    if (element.textContent !== text) {
+                    if (element.textContent !== text || text !== this.activeLabel.text) {
                         this.triggerEvent(DiagramEvent.textEdit, args);
                         if (!args.cancel) {
                             this.bpmnModule.updateTextAnnotationContent(node, this.activeLabel, text, this);
@@ -5553,7 +5557,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (!bpmnAnnotation) {
                 node = this.nameTable[this.activeLabel.parentId];
                 let deleteNode: boolean = this.eventHandler.isAddTextNode(node as Node, true);
-                if (!deleteNode && element.textContent !== text) {
+                if (!deleteNode && (element.textContent !== text || text !== this.activeLabel.text)) {
                     this.triggerEvent(DiagramEvent.textEdit, args);
                 }
                 if (!textWrapper) {
@@ -5619,7 +5623,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             if (this.activeLabel.isGroup) {
                 this.endGroupAction();
             }
-            this.activeLabel = { id: '', parentId: '', isGroup: false };
+            this.activeLabel = { id: '', parentId: '', isGroup: false, text: undefined };
         }
     }
     /** @private */

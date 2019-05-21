@@ -112,7 +112,7 @@ describe('Map layer testing', () => {
                 expect(fill).toBe('#ffffff');
                 done();
             };
-            tooltip.theme = 'Highcontrast';
+            tooltip.theme = 'HighContrast';
             tooltip.refresh();
         });
         it('tooltip format checking for layer', (done: Function) => {

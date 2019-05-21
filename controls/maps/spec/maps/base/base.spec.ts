@@ -380,13 +380,13 @@ describe('Maps Component Base Spec', () => {
             let pointsString: string = '200,10 250,190 160,210';
             let option: PolygonOption = new PolygonOption('polygon-mid', pointsString, 'red', 1, 'blue', 1);
             drawPolygon(maps, option, maps.svgObject);
-            let midpoint: object = findMidPointOfPolygon(points);
+            let midpoint: object = findMidPointOfPolygon(points, maps.projectionType);
             let coption: CircleOption = new CircleOption('mid-cir', 'blue', { width: 1, color: 'orange' }, 1,
                 midpoint['x'], midpoint['y'], 10, null);
             drawCircle(maps, coption, maps.svgObject);
             expect(parseInt(midpoint['x'], 10)).toBe(201);
             expect(parseInt(midpoint['y'], 10)).toBe(126);
-            midpoint = findMidPointOfPolygon([]);
+            midpoint = findMidPointOfPolygon([], maps.projectionType);
             expect(midpoint).toBe(null);
             pointsString = '100,10 40,198 190,78 10,78 160,198';
             points = [
@@ -394,7 +394,7 @@ describe('Maps Component Base Spec', () => {
             ];
             option = new PolygonOption('polygon-mid-2', pointsString, 'lime', 1, 'blueviolet', 1);
             drawPolygon(maps, option, maps.svgObject);
-            midpoint = findMidPointOfPolygon(points);
+            midpoint = findMidPointOfPolygon(points, maps.projectionType);
             coption = new CircleOption('mid-cir-2', 'aqua', { width: 1, color: 'orange' }, 1, midpoint['x'], midpoint['y'], 10, null);
             drawCircle(maps, coption, maps.svgObject);
             expect(parseInt(midpoint['x'], 10)).toBe(103);

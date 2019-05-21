@@ -202,7 +202,7 @@ export class TableSettings extends ChildProperty<TableSettings> {
     public resize: boolean;
     /**    
      * Defines the minimum Width of the table.
-     * @default 0
+     * @default '0'
      */
     @Property(0)
     public minWidth: string | number;
@@ -223,6 +223,13 @@ export class QuickToolbarSettings extends ChildProperty<QuickToolbarSettings> {
      */
     @Property(true)
     public enable: boolean;
+
+    /**
+     * Specifies whether to opens a quick toolbar on the right click.
+     * @default false
+     */
+    @Property(false)
+    public showOnRightClick: boolean;
 
     /**
      * Specifies the action that should happen when scroll the target-parent container.

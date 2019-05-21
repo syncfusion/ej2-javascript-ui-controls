@@ -191,7 +191,7 @@ export class Filter implements IAction {
         let col: Column = this.parent.getColumnByField(this.fieldName);
         let field: string = col.isForeignColumn() ? col.foreignKeyValue : this.fieldName;
         this.currentFilterObject = {
-            field: field, operator: this.operator, value: this.value as string, predicate: this.predicate,
+            field: field, uid: col.uid, operator: this.operator, value: this.value as string, predicate: this.predicate,
             matchCase: this.matchCase, ignoreAccent: this.ignoreAccent, actualFilterValue: {}, actualOperator: {}
         };
 
@@ -208,7 +208,7 @@ export class Filter implements IAction {
     private getFilteredColsIndexByField(col: Column): number {
         let cols: PredicateModel[] = this.filterSettings.columns;
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
-            if (cols[i].field === col.field || (col.isForeignColumn() && cols[i].field === col.foreignKeyValue)) {
+            if (cols[i].uid === col.uid || (col.isForeignColumn() && this.parent.getColumnByUid(col.uid).field === col.foreignKeyValue)) {
                 return i;
             }
         }
@@ -423,8 +423,7 @@ export class Filter implements IAction {
     private refreshFilterSettings(): void {
         if (this.filterSettings.type === 'FilterBar') {
             for (let i: number = 0; i < this.filterSettings.columns.length; i++) {
-                this.column = this.parent.getColumnByField(this.filterSettings.columns[i].field) ||
-                    getColumnByForeignKeyValue(this.filterSettings.columns[i].field, this.parent.getForeignKeyColumns());
+                this.column = this.parent.getColumnByUid(this.filterSettings.columns[i].uid);
                 let filterValue: string | number | Date | boolean = this.filterSettings.columns[i].value;
                 filterValue = !isNullOrUndefined(filterValue) && filterValue.toString();
                 if (!isNullOrUndefined(this.column.format)) {
@@ -433,10 +432,10 @@ export class Filter implements IAction {
                     let key: string = this.filterSettings.columns[i].field;
                     this.values[key] = this.filterSettings.columns[i].value;
                 }
-                let filterElement: HTMLInputElement = this.getFilterBarElement(this.filterSettings.columns[i].field);
+                let filterElement: HTMLInputElement = this.getFilterBarElement(this.column.field);
                 if (filterElement) {
                     if (!isNullOrUndefined(this.cellText[this.filterSettings.columns[i].field])) {
-                        filterElement.value = this.cellText[this.filterSettings.columns[i].field];
+                        filterElement.value = this.cellText[this.column.field];
                     } else {
                         filterElement.value = this.filterSettings.columns[i].value as string;
                     }
@@ -482,11 +481,14 @@ export class Filter implements IAction {
             this.parent.notify(events.preventBatch, { instance: this, handler: this.clearFiltering });
             return;
         }
-        let colName: string[] = cols.map((f: Column) => f.field);
-        let filteredcols: string[] = colName.filter((item: string, pos: number) => colName.indexOf(item) === pos);
+        cols.forEach((col: Column) => {
+            col.uid = col.uid || this.parent.getColumnByField(col.field).uid;
+        });
+        let colUid: string[] = cols.map((f: Column) => f.uid);
+        let filteredcols: string[] = colUid.filter((item: string, pos: number) => colUid.indexOf(item) === pos);
         this.refresh = false;
         for (let i: number = 0, len: number = filteredcols.length; i < len; i++) {
-            this.removeFilteredColsByField(filteredcols[i], false);
+            this.removeFilteredColsByField(this.parent.getColumnByUid(filteredcols[i]).field, false);
         }
         this.refresh = true;
         this.parent.renderModule.refresh();
@@ -560,15 +562,15 @@ export class Filter implements IAction {
             this.parent.notify(events.preventBatch, args);
             return;
         }
-        let colName: string[] = cols.map((f: Column) => f.field);
-        let filteredcols: string[] = colName.filter((item: string, pos: number) => colName.indexOf(item) === pos);
-        for (let i: number = 0, len: number = filteredcols.length; i < len; i++) {
+        let colUid: string[] = cols.map((f: Column) => f.uid);
+        let filteredColsUid: string[] = colUid.filter((item: string, pos: number) => colUid.indexOf(item) === pos);
+        for (let i: number = 0, len: number = filteredColsUid.length; i < len; i++) {
+            cols[i].uid = cols[i].uid || this.parent.getColumnByField(cols[i].field).uid;
             let len: number = cols.length;
-            let column: Column = this.parent.getColumnByField(field) ||
-                getColumnByForeignKeyValue(field, this.parent.getForeignKeyColumns());
-            if (filteredcols[i] === field || filteredcols[i] === column.foreignKeyValue) {
+            let column: Column = this.parent.getColumnByUid(filteredColsUid[i]);
+            if (column.field === field || (column.field === column.foreignKeyValue && column.isForeignColumn())) {
                 if (this.filterSettings.type === 'FilterBar' && !isClearFilterBar) {
-                    let selector: string = '[id=\'' + cols[i].field + '_filterBarcell\']';
+                    let selector: string = '[id=\'' + column.field + '_filterBarcell\']';
                     fCell = this.parent.getHeaderContent().querySelector(selector) as HTMLInputElement;
                     if (fCell) {
                         fCell.value = '';
@@ -576,7 +578,7 @@ export class Filter implements IAction {
                     }
                 }
                 while (len --) {
-                    if (cols[len].field === field) {
+                    if (cols[len].uid === column.uid) {
                          cols.splice(len, 1);
                     }
                 }
@@ -654,8 +656,7 @@ export class Filter implements IAction {
             if (columns.length > 0 && this.filterStatusMsg !== this.l10n.getConstant('InvalidFilterMessage')) {
                 this.filterStatusMsg = '';
                 for (let index: number = 0; index < columns.length; index++) {
-                    column = gObj.getColumnByField(columns[index].field) ||
-                        getColumnByForeignKeyValue(columns[index].field, this.parent.getForeignKeyColumns());
+                    column = gObj.getColumnByUid(columns[index].uid);
                     if (index) {
                         this.filterStatusMsg += ' && ';
                     }
@@ -975,12 +976,12 @@ export class Filter implements IAction {
                 fieldName = getColumnByForeignKeyValue(cols[i].field, this.parent.getForeignKeyColumns()).field;
             }
             /* tslint:disable-next-line:max-line-length */
-            this.refreshFilterIcon(fieldName, cols[i].operator, cols[i].value, cols[i].type, cols[i].predicate, cols[i].matchCase, cols[i].ignoreAccent);
+            this.refreshFilterIcon(fieldName, cols[i].operator, cols[i].value, cols[i].type, cols[i].predicate, cols[i].matchCase, cols[i].ignoreAccent, cols[i].uid);
         }
     }
 
     /* tslint:disable-next-line:max-line-length */
-    private refreshFilterIcon(fieldName: string, operator: string, value: string | number | Date | boolean, type?: string, predicate?: string, matchCase?: boolean, ignoreAccent?: boolean): void {
+    private refreshFilterIcon(fieldName: string, operator: string, value: string | number | Date | boolean, type?: string, predicate?: string, matchCase?: boolean, ignoreAccent?: boolean, uid?: string): void {
         let obj: Object;
         obj = {
             field: fieldName,
@@ -992,7 +993,8 @@ export class Filter implements IAction {
             type: type
             };
         this.actualPredicate[fieldName] ? this.actualPredicate[fieldName].push(obj) : this.actualPredicate[fieldName] = [obj];
-        this.addFilteredClass(fieldName);
+        let field: string = uid ? this.parent.getColumnByUid(uid).field : fieldName;
+        this.addFilteredClass(field);
     }
 
     private addFilteredClass(fieldName: string): void {

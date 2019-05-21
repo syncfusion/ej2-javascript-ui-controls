@@ -2021,9 +2021,12 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
         }
     };
     KeyboardInteraction.prototype.processDelete = function (e) {
-        if (document.activeElement.classList.contains(APPOINTMENT_CLASS)) {
+        if (document.activeElement && document.activeElement.classList.contains(APPOINTMENT_CLASS)) {
             addClass([document.activeElement], APPOINTMENT_BORDER);
             this.parent.activeEventData = this.parent.eventBase.getSelectedEvents();
+            if (this.parent.activeViewOptions.readonly || document.activeElement.classList.contains('e-read-only')) {
+                return;
+            }
             this.parent.quickPopup.deleteClick();
         }
     };
@@ -4444,6 +4447,7 @@ var EventBase = /** @__PURE__ @class */ (function () {
         var guid = target.getAttribute('data-guid');
         if (isMultiple) {
             this.addSelectedAppointments([].slice.call(this.parent.element.querySelectorAll('div[data-guid="' + guid + '"]')));
+            target.focus();
         }
         var eventObject = this.getEventByGuid(guid);
         if (eventObject && eventObject.isSpanned) {
@@ -5278,10 +5282,11 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         this.quickPopup.element.innerHTML = eventTemplate;
         var closeIcon = this.quickPopup.element.querySelector('.' + CLOSE_CLASS);
         this.renderButton('e-flat e-round e-small', ICON + ' ' + CLOSE_ICON_CLASS, false, closeIcon, this.closeClick);
+        var readonly = this.parent.activeViewOptions.readonly || eventObj[this.parent.eventFields.isReadonly];
         var editIcon = this.quickPopup.element.querySelector('.' + EDIT_CLASS);
-        this.renderButton('e-flat e-round e-small', ICON + ' ' + EDIT_ICON_CLASS, false, editIcon, this.editClick);
+        this.renderButton('e-flat e-round e-small', ICON + ' ' + EDIT_ICON_CLASS, readonly, editIcon, this.editClick);
         var deleteIcon = this.quickPopup.element.querySelector('.' + DELETE_CLASS);
-        this.renderButton('e-flat e-round e-small', ICON + ' ' + DELETE_ICON_CLASS, false, deleteIcon, this.deleteClick);
+        this.renderButton('e-flat e-round e-small', ICON + ' ' + DELETE_ICON_CLASS, readonly, deleteIcon, this.deleteClick);
         this.beforeQuickPopupOpen(target);
     };
     QuickPopups.prototype.isCellBlocked = function (args) {
@@ -14149,8 +14154,7 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
                 this.overlapEvents = [];
                 this.overlapEvents.push([record]);
             }
-            var width = this.parent.currentView === 'Day' ? 97 : 94;
-            appWidth = ((width - this.overlapEvents.length) / this.overlapEvents.length) + '%';
+            appWidth = this.getEventWidth();
             var argsData = {
                 index: appIndex, left: appLeft, width: appWidth,
                 day: dayIndex, dayIndex: dayCount, record: record, resource: resource
@@ -14173,6 +14177,15 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
             this.appendEvent(eventObj, appointmentElement, index, tempData.appLeft);
             this.wireAppointmentEvents(appointmentElement, false, eventObj);
         }
+    };
+    VerticalEvent.prototype.getEventWidth = function () {
+        var width = this.parent.currentView === 'Day' ? 97 : 94;
+        var tempWidth = ((width - this.overlapEvents.length) / this.overlapEvents.length);
+        return (tempWidth < 0 ? 0 : tempWidth) + '%';
+    };
+    VerticalEvent.prototype.getEventLeft = function (appWidth, index) {
+        var tempLeft = (parseFloat(appWidth) + 1) * index;
+        return (tempLeft > 99 ? 99 : tempLeft) + '%';
     };
     VerticalEvent.prototype.getTopValue = function (date, day, resource) {
         var startEndHours = getStartEndHours(resetTime(this.dateRender[resource][day]), this.startHour, this.endHour);
@@ -14247,8 +14260,8 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
                         if (element.querySelectorAll('div[data-guid="' + eleGuid + '"]').length > 0 && eleGuid !== args.record.Guid) {
                             var apps = element.querySelector('div[data-guid="' + eleGuid + '"]');
                             if (parseFloat(args.width) <= parseFloat(apps.style.width)) {
-                                (this.parent.enableRtl) ? apps.style.right = ((parseFloat(args.width) + 1) * i) + '%' :
-                                    apps.style.left = ((parseFloat(args.width) + 1) * i) + '%';
+                                (this.parent.enableRtl) ? apps.style.right = this.getEventLeft(args.width, i) :
+                                    apps.style.left = this.getEventLeft(args.width, i);
                                 apps.style.width = ((parseFloat(args.width))) + '%';
                                 data.appWidth = apps.style.width;
                             }
@@ -14256,11 +14269,10 @@ var VerticalEvent = /** @__PURE__ @class */ (function (_super) {
                         else {
                             var appWidth = args.width;
                             if (isNullOrUndefined(this.overlapEvents[i - 1])) {
-                                var width = this.parent.currentView === 'Day' ? 97 : 94;
-                                appWidth = ((width - this.overlapEvents.length) / this.overlapEvents.length) + '%';
+                                appWidth = this.getEventWidth();
                             }
                             data.appWidth = appWidth;
-                            data.appLeft = ((parseInt(appWidth, 0) + 1) * args.index) + '%';
+                            data.appLeft = this.getEventLeft(appWidth, args.index);
                         }
                     }
                 }

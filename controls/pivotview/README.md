@@ -1,3 +1,5 @@
+[![coverage](http://ej2.syncfusion.com/badges/ej2-pivotview/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-pivotview)
+
 # ej2-pivotview
 
 The pivot grid is a multi-dimensional data visualization component built on top of the relational data sources. The pivot report can be managed dynamically at runtime along with other capabilities like aggregation, filtering and sorting (field and value based).

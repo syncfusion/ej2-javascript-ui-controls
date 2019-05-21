@@ -391,3 +391,53 @@ describe('BookMark validation in double tap', () => {
         expect(editor.selection.end.offset).toBe(8);
     });
 });
+
+
+describe('Nested Table copy validation', () => {
+    let editor: DocumentEditor = undefined;
+    let viewer: LayoutViewer;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, BookmarkDialog);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false, enableBookmarkDialog: true });
+        (editor.viewer as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.viewer as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.viewer.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.viewer.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        viewer = editor.viewer as PageLayoutViewer;
+    });
+    afterAll((done) => {
+        document.body.removeChild(document.getElementById('container'));
+        editor.destroy();
+        editor = undefined;
+        viewer = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('copy nested table', () => {
+        editor.editorModule.insertTable(2, 2);
+        editor.editorModule.insertTable(2, 2);
+        editor.selection.selectTable();
+        expect(() => { editor.selection.copy(); }).not.toThrowError();
+    });
+    it('Paste the copied table', () => {
+        editor.selection.handleDownKey();
+        editor.selection.handleDownKey();
+        editor.selection.handleDownKey();
+        editor.enableLocalPaste = true;
+        editor.editor.pasteInternal(undefined);
+        expect(editor.selection.start.paragraph.associatedCell.ownerTable.childWidgets.length).toBe(4);
+    });
+    it('copy after paste', () => {
+        editor.selection.selectAll();
+        editor.selection.copy();
+        editor.selection.handleControlDownKey();
+        editor.editor.onEnter();
+        editor.editor.pasteInternal(undefined);
+        editor.selection.handleUpKey();
+        expect(editor.selection.start.paragraph.associatedCell.ownerTable.childWidgets.length).toBe(4);
+    });
+});

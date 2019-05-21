@@ -9,7 +9,7 @@ import { BpmnDiagrams } from '../../src/diagram/objects/bpmn';
 import { Connector } from '../../src/diagram/objects/connector';
 import { NodeModel } from '../../src/diagram/objects/node-model';
 import { ConnectorModel } from '../../src/diagram/objects/connector-model';
-import { NodeConstraints } from '../../src/diagram/enum/enum';
+import { NodeConstraints, SelectorConstraints } from '../../src/diagram/enum/enum';
 import { UndoRedo } from '../../src/diagram/objects/undo-redo'
 import {
     SymbolPalette, SymbolInfo, PaletteModel,
@@ -17,7 +17,7 @@ import {
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 
 import { MouseEvents } from '../diagram/interaction/mouseevents.spec';
-import { IElement, PointModel, TextElement, StackPanel, DiagramElement, randomId } from '../../src/diagram/index';
+import { IElement, PointModel, TextElement, StackPanel, DiagramElement, randomId, UserHandleModel } from '../../src/diagram/index';
 import { EJ2Instance } from '@syncfusion/ej2-navigations';
 import { BpmnShapeModel, BpmnSubProcessModel } from "../../src/index";
 Diagram.Inject(BpmnDiagrams);
@@ -171,9 +171,21 @@ describe('Symbol Palette', () => {
                 id: 'connector1', type: 'Straight', sourcePoint: { x: 100, y: 300 },
                 targetPoint: { x: 200, y: 400 },
             }];
+            var handle: UserHandleModel[] = [ {
+                name: 'clone',
+                pathData:
+                  'M60.3,18H27.5c-3,0-5.5,2.4-5.5,5.5v38.2h5.5V23.5h32.7V18z M68.5,28.9h-30c-3,' +
+                  '0-5.5,2.4-5.5,5.5v38.2c0,3,2.4,5.5,5.5,5.5h30c3,0,5.5-2.4,5.5-5.5V34.4C73.9,31.4,71.5,28.9,68.5,28.9z ' +
+                  'M68.5,72.5h-30V34.4h30V72.5z',
+                visible: true,
+                offset: 0,
+                side: 'Bottom',
+                margin: { top: 0, bottom: 0, left: 0, right: 0 }
+              }]
 
             diagram = new Diagram({
                 connectors: connectors, nodes: nodes, pageSettings: { background: { color: 'transparent' } },
+                selectedItems: { constraints: SelectorConstraints.All, userHandles: handle },
                 width: '70%'
             });
             diagram.appendTo('#diagram');
@@ -342,7 +354,12 @@ describe('Symbol Palette', () => {
             events.mouseMoveEvent(palette.element, 200, 200, false, false);
             expect(document.getElementsByClassName('e-dragclone').length > 0).toBe(true);
             events.mouseMoveEvent(diagram.element, 300, 300, false, false);
-            events.mouseUpEvent(diagram.element, 300, 300, false, false);
+            events.mouseMoveEvent(diagram.element, 400, 400, false, false);
+            var ele = document.getElementById('diagram_SelectorElement')
+            console.log('symbolpalette');
+            console.log(ele);
+            expect(ele.childElementCount===1).toBe(true);
+            events.mouseUpEvent(diagram.element, 400, 400, false, false);
             expect(diagram.nodes.length).toBe(3);
             diagram.undo()
             expect(diagram.nodes.length).toBe(2);

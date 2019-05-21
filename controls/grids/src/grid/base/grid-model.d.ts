@@ -158,6 +158,12 @@ export interface PredicateModel {
      */
     ejpredicate?: Object;
 
+    /**
+     * @hidden 
+     * Defines the UID of filter column.  
+     */
+    uid?: string;
+
 }
 
 /**
@@ -1330,6 +1336,7 @@ export interface GridModel extends ComponentModel{
      * Triggers when the grid data is added, deleted and updated.
      * Invoke the done method from the argument to start render after edit operation.
      * @event
+     * @blazorProperty 'dataSourceUpdated'
      */
     dataSourceChanged?: EmitType<DataSourceChangedEventArgs>;
 

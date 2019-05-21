@@ -23,6 +23,11 @@ export class PasteCleanup {
   private i10n: L10n;
   private saveSelection: NodeSelection;
   private nodeSelectionObj: NodeSelection;
+  private inlineNode: string[] = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
+    'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'i', 'iframe', 'img', 'input',
+    'ins', 'kbd', 'label', 'map', 'mark', 'meter', 'noscript', 'object', 'output', 'picture', 'progress',
+    'q', 'ruby', 's', 'samp', 'script', 'select', 'slot', 'small', 'span', 'strong', 'sub', 'sup', 'svg',
+    'template', 'textarea', 'time', 'u', 'tt', 'var', 'video', 'wbr'];
   constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
     this.parent = parent;
     this.locator = serviceLocator;
@@ -206,28 +211,61 @@ export class PasteCleanup {
 
   //Plain Formatting
   private plainFormatting(value: string): void {
-    let clipBoardElem: HTMLElement = this.parent.createElement('span') as HTMLElement;
+    let clipBoardElem: HTMLElement = this.parent.createElement('div') as HTMLElement;
     clipBoardElem.innerHTML = value;
+    this.detachInlineElements(clipBoardElem);
     let text: string = this.getTextContent(clipBoardElem);
     let resultElement: HTMLElement = this.parent.createElement('span') as HTMLElement;
     resultElement.innerHTML = text;
     this.saveSelection.restore();
     this.parent.executeCommand('insertHTML', resultElement);
   }
+  private detachInlineElements(element: HTMLElement): void {
+    while (!isNullOrUndefined(element)) {
+      element = (element.firstElementChild as HTMLElement) ? (element.firstElementChild as HTMLElement) : element;
+      let isInlineElement: boolean = false;
+      for (let j: number = 0; j < this.inlineNode.length && !isInlineElement; j++) {
+        if (element.tagName.toLocaleLowerCase() === this.inlineNode[j]) {
+          let node: HTMLElement = (element.nextElementSibling as HTMLElement) ?
+          (element.nextElementSibling as HTMLElement) : (element.parentElement.nextElementSibling as HTMLElement);
+          if (!isNullOrUndefined(element.childNodes[0]) && element.childNodes[0].textContent !== '') {
+            element.parentElement.insertBefore(this.getTextNode(element.childNodes[0]), element);
+          }
+          detach(element);
+          element = node;
+          isInlineElement = true;
+        }
+      }
+      if (!isNullOrUndefined(element) && element.children.length > 0 || isInlineElement) {
+        element = element;
+      } else if (element.nextElementSibling) {
+        element = element.nextElementSibling as HTMLElement;
+      } else if (element.parentElement.nextElementSibling) {
+        element = element.parentElement.nextElementSibling as HTMLElement;
+      } else {
+        element = null;
+      }
+    }
+  }
+  private getTextNode(element: Node): Node {
+    let rootElement: HTMLElement = this.parent.createElement('span');
+    rootElement.innerHTML = element.textContent;
+    return rootElement.childNodes[0];
+  }
+
   private getTextContent(element: Element): string {
     let result: string;
     let text: string;
     result = '';
-    for (let i: number = 0; i < element.childNodes.length; i++) {
-      text = null;
-      if (element.childNodes[i].nodeType === 1) {
-        text = this.getTextContent(element.childNodes[i] as Element);
-      } else if (element.childNodes[i].nodeType === 3) {
-        text = element.childNodes[i].nodeValue;
-      }
-      if (text) {
-        if (/\S$/.test(result) && /^\S/.test(text)) {
-          text = ' ' + text;
+    if (element.children.length === 0 && element.textContent.trim() !== '') {
+      text = '<p>' + element.textContent + '</p>';
+      result += text;
+    } else {
+      for (let i: number = 0; i < element.children.length; i++) {
+        if (!isNullOrUndefined(element.children[i])) {
+          text = this.getTextContent(element.children[i] as Element);
+        } else {
+          text = '<p>' + element.children[i].textContent + '</p>';
         }
         result += text;
       }

@@ -643,13 +643,13 @@ export class Splitter extends Component<HTMLElement> {
         let isVertical: boolean = orientation === 'Vertical';
         this.element.classList.remove(isVertical ? HORIZONTAL_PANE : VERTICAL_PANE);
         this.element.classList.add(isVertical ? VERTICAL_PANE : HORIZONTAL_PANE);
-        this.element.removeAttribute('aria-orientation');
-        this.element.setAttribute('aria-orientation', orientation.toLowerCase());
         for (let index: number = 0; index < this.allPanes.length; index++) {
             this.allPanes[index].classList.remove(isVertical ? SPLIT_H_PANE : SPLIT_V_PANE);
             this.allPanes[index].classList.add(isVertical ? SPLIT_V_PANE : SPLIT_H_PANE);
         }
         for (let index: number = 0; index < this.allBars.length; index++) {
+            this.allBars[index].removeAttribute('aria-orientation');
+            this.allBars[index].setAttribute('aria-orientation', orientation.toLowerCase());
             this.allBars[index].classList.remove(isVertical ? SPLIT_H_BAR : SPLIT_V_BAR);
             this.allBars[index].classList.add(isVertical ? SPLIT_V_BAR : SPLIT_H_BAR);
         }
@@ -752,6 +752,7 @@ export class Splitter extends Component<HTMLElement> {
                 clonedEle[i].parentNode.appendChild(separator);
                 this.currentSeparator = separator;
                 separator.setAttribute('role', 'separator');
+                separator.setAttribute('aria-orientation', this.orientation.toLowerCase());
                 this.wireClickEvents();
                 if (this.isResizable()) {
                     EventHandler.add(separator, 'mousedown', this.onMouseDown, this);
@@ -1560,7 +1561,6 @@ export class Splitter extends Component<HTMLElement> {
         }
         childCount = target.children.length;
         let child: HTMLElement[] = [].slice.call(target.children);
-        this.element.setAttribute('aria-orientation', this.orientation.toLowerCase());
         this.sizeFlag = false;
         if (childCount > 1) {
             for (let i: number = 0; i < childCount; i++) {

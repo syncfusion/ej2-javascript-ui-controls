@@ -5,9 +5,10 @@ import { createElement, remove, L10n, EmitType, Browser } from '@syncfusion/ej2-
 import { Query } from '@syncfusion/ej2-data';
 import { VerticalView } from '../../../src/schedule/renderer/vertical-view';
 import { Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, ScheduleModel } from '../../../src/schedule/index';
-import { triggerScrollEvent, loadCultureFiles, createSchedule } from '../util.spec';
+import { triggerScrollEvent, loadCultureFiles, createSchedule, destroy } from '../util.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
+import { readonlyEventsData } from './datasource.spec';
 
 Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda);
 
@@ -917,6 +918,29 @@ describe('Schedule base module', () => {
                 toEqual('22');
             expect((schObj.element.querySelector('.e-time-cells-wrap tbody tr:nth-child(47) td') as HTMLElement).innerText).
                 toEqual('23');
+        });
+    });
+
+    describe('CR Issue EJ2-26338 readonly events', () => {
+        let schObj: Schedule;
+        // tslint:disable-next-line:no-any
+        let keyModule: any;
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = { height: '500px', width: '500px' };
+            schObj = createSchedule(model, readonlyEventsData, done);
+        });
+        afterAll(() => {
+            destroy(schObj);
+        });
+        it('Delete key', () => {
+            keyModule = schObj.keyboardInteractionModule;
+            (schObj.element.querySelector('.e-appointment') as HTMLElement).click();
+            let selectedElement: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-border'));
+            keyModule.keyActionHandler({ action: 'delete', target: selectedElement[0] });
+            expect(schObj.quickPopup.quickPopup.element.querySelector('.e-edit').getAttribute('disabled')).toBe('');
+            expect(schObj.quickPopup.quickPopup.element.querySelector('.e-delete').getAttribute('disabled')).toBe('');
+            expect(schObj.quickPopup.quickPopup.element.querySelector('.e-close').getAttribute('disabled')).toBe(null);
+            (<HTMLElement>schObj.quickPopup.quickPopup.element.querySelector('.e-close')).click();
         });
     });
 

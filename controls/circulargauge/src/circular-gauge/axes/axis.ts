@@ -112,19 +112,19 @@ export class Range extends ChildProperty<Range> {
     /**
      * Specifies the minimum value of the range.
      * @aspDefaultValueIgnore
-     * @default null
+     * @default 0
      */
 
-    @Property(null)
+    @Property(0)
     public start: number;
 
     /**
      * Specifies the maximum value of the range.
      * @aspDefaultValueIgnore
-     * @default null
+     * @default 0
      */
 
-    @Property(null)
+    @Property(0)
     public end: number;
 
     /**
@@ -192,10 +192,10 @@ export class Tick extends ChildProperty<Tick> {
     /**
      * The width of the ticks in pixels.
      * @aspDefaultValueIgnore
-     * @default null
+     * @default 2
      */
 
-    @Property(null)
+    @Property(2)
     public width: number;
 
     /**
@@ -613,6 +613,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Options for customizing the major tick lines.
+     * @default { width: 2, height: 10 }
      */
 
     @Complex<TickModel>({ width: 2, height: 10 }, Tick)
@@ -620,6 +621,7 @@ export class Axis extends ChildProperty<Axis> {
 
     /**
      * Options for customizing the minor tick lines.
+     * @default { width: 2, height: 5 }
      */
 
     @Complex<TickModel>({ width: 2, height: 5 }, Tick)

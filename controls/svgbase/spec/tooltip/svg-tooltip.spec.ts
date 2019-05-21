@@ -352,7 +352,7 @@ describe('SVG Tooltip', () => {
        tooltip.enableAnimation= false;
        tooltip.shared = false;
        tooltip.animationComplete = null;
-       tooltip.theme = 'Highcontrast';
+       tooltip.theme = 'HighContrast';
        tooltip.refresh();
     });
     it('FabricDark Theme', () => {

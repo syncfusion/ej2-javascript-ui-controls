@@ -4,8 +4,6 @@ import { Base } from './base-module';
 import { InPlaceEditor } from '../base/inplace-editor';
 import { NotifyParams, IComponent } from '../base/interface';
 
-RichTextEditor.Inject(HtmlEditor, MarkdownEditor, Toolbar, Link, Image, QuickToolbar, Table);
-
 /**
  * The `RTE` module is used configure the properties of RTE type editor.
  */
@@ -15,6 +13,7 @@ export class Rte implements IComponent {
     public compObj: RichTextEditor = undefined;
 
     constructor(parent?: InPlaceEditor) {
+        RichTextEditor.Inject(HtmlEditor, MarkdownEditor, Toolbar, Link, Image, QuickToolbar, Table);
         this.parent = parent;
         this.parent.rteModule = this;
         this.base = new Base(this.parent, this);

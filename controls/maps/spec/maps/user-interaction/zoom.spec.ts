@@ -1478,7 +1478,241 @@ describe('Zoom feature tesing for map control', () => {
         });
     });
 
+    describe('Checking with datalabel properties ', () => {
+        let id: string = 'container';
+        let map: Maps;
+        let ele: HTMLDivElement;
+        let prevent: Function = (): void => {
+            //Prevent Function
+        };
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            map = new Maps({
+                background: '#f4f4f4',
+                width: '800px',
+                height: '450px',
+                border: {
+                    color: 'black',
+                    width: 1
+                },
+                titleSettings: {
+                    text: 'World Map - Demo'
+                },
+                zoomSettings: {
+                    enable: true
+                },
+                layers: [
+                    {
+                        shapeData: usMap,
+                        key: "AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L",
+                        tooltipSettings: {
+                            visible: false
+                        },
+                        dataLabelSettings: {
+                            visible: true,
+                            labelPath: 'name'
+                        },
+                        shapeSettings: {
+                            autofill: false,
+                            fill: 'lightgrey',
+                            border: {
+                                width: 1,
+                                color: 'white'
+                            }
+                        }
+                    }
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            map.destroy();
+        });
 
+        it('Checking with data label properties while zooming', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                let eventObj: Object = {
+                    target: element,
+                    type: 'touchstart',
+                    stopImmediatePropagation: prevent,
+                    pageX: element.getBoundingClientRect().left,
+                    pageY: element.getBoundingClientRect().top
+                };  
+                map.zoomModule.performToolBarAction(<PointerEvent>eventObj); 
+            };
+            map.layers[0].dataLabelSettings.smartLabelMode = "None";
+            map.layers[0].dataLabelSettings.intersectionAction = "Hide"
+            map.refresh();
+        });
+        it('Checking with data label properties while zooming', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                let eventObj: Object = {
+                    target: element,
+                    type: 'touchstart',
+                    stopImmediatePropagation: prevent,
+                    pageX: element.getBoundingClientRect().left,
+                    pageY: element.getBoundingClientRect().top
+                };
+                map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+                let element1: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomOut_Rect');
+                let eventObj1: Object = {
+                    target: element,
+                    type: 'touchstart',
+                    stopImmediatePropagation: prevent,
+                    pageX: element1.getBoundingClientRect().left,
+                    pageY: element1.getBoundingClientRect().top
+                };
+                map.zoomModule.performToolBarAction(<PointerEvent>eventObj1); 
+            };
+            map.layers[0].dataLabelSettings.smartLabelMode = "Trim";
+            map.refresh();
+        });
+        it('Checking with data label properties while zooming', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                let eventObj: Object = {
+                    target: element,
+                    type: 'touchstart',
+                    stopImmediatePropagation: prevent,
+                    pageX: element.getBoundingClientRect().left,
+                    pageY: element.getBoundingClientRect().top
+                };
+                map.zoomModule.performToolBarAction(<PointerEvent>eventObj); 
+                let element1: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomOut_Rect');
+                let eventObj1: Object = {
+                    target: element,
+                    type: 'touchstart',
+                    stopImmediatePropagation: prevent,
+                    pageX: element1.getBoundingClientRect().left,
+                    pageY: element1.getBoundingClientRect().top
+                };
+                map.zoomModule.performToolBarAction(<PointerEvent>eventObj1); 
+            };
+            map.layers[0].dataLabelSettings.smartLabelMode = "Hide";
+            map.refresh();
+        });
+        it('Checking with data label properties while zooming', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+                let eventObj: Object = {
+                    target: element,
+                    type: 'touchstart',
+                    stopImmediatePropagation: prevent,
+                    pageX: element.getBoundingClientRect().left,
+                    pageY: element.getBoundingClientRect().top
+                };
+                map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+            };
+            map.layers[0].dataLabelSettings.intersectionAction = "Trim";
+            map.refresh();
+        });
+    });
+    describe('Checking with datalabel properties ', () => {
+        let id: string = 'container';
+        let map: Maps;
+        let ele: HTMLDivElement;
+        let prevent: Function = (): void => {
+            //Prevent Function
+        };
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll(() => {
+            ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+            document.body.appendChild(ele);
+            map = new Maps({
+                background: '#f4f4f4',
+                width: '800px',
+                height: '450px',
+                border: {
+                    color: 'black',
+                    width: 1
+                },
+                titleSettings: {
+                    text: 'World Map - Demo'
+                },
+                zoomSettings: {
+                    enable: true
+                },
+                layers: [
+                    {
+                        shapeData: usMap,
+                        key: "AmfB8BVuEu-ep0xaTvL6s44TbnCQplA0CSoNAfe3MI7AoEwvqFjz9FSQ6tLFzx4L",
+                        tooltipSettings: {
+                            visible: false
+                        },
+                        dataLabelSettings: {
+                            visible: true,
+                            labelPath: 'name'
+                        },
+                        shapeSettings: {
+                            autofill: false,
+                            fill: 'lightgrey',
+                            border: {
+                                width: 1,
+                                color: 'white'
+                            }
+                        }
+                    }
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            remove(ele);
+            map.destroy();
+        });
+        it('Checking with data label properties while zooming', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_Zooming_ToolBar_ZoomOut_Rect');
+                let eventObj: Object = {
+                    target: element,
+                    type: 'mousedown',
+                    stopImmediatePropagation: prevent,
+                    pageX: element.getBoundingClientRect().left,
+                    pageY: element.getBoundingClientRect().top
+                };  
+                map.zoomModule.performToolBarAction(<PointerEvent>eventObj); 
+            };
+            map.layers[0].dataLabelSettings.smartLabelMode = "Trim";
+            map.layers[0].dataLabelSettings.intersectionAction = "Trim";
+            map.refresh();
+        });
+        it('Checking with data label properties while zooming', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_Zooming_ToolBar_ZoomOut_Rect');
+                let eventObj: Object = {
+                    target: element,
+                    type: 'mousedown',
+                    stopImmediatePropagation: prevent,
+                    pageX: element.getBoundingClientRect().left,
+                    pageY: element.getBoundingClientRect().top
+                };  
+                map.zoomModule.performToolBarAction(<PointerEvent>eventObj); 
+            };
+            map.scale = 1;
+            map.layers[0].dataLabelSettings.smartLabelMode = "Trim";
+            map.refresh();
+        });
+        it('Checking with data label properties while zooming', () => {
+            map.loaded = (args: ILoadedEventArgs) => {
+                let element: Element = document.getElementById(map.element.id + '_Zooming_ToolBar_ZoomOut_Rect');
+                let eventObj: Object = {
+                    target: element,
+                    type: 'mousedown',
+                    stopImmediatePropagation: prevent,
+                    pageX: element.getBoundingClientRect().left,
+                    pageY: element.getBoundingClientRect().top
+                };  
+                map.zoomModule.performToolBarAction(<PointerEvent>eventObj); 
+            };
+            map.scale = 1;
+            map.layers[0].dataLabelSettings.smartLabelMode = "Hide";
+            map.refresh();
+        });
+      
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

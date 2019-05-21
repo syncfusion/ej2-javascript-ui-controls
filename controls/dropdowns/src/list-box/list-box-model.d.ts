@@ -1,5 +1,5 @@
 import { DropDownBase, dropDownBaseClasses, SelectEventArgs } from '../drop-down-base/drop-down-base';import { FieldSettingsModel } from '../drop-down-base/drop-down-base-model';import { EventHandler, closest, removeClass, addClass, Complex, Property, ChildProperty, BaseEventArgs, L10n } from '@syncfusion/ej2-base';import { ModuleDeclaration, NotifyPropertyChanges, getComponent, EmitType, Event, extend, detach, attributes } from '@syncfusion/ej2-base';import { getUniqueID, Browser, formatUnit, isNullOrUndefined } from '@syncfusion/ej2-base';import { cssClass, Sortable, moveTo } from '@syncfusion/ej2-lists';import { Button } from '@syncfusion/ej2-buttons';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
-import {SelectionMode,ToolBarPosition,BeforeItemRenderEventArgs,DragEventArgs} from "./list-box";
+import {SelectionMode,ToolBarPosition,BeforeItemRenderEventArgs,ListBoxChangeEventArgs,DragEventArgs} from "./list-box";
 import {DropDownBaseModel} from "../drop-down-base/drop-down-base-model";
 
 /**
@@ -102,6 +102,12 @@ export interface ListBoxModel extends DropDownBaseModel{
      * @event
      */
     select?: EmitType<SelectEventArgs>;
+
+    /**
+     * Triggers while select / unselect the list item.
+     * @event
+     */
+    change?: EmitType<ListBoxChangeEventArgs>;
 
     /**
      * Triggers after dragging the list item.

@@ -259,7 +259,7 @@ describe('Smithchart Series properties tesing', () => {
                 let color: string = element.getAttribute('stroke');
                 expect(color).toEqual('red');
             };
-            smithchart.theme = 'Highcontrast';
+            smithchart.theme = 'HighContrast';
             smithchart.refresh();
         });
         it('Checking with Dark theme', () => {

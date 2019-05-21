@@ -2,6 +2,26 @@
 
 ## [Unreleased]
 
+## 17.1.48 (2019-05-21)
+
+### Calendar
+
+#### Bug Fixes
+
+- #235561 - Now, you can navigate year within min and max range in decade view.
+
+### DatePicker
+
+#### Bug Fixes
+
+- #216875 - Issue with some additional text appended to all day numbers when choose `Japanese` culture has been fixed.
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- #233687 - Issue with change event trigger twice when provide date format without date specifier has been fixed.
+
 ## 17.1.43 (2019-04-30)
 
 ### DatePicker

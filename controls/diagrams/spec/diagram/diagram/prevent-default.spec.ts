@@ -434,7 +434,7 @@ describe('Diagram Control', () => {
                         id: 'node10', width: 100, height: 60, offsetX: 550, offsetY: 600,
                         shape: {
                             type: 'UmlClassifier',
-                            class: {
+                            classShape: {
                                 property: [
                                     { name: 'accepted', type: 'Date', style: {} },
                                     { name: 'sickness', type: 'History' },
@@ -460,7 +460,7 @@ describe('Diagram Control', () => {
                         }, borderColor: 'white',
                         shape: {
                             type: 'UmlClassifier',
-                            enumeration: {
+                            enumerationShape: {
                                 name: 'AccountType',
                                 //sets the members of enumeration
                                 members: [
@@ -484,7 +484,7 @@ describe('Diagram Control', () => {
                         }, borderColor: 'white',
                         shape: {
                             type: 'UmlClassifier',
-                            interface: {
+                            interfaceShape: {
                                 name: "Bank Account",
                                 property: [{
                                     name: "owner",

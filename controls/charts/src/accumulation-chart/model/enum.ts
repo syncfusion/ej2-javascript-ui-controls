@@ -64,8 +64,6 @@ export type AccumulationTheme =
     'FabricDark' |
     /**  Render a accumulation chart with HighContrastDark theme. */
     'HighContrast'|
-    /**  Render a accumulation chart with HighcontrastDark theme. */
-    'Highcontrast'|
     /**  Render a accumulation chart with BootstrapDark theme. */
     'BootstrapDark'|
     /**  Render a accumulation chart with BootstrapDark theme. */

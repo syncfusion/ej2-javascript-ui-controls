@@ -5490,6 +5490,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
      * Calls internally if any of the property value is changed.
      * @private
      */
+    // tslint:disable-next-line
     Slider.prototype.onPropertyChanged = function (newProp, oldProp) {
         var _this = this;
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
@@ -5503,7 +5504,7 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
                         var value = isNullOrUndefined(newProp.value) ?
                             (this.type === 'Range' ? [this.min, this.max] : this.min) : newProp.value;
                         this.setProperties({ 'value': value }, true);
-                        if (oldProp.value.toString() !== value.toString()) {
+                        if (!isNullOrUndefined(oldProp.value) && oldProp.value.toString() !== value.toString()) {
                             this.setValue();
                             this.refreshTooltip(this.tooltipTarget);
                             if (this.type === 'Range') {
@@ -5528,8 +5529,11 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
                     }
                     break;
                 case 'type':
-                    this.changeSliderType(oldProp.type);
-                    this.setZindex();
+                    if (!isNullOrUndefined(oldProp) && Object.keys(oldProp).length
+                        && !isNullOrUndefined(oldProp.type)) {
+                        this.changeSliderType(oldProp.type);
+                        this.setZindex();
+                    }
                     break;
                 case 'enableRtl':
                     if (oldProp.enableRtl !== newProp.enableRtl && this.orientation !== 'Vertical') {
@@ -8874,7 +8878,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             postRawFile: true
         };
         var index;
-        if (this.isForm) {
+        if (this.isForm && (isNullOrUndefined(this.asyncSettings.removeUrl) || this.asyncSettings.removeUrl === '')) {
             eventArgs.filesData = this.getFilesData();
             this.trigger('removing', eventArgs);
             if (!eventArgs.cancel) {

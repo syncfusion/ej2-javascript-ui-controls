@@ -601,7 +601,8 @@ export class MoveTool extends ToolBase {
     /**   @private  */
     public mouseDown(args: MouseEventArgs): void {
         if (args.source instanceof Node || args.source instanceof Connector) {
-            this.commandHandler.selectObjects([args.source], args.info && args.info.ctrlKey);
+            let arrayNodes: (NodeModel | ConnectorModel)[] = this.commandHandler.getSelectedObject();
+            this.commandHandler.selectObjects([args.source], args.info && args.info.ctrlKey, arrayNodes);
             let selectedObject: SelectorModel = { nodes: [], connectors: [] };
             if (args.source instanceof Node) {
                 selectedObject.nodes.push(cloneObject(args.source) as Node);

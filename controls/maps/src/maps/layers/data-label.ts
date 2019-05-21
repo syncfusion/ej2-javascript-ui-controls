@@ -108,7 +108,8 @@ export class DataLabel {
             }
         }
         text = (!isNullOrUndefined(datasrcObj)) ? datasrcObj[labelpath].toString() : shapeData['properties'][labelpath]
-        location = findMidPointOfPolygon(shapePoint[midIndex]);
+        let projectionType : string = this.maps.projectionType;
+        location = findMidPointOfPolygon(shapePoint[midIndex], projectionType);
         if (!isNullOrUndefined(text) && !isNullOrUndefined(location)) {
             location['y'] = (this.maps.projectionType === 'Mercator') ? location['y'] : (-location['y']);
             data = location;
@@ -128,6 +129,9 @@ export class DataLabel {
             let border: Object = { color: 'yellow' };
             let position: MapLocation[] = [];
             let width: number = location['rightMax']['x'] - location['leftMax']['x'];
+            if(!isNullOrUndefined(this.maps.dataLabelShape)){
+                this.maps.dataLabelShape.push(width);
+            }
             let textSize: Size = measureText(text, style);
             let trimmedLable: string = textTrim(width, text, style);
             let elementSize: Size = measureText(trimmedLable, style);
@@ -138,7 +142,7 @@ export class DataLabel {
             position = filter(shapePoint[midIndex], startY, endY);
             if (position.length > 5 && (shapeData['geometry']['type'] !== 'MultiPolygon') &&
                 (shapeData['type'] !== 'MultiPolygon')) {
-                let location1: object = findMidPointOfPolygon(position);
+                let location1: object = findMidPointOfPolygon(position, projectionType);
                 location['x'] = location1['x'];
                 width = location1['rightMax']['x'] - location1['leftMax']['x'];
             }
@@ -174,7 +178,7 @@ export class DataLabel {
                     options = new TextOption(labelId, (textLocation.x), (textLocation.y), 'middle', text, '', '');
                 }
                 text = options['text'] as string;
-                if (dataLabelSettings.intersectionAction === 'Hide') {
+                if (dataLabelSettings.intersectionAction === 'Hide' && this.maps.scale < 2) {
                     for (let i: number = 0; i < intersect.length; i++) {
                         if (!isNullOrUndefined(intersect[i])) {
                             if (this.value[index]['leftWidth'] > intersect[i]['rightWidth']

@@ -361,7 +361,7 @@ describe("paste cleanup testing", () => {
     setTimeout(() => {
       let allElem: any = rteObj.element.getElementsByTagName("textarea")[0].firstElementChild;
       let expected: boolean = true;
-      let expectedElem: string = `One Node-1 Two Node-1 Three Node-1`;
+      let expectedElem: string = `<p>One Node-1</p><p>Two Node-1</p><p>Three Node-1</p>`;
       if (allElem.innerHTML !== expectedElem) {
         expected = false;
       }
@@ -390,7 +390,7 @@ describe("paste cleanup testing", () => {
     setTimeout(() => {
       let allElem: any = rteObj.element.getElementsByTagName("textarea")[0].firstElementChild;
       let expected: boolean = true;
-      let expectedElem: string = `One Node-1 Two Node-1 Three Node-1`;
+      let expectedElem: string = `<p>One Node-1</p><p>Two Node-1</p><p>Three Node-1</p>`;
       if (allElem.innerHTML !== expectedElem) {
         expected = false;
       }
@@ -424,7 +424,41 @@ describe("paste cleanup testing", () => {
       }
       let allElem: any = rteObj.element.getElementsByTagName("textarea")[0].firstElementChild;
       let expected: boolean = true;
-      let expectedElem: string = `One Node-1 Two Node-1 Three Node-1`;
+      let expectedElem: string = `<p>One Node-1</p><p>Two Node-1</p><p>Three Node-1</p>`;
+      if (allElem.innerHTML !== expectedElem) {
+        expected = false;
+      }
+      expect(expected).toBe(true);
+      done();
+    }, 100);
+  });
+
+  it("EJ2-26404 - Breakline issue - Plain paste with prompt", (done) => {
+    let localElem: string = `<p>First para start <code>65</code>. Syncfusion<a href="http://syncfusion.com">link</a>is here</p><blockquote><p>Second para inside blockquote</p></blockquote>`;
+    keyBoardEvent.clipboardData = {
+      getData: () => {
+        return localElem;
+      },
+      items: []
+    };
+    rteObj.pasteCleanupSettings.prompt = true;
+    rteObj.pasteCleanupSettings.deniedTags = [];
+    rteObj.pasteCleanupSettings.deniedAttrs = [];
+    rteObj.pasteCleanupSettings.allowedStyleProps = [];
+    rteObj.dataBind();
+    rteObj.element.getElementsByTagName("textarea")[0].focus();
+    setCursorPoint(rteObj.element.getElementsByTagName("textarea")[0], 0);
+    rteObj.onPaste(keyBoardEvent);
+    setTimeout(() => {
+      if (rteObj.pasteCleanupSettings.prompt) {
+        let keepFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_PLAIN_FORMAT);
+        keepFormat[0].click();
+        let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+        pasteOK[0].click();
+      }
+      let allElem: any = rteObj.element.getElementsByTagName("textarea")[0].firstElementChild;
+      let expected: boolean = true;
+      let expectedElem: string = `<p>First para start 65. Syncfusionlinkis here</p><p>Second para inside blockquote</p>`;
       if (allElem.innerHTML !== expectedElem) {
         expected = false;
       }
@@ -556,7 +590,7 @@ describe('EJ2-23795: Console error occurs when pasting the copied content using 
       setTimeout(() => {
         let allElem: any = (rteObj as any).inputElement.firstElementChild.firstElementChild;
         let expected: boolean = true;
-        let expectedElem: string = `One Node-1 Two Node-1 Three Node-1`;
+        let expectedElem: string = `<p>One Node-1</p><p>Two Node-1</p><p>Three Node-1</p>`;
         if (allElem.innerHTML !== expectedElem) {
           expected = false;
         }
@@ -572,7 +606,7 @@ describe('EJ2-23795: Console error occurs when pasting the copied content using 
           setTimeout(() => {
             let allElem: any = (rteObj as any).inputElement.firstElementChild.firstElementChild;
             let expected: boolean = true;
-            let expectedElem: string = `One Node-1 Two Node-1 Three Node-1<span>One Node-1 Two Node-1 Three Node-1</span>`;
+            let expectedElem: string = `<p>One Node-1</p><span><p>One Node-1</p><p>Two Node-1</p><p>Three Node-1</p></span><p>Two Node-1</p><p>Three Node-1</p>`;
             if (allElem.innerHTML !== expectedElem) {
               expected = false;
             }

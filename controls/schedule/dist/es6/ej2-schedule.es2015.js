@@ -2015,9 +2015,12 @@ class KeyboardInteraction {
         }
     }
     processDelete(e) {
-        if (document.activeElement.classList.contains(APPOINTMENT_CLASS)) {
+        if (document.activeElement && document.activeElement.classList.contains(APPOINTMENT_CLASS)) {
             addClass([document.activeElement], APPOINTMENT_BORDER);
             this.parent.activeEventData = this.parent.eventBase.getSelectedEvents();
+            if (this.parent.activeViewOptions.readonly || document.activeElement.classList.contains('e-read-only')) {
+                return;
+            }
             this.parent.quickPopup.deleteClick();
         }
     }
@@ -4405,6 +4408,7 @@ class EventBase {
         let guid = target.getAttribute('data-guid');
         if (isMultiple) {
             this.addSelectedAppointments([].slice.call(this.parent.element.querySelectorAll('div[data-guid="' + guid + '"]')));
+            target.focus();
         }
         let eventObject = this.getEventByGuid(guid);
         if (eventObject && eventObject.isSpanned) {
@@ -5217,10 +5221,11 @@ class QuickPopups {
         this.quickPopup.element.innerHTML = eventTemplate;
         let closeIcon = this.quickPopup.element.querySelector('.' + CLOSE_CLASS);
         this.renderButton('e-flat e-round e-small', ICON + ' ' + CLOSE_ICON_CLASS, false, closeIcon, this.closeClick);
+        let readonly = this.parent.activeViewOptions.readonly || eventObj[this.parent.eventFields.isReadonly];
         let editIcon = this.quickPopup.element.querySelector('.' + EDIT_CLASS);
-        this.renderButton('e-flat e-round e-small', ICON + ' ' + EDIT_ICON_CLASS, false, editIcon, this.editClick);
+        this.renderButton('e-flat e-round e-small', ICON + ' ' + EDIT_ICON_CLASS, readonly, editIcon, this.editClick);
         let deleteIcon = this.quickPopup.element.querySelector('.' + DELETE_CLASS);
-        this.renderButton('e-flat e-round e-small', ICON + ' ' + DELETE_ICON_CLASS, false, deleteIcon, this.deleteClick);
+        this.renderButton('e-flat e-round e-small', ICON + ' ' + DELETE_ICON_CLASS, readonly, deleteIcon, this.deleteClick);
         this.beforeQuickPopupOpen(target);
     }
     isCellBlocked(args) {
@@ -13726,8 +13731,7 @@ class VerticalEvent extends EventBase {
                 this.overlapEvents = [];
                 this.overlapEvents.push([record]);
             }
-            let width = this.parent.currentView === 'Day' ? 97 : 94;
-            appWidth = ((width - this.overlapEvents.length) / this.overlapEvents.length) + '%';
+            appWidth = this.getEventWidth();
             let argsData = {
                 index: appIndex, left: appLeft, width: appWidth,
                 day: dayIndex, dayIndex: dayCount, record: record, resource: resource
@@ -13750,6 +13754,15 @@ class VerticalEvent extends EventBase {
             this.appendEvent(eventObj, appointmentElement, index, tempData.appLeft);
             this.wireAppointmentEvents(appointmentElement, false, eventObj);
         }
+    }
+    getEventWidth() {
+        let width = this.parent.currentView === 'Day' ? 97 : 94;
+        let tempWidth = ((width - this.overlapEvents.length) / this.overlapEvents.length);
+        return (tempWidth < 0 ? 0 : tempWidth) + '%';
+    }
+    getEventLeft(appWidth, index) {
+        let tempLeft = (parseFloat(appWidth) + 1) * index;
+        return (tempLeft > 99 ? 99 : tempLeft) + '%';
     }
     getTopValue(date, day, resource) {
         let startEndHours = getStartEndHours(resetTime(this.dateRender[resource][day]), this.startHour, this.endHour);
@@ -13820,8 +13833,8 @@ class VerticalEvent extends EventBase {
                         if (element.querySelectorAll('div[data-guid="' + eleGuid + '"]').length > 0 && eleGuid !== args.record.Guid) {
                             let apps = element.querySelector('div[data-guid="' + eleGuid + '"]');
                             if (parseFloat(args.width) <= parseFloat(apps.style.width)) {
-                                (this.parent.enableRtl) ? apps.style.right = ((parseFloat(args.width) + 1) * i) + '%' :
-                                    apps.style.left = ((parseFloat(args.width) + 1) * i) + '%';
+                                (this.parent.enableRtl) ? apps.style.right = this.getEventLeft(args.width, i) :
+                                    apps.style.left = this.getEventLeft(args.width, i);
                                 apps.style.width = ((parseFloat(args.width))) + '%';
                                 data.appWidth = apps.style.width;
                             }
@@ -13829,11 +13842,10 @@ class VerticalEvent extends EventBase {
                         else {
                             let appWidth = args.width;
                             if (isNullOrUndefined(this.overlapEvents[i - 1])) {
-                                let width = this.parent.currentView === 'Day' ? 97 : 94;
-                                appWidth = ((width - this.overlapEvents.length) / this.overlapEvents.length) + '%';
+                                appWidth = this.getEventWidth();
                             }
                             data.appWidth = appWidth;
-                            data.appLeft = ((parseInt(appWidth, 0) + 1) * args.index) + '%';
+                            data.appLeft = this.getEventLeft(appWidth, args.index);
                         }
                     }
                 }

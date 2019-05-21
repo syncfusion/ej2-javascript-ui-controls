@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 17.1.48 (2019-05-21)
+
+### TreeMap
+
+#### Bug Fixes
+
+- #I235721 - The issue with color value in individual nodes of levels in treemap has been resolved.
+
 ## 17.1.44 (2019-05-07)
 
 ### TreeMap

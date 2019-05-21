@@ -1455,13 +1455,13 @@ class MultiSelect$1 {
     }
 }
 
-RichTextEditor.Inject(HtmlEditor, MarkdownEditor, Toolbar, Link, Image, QuickToolbar, Table);
 /**
  * The `RTE` module is used configure the properties of RTE type editor.
  */
 class Rte {
     constructor(parent) {
         this.compObj = undefined;
+        RichTextEditor.Inject(HtmlEditor, MarkdownEditor, Toolbar, Link, Image, QuickToolbar, Table);
         this.parent = parent;
         this.parent.rteModule = this;
         this.base = new Base(this.parent, this);

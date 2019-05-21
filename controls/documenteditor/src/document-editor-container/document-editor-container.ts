@@ -565,26 +565,6 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             this.documentEditor.destroy();
         }
         this.documentEditor = undefined;
-        if (this.propertiesPaneContainer && this.editorContainer.parentElement) {
-            this.propertiesPaneContainer.innerHTML = '';
-            this.propertiesPaneContainer.parentElement.removeChild(this.propertiesPaneContainer);
-        }
-        this.propertiesPaneContainer = undefined;
-        if (this.editorContainer && this.editorContainer.parentElement) {
-            this.editorContainer.innerHTML = '';
-            this.editorContainer.parentElement.removeChild(this.editorContainer);
-        }
-        if (this.statusBarElement && this.statusBarElement.parentElement) {
-            this.statusBarElement.innerHTML = '';
-            this.statusBarElement.parentElement.removeChild(this.statusBarElement);
-        }
-        if (this.containerTarget && this.containerTarget.parentElement) {
-            this.containerTarget.innerHTML = '';
-            this.containerTarget.parentElement.removeChild(this.containerTarget);
-        }
-        this.containerTarget = undefined;
-        this.statusBarElement = undefined;
-        this.editorContainer = undefined;
         if (this.textProperties) {
             this.textProperties.destroy();
         }
@@ -605,5 +585,26 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             this.tableProperties.destroy();
         }
         this.tableProperties = undefined;
+        if (this.propertiesPaneContainer && this.editorContainer.parentElement) {
+            this.propertiesPaneContainer.innerHTML = '';
+            this.propertiesPaneContainer.parentElement.removeChild(this.propertiesPaneContainer);
+        }
+        this.propertiesPaneContainer = undefined;
+        if (this.editorContainer && this.editorContainer.parentElement) {
+            this.editorContainer.innerHTML = '';
+            this.editorContainer.parentElement.removeChild(this.editorContainer);
+        }
+        if (this.statusBarElement && this.statusBarElement.parentElement) {
+            this.statusBarElement.innerHTML = '';
+            this.statusBarElement.parentElement.removeChild(this.statusBarElement);
+        }
+        if (this.containerTarget && this.containerTarget.parentElement) {
+            this.containerTarget.innerHTML = '';
+            this.containerTarget.parentElement.removeChild(this.containerTarget);
+        }
+        this.containerTarget = undefined;
+        this.statusBarElement = undefined;
+        this.editorContainer = undefined;
+
     }
 }

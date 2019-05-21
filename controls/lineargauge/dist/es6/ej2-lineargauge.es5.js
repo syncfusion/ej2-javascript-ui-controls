@@ -2205,7 +2205,6 @@ function getThemeStyle(theme) {
                 pointerColor: '#9A9A9A'
             };
             break;
-        case 'Highcontrast':
         case 'HighContrast':
             style = {
                 backgroundColor: '#000000',
@@ -2503,10 +2502,11 @@ var LinearGauge = /** @__PURE__ @class */ (function (_super) {
             clearTimeout(this.resizeTo);
         }
         if (this.element.classList.contains('e-lineargauge')) {
-            this.resizeTo = setTimeout(function () {
+            this.resizeTo = window.setTimeout(function () {
                 _this.gaugeResized = true;
                 _this.createSvg();
-                _this.refreshing = true;
+                _this.calculateBounds();
+                _this.renderGaugeElements();
                 args.currentSize = new Size(_this.availableSize.width, _this.availableSize.height);
                 _this.trigger(resized, args);
                 _this.render();

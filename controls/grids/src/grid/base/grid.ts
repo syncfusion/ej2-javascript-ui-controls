@@ -243,6 +243,13 @@ export class Predicate extends ChildProperty<Predicate> {
     @Property()
     public ejpredicate: Object;
 
+    /**  
+     * @hidden 
+     * Defines the UID of filter column.  
+     */
+    @Property()
+    public uid: string;
+
 }
 
 /**  
@@ -1792,6 +1799,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers when the grid data is added, deleted and updated.
      * Invoke the done method from the argument to start render after edit operation.
      * @event
+     * @blazorProperty 'dataSourceUpdated'
      */
     @Event()
     public dataSourceChanged: EmitType<DataSourceChangedEventArgs>;

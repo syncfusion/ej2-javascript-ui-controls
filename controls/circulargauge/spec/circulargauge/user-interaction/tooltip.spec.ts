@@ -76,7 +76,7 @@ describe('Circular-Gauge Control', () => {
             };
             gauge.tooltip.enable = true;
             gauge.axes[0].pointers[0].value = 10;
-            gauge.theme = 'Highcontrast';
+            gauge.theme = 'HighContrast';
             gauge.tooltip.showAtMousePosition = true;
             gauge.refresh();
         });

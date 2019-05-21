@@ -514,7 +514,6 @@ export function colorMap(
             }
         } else if ((!isNullOrUndefined(colorMapping[i].from) && !isNullOrUndefined(colorMapping[i].to))
             || !isNullOrUndefined((colorMapping[i].value))) {
-            colorMapping[i].value = !isNullOrUndefined(colorMapping[i].value) ? colorMapping[i].value.toString() : colorMapping[i].value;
             if ((value >= colorMapping[i].from && colorMapping[i].to >= value) || (colorMapping[i].value === equalValue)) {
                 if (colorMapping[i].value === equalValue) {
                     isEqualColor = true;

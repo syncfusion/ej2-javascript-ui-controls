@@ -412,7 +412,8 @@ export class WParagraphFormat {
      * For internal use
      * @private
      */
-    public mergeFormat(format: WParagraphFormat): void {
+    public mergeFormat(format: WParagraphFormat, isStyle?: boolean): void {
+        isStyle = isNullOrUndefined(isStyle) ? false : isStyle;
         if (isNullOrUndefined(this.getValue('leftIndent'))) {
             this.leftIndent = format.getValue('leftIndent') as number;
         }
@@ -440,7 +441,7 @@ export class WParagraphFormat {
         if (isNullOrUndefined(this.getValue('outlineLevel'))) {
             this.outlineLevel = format.getValue('outlineLevel') as OutlineLevel;
         }
-        if (isNullOrUndefined(this.getValue('bidi'))) {
+        if (!isStyle && isNullOrUndefined(this.getValue('bidi'))) {
             this.bidi = format.getValue('bidi') as boolean;
         }
         if (isNullOrUndefined(this.listFormat)) {

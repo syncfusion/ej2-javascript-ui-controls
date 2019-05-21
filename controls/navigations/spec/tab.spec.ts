@@ -2,7 +2,7 @@
  * tab spec document
  */
 import { Browser, createElement, closest, DomElements, L10n, isVisible, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
-import { Tab, RemoveEventArgs, AddEventArgs, SelectingEventArgs } from '../src/tab/tab';
+import { Tab, SelectingEventArgs, RemoveEventArgs, AddEventArgs, SelectEventArgs } from '../src/tab/tab';
 import { TabActionSettingsModel, TabAnimationSettingsModel } from '../src/tab/tab-model';
 import { Toolbar } from '../src/toolbar/toolbar';
 import { profile, inMB, getMemoryProfile } from './common.spec';
@@ -4373,6 +4373,7 @@ describe('Tab Control', () => {
     describe('Events initialize testing', () => {
         let tab: Tab;
         let i: number = 0;
+        let selectedContent: HTMLElement;
         function clickFn(): void {
             i++;
         }
@@ -4412,6 +4413,23 @@ describe('Tab Control', () => {
             let element: HTMLElement = document.getElementById('ej2Tab');
             tab.select(1);
             expect(i).toEqual(3);
+        });
+        it('selected event arguments testing' , () => {
+            tab = new Tab({
+                selected: (args: SelectEventArgs) => {
+                selectedContent = args.selectedContent;
+                },
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" },
+                    { header: { "text": "item3" }, content: "Content3" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            tab.select(1);
+            expect(selectedContent.classList.contains('e-active')).toBe(true);
+            let activeContent: HTMLElement = tab.element.querySelector("#e-content_1");
+            expect(activeContent.classList.contains('e-active')).toBe(true);
         });
         it('Items - removing and removed events', () => {
             tab = new Tab({
@@ -10085,6 +10103,38 @@ describe('Tab Control', () => {
             let actEle1: HTMLElement = <HTMLElement> document.activeElement;
             expect(actEle1).toBe(document.body);
             expect(document.getElementsByTagName('html')[0].scrollTop).toEqual(0);
+        });
+    });
+
+    describe('Selecting event - Ensure selecting item argument cancel added', () => {
+        let tab: Tab;
+        let i: boolean;
+        function selectEventFn(obj: SelectingEventArgs): any {
+            i = obj.cancel;
+        }
+        beforeEach((): void => {
+            tab = undefined;
+            let ele: HTMLElement = createElement('div', { id: 'ej2Tab' });
+            document.body.appendChild(ele);
+        });
+        afterEach((): void => {
+            if (tab) {
+                tab.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Items - selecting' , () => {
+            tab = new Tab({
+                selecting: selectEventFn,
+                items: [
+                    { header: { "text": "item1" }, content: "Content1" },
+                    { header: { "text": "item2" }, content: "Content2" }
+                ]
+            });
+            tab.appendTo('#ej2Tab');
+            let element: HTMLElement = document.getElementById('ej2Tab');
+            tab.select(0);
+            expect(i).toEqual(false);
         });
     });
 

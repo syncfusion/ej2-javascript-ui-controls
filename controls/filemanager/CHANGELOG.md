@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.48 (2019-05-21)
+
+### File Manager
+
+#### New Features
+
+- #144270 - Added support to use the JWT tokens with `beforeSend` event’s Ajax settings.
+
 ## 17.1.42 (2019-04-23)
 
 ### File Manager

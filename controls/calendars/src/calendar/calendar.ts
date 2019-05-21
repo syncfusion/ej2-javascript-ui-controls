@@ -769,7 +769,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             let tdEle: HTMLElement = this.dayCell(localDate);
             let title: string = this.globalize.formatDate(localDate, { type: 'date', skeleton: 'full' });
             let dayLink: HTMLElement = this.createElement('span');
-            dayLink.textContent = this.globalize.formatDate(localDate, { type: 'date', skeleton: 'd' });
+            dayLink.textContent = this.globalize.formatDate(localDate, { format: 'd', type: 'date', skeleton: 'yMd'});
             let disabled: boolean = (this.min > localDate) || (this.max < localDate);
             if (disabled) {
                 addClass([tdEle], DISABLED);
@@ -943,6 +943,10 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             dayLink.textContent = this.globalize.formatDate(localDate, { type: 'dateTime', skeleton: 'y' });
             if ((year < startFullYr) || (year > endFullYr)) {
                 addClass([tdEle], OTHERDECADE);
+                if (year < new Date(this.checkValue(this.min)).getFullYear() ||
+                    year > new Date(this.checkValue(this.max)).getFullYear()) {
+                    addClass([tdEle], DISABLED);
+                }
             } else if (year < new Date(this.checkValue(this.min)).getFullYear() ||
                 year > new Date(this.checkValue(this.max)).getFullYear()) {
                 addClass([tdEle], DISABLED);

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 17.1.48 (2019-05-21)
+
+### RichTextEditor
+
+#### New Features
+
+- #230976 - Opens a quick toolbar on right-click support has been provided.
+
+#### Bug Fixes
+
+- #235120 - RichTextEditor's paste as plain text doesn't preserve line break that issue has been resolved.
+
 ## 17.1.43 (2019-04-30)
 
 ### RichTextEditor

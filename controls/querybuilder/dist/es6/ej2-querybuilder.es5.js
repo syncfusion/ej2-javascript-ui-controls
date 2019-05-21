@@ -289,7 +289,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             if (args.cancel) {
                 return;
             }
-            var rule = this.getGroup(element);
+            var rule = this.getParentGroup(element);
             rule.condition = args.value;
             this.triggerEvents({ groupID: groupID, type: 'condition', value: rule.condition });
             this.filterRules(beforeRules, this.getValidRules(this.rule), 'condition');
@@ -424,7 +424,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             var validateRule = void 0;
             for (i = 0, len = ruleElemCln.length; i < len; i++) {
                 groupElem = closest(ruleElemCln[i], '.e-group-container');
-                rule = this.getGroup(groupElem);
+                rule = this.getParentGroup(groupElem);
                 index = 0;
                 indexElem = tempElem = ruleElemCln[i];
                 dropDownObj = getComponent(ruleElemCln[i].querySelector('.e-rule-field input.e-control'), 'dropdownlist');
@@ -714,7 +714,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     QueryBuilder.prototype.changeField = function (args) {
         if (args.isInteracted) {
             var groupElem = closest(args.element, '.e-group-container');
-            var rules = this.getGroup(groupElem);
+            var rules = this.getParentGroup(groupElem);
             var ruleElem = closest(args.element, '.e-rule-container');
             var index = 0;
             while (ruleElem && ruleElem.previousElementSibling !== null) {
@@ -1026,7 +1026,13 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     QueryBuilder.prototype.renderStringValue = function (parentId, rule, operator, idx, ruleValElem) {
         var selectedVal;
         var columnData = this.getItemData(parentId);
-        var selectedValue = this.isImportRules ? rule.value : this.setDefaultValue(parentId, false, false);
+        var selectedValue;
+        if (this.isImportRules || this.isPublic) {
+            selectedValue = rule.value;
+        }
+        else {
+            selectedValue = this.setDefaultValue(parentId, false, false);
+        }
         if ((operator === 'in' || operator === 'notin') && (this.dataColl.length || columnData.values)) {
             selectedVal = this.isImportRules ? rule.value : this.setDefaultValue(parentId, true, false);
             this.renderMultiSelect(columnData, parentId, idx, selectedVal, columnData.values);
@@ -1054,7 +1060,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     };
     QueryBuilder.prototype.renderNumberValue = function (parentId, rule, operator, idx, ruleValElem, itemData, length) {
         var columnData = this.getItemData(parentId);
-        var selectedVal = this.isImportRules ? rule.value : this.setDefaultValue(parentId, false, true);
+        var selectedVal = (this.isImportRules || this.isPublic) ? rule.value : this.setDefaultValue(parentId, false, true);
         if ((operator === 'in' || operator === 'notin') && (this.dataColl.length || columnData.values)) {
             selectedVal = this.isImportRules ? rule.value : this.setDefaultValue(parentId, true, false);
             this.renderMultiSelect(columnData, parentId, idx, selectedVal, columnData.values);
@@ -1108,6 +1114,22 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             return numArr;
         }
     };
+    QueryBuilder.prototype.parseDate = function (value, format) {
+        var formatOpt;
+        var selectedValue;
+        if (format) {
+            var dParser = this.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
+            formatOpt = { type: 'dateTime', format: format };
+            selectedValue = dParser(value);
+            if (isNullOrUndefined(selectedValue)) {
+                selectedValue = this.intl.parseDate(value, formatOpt);
+            }
+        }
+        else {
+            selectedValue = new Date(value);
+        }
+        return selectedValue;
+    };
     QueryBuilder.prototype.renderControls = function (target, itemData, rule, tempRule) {
         addClass([target.parentElement.querySelector('.e-rule-value')], 'e-value');
         if (itemData.template) {
@@ -1115,7 +1137,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             var length_1;
-            if (tempRule.type === 'boolean') {
+            if (tempRule.type === 'boolean' && this.selectedColumn.values) {
                 length_1 = this.selectedColumn.values.length;
             }
             else {
@@ -1149,48 +1171,52 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                             {
                                 var values = itemData.values && itemData.values.length ? itemData.values : ['True', 'False'];
                                 var isCheck = false;
-                                if (itemData.value) {
+                                if (rule.type === 'boolean' && rule.value) {
+                                    isCheck = values[i].toString() === rule.value.toString();
+                                }
+                                else if (itemData.value) {
                                     isCheck = values[i].toString() === itemData.value.toString();
                                 }
-                                else if (rule.value) {
-                                    isCheck = values[i].toString() === rule.value.toString();
+                                else {
+                                    isCheck = true;
                                 }
                                 var radiobutton = new RadioButton({
                                     label: values[i].toString(), name: parentId + 'default', checked: isCheck, value: values[i],
                                     change: this.changeValue.bind(this, i)
                                 });
                                 radiobutton.appendTo('#' + parentId + '_valuekey' + i);
-                                this.updateRules(radiobutton.element, values[i], 0);
+                                if (isCheck) {
+                                    this.updateRules(radiobutton.element, values[i], 0);
+                                }
                             }
                             break;
                         case 'date':
                             {
                                 var selectedValue = new Date();
                                 var selVal = void 0;
+                                var column = void 0;
+                                var format = itemData.format;
+                                var datepick = void 0;
                                 if (itemData.value) {
-                                    selectedValue = itemData.value instanceof Date ?
-                                        itemData.value : new Date(itemData.value);
-                                }
-                                if (this.isImportRules && rule && rule.value) {
-                                    selectedValue = (length_1 > 1) ? new Date(rule.value[i]) : new Date(rule.value);
-                                    var format = void 0;
-                                    var column = this.getColumn(rule.field);
-                                    selVal = (length_1 > 1) ? rule.value[i] : rule.value;
-                                    if (column.format) {
-                                        var dParser = this.intl.getDateParser({ skeleton: 'full', type: 'dateTime' });
-                                        format = { type: 'dateTime', format: column.format };
-                                        if (selectedValue.toLocaleDateString() === 'Invalid Date') {
-                                            selectedValue = dParser(selVal);
-                                            if (isNullOrUndefined(selectedValue)) {
-                                                selectedValue = this.intl.parseDate(selVal, format);
-                                            }
-                                        }
+                                    if (itemData.value instanceof Date) {
+                                        selectedValue = itemData.value;
+                                    }
+                                    else if (itemData.value instanceof Number) {
+                                        selectedValue = new Date(itemData.value);
+                                    }
+                                    else {
+                                        selectedValue = this.parseDate(itemData.value, itemData.format);
                                     }
                                 }
-                                var datepick = void 0;
-                                if (itemData.format) {
+                                if ((this.isImportRules || this.isPublic) && rule && rule.value) {
+                                    column = this.getColumn(rule.field);
+                                    selVal = (length_1 > 1) ? rule.value[i] : rule.value;
+                                    selectedValue = this.parseDate(selVal, column.format);
+                                    format = column.format;
+                                }
+                                if (format) {
                                     datepick =
-                                        new DatePicker({ value: selectedValue, format: itemData.format, change: this.changeValue.bind(this, i) });
+                                        new DatePicker({ value: selectedValue, format: format, change: this.changeValue.bind(this, i) });
                                 }
                                 else {
                                     datepick = new DatePicker({ value: selectedValue, change: this.changeValue.bind(this, i) });
@@ -1276,7 +1302,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             var inputLen = 1;
-            if (tempRule.type === 'boolean') {
+            if (tempRule.type === 'boolean' && this.selectedColumn.values) {
                 inputLen = this.selectedColumn.values.length;
             }
             else {
@@ -1302,12 +1328,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 break;
             case 'radio':
                 var radioBtnObj = getComponent(element, controlName);
-                if (!this.selectedColumn.value || (this.selectedColumn.value && this.selectedColumn.value === radioBtnObj.value)) {
-                    radioBtnObj.checked = true;
+                if (radioBtnObj.checked) {
                     rule.value = radioBtnObj.value;
-                }
-                else {
-                    radioBtnObj.checked = false;
                 }
                 radioBtnObj.refresh();
                 break;
@@ -1339,7 +1361,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     };
     QueryBuilder.prototype.updateRules = function (target, selectedValue, i) {
         var groupElem = closest(target, '.e-group-container');
-        var rule = this.getGroup(groupElem);
+        var rule = this.getParentGroup(groupElem);
         var ruleElem = closest(target, '.e-rule-container');
         var index = 0;
         var dropDownObj;
@@ -1366,7 +1388,12 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             var element = ruleElement.nextElementSibling.querySelector('input.e-control');
             var operator = getComponent(element, 'dropdownlist').value;
             rule.rules[index].operator = operator;
-            var elementCln = ruleElement.nextElementSibling.nextElementSibling.querySelectorAll('input.e-control');
+            // Value Fields
+            var valueContainer = ruleElement.nextElementSibling.nextElementSibling;
+            var elementCln = valueContainer.querySelectorAll('input.e-control');
+            if (elementCln.length < 1) {
+                elementCln = valueContainer.querySelectorAll('.e-template');
+            }
             for (var i_1 = 0; i_1 < elementCln.length; i_1++) {
                 if (!elementCln[i_1]) {
                     elementCln[i_1] = ruleElement.nextElementSibling.nextElementSibling.querySelector('div.e-control');
@@ -1565,9 +1592,11 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
      */
     QueryBuilder.prototype.addRules = function (rule, groupID) {
         groupID = this.element.id + '_' + groupID;
+        this.isPublic = true;
         for (var i = 0, len = rule.length; i < len; i++) {
             this.addRuleElement(document.getElementById(groupID), rule[i]);
         }
+        this.isPublic = false;
     };
     /**
      * Adds single or multiple groups, which contains the collection of rules.
@@ -1576,7 +1605,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     QueryBuilder.prototype.addGroups = function (groups, groupID) {
         groupID = this.element.id + '_' + groupID;
         var groupElem = document.getElementById(groupID);
-        var rule = this.getGroup(groupElem);
+        var rule = this.getParentGroup(groupElem);
         var grouplen = groups.length;
         if (grouplen) {
             for (var i = 0, len = groups.length; i < len; i++) {
@@ -1909,8 +1938,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var wrapper = this.getWrapper();
         EventHandler.remove(wrapper, 'click', this.clickEventHandler);
     };
-    QueryBuilder.prototype.getGroup = function (target, isParent) {
-        var groupLevel = this.levelColl[target.id];
+    QueryBuilder.prototype.getParentGroup = function (target, isParent) {
+        var groupLevel = (target instanceof Element) ? this.levelColl[target.id] : this.levelColl[target];
         var len = isParent ? groupLevel.length - 1 : groupLevel.length;
         var rule = this.rule;
         for (var i = 0; i < len; i++) {
@@ -1921,7 +1950,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     QueryBuilder.prototype.deleteGroup = function (target) {
         var groupElem = target;
         var groupId = groupElem.id.replace(this.element.id + '_', '');
-        var rule = this.getGroup(groupElem, true);
+        var rule = this.getParentGroup(groupElem, true);
         var index = 0;
         var i;
         var len;
@@ -1964,7 +1993,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var groupElem = closest(target, '.e-group-container');
         var ruleID;
         var groupID;
-        var rule = this.getGroup(groupElem);
+        var rule = this.getParentGroup(groupElem);
         var ruleElem = closest(target, '.e-rule-container');
         groupID = groupElem.id.replace(this.element.id + '_', '');
         ruleID = closest(target, '.e-rule-container').id.replace(this.element.id + '_', '');
@@ -2067,6 +2096,41 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
      */
     QueryBuilder.prototype.getRules = function () {
         return this.rule;
+    };
+    /**
+     * Gets the rule.
+     * @returns object.
+     */
+    QueryBuilder.prototype.getRule = function (elem) {
+        var ruleElem;
+        var ruleId;
+        var index = 0;
+        if (elem instanceof HTMLElement) {
+            ruleElem = closest(elem, '.e-rule-container');
+        }
+        else {
+            ruleId = this.element.id + '_' + elem;
+            ruleElem = document.getElementById(ruleId);
+        }
+        var groupElem = closest(ruleElem, '.e-group-container');
+        var rule = this.getParentGroup(groupElem);
+        while (ruleElem.previousElementSibling !== null) {
+            ruleElem = ruleElem.previousElementSibling;
+            index++;
+        }
+        return rule.rules[index];
+    };
+    /**
+     * Gets the group.
+     * @returns object.
+     */
+    QueryBuilder.prototype.getGroup = function (target) {
+        if (target instanceof Element && target.className.indexOf('e-group-container') < 1) {
+            target = closest(target, '.e-group-container');
+        }
+        var groupId = (target instanceof Element) ? target.id : this.element.id + '_' + target;
+        var rule = this.getParentGroup(groupId);
+        return { rules: rule.rules, condition: rule.condition };
     };
     /**
      * Deletes the group or groups based on the group ID.

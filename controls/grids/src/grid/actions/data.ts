@@ -251,7 +251,10 @@ export class Data implements IDataProcessor {
             if (checkBoxCols.length) {
                 let excelPredicate: Predicate = CheckBoxFilter.getPredicate(checkBoxCols);
                 for (let prop of Object.keys(excelPredicate)) {
-                    let col: Column = getColumnByForeignKeyValue(prop, foreignColumn);
+                    let col: Column;
+                    if (this.parent.getColumnByField(prop).isForeignColumn()) {
+                        col = getColumnByForeignKeyValue(prop, foreignColumn);
+                    }
                     if (!col) {
                         this.parent.log('initial_action', {moduleName: 'filter', columnName: prop});
                     }
@@ -265,13 +268,13 @@ export class Data implements IDataProcessor {
             }
             if (defaultFltrCols.length) {
                 for (let col of defaultFltrCols) {
-                    let column: Column = this.getColumnByField(col.field) ||
-                        getColumnByForeignKeyValue(col.field, this.parent.getForeignKeyColumns());
+                    col.uid = col.uid || this.parent.getColumnByField(col.field).uid;
+                    let column: Column = this.parent.getColumnByUid(col.uid);
                     if (!column) {
                         this.parent.log('initial_action', {moduleName: 'filter', columnName: col.field});
                     }
                     let sType: string = column.type;
-                    if (getColumnByForeignKeyValue(col.field, foreignColumn) && !skipFoerign) {
+                    if (column.isForeignColumn() && getColumnByForeignKeyValue(col.field, foreignColumn) && !skipFoerign) {
                         actualFilter.push(col);
                         predicateList = this.fGeneratePredicate(column, predicateList);
                     } else {

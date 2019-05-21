@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.48 (2019-05-21)
+
+### ListBox
+
+#### New Features
+
+- Provided change event for ListBox.
+
 ## 17.1.44 (2019-05-07)
 
 ### MultiSelect

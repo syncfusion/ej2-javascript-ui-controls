@@ -2245,6 +2245,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         this.grid.actionFailure = this.triggerEvents.bind(this);
         this.grid.dataBound = (args) => {
             this.updateColumnModel();
+            this.updateAltRow(this.getRows());
             this.notify('headerCheckbox', {});
             this.trigger(dataBound, args);
             if (isRemoteData(this) && !isOffline(this) && !this.hasChildMapping) {
@@ -3360,6 +3361,26 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                     if (!isNullOrUndefined(childRecords[i].childRecords) && (action !== 'expand' ||
                         isNullOrUndefined(childRecords[i].expanded) || childRecords[i].expanded)) {
                         this.expandCollapse(action, rows[i], childRecords[i], true);
+                    }
+                }
+            }
+            this.updateAltRow(gridRows);
+        }
+    }
+    updateAltRow(rows) {
+        if (this.enableAltRow) {
+            let visibleRowCount = 0;
+            for (let i = 0; i < rows.length; i++) {
+                let gridRow = rows[i];
+                if (gridRow.style.display !== 'none') {
+                    if (gridRow.classList.contains('e-altrow')) {
+                        removeClass([gridRow], 'e-altrow');
+                    }
+                    if (visibleRowCount % 2 !== 0 && !gridRow.classList.contains('e-summaryrow') && !gridRow.classList.contains('e-detailrow')) {
+                        addClass([gridRow], 'e-altrow');
+                    }
+                    if (!gridRow.classList.contains('e-summaryrow') && !gridRow.classList.contains('e-detailrow')) {
+                        visibleRowCount++;
                     }
                 }
             }

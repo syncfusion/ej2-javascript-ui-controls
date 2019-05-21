@@ -681,7 +681,7 @@ describe('Circular-Gauge Control', () => {
                 expect(isNullOrUndefined(svg)).toBe(false);
                 done();
             };
-            gauge.theme = 'Highcontrast';
+            gauge.theme = 'HighContrast';
             gauge.refresh();
         });
     });

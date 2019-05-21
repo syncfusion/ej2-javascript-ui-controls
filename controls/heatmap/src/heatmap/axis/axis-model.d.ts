@@ -47,7 +47,9 @@ export interface AxisModel {
      * * Numeric:  Renders a numeric axis.
      * * DateTime: Renders a dateTime axis.
      * * Category: Renders a category axis.
-     * @default 'Category'
+     * @default Category
+     * @aspType Syncfusion.EJ2.HeatMap.ValueType
+     * @isEnumeration true
      */
 
     valueType?: ValueType;

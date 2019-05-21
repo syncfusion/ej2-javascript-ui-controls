@@ -1,4 +1,4 @@
-import { Base, Browser, ChildProperty, Complex, Component, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Observer, Property, addClass, append, attributes, closest, compile, createElement, debounce, detach, extend, formatUnit, getEnumValue, getInstance, getUniqueID, isNullOrUndefined, prepend, print, removeClass, select, selectAll, setStyleAttribute } from '@syncfusion/ej2-base';
+import { Base, Browser, ChildProperty, Complex, Component, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Observer, Property, Touch, addClass, append, attributes, closest, compile, createElement, debounce, detach, extend, formatUnit, getEnumValue, getInstance, getUniqueID, isNullOrUndefined, prepend, print, removeClass, select, selectAll, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Toolbar } from '@syncfusion/ej2-navigations';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { Dialog, Popup, getScrollableParent, isCollide } from '@syncfusion/ej2-popups';
@@ -10858,6 +10858,11 @@ var HtmlEditor = /** @__PURE__ @class */ (function () {
  */
 var PasteCleanup = /** @__PURE__ @class */ (function () {
     function PasteCleanup(parent, serviceLocator) {
+        this.inlineNode = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
+            'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'i', 'iframe', 'img', 'input',
+            'ins', 'kbd', 'label', 'map', 'mark', 'meter', 'noscript', 'object', 'output', 'picture', 'progress',
+            'q', 'ruby', 's', 'samp', 'script', 'select', 'slot', 'small', 'span', 'strong', 'sub', 'sup', 'svg',
+            'template', 'textarea', 'time', 'u', 'tt', 'var', 'video', 'wbr'];
         this.parent = parent;
         this.locator = serviceLocator;
         this.renderFactory = this.locator.getService('rendererFactory');
@@ -11044,29 +11049,65 @@ var PasteCleanup = /** @__PURE__ @class */ (function () {
     };
     //Plain Formatting
     PasteCleanup.prototype.plainFormatting = function (value) {
-        var clipBoardElem = this.parent.createElement('span');
+        var clipBoardElem = this.parent.createElement('div');
         clipBoardElem.innerHTML = value;
+        this.detachInlineElements(clipBoardElem);
         var text = this.getTextContent(clipBoardElem);
         var resultElement = this.parent.createElement('span');
         resultElement.innerHTML = text;
         this.saveSelection.restore();
         this.parent.executeCommand('insertHTML', resultElement);
     };
+    PasteCleanup.prototype.detachInlineElements = function (element) {
+        while (!isNullOrUndefined(element)) {
+            element = element.firstElementChild ? element.firstElementChild : element;
+            var isInlineElement = false;
+            for (var j = 0; j < this.inlineNode.length && !isInlineElement; j++) {
+                if (element.tagName.toLocaleLowerCase() === this.inlineNode[j]) {
+                    var node = element.nextElementSibling ?
+                        element.nextElementSibling : element.parentElement.nextElementSibling;
+                    if (!isNullOrUndefined(element.childNodes[0]) && element.childNodes[0].textContent !== '') {
+                        element.parentElement.insertBefore(this.getTextNode(element.childNodes[0]), element);
+                    }
+                    detach(element);
+                    element = node;
+                    isInlineElement = true;
+                }
+            }
+            if (!isNullOrUndefined(element) && element.children.length > 0 || isInlineElement) {
+                element = element;
+            }
+            else if (element.nextElementSibling) {
+                element = element.nextElementSibling;
+            }
+            else if (element.parentElement.nextElementSibling) {
+                element = element.parentElement.nextElementSibling;
+            }
+            else {
+                element = null;
+            }
+        }
+    };
+    PasteCleanup.prototype.getTextNode = function (element) {
+        var rootElement = this.parent.createElement('span');
+        rootElement.innerHTML = element.textContent;
+        return rootElement.childNodes[0];
+    };
     PasteCleanup.prototype.getTextContent = function (element) {
         var result;
         var text;
         result = '';
-        for (var i = 0; i < element.childNodes.length; i++) {
-            text = null;
-            if (element.childNodes[i].nodeType === 1) {
-                text = this.getTextContent(element.childNodes[i]);
-            }
-            else if (element.childNodes[i].nodeType === 3) {
-                text = element.childNodes[i].nodeValue;
-            }
-            if (text) {
-                if (/\S$/.test(result) && /^\S/.test(text)) {
-                    text = ' ' + text;
+        if (element.children.length === 0 && element.textContent.trim() !== '') {
+            text = '<p>' + element.textContent + '</p>';
+            result += text;
+        }
+        else {
+            for (var i = 0; i < element.children.length; i++) {
+                if (!isNullOrUndefined(element.children[i])) {
+                    text = this.getTextContent(element.children[i]);
+                }
+                else {
+                    text = '<p>' + element.children[i].textContent + '</p>';
                 }
                 result += text;
             }
@@ -11368,7 +11409,8 @@ var Link = /** @__PURE__ @class */ (function () {
     };
     Link.prototype.editAreaClickHandler = function (e) {
         var args = e.args;
-        if (args.which === 2 || args.which === 3) {
+        var showOnRightClick = this.parent.quickToolbarSettings.showOnRightClick;
+        if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) {
             return;
         }
         if (this.parent.editorMode === 'HTML' && this.parent.quickToolbarModule && this.parent.quickToolbarModule.linkQTBar) {
@@ -12288,7 +12330,8 @@ var Image = /** @__PURE__ @class */ (function () {
     };
     Image.prototype.editAreaClickHandler = function (e) {
         var args = e.args;
-        if (args.which === 2 || args.which === 3) {
+        var showOnRightClick = this.parent.quickToolbarSettings.showOnRightClick;
+        if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) {
             return;
         }
         if (this.parent.editorMode === 'HTML' && this.parent.quickToolbarModule && this.parent.quickToolbarModule.imageQTBar) {
@@ -13506,7 +13549,8 @@ var Table = /** @__PURE__ @class */ (function () {
     };
     Table.prototype.editAreaClickHandler = function (e) {
         var args = e.args;
-        if (args.which === 2 || args.which === 3) {
+        var showOnRightClick = this.parent.quickToolbarSettings.showOnRightClick;
+        if (args.which === 2 || (showOnRightClick && args.which === 1) || (!showOnRightClick && args.which === 3)) {
             return;
         }
         if (this.parent.editorMode === 'HTML' && this.parent.quickToolbarModule && this.parent.quickToolbarModule.tableQTBar) {
@@ -14541,6 +14585,9 @@ var QuickToolbarSettings = /** @__PURE__ @class */ (function (_super) {
         Property(true)
     ], QuickToolbarSettings.prototype, "enable", void 0);
     __decorate$2([
+        Property(false)
+    ], QuickToolbarSettings.prototype, "showOnRightClick", void 0);
+    __decorate$2([
         Property('hide')
     ], QuickToolbarSettings.prototype, "actionOnScroll", void 0);
     __decorate$2([
@@ -14946,6 +14993,17 @@ var __extends$4 = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+var __assign = (undefined && undefined.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
 var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -15240,12 +15298,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             this.setProperties({ value: value });
         }
     };
-    RichTextEditor.prototype.mouseUp = function (e) {
-        this.notify(mouseUp, { member: 'mouseUp', args: e });
-        if (this.inputElement && ((this.editorMode === 'HTML' && this.inputElement.textContent.length !== 0) ||
-            (this.editorMode === 'Markdown' && this.inputElement.value.length !== 0))) {
-            this.notify(toolbarRefresh, { args: e });
-        }
+    RichTextEditor.prototype.triggerEditArea = function (e) {
         if (!isIDevice()) {
             this.notify(editAreaClick, { member: 'editAreaClick', args: e });
         }
@@ -15255,6 +15308,25 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
                 this.notify(editAreaClick, { member: 'editAreaClick', args: e });
             }
         }
+    };
+    RichTextEditor.prototype.notifyMouseUp = function (e) {
+        this.notify(mouseUp, { member: 'mouseUp', args: e });
+        if (this.inputElement && ((this.editorMode === 'HTML' && this.inputElement.textContent.length !== 0) ||
+            (this.editorMode === 'Markdown' && this.inputElement.value.length !== 0))) {
+            this.notify(toolbarRefresh, { args: e });
+        }
+        this.triggerEditArea(e);
+    };
+    RichTextEditor.prototype.mouseUp = function (e) {
+        if (this.quickToolbarSettings.showOnRightClick && Browser.isDevice) {
+            var target = e.target;
+            var closestTable = closest(target, 'table');
+            if (target && target.nodeName === 'A' || target.nodeName === 'IMG' || (target.nodeName === 'TD' || target.nodeName === 'TH' ||
+                target.nodeName === 'TABLE' || (closestTable && this.contentModule.getEditPanel().contains(closestTable)))) {
+                return;
+            }
+        }
+        this.notifyMouseUp(e);
     };
     /**
      * @hidden
@@ -15531,6 +15603,10 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
                 case 'undoRedoSteps':
                 case 'undoRedoTimer':
                     this.formatter.editorManager.observer.notify(MODEL_CHANGED, { newProp: newProp, oldProp: oldProp });
+                    break;
+                case 'quickToolbarSettings':
+                    newProp.quickToolbarSettings.showOnRightClick ? this.wireContextEvent() : this.unWireContextEvent();
+                    this.notify(modelChanged, { newProp: newProp, oldProp: oldProp });
                     break;
                 default:
                     this.notify(modelChanged, { newProp: newProp, oldProp: oldProp });
@@ -16069,6 +16145,20 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             EventHandler.add(element, 'scroll', this.scrollHandler, this);
         }
     };
+    RichTextEditor.prototype.wireContextEvent = function () {
+        if (this.quickToolbarSettings.showOnRightClick) {
+            EventHandler.add(this.inputElement, 'contextmenu', this.contextHandler, this);
+            if (Browser.isDevice) {
+                this.touchModule = new Touch(this.inputElement, { tapHold: this.touchHandler.bind(this), tapHoldThreshold: 500 });
+            }
+        }
+    };
+    RichTextEditor.prototype.unWireContextEvent = function () {
+        EventHandler.remove(this.inputElement, 'contextmenu', this.contextHandler);
+        if (Browser.isDevice && this.touchModule) {
+            this.touchModule.destroy();
+        }
+    };
     /**
      * @hidden
      */
@@ -16078,6 +16168,13 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             var element = _a[_i];
             EventHandler.remove(element, 'scroll', this.scrollHandler);
         }
+    };
+    RichTextEditor.prototype.touchHandler = function (e) {
+        this.notifyMouseUp(e.originalEvent);
+        this.triggerEditArea(e.originalEvent);
+    };
+    RichTextEditor.prototype.contextHandler = function (e) {
+        e.preventDefault();
     };
     RichTextEditor.prototype.resetHandler = function () {
         this.setProperties({ value: this.valueContainer.defaultValue === '' ? null : this.valueContainer.defaultValue });
@@ -16115,7 +16212,8 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     };
     RichTextEditor.prototype.bindEvents = function () {
         this.keyboardModule = new KeyboardEvents$1(this.inputElement, {
-            keyAction: this.keyDown.bind(this), keyConfigs: this.formatter.keyConfig, eventName: 'keydown'
+            keyAction: this.keyDown.bind(this), keyConfigs: __assign({}, this.formatter.keyConfig, this.keyConfig),
+            eventName: 'keydown'
         });
         var formElement = closest(this.valueContainer, 'form');
         if (formElement) {
@@ -16125,6 +16223,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         EventHandler.add(this.inputElement, 'paste', this.onPaste, this);
         EventHandler.add(this.inputElement, Browser.touchEndEvent, debounce(this.mouseUp, 30), this);
         EventHandler.add(this.inputElement, Browser.touchStartEvent, this.mouseDownHandler, this);
+        this.wireContextEvent();
         this.formatter.editorManager.observer.on(KEY_DOWN_HANDLER, this.editorKeyDown, this);
         this.element.ownerDocument.defaultView.addEventListener('resize', this.onResizeHandler, true);
         if (this.iframeSettings.enable) {
@@ -16175,6 +16274,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
         EventHandler.remove(this.inputElement, 'paste', this.onPaste);
         EventHandler.remove(this.inputElement, Browser.touchEndEvent, debounce(this.mouseUp, 30));
         EventHandler.remove(this.inputElement, Browser.touchStartEvent, this.mouseDownHandler);
+        this.unWireContextEvent();
         if (this.formatter) {
             this.formatter.editorManager.observer.off(KEY_DOWN_HANDLER, this.editorKeyDown);
         }

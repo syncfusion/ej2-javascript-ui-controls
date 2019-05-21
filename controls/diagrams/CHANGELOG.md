@@ -2,7 +2,33 @@
 
 ## [Unreleased]
 
+## 17.1.48 (2019-05-21)
+
+### Diagram
+
+#### Bug Fixes
+
+- #234537 - The BPMN shape style is now applied to the BPMN inner elements.
+- #235977 -The issue "User handles drawn multiple times while dragging a node from the palette" has been resolved.
+- #235742 -The issue with the oldValue of selectionChange is shown incorrect when mouse down on node has been resolved.
+- #235794 - The `textEdit` event is now fired in Edge browser.
+- #236322 - The module property in the package.json has been updated.
+
+## 17.1.47 (2019-05-14)
+
+### Diagram
+
+#### Breaking Changes
+
+- The `hyperLink` property in the Shape Annotation and Path annotation is renamed properly as `hyperlink`.
+
+#### Bug Fixes
+
 ## 17.1.44 (2019-05-07)
+
+### Diagram
+
+#### Bug Fixes
 
 - #234537 - Conditional sequence connector is now working properly when connected with BPMN Service shape.
 - #234307 - Undo/redo is now working properly when modifying the annotation's font size at run time.

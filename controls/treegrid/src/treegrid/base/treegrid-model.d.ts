@@ -403,6 +403,7 @@ export interface TreeGridModel extends ComponentModel{
    * Triggers when the TreeGrid data is added, deleted and updated.
    * Invoke the done method from the argument to start render after edit operation.
    * @event
+   * @blazorProperty 'dataSourceUpdated'
    */
     dataSourceChanged?: EmitType<DataSourceChangedEventArgs>;
 

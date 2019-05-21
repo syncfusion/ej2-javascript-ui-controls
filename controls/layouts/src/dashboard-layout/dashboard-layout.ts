@@ -377,49 +377,49 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
      * @event
      */
     @Event()
-    public change: EmitType<object>;
+    public change: EmitType<ChangeEventArgs>;
 
     /**
      * Triggers when a panel is about to drag.
      * @event
      */
     @Event()
-    public dragStart: EmitType<DragEventArgs>;
+    public dragStart: EmitType<DragStartArgs>;
 
     /**
      * Triggers while a panel is dragged continuously.
      * @event
      */
     @Event()
-    public drag: EmitType<DragEventArgs>;
+    public drag: EmitType<DraggedEventArgs>;
 
     /**
      * Triggers when a dragged panel is dropped.
      * @event
      */
     @Event()
-    public dragStop: EmitType<DragEventArgs>;
+    public dragStop: EmitType<DragStopArgs>;
 
     /**
      * Triggers when a panel is about to resize.
      * @event
      */
     @Event()
-    public resizeStart: EmitType<Object>;
+    public resizeStart: EmitType<ResizeArgs>;
 
     /**
      * Triggers when a panel is being resized continuously.
      * @event
      */
     @Event()
-    public resize: EmitType<Object>;
+    public resize: EmitType<ResizeArgs>;
 
     /**
      * Triggers when a panel resize ends.
      * @event
      */
     @Event()
-    public resizeStop: EmitType<Object>;
+    public resizeStop: EmitType<ResizeArgs>;
 
     /** 
      * Triggers when Dashboard Layout is created.
@@ -2139,13 +2139,20 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                             }
                         }
                         if (changedPanels.length > 0) {
-                            this.trigger('change', changedPanels);
+                            let changedArgs: ChangeEventArgs = { changedPanels: changedPanels };
+                            this.trigger('change', changedArgs);
                         }
+                        this.dragStopEventArgs = { event: args.event, element: args.element };
                         this.trigger('dragStop', args);
                         this.resizeEvents();
                     },
                     drag: (args: DragEventArgs) => {
-                        this.trigger('drag', args);
+                        this.draggedEventArgs = {
+                            event: args.event,
+                            element: args.element,
+                            target: <HTMLElement>closest((args.target), '.e-panel')
+                        };
+                        this.trigger('drag', this.draggedEventArgs);
                         this.onDragStart(args);
                     }
                 });
@@ -2163,7 +2170,8 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     }
 
     private onDraggingStart(args: DragEventArgs): void {
-        this.trigger('dragStart', args);
+        this.dragStartArgs = { event: args.event, element: args.element, cancel: false };
+        this.trigger('dragStart', this.dragStartArgs);
         this.panelsInitialModel = this.cloneModels(this.panels);
         this.mainElement = args.element;
         this.cloneObject = JSON.parse(JSON.stringify(this.cloneObject));
@@ -2385,7 +2393,11 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.updateOldRowColumn();
         this.sortedPanel();
         this.updateCloneArrayObject();
-        this.bindEvents();
+        if (this.allowResizing) {
+            for (let i: number = 0; i < cell.querySelectorAll('.e-resize').length; i++) {
+                EventHandler.add(cell.querySelectorAll('.e-resize')[i], 'mousedown', this.downResizeHandler, this);
+            }
+        }
     }
 
     protected updateCloneArrayObject(): void {
@@ -2728,6 +2740,18 @@ export interface DragStartArgs {
      * Specifies the cell element being dragged.
      */
     element: HTMLElement;
+}
+
+
+/**
+ * Defines the change event arguments
+ */
+export interface ChangeEventArgs {
+
+    /**
+     * Specifies the model values of the position changed panels.
+     */
+    changedPanels: PanelModel[];
 }
 
 /**

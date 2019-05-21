@@ -47,7 +47,6 @@ export function getThemeStyle(theme: TreeMapTheme): IThemeStyle {
                 legendTextColor: '#DADADA'
             };
             break;
-        case 'Highcontrast':
         case 'HighContrast':
             style = {
                 backgroundColor: '#000000',

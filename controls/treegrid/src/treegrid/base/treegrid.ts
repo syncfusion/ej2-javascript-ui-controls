@@ -555,6 +555,7 @@ public pagerTemplate: string;
    * Triggers when the TreeGrid data is added, deleted and updated.
    * Invoke the done method from the argument to start render after edit operation.
    * @event
+   * @blazorProperty 'dataSourceUpdated'
    */
   @Event()
   public dataSourceChanged: EmitType<DataSourceChangedEventArgs>;
@@ -1389,6 +1390,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.grid.actionFailure = this.triggerEvents.bind(this);
     this.grid.dataBound = (args: Object): void => {
       this.updateColumnModel();
+      this.updateAltRow(this.getRows());
       this.notify('headerCheckbox', {});
       this.trigger(events.dataBound, args);
       if (isRemoteData(this) && !isOffline(this) && !this.hasChildMapping) {
@@ -2526,6 +2528,26 @@ private getGridEditSettings(): GridEditModel {
           if (!isNullOrUndefined(childRecords[i].childRecords) && (action !== 'expand' ||
                isNullOrUndefined(childRecords[i].expanded) || childRecords[i].expanded)) {
             this.expandCollapse(action, rows[i], childRecords[i], true);
+          }
+        }
+      }
+      this.updateAltRow(gridRows);
+    }
+  }
+  private updateAltRow(rows: HTMLTableRowElement[]) : void {
+    if (this.enableAltRow) {
+      let visibleRowCount: number = 0;
+      for (let i: number = 0; i < rows.length; i++) {
+        let gridRow: HTMLTableRowElement = rows[i];
+        if (gridRow.style.display !== 'none') {
+          if (gridRow.classList.contains('e-altrow')) {
+            removeClass([gridRow], 'e-altrow');
+          }
+          if (visibleRowCount % 2 !== 0 && !gridRow.classList.contains('e-summaryrow') && !gridRow.classList.contains('e-detailrow')) {
+            addClass([gridRow], 'e-altrow');
+          }
+          if (!gridRow.classList.contains('e-summaryrow') && !gridRow.classList.contains('e-detailrow')) {
+            visibleRowCount++;
           }
         }
       }

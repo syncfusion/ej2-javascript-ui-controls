@@ -5402,6 +5402,7 @@ let Slider = class Slider extends Component {
      * Calls internally if any of the property value is changed.
      * @private
      */
+    // tslint:disable-next-line
     onPropertyChanged(newProp, oldProp) {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -5413,7 +5414,7 @@ let Slider = class Slider extends Component {
                         let value = isNullOrUndefined(newProp.value) ?
                             (this.type === 'Range' ? [this.min, this.max] : this.min) : newProp.value;
                         this.setProperties({ 'value': value }, true);
-                        if (oldProp.value.toString() !== value.toString()) {
+                        if (!isNullOrUndefined(oldProp.value) && oldProp.value.toString() !== value.toString()) {
                             this.setValue();
                             this.refreshTooltip(this.tooltipTarget);
                             if (this.type === 'Range') {
@@ -5438,8 +5439,11 @@ let Slider = class Slider extends Component {
                     }
                     break;
                 case 'type':
-                    this.changeSliderType(oldProp.type);
-                    this.setZindex();
+                    if (!isNullOrUndefined(oldProp) && Object.keys(oldProp).length
+                        && !isNullOrUndefined(oldProp.type)) {
+                        this.changeSliderType(oldProp.type);
+                        this.setZindex();
+                    }
                     break;
                 case 'enableRtl':
                     if (oldProp.enableRtl !== newProp.enableRtl && this.orientation !== 'Vertical') {
@@ -8689,7 +8693,7 @@ let Uploader = class Uploader extends Component {
             postRawFile: true
         };
         let index;
-        if (this.isForm) {
+        if (this.isForm && (isNullOrUndefined(this.asyncSettings.removeUrl) || this.asyncSettings.removeUrl === '')) {
             eventArgs.filesData = this.getFilesData();
             this.trigger('removing', eventArgs);
             if (!eventArgs.cancel) {

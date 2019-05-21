@@ -2409,6 +2409,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.grid.actionFailure = this.triggerEvents.bind(this);
         this.grid.dataBound = function (args) {
             _this.updateColumnModel();
+            _this.updateAltRow(_this.getRows());
             _this.notify('headerCheckbox', {});
             _this.trigger(dataBound, args);
             if (isRemoteData(_this) && !isOffline(_this) && !_this.hasChildMapping) {
@@ -3537,6 +3538,26 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                     if (!isNullOrUndefined(childRecords[i].childRecords) && (action !== 'expand' ||
                         isNullOrUndefined(childRecords[i].expanded) || childRecords[i].expanded)) {
                         this.expandCollapse(action, rows[i], childRecords[i], true);
+                    }
+                }
+            }
+            this.updateAltRow(gridRows);
+        }
+    };
+    TreeGrid.prototype.updateAltRow = function (rows) {
+        if (this.enableAltRow) {
+            var visibleRowCount = 0;
+            for (var i = 0; i < rows.length; i++) {
+                var gridRow = rows[i];
+                if (gridRow.style.display !== 'none') {
+                    if (gridRow.classList.contains('e-altrow')) {
+                        removeClass([gridRow], 'e-altrow');
+                    }
+                    if (visibleRowCount % 2 !== 0 && !gridRow.classList.contains('e-summaryrow') && !gridRow.classList.contains('e-detailrow')) {
+                        addClass([gridRow], 'e-altrow');
+                    }
+                    if (!gridRow.classList.contains('e-summaryrow') && !gridRow.classList.contains('e-detailrow')) {
+                        visibleRowCount++;
                     }
                 }
             }

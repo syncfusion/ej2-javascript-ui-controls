@@ -2069,7 +2069,6 @@ function getThemeStyle(theme) {
                 pointerColor: '#9A9A9A'
             };
             break;
-        case 'Highcontrast':
         case 'HighContrast':
             style = {
                 backgroundColor: '#000000',
@@ -2351,10 +2350,11 @@ let LinearGauge = class LinearGauge extends Component {
             clearTimeout(this.resizeTo);
         }
         if (this.element.classList.contains('e-lineargauge')) {
-            this.resizeTo = setTimeout(() => {
+            this.resizeTo = window.setTimeout(() => {
                 this.gaugeResized = true;
                 this.createSvg();
-                this.refreshing = true;
+                this.calculateBounds();
+                this.renderGaugeElements();
                 args.currentSize = new Size(this.availableSize.width, this.availableSize.height);
                 this.trigger(resized, args);
                 this.render();

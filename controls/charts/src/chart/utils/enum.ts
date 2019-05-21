@@ -599,8 +599,6 @@ export type ChartTheme =
     'FabricDark' |
     /**  Render a chart with HighContrast theme. */
     'HighContrast'|
-    /**  Render a chart with Highcontrast theme. */
-    'Highcontrast'|
     /**  Render a chart with BootstrapDark theme. */
     'BootstrapDark' |
     /**  Render a chart with Bootstrap4 theme. */
