@@ -290,7 +290,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * Gets or sets the minimum time value that can be allowed to select in TimePicker.
      * > For more details refer to 
      * [`Time Range`](../../timepicker/time-range/) documentation.
-     * @default null
+     * @default 00:00
+     * @aspDefaultValue new DateTime(1900, 01, 01, 00, 00, 00)
      */
     @Property(null)
     public min: Date;
@@ -298,7 +299,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * Gets or sets the maximum time value that can be allowed to select in TimePicker.
      * > For more details refer to 
      * [`Time Range`](../../timepicker/time-range/) documentation.
-     * @default null
+     * @default 00:00
+     * @aspDefaultValue new DateTime(2099, 12, 31, 23, 59, 59)
      */
     @Property(null)
     public max: Date;
@@ -312,12 +314,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      */
     @Property(true)
     public allowEdit: boolean;
-    /**
-     * Specifies the TimePicker in RTL mode that displays the content in the right-to-left direction.
-     * @default false
-     */
-    @Property(false)
-    public enableRtl: boolean;
     /**
      * Triggers when the value is changed.
      * @event  

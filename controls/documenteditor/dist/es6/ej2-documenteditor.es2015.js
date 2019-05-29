@@ -19984,8 +19984,13 @@ class PageLayoutViewer extends LayoutViewer {
             let index = this.getHeaderFooter(type);
             let headerFooter = this.headersFooters[sectionIndex][index];
             if (!headerFooter) {
-                headerFooter = this.createHeaderFooterWidget(type);
-                headerFooter.isEmpty = true;
+                if (this.headersFooters[0][index]) {
+                    headerFooter = this.headersFooters[0][index];
+                }
+                else {
+                    headerFooter = this.createHeaderFooterWidget(type);
+                    headerFooter.isEmpty = true;
+                }
                 this.headersFooters[sectionIndex][index] = headerFooter;
             }
             return headerFooter;
@@ -58038,7 +58043,7 @@ class BulletsAndNumberingDialog {
         this.createNumberList(id);
         this.createBulletList(id);
         //Initialize Tab component
-        let tabObj = new Tab({
+        this.tabObj = new Tab({
             items: [
                 {
                     header: { 'text': locale.getConstant('Numbering') },
@@ -58055,8 +58060,7 @@ class BulletsAndNumberingDialog {
             width: 272,
         });
         //Render initialized Tab component
-        tabObj.appendTo(tabTarget);
-        tabObj.refresh();
+        this.tabObj.appendTo(tabTarget);
     }
     createNumberList(id) {
         let numberListDiv = createElement('div', { className: 'e-de-style-numbered-list', id: id + '_Number' });
@@ -58201,6 +58205,7 @@ class BulletsAndNumberingDialog {
             }];
         this.owner.dialog.dataBind();
         this.owner.dialog.show();
+        this.tabObj.refresh();
     }
     setActiveElement(args) {
         let html = args.currentTarget.parentElement;
@@ -58229,6 +58234,10 @@ class BulletsAndNumberingDialog {
         if (this.abstractList) {
             this.abstractList.destroy();
             this.abstractList = undefined;
+        }
+        if (this.tabObj) {
+            this.tabObj.destroy();
+            this.tabObj = undefined;
         }
         if (this.target && this.target.parentElement) {
             this.target.parentElement.removeChild(this.target);

@@ -904,6 +904,68 @@ describe('Datepicker', () => {
             expect(datepicker.value.valueOf()).toBe(new Date('4/3/2017').valueOf());
             expect(datepicker.element.value).toBe('04/03/2017');
         });
+
+        it('Date Format without year issue ', () => {
+            datepicker = new DatePicker({
+                value: new Date('1/7/1900'),
+                min: new Date('1/1/1900'),
+                max: new Date('12/31/1900'),
+                format: "dd.MM",
+            });
+            datepicker.appendTo('#date');
+            expect(datepicker.element.value).toBe('07.01');
+        });
+        it('Date Format without year issue with strictmode ', () => {
+            datepicker = new DatePicker({
+                value: new Date('1/7/2019'),
+                min: new Date('1/1/1900'),
+                max: new Date('12/31/1900'),
+                format: "dd.MM",
+                strictMode: true
+            });
+            datepicker.appendTo('#date');
+            expect(datepicker.element.value).toBe('31.12');
+        });
+        it('Date Format without year issue with blur ', () => {
+            datepicker = new DatePicker({
+                value: new Date('1/7/1900'),
+                min: new Date('1/1/1900'),
+                max: new Date('12/31/1900'),
+                format: "dd.MM",
+                strictMode: true
+            });
+            datepicker.appendTo('#date');
+            expect(datepicker.element.value).toBe('07.01');
+            datepicker.element.focus();
+            datepicker.inputBlurHandler();
+            expect(datepicker.element.value).toBe('07.01');
+        });
+        it('Date Format without year issue with disabled ', () => {
+            datepicker = new DatePicker({
+                value: new Date('1/7/1900'),
+		        min: new Date('1/1/1900'),
+		        max: new Date('12/31/1900'),
+		        format: "dd.MM",
+		        strictMode: true,
+		        enabled: false
+            });
+            datepicker.appendTo('#date');
+            expect(datepicker.element.value).toBe('07.01');
+        });
+        it('Date Format without year issue with inputHandler ', () => {
+            datepicker = new DatePicker({
+                value: new Date('1/7/1900'),
+		        min: new Date('1/1/1900'),
+		        max: new Date('12/31/1900'),
+		        format: "dd.MM",
+		        strictMode: true
+            });
+            datepicker.appendTo('#date');
+            expect(datepicker.element.value).toBe('07.01');
+            datepicker.focusIn();
+            datepicker.inputHandler();
+            expect(datepicker.isPopupClicked).toBe(false);
+        });
         /**
          * strictMode false test case.
          */

@@ -137,6 +137,8 @@ export class PivotEngine {
     private headerObjectsCollection: { [key: string]: IAxisSet[] } = {};
     private localeObj: L10n;
     private getValueCellInfo: Function;
+    private fieldsType: IStringIndex;
+    private groupingFields: { [key: string]: string } = {};
     /* tslint:disable */
     public renderEngine(
         dataSource?: IDataOptions, customProperties?: ICustomProperties, fn?: Function): void {
@@ -177,6 +179,7 @@ export class PivotEngine {
         let filterRw: number[][][];
         this.globalize = new Internationalization();
         this.localeObj = customProperties ? customProperties.localeObj : undefined;
+        this.fieldsType = customProperties ? customProperties.fieldsType : {};
         this.enableSort = dataSource.enableSorting;
         this.alwaysShowValueHeader = dataSource.alwaysShowValueHeader;
         this.showSubTotals = isNullOrUndefined(dataSource.showSubTotals) ? true : dataSource.showSubTotals;
@@ -395,6 +398,7 @@ export class PivotEngine {
                     let unframedSet: number[] = [];
                     let dataLength: number = data.length;
                     let cnt: number = 0;
+                    this.groupingFields[fieldName] = fieldName;
                     while (cnt < dataLength) {
                         unframedSet.push(data[cnt][fieldName] as number);
                         if (data[cnt][fieldName] && framedSet.indexOf(data[cnt][fieldName] as number) === -1) {
@@ -449,6 +453,7 @@ export class PivotEngine {
                         }
                     }
                 }
+                this.groupingFields = extend(this.groupingFields, groupFields) as { [key: string]: string };
             } else {
                 return fieldkeySet;
             }
@@ -548,7 +553,7 @@ export class PivotEngine {
         } else {
             while (len--) { /** while is used for better performance than for */
                 let key: string = keys[len];
-                type = PivotUtil.getType(fields[key] as Date);
+                type = (this.fieldsType && this.fieldsType[key]) ? this.fieldsType[key] : PivotUtil.getType(fields[key] as Date);
                 if (!this.fieldList) {
                     this.fieldList = {};
                 }
@@ -681,46 +686,51 @@ export class PivotEngine {
             //let sort: string[] = [];
             for (let dl: number = 0; dl < dlen; dl++) {
                 let mkey: string = data[dl][key] as string;
-                if (!isNullOrUndefined(mkey)) {
-                    if (!isDataAvail) {
-                        let fKey: string = mkey;
-                        let formattedValue: IAxisSet = (this.pageSettings && !(this.formatFields[key] &&
-                            (['date', 'dateTime', 'time'].indexOf(this.formatFields[key].type) > -1))) ? ({
-                                formattedText: isNullOrUndefined(mkey) ? mkey : mkey.toString(),
-                                actualText: mkey
-                            }) : this.getFormattedValue(mkey, key);
-                        if (formattedValue.formattedText) {
-                            fKey = formattedValue.formattedText;
-                        }
-                        if (!members.hasOwnProperty(mkey)) {
-                            membersCnt++;
-                            members[mkey] = {
-                                index: [dl], ordinal: membersCnt,
-                                isDrilled: this.isExpandAll ? true : false
-                            };
-                            /* tslint:disable-next-line:max-line-length */
-                            dateMember.push({ formattedText: formattedValue.formattedText, actualText: (formattedValue.dateText ? formattedValue.dateText : formattedValue.actualText) });
-                            //sort.push(mkey);
-                        } else {
-                            members[mkey].index.push(dl);
-                        }
-                        if (!formattedMembers.hasOwnProperty(fKey)) {
-                            fmembersCnt++;
-                            formattedMembers[fKey] = {
-                                index: [dl], ordinal: fmembersCnt,
-                                isDrilled: this.isExpandAll ? true : false
-                            };
-                        } else {
-                            formattedMembers[fKey].index.push(dl);
-                        }
+                // if (!isNullOrUndefined(mkey)) {
+                if (!isDataAvail) {
+                    let fKey: string = mkey;
+                    let formattedValue: IAxisSet = (this.pageSettings && !(this.formatFields[key] &&
+                        (['date', 'dateTime', 'time'].indexOf(this.formatFields[key].type) > -1))) ? ({
+                            formattedText: mkey === null ? (this.localeObj ? this.localeObj.getConstant('null') : String(mkey)) :
+                                mkey === undefined ? (this.localeObj ? (key in this.groupingFields) ?
+                                    this.localeObj.getConstant('groupOutOfRange') : this.localeObj.getConstant('undefined') :
+                                    String(mkey)) : mkey.toString(), actualText: mkey === null ? (this.localeObj ?
+                                        this.localeObj.getConstant('null') : String(mkey)) : mkey === undefined ? (this.localeObj ?
+                                            (key in this.groupingFields) ? this.localeObj.getConstant('groupOutOfRange') :
+                                                this.localeObj.getConstant('undefined') : String(mkey)) : mkey
+                        }) : this.getFormattedValue(mkey, key);
+                    if (formattedValue.formattedText) {
+                        fKey = formattedValue.formattedText;
                     }
-                    if (!(indMat[dl])) {
-                        indMat[dl] = [];
-                        indMat[dl][kl] = members[mkey].ordinal;
+                    if (!members.hasOwnProperty(mkey)) {
+                        membersCnt++;
+                        members[mkey] = {
+                            index: [dl], ordinal: membersCnt,
+                            isDrilled: this.isExpandAll ? true : false
+                        };
+                        /* tslint:disable-next-line:max-line-length */
+                        dateMember.push({ formattedText: formattedValue.formattedText, actualText: (formattedValue.dateText ? formattedValue.dateText : formattedValue.actualText) });
+                        //sort.push(mkey);
                     } else {
-                        indMat[dl][kl] = members[mkey].ordinal;
+                        members[mkey].index.push(dl);
+                    }
+                    if (!formattedMembers.hasOwnProperty(fKey)) {
+                        fmembersCnt++;
+                        formattedMembers[fKey] = {
+                            index: [dl], ordinal: fmembersCnt,
+                            isDrilled: this.isExpandAll ? true : false
+                        };
+                    } else {
+                        formattedMembers[fKey].index.push(dl);
                     }
                 }
+                if (!(indMat[dl])) {
+                    indMat[dl] = [];
+                    indMat[dl][kl] = members[mkey].ordinal;
+                } else {
+                    indMat[dl][kl] = members[mkey].ordinal;
+                }
+                // }
             }
             /*sort = Object.keys(members).sort();
             let sortedMembers: Members = {};
@@ -1363,11 +1373,11 @@ export class PivotEngine {
                 this.columnCount = 0; this.rowCount = 0; this.cMembers = []; this.rMembers = [];
                 if (rows.length !== 0) {
                     this.rMembers =
-                        this.getIndexedHeaders(rows, data, 0, rows[0].showNoDataItems ? filterMembers : this.filterMembers, 'row', '',this.allowValueFilter);
+                        this.getIndexedHeaders(rows, data, 0, rows[0].showNoDataItems ? filterMembers : this.filterMembers, 'row', '', this.allowValueFilter);
                 }
                 if (columns.length !== 0) {
                     this.cMembers = this.getIndexedHeaders(columns, data, 0, columns[0].showNoDataItems ?
-                        filterMembers : this.filterMembers, 'column', '',this.allowValueFilter);
+                        filterMembers : this.filterMembers, 'column', '', this.allowValueFilter);
                 }
                 this.insertAllMembersCommon();
                 this.saveDataHeaders = (this.isValueFiltersAvail && dataSource.allowValueFilter) ? {
@@ -2077,16 +2087,25 @@ export class PivotEngine {
                     this.indexMatrix[position[pos]][childrens.index];
                 let headerValue: string = isNoData ? Object.keys(savedMembers)[0] :
                     data[position[pos]][fieldName] as string;
-                if (isNullOrUndefined(headerValue)) {
-                    continue;
-                }
+                // if (isNullOrUndefined(headerValue)) {
+                //     continue;
+                // }
                 delete savedMembers[headerValue];
                 if (showNoDataItems && this.fieldFilterMem[fieldName] &&
                     this.fieldFilterMem[fieldName].memberObj[headerValue] === headerValue) {
                     continue;
                 }
-                let formattedValue: IAxisSet = isDateType ?
-                    this.getFormattedValue(headerValue, fieldName) : { formattedText: headerValue.toString(), actualText: headerValue };
+                let formattedValue: IAxisSet = isDateType ? this.getFormattedValue(headerValue, fieldName) :
+                    {
+                        formattedText: headerValue === null ? (this.localeObj ? this.localeObj.getConstant('null') : String(headerValue)) :
+                            headerValue === undefined ? (this.localeObj ? (fieldName in this.groupingFields) ?
+                                this.localeObj.getConstant('groupOutOfRange') : this.localeObj.getConstant('undefined') :
+                                String(headerValue)) : String(headerValue), actualText: headerValue === null ? (this.localeObj ?
+                                    this.localeObj.getConstant('null') : String(headerValue)) : headerValue === undefined ?
+                                        (this.localeObj ? (fieldName in this.groupingFields) ?
+                                            this.localeObj.getConstant('groupOutOfRange') : this.localeObj.getConstant('undefined') :
+                                            String(headerValue)) : headerValue
+                    };
                 member.actualText = formattedValue.actualText;
                 member.formattedText = formattedValue.formattedText;
                 if (isDateType) {
@@ -3027,7 +3046,7 @@ export class PivotEngine {
                     let val: number = ((totalValues.cVal) * (totalValues.gTotalVal)) / ((totalValues.rTotalVal) * (totalValues.cTotalVal));
                     value = (rows[rln].members.length > 0 && ((!isNullOrUndefined(rows[rln].showSubTotals) && !rows[rln].showSubTotals) ||
                         !this.showRowSubTotals || !this.showSubTotals)) ? undefined :
-                        (isNaN(val) ? 0 : val);
+                        (isNullOrUndefined(totalValues.cVal) ? totalValues.cVal : (isNaN(val) ? 0 : val));
                 }
                 break;
             case 'PercentageOfGrandTotal':
@@ -3046,7 +3065,7 @@ export class PivotEngine {
                     let val: number = ((totalValues.cVal) / (totalValues.gTotalVal));
                     value = (rows[rln].members.length > 0 && ((!isNullOrUndefined(rows[rln].showSubTotals) && !rows[rln].showSubTotals) ||
                         !this.showSubTotals || !this.showRowSubTotals)) ? undefined :
-                        (isNaN(val) ? 0 : val);
+                        (isNullOrUndefined(totalValues.cVal) ? totalValues.cVal : (isNaN(val) ? 0 : val));
                 }
                 break;
             default:
@@ -3074,8 +3093,8 @@ export class PivotEngine {
         value = cellDetails.value;
         let isSum: boolean = rows[rln].hasChild || columns[cln].hasChild ||
             rows[rln].type === 'grand sum' || columns[cln].type === 'grand sum';
-        let subTotal: boolean = (rows[rln].isDrilled && ((!isNullOrUndefined(rows[rln].showSubTotals) && !rows[rln].showSubTotals) ||
-            !this.showSubTotals || !this.showRowSubTotals));
+        let subTotal: boolean = (rows[rln].members.length > 0 && ((!isNullOrUndefined(rows[rln].showSubTotals) &&
+            !rows[rln].showSubTotals) || !this.showSubTotals || !this.showRowSubTotals));
         let formattedText: string = subTotal ?
             '' : (value === undefined) ? this.emptyCellTextContent :
                 aggregate === 'Count' ? value.toLocaleString() : this.getFormattedValue(value, field).formattedText;
@@ -3195,7 +3214,7 @@ export class PivotEngine {
                 if (columnIndex[rowIndex[ri]] !== undefined) {
                     isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
-                    cellValue += (this.valueMatrix[rowIndex[ri]][value] === undefined ? 0 : 1);
+                    cellValue += (isNullOrUndefined(this.valueMatrix[rowIndex[ri]][value]) ? 0 : 1);
                 }
                 ri++;
             }
@@ -3203,10 +3222,10 @@ export class PivotEngine {
             let duplicateValues: number[] = [];
             while (rowIndex[ri] !== undefined) {
                 if (columnIndex[rowIndex[ri]] !== undefined) {
-                    isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+                    isValueExist = true;
                     let currentVal: number = this.valueMatrix[rowIndex[ri]][value];
-                    if (currentVal !== undefined) {
+                    if (!isNullOrUndefined(currentVal)) {
                         if (duplicateValues.length === 0 || (duplicateValues.length > 0 && duplicateValues.indexOf(currentVal) === -1)) {
                             cellValue += 1;
                             duplicateValues.push(currentVal);
@@ -3221,9 +3240,11 @@ export class PivotEngine {
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                     isValueExist = true;
                     let currentVal: number = this.valueMatrix[rowIndex[ri]][value];
-                    if (currentVal !== undefined) {
-                        cellValue = (isInit ? 1 : (cellValue === 0 ? 1 : cellValue));
+                    if (!isNullOrUndefined(currentVal)) {
+                        cellValue = ((isInit || isNullOrUndefined(cellValue)) ? 1 : cellValue);
                         cellValue *= currentVal;
+                    } else if (isInit) {
+                        cellValue = currentVal;
                     }
                     isInit = false;
                 }
@@ -3241,7 +3262,7 @@ export class PivotEngine {
                     isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                     let currentVal: number = this.valueMatrix[rowIndex[ri]][value];
-                    if (currentVal !== undefined) {
+                    if (!isNullOrUndefined(currentVal)) {
                         val += currentVal;
                         indexVal.push(currentVal);
                         i++;
@@ -3265,15 +3286,20 @@ export class PivotEngine {
             }
         } else if (type && type.toLowerCase() === 'min') {
             let isFirst: boolean = true;
+            cellValue = undefined;
             while (rowIndex[ri] !== undefined) {
-                if (columnIndex[rowIndex[ri]] !== undefined) {
+                if (columnIndex[rowIndex[ri]] !== undefined && this.valueMatrix[rowIndex[ri]][value] !== undefined) {
                     isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
-                    if (isFirst) {
+                    if (isNullOrUndefined(cellValue) && isNullOrUndefined(this.valueMatrix[rowIndex[ri]][value])) {
                         cellValue = this.valueMatrix[rowIndex[ri]][value];
-                        isFirst = false;
                     } else {
-                        cellValue = this.valueMatrix[rowIndex[ri]][value] < cellValue ? this.valueMatrix[rowIndex[ri]][value] : cellValue;
+                        if (isFirst) {
+                            cellValue = this.valueMatrix[rowIndex[ri]][value];
+                            isFirst = false;
+                        } else {
+                            cellValue = this.valueMatrix[rowIndex[ri]][value] < cellValue ? this.valueMatrix[rowIndex[ri]][value] : cellValue;
+                        }
                     }
                 }
                 ri++;
@@ -3281,7 +3307,7 @@ export class PivotEngine {
         } else if (type && type.toLowerCase() === 'max') {
             let isMaxFirst: boolean = true;
             while (rowIndex[ri] !== undefined) {
-                if (columnIndex[rowIndex[ri]] !== undefined) {
+                if (columnIndex[rowIndex[ri]] !== undefined && this.valueMatrix[rowIndex[ri]][value] !== undefined) {
                     isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                     if (isMaxFirst) {
@@ -3311,25 +3337,35 @@ export class PivotEngine {
                                 value = this.getAggregateValue(rowIndex, columnIndex, <number>aggregatedValue.index, type);
                                 aggregateField[<string>aggregatedValue.formula] = value;
                             }
-                            actualFormula = (actualFormula).replace(<string>aggregatedValue.formula, value.toString());
+                            actualFormula = (actualFormula).replace(<string>aggregatedValue.formula, String(value));
                         }
                     }
                     /* tslint:disable */
                     cellValue = eval(actualFormula);
-                    (cellValue === Infinity ? Infinity : JSON.parse(cellValue.toString()));
+                    (cellValue === Infinity ? Infinity : (cellValue === undefined || isNaN(cellValue)) ? undefined : JSON.parse(String(cellValue)));
                     /* tslint:enable */
                 }
                 ri++;
             }
         } else {
+            cellValue = undefined;
             while (rowIndex[ri] !== undefined) {
                 if (columnIndex[rowIndex[ri]] !== undefined) {
                     isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                     //let cIndx: number = isLeastLevel ? columnIndex.splice(columnIndex.indexOf(rowIndex[ri]), 1)[0] : rowIndex[ri];
                     let currentVal: number = this.valueMatrix[rowIndex[ri]][value];
-                    cellValue += (currentVal === undefined ? 0 : currentVal);
-                    avgCnt++;
+                    if (isNullOrUndefined(cellValue) && isNullOrUndefined(currentVal)) {
+                        cellValue = currentVal;
+                    } else {
+                        if (isNullOrUndefined(cellValue)) {
+                            cellValue = 0;
+                        }
+                        cellValue += (isNullOrUndefined(currentVal) ? 0 : currentVal);
+                    }
+                    if (!isNullOrUndefined(currentVal)) {
+                        avgCnt++;
+                    }
                 }
                 ri++;
             }
@@ -3354,15 +3390,22 @@ export class PivotEngine {
                  ri++;
              }
          } */
-        return ((type && type.toLowerCase() === 'avg' && cellValue !== 0) ? (cellValue / avgCnt) : isValueExist ? cellValue : undefined);
+        return ((type && type.toLowerCase() === 'avg' && cellValue !== 0 &&
+            !isNullOrUndefined(cellValue)) ? (cellValue / avgCnt) : isValueExist ? cellValue : undefined);
     }
     /* tslint:enable */
     /** hidden */
     public getFormattedValue(value: number | string, fieldName: string): IAxisSet {
         let formattedValue: IAxisSet = {
-            formattedText: value !== undefined ? value === null ? 'null' : value.toString() : undefined,
-            actualText: value !== undefined ? value === null ? 'null' : value : undefined,
-            dateText: value !== undefined ? value === null ? 'null' : value : undefined
+            formattedText: value === null ? (this.localeObj ? this.localeObj.getConstant('null') : String(value)) : value === undefined ?
+                (this.localeObj ? (fieldName in this.groupingFields) ? this.localeObj.getConstant('groupOutOfRange') :
+                    this.localeObj.getConstant('undefined') : String(value)) : value.toString(),
+            actualText: value === null ? (this.localeObj ? this.localeObj.getConstant('null') : String(value)) : value === undefined ?
+                (this.localeObj ? (fieldName in this.groupingFields) ? this.localeObj.getConstant('groupOutOfRange') :
+                    this.localeObj.getConstant('undefined') : String(value)) : value,
+            dateText: value === null ? (this.localeObj ? this.localeObj.getConstant('null') : String(value)) : value === undefined ?
+                (this.localeObj ? (fieldName in this.groupingFields) ? this.localeObj.getConstant('groupOutOfRange') :
+                    this.localeObj.getConstant('undefined') : String(value)) : value
         };
         if (this.formatFields[fieldName] && value) {
             let formatField: IFormatSettings = ((<{ [key: string]: Object }>this.formatFields[fieldName]).properties ?
@@ -3720,6 +3763,7 @@ export interface ICustomProperties {
     enableValueSorting?: boolean;
     isDrillThrough?: boolean;
     localeObj?: L10n;
+    fieldsType?: IStringIndex;
 }
 /**
  * @hidden

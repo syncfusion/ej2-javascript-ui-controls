@@ -28,7 +28,8 @@ export class FilterDialog {
     public tabObj: Tab;
     /** @hidden */
     public allowExcelLikeFilter: boolean;
-    private filterObject: IFilter;
+    /** @hidden */
+    public filterObject: IFilter;
 
     /**
      * Constructor for the dialog action.
@@ -594,7 +595,11 @@ export class FilterDialog {
         }
         return undefined;
     }
-    private closeFilterDialog(): void {
+    /**
+     * To close filter dialog.
+     * @hidden
+     */
+    public closeFilterDialog(): void {
         if (this.allowExcelLikeFilter) {
             if (this.tabObj && !this.tabObj.isDestroyed) {
                 this.tabObj.destroy();

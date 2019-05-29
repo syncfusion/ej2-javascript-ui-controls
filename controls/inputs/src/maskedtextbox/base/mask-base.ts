@@ -858,7 +858,9 @@ function addMaskErrorClass(): void {
 
 function removeMaskError(): void {
     let parentElement: HTMLElement = <HTMLElement>this.element.parentNode;
-    removeClass([parentElement], ERROR);
+    if (!isNullOrUndefined( parentElement)) {
+        removeClass([parentElement], ERROR);
+    }
     removeClass([this.element], ERROR);
     attributes(this.element, { 'aria-invalid': 'false' });
 }

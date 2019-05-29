@@ -364,7 +364,10 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             baseItem: 'Base item :',
             example: 'e.g:',
             editorDataLimitMsg: ' more items. Search to refine further.',
-            deferLayoutUpdate: 'Defer Layout Update'
+            deferLayoutUpdate: 'Defer Layout Update',
+            null: 'null',
+            undefined: 'undefined',
+            groupOutOfRange: 'Out of Range'
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.isDragging = false;

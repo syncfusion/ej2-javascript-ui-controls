@@ -4372,6 +4372,150 @@ describe('TreeView control', () => {
                     done();
                 }, 100);
             });
+            it('isChecked property set in the root node with loadOnDemand true ', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: hierarchicalData1 , id: "nodeId", text: "nodeText", child: "nodeChild", expanded:"nodeExpanded",isChecked:"nodeChecked" },
+                    showCheckBox: true,
+                    loadOnDemand: true
+                });
+                treeObj.appendTo('#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    expect(treeObj.checkedNodes.length).toBe(3);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(3);
+                    treeObj.uncheckAll()
+                    treeObj.dataBind();
+                    expect(treeObj.checkedNodes.length).toBe(0);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(0)
+                    done();
+                }, 100);
+            });
+            it('isChecked property set in the root node with loadOnDemand false ', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: hierarchicalData1 , id: "nodeId", text: "nodeText", child: "nodeChild", expanded:"nodeExpanded",isChecked:"nodeChecked" },
+                    showCheckBox: true,
+                    loadOnDemand: false
+                });
+                treeObj.appendTo('#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    expect(treeObj.checkedNodes.length).toBe(3);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(3);
+                    treeObj.uncheckAll()
+                    treeObj.dataBind();
+                    expect(treeObj.checkedNodes.length).toBe(0);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(0)
+                    done();
+                }, 100);
+            });
+            it('isChecked property set in the child node  with loadOnDemand false ', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: hierarchicalData6 , id: "nodeId", text: "nodeText", child: "nodeChild", expanded:"nodeExpanded",isChecked:"nodeChecked" },
+                    showCheckBox: true,
+                    loadOnDemand: false
+                });
+                treeObj.appendTo('#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    expect(treeObj.checkedNodes.length).toBe(1);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(1);
+                    treeObj.uncheckAll()
+                    treeObj.dataBind();
+                    expect(treeObj.checkedNodes.length).toBe(0);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(0)
+                    done();
+                }, 100);
+            });
+            it('isChecked property is set inside the child with loadOnDemand true ', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: hierarchicalData6 , id: "nodeId", text: "nodeText", child: "nodeChild", expanded:"nodeExpanded",isChecked:"nodeChecked" },
+                    showCheckBox: true,
+                    loadOnDemand: true
+                });
+                treeObj.appendTo('#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    expect(treeObj.checkedNodes.length).toBe(1);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(1);
+                    treeObj.uncheckAll()
+                    treeObj.dataBind();
+                    expect(treeObj.checkedNodes.length).toBe(0);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(0)
+                    done();
+                }, 100);
+            });
+            it('isChecked property is set inside the root node with loadOnDemand true and local data', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: localData6 , id: "nodeId", text: "nodeText", parentID: "nodePid", hasChildren:"hasChild",isChecked:"isChecked" },
+                    showCheckBox: true,
+                    loadOnDemand: true
+                });
+                treeObj.appendTo('#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    expect(treeObj.checkedNodes.length).toBe(2);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(2);
+                    treeObj.uncheckAll()
+                    treeObj.dataBind();
+                    expect(treeObj.checkedNodes.length).toBe(0);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(0)
+                    done();
+                }, 100);
+            });
+            it('isChecked property is set inside the root node with loadOnDemand false and local data', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: localData6 , id: "nodeId", text: "nodeText", parentID: "nodePid", hasChildren:"hasChild",isChecked:"isChecked" },
+                    showCheckBox: true,
+                    loadOnDemand: false
+                });
+                treeObj.appendTo('#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    expect(treeObj.checkedNodes.length).toBe(2);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(2);
+                    treeObj.uncheckAll()
+                    treeObj.dataBind();
+                    expect(treeObj.checkedNodes.length).toBe(0);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(0)
+                    done();
+                }, 100);
+            });
+            it('isChecked property is set inside the child node with loadOnDemand false and local data', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: localData7 , id: "id", text: "name", parentID: "pid", hasChildren:"hasChild",isChecked:"isChecked" },
+                    showCheckBox: true,
+                    loadOnDemand: false
+                });
+                treeObj.appendTo('#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    expect(treeObj.checkedNodes.length).toBe(8);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(8);
+                    treeObj.uncheckAll()
+                    treeObj.dataBind();
+                    expect(treeObj.checkedNodes.length).toBe(0);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(0)
+                    done();
+                }, 100);
+            });
+            it('isChecked property is set inside the child node with loadOnDemand true and local data', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: localData7 , id: "id", text: "name", parentID: "pid", hasChildren:"hasChild",isChecked:"isChecked" },
+                    showCheckBox: true,
+                    loadOnDemand: true
+                });
+                treeObj.appendTo('#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    expect(treeObj.checkedNodes.length).toBe(8);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(8);
+                    treeObj.uncheckAll()
+                    treeObj.dataBind();
+                    expect(treeObj.checkedNodes.length).toBe(0);
+                    expect(treeObj.getAllCheckedNodes().length).toBe(0)
+                    done();
+                }, 100);
+            });
             it('checkedNodes testing with single Node', (done: Function) => {
                 treeObj = new TreeView({ 
                     fields: { dataSource: hierarchicalData1 , id: "nodeId", text: "nodeText", child: "nodeChild", expanded:"nodeExpanded" },

@@ -68,12 +68,6 @@ export interface SidebarModel extends ComponentModel{
     isOpen?: boolean;
 
     /**
-     * Specifies the Sidebar in RTL mode that displays the content in the right-to-left direction.
-     * @default false
-     */
-    enableRtl?: boolean;
-
-    /**
      * Enable or disable the animation transitions on expanding or collapsing the Sidebar.
      * @default true
      */

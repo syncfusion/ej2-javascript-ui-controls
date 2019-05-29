@@ -793,5 +793,48 @@ describe('RTE CR issues', () => {
             Browser.userAgent =defaultUserAgent;
         });
     });
+    describe(' EJ2-27026  -  Issue on pressing the Tab key with Table module', () => {
+        let keyBoardEvent: any = { type: 'keydown', preventDefault: () => { }, stopPropagation: () => { }, shiftKey: false, which: 9, key: 'Tab' };
+        let rteObj: RichTextEditor;
+        let element: HTMLElement = createElement('div', {
+            id: "form-element", innerHTML:
+                ` <table>
+                <tbody>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div id="defaultRTE">
+                            </div>
+    
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+                ` });
+        beforeEach((done: Function) => {
+            document.body.appendChild(element);
+            rteObj = new RichTextEditor({
+            });
+            rteObj.appendTo("#defaultRTE");
+            rteObj.saveInterval = 0;
+            rteObj.dataBind();
+            done();
+        })
+        afterEach((done: Function) => {
+            rteObj.destroy();
+            detach(element);
+            done();
+        });
+
+        it(' press the tab key from edit area ', (done) => {
+            rteObj.focusIn();
+            (rteObj as any).keyDown(keyBoardEvent);
+            setTimeout(() => {
+                expect(document.activeElement!== rteObj.inputElement).toBe(false);
+                done();
+            }, 100)
+        });
+    });
 
 })

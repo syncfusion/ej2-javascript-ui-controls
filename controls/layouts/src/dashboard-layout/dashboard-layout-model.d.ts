@@ -173,13 +173,6 @@ export interface DashboardLayoutModel extends ComponentModel{
     draggableHandle?: string;
 
     /**
-     * Enable or disable rendering component in right to left direction.
-     * *
-     * @default false
-     */
-    enableRtl?: boolean;
-
-    /**
      * Locale property.
      * This is not a dashboard layout property.
      * @default 'en-US'

@@ -246,7 +246,9 @@ describe('DateParser', () => {
                 expect(dateMatched(parseDate, result)).toBeTruthy();
             });
             it('custom date format "MMMM y GG"', () => {
-                let result: Date = getParsedDate(cul, { format: 'MMMM y GG' }, parseDate);
+                let date: any = parseDate;
+                date.setDate(1);
+                let result: Date = getParsedDate(cul, { format: 'MMMM y GG' }, date);
                 expect(dateMatched(parseDate, result)).toBeTruthy();
             });
             it('custom date format "d/M/y"', () => {
@@ -254,7 +256,9 @@ describe('DateParser', () => {
                 expect(dateMatched(parseDate, result)).toBeTruthy();
             });
             it('custom date format "MMM-y"', () => {
-                let result: Date = getParsedDate(cul, { format: 'MMM-y' }, parseDate);
+                let date: any = parseDate;
+                date.setDate(1);
+                let result: Date = getParsedDate(cul, { format: 'MMM-y' }, date);
                 expect(dateMatched(parseDate, result)).toBeTruthy();
             });
             it('custom date format "dd-MMMM"', () => {
@@ -294,7 +298,9 @@ describe('DateParser', () => {
                 expect(dateMatched(parseDate, result)).toBeTruthy();
             });
             it('custom date format "MMMM,y"', () => {
-                let result: Date = getParsedDate(cul, { format: 'MMMM,y' }, parseDate);
+                let date: any = parseDate;
+                date.setDate(1)
+                let result: Date = getParsedDate(cul, { format: 'MMMM,y' }, date);
                 expect(dateMatched(parseDate, result)).toBeTruthy();
             });
             it('custom date format "MMMM d"', () => {
@@ -597,6 +603,7 @@ describe('DateParser', () => {
             getTimezoneOffset: () => { return -330 },
             setMinutes: (val: number) => { tvalue = val },
             setMilliseconds:() =>{},
+            setDate:() => {},
             getMinutes: () => { return 20 }
         }
         it('getZoneValue for positive value', () => {

@@ -1225,10 +1225,13 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (!this.list) {
             super.render();
         }
-        return this.ulElement ? (<HTMLElement[] & NodeListOf<Element>>this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li
-            + ':not(.' + HIDE_LIST + ')')) : null;
+        return this.ulElement ? ((<HTMLElement[] & NodeListOf<Element>>
+            this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li)).length > 0 &&
+            <HTMLElement[] & NodeListOf<Element>>this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li
+                + ':not(.' + HIDE_LIST + ')')) : null;
+
     }
-    private focusIn(e?: FocusEvent | MouseEvent | KeyboardEvent | TouchEvent): boolean {
+    private focusInHandler(e?: FocusEvent | MouseEvent | KeyboardEvent | TouchEvent): boolean {
         if (this.enabled) {
             this.showOverAllClear();
             this.inputFocus = true;
@@ -2227,7 +2230,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     protected wireEvent(): void {
         EventHandler.add(this.componentWrapper, 'mousedown', this.wrapperClick, this);
         EventHandler.add(<HTMLElement & Window>window, 'resize', this.windowResize, this);
-        EventHandler.add(this.inputElement, 'focus', this.focusIn, this);
+        EventHandler.add(this.inputElement, 'focus', this.focusInHandler, this);
         EventHandler.add(this.inputElement, 'keydown', this.onKeyDown, this);
         EventHandler.add(this.inputElement, 'keyup', this.KeyUp, this);
         if (this.mode !== 'CheckBox') { EventHandler.add(this.inputElement, 'input', this.onInput, this); }
@@ -2604,6 +2607,26 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.overAllClear.style.display = 'none';
         }
     }
+
+    /**
+     * Sets the focus to widget for interaction.
+     * @returns void
+     */
+    public focusIn(): void {
+        if (document.activeElement !== this.inputElement && this.enabled) {
+            this.inputElement.focus();
+        }
+    }
+
+    /**
+     * Remove the focus from widget, if the widget is in focus state. 
+     * @returns void
+     */
+    public focusOut(): void {
+        if (document.activeElement === this.inputElement && this.enabled) {
+            this.inputElement.blur();
+        }
+    }
     /**
      * Shows the spinner loader.
      * @returns void.
@@ -2808,7 +2831,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     private unWireEvent(): void {
         EventHandler.remove(this.componentWrapper, 'mousedown', this.wrapperClick);
         EventHandler.remove(<HTMLElement & Window>window, 'resize', this.windowResize);
-        EventHandler.remove(this.inputElement, 'focus', this.focusIn);
+        EventHandler.remove(this.inputElement, 'focus', this.focusInHandler);
         EventHandler.remove(this.inputElement, 'keydown', this.onKeyDown);
         if (this.mode !== 'CheckBox') { EventHandler.remove(this.inputElement, 'input', this.onInput); }
         EventHandler.remove(this.inputElement, 'keyup', this.KeyUp);

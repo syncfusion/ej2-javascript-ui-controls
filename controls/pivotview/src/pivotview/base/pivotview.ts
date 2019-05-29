@@ -4,7 +4,7 @@ import { Internationalization, L10n, NotifyPropertyChanges, INotifyPropertyChang
 import { removeClass, addClass, Event, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { PivotEngine, IPivotValues, IAxisSet, IDataOptions, IDataSet, IPageSettings, IGroupSettings } from '../../base/engine';
 import { IDrilledItem, ICustomProperties, ISort, IFilter, IFieldOptions, ICalculatedFields } from '../../base/engine';
-import { IConditionalFormatSettings } from '../../base/engine';
+import { IConditionalFormatSettings, IStringIndex } from '../../base/engine';
 import { PivotViewModel, GroupingBarSettingsModel, CellEditSettingsModel, DisplayOptionModel } from './pivotview-model';
 import { HyperlinkSettingsModel, ConditionalSettingsModel } from './pivotview-model';
 import { Tooltip, TooltipEventArgs, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
@@ -53,7 +53,7 @@ import { ChartSettingsModel } from '../model/chartsettings-model';
 import { Chart, ITooltipRenderEventArgs, ILoadedEventArgs } from '@syncfusion/ej2-charts';
 import { IResizeEventArgs, IAxisLabelRenderEventArgs, ExportType } from '@syncfusion/ej2-charts';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
-import { ClickEventArgs, BeforeOpenCloseMenuEventArgs  } from '@syncfusion/ej2-navigations';
+import { ClickEventArgs, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 
 /** 
  * It holds the settings of Grouping Bar.
@@ -341,7 +341,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public lastAggregationInfo: IFieldOptions = {};
     /** @hidden */
     public lastCalcFieldInfo: ICalculatedFields = {};
-/** @hidden */
+    /** @hidden */
     public lastCellClicked: Element;
     /** @hidden */
     public isScrolling: boolean = false;
@@ -395,6 +395,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     private isMouseDown: boolean = false;
     private isMouseUp: boolean = false;
     private lastSelectedElement: HTMLElement;
+    private fieldsType: IStringIndex = {};
     private defaultItems: { [key: string]: ContextMenuItemModel } = {};
     private isCellBoxMultiSelection: boolean = false;
     /** @hidden */
@@ -1140,7 +1141,10 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             emptyInput: 'Enter a value',
             newReportConfirm: 'Want to save changes to report?',
             emptyReportName: 'Enter a report name',
-            qtr: 'Qtr'
+            qtr: 'Qtr',
+            null: 'null',
+            undefined: 'undefined',
+            groupOutOfRange: 'Out of Range'
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.isDragging = false;
@@ -1364,7 +1368,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     public render(): void {
         this.cellTemplateFn = this.templateParser(this.cellTemplate);
         createSpinner({ target: this.element }, this.createElement);
-        this.trigger(events.load, { 'dataSource': this.dataSource, 'pivotview': this });
+        let loadArgs: LoadEventArgs = { 'dataSource': this.dataSource, 'pivotview': this, fieldsType: {} };
+        this.trigger(events.load, loadArgs);
+        this.fieldsType = loadArgs.fieldsType;
         this.updateClass();
         this.notify(events.initSubComponent, {});
         this.notify(events.initialLoad, {});
@@ -1603,7 +1609,9 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             savedFieldList: this.engineModule.fieldList,
             pageSettings: this.pageSettings,
             enableValueSorting: this.enableValueSorting,
-            isDrillThrough: (this.allowDrillThrough || this.editSettings.allowEditing)
+            isDrillThrough: (this.allowDrillThrough || this.editSettings.allowEditing),
+            localeObj: this.localeObj,
+            fieldsType: this.fieldsType
         };
         let isSorted: boolean = Object.keys(this.lastSortInfo).length > 0 ? true : false;
         let isFiltered: boolean = Object.keys(this.lastFilterInfo).length > 0 ? true : false;
@@ -1758,7 +1766,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /** @hidden */
     public onDrill(target: Element): void {
         let delimiter: string = (this.dataSource.drilledMembers[0] && this.dataSource.drilledMembers[0].delimiter) ?
-        this.dataSource.drilledMembers[0].delimiter : '**';
+            this.dataSource.drilledMembers[0].delimiter : '**';
         let fieldName: string = target.parentElement.getAttribute('fieldname');
         let currentCell: IAxisSet = this.engineModule.pivotValues[Number(target.parentElement.getAttribute('index'))]
         [Number(target.parentElement.getAttribute('aria-colindex'))] as IAxisSet;
@@ -2060,7 +2068,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             if ((ele.parentElement.parentElement.parentElement.parentElement.classList.contains('e-movableheader')
                 && this.dataSource.valueAxis === 'column') || (ele.parentElement.classList.contains('e-row') &&
                     this.dataSource.valueAxis === 'row') && (ele.parentElement.classList.contains('e-rowsheader') ||
-                    ele.classList.contains('e-stot'))) {
+                        ele.classList.contains('e-stot'))) {
                 /* tslint:disable */
                 let colIndex: number = Number(ele.getAttribute('aria-colindex'));
                 let rowIndex: number = Number(ele.getAttribute('index'));
@@ -2530,7 +2538,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             pageSettings: this.pageSettings,
             enableValueSorting: this.enableValueSorting,
             isDrillThrough: (this.allowDrillThrough || this.editSettings.allowEditing),
-            localeObj: this.localeObj
+            localeObj: this.localeObj,
+            fieldsType: this.fieldsType
         };
         this.engineModule.renderEngine(this.dataSource, customProperties, this.getValueCellInfo.bind(this));
         this.setProperties({ pivotValues: this.engineModule.pivotValues }, true);

@@ -2726,8 +2726,12 @@ export class PageLayoutViewer extends LayoutViewer {
             let index: number = this.getHeaderFooter(type);
             let headerFooter: HeaderFooterWidget = this.headersFooters[sectionIndex][index];
             if (!headerFooter) {
-                headerFooter = this.createHeaderFooterWidget(type);
-                headerFooter.isEmpty = true;
+                if (this.headersFooters[0][index]) {
+                    headerFooter = this.headersFooters[0][index];
+                } else {
+                    headerFooter = this.createHeaderFooterWidget(type);
+                    headerFooter.isEmpty = true;
+                }
                 this.headersFooters[sectionIndex][index] = headerFooter;
             }
             return headerFooter;

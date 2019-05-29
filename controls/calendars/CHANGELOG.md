@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.49 (2019-05-29)
+
+### DatePicker
+
+#### Bug Fixes
+
+- #235561 - Now, you can specify the date format without `year` specifier along with strict mode.
+
 ## 17.1.48 (2019-05-21)
 
 ### Calendar

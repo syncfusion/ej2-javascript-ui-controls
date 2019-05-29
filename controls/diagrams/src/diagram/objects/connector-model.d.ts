@@ -175,7 +175,7 @@ export interface BpmnFlowModel extends ConnectorShapeModel{
      * * Default - Sets the type of Association flow as Default
      * * Directional - Sets the type of Association flow as Directional
      * * BiDirectional - Sets the type of Association flow as BiDirectional
-     * @default ''
+     * @default 'Default'
      */
     association?: BpmnAssociationFlows;
 

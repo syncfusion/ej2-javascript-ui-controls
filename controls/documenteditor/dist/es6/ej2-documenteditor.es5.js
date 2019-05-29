@@ -20953,8 +20953,13 @@ var PageLayoutViewer = /** @__PURE__ @class */ (function (_super) {
             var index = this.getHeaderFooter(type);
             var headerFooter = this.headersFooters[sectionIndex][index];
             if (!headerFooter) {
-                headerFooter = this.createHeaderFooterWidget(type);
-                headerFooter.isEmpty = true;
+                if (this.headersFooters[0][index]) {
+                    headerFooter = this.headersFooters[0][index];
+                }
+                else {
+                    headerFooter = this.createHeaderFooterWidget(type);
+                    headerFooter.isEmpty = true;
+                }
                 this.headersFooters[sectionIndex][index] = headerFooter;
             }
             return headerFooter;
@@ -59649,7 +59654,7 @@ var BulletsAndNumberingDialog = /** @__PURE__ @class */ (function () {
         this.createNumberList(id);
         this.createBulletList(id);
         //Initialize Tab component
-        var tabObj = new Tab({
+        this.tabObj = new Tab({
             items: [
                 {
                     header: { 'text': locale.getConstant('Numbering') },
@@ -59666,8 +59671,7 @@ var BulletsAndNumberingDialog = /** @__PURE__ @class */ (function () {
             width: 272,
         });
         //Render initialized Tab component
-        tabObj.appendTo(tabTarget);
-        tabObj.refresh();
+        this.tabObj.appendTo(tabTarget);
     };
     BulletsAndNumberingDialog.prototype.createNumberList = function (id) {
         var numberListDiv = createElement('div', { className: 'e-de-style-numbered-list', id: id + '_Number' });
@@ -59812,6 +59816,7 @@ var BulletsAndNumberingDialog = /** @__PURE__ @class */ (function () {
             }];
         this.owner.dialog.dataBind();
         this.owner.dialog.show();
+        this.tabObj.refresh();
     };
     BulletsAndNumberingDialog.prototype.setActiveElement = function (args) {
         var html = args.currentTarget.parentElement;
@@ -59840,6 +59845,10 @@ var BulletsAndNumberingDialog = /** @__PURE__ @class */ (function () {
         if (this.abstractList) {
             this.abstractList.destroy();
             this.abstractList = undefined;
+        }
+        if (this.tabObj) {
+            this.tabObj.destroy();
+            this.tabObj = undefined;
         }
         if (this.target && this.target.parentElement) {
             this.target.parentElement.removeChild(this.target);

@@ -677,21 +677,33 @@ export class Workbook {
                 try {
                     returnFormat = this.intl.getDatePattern({ skeleton: numberFormat, type: 'dateTime' }, true);
                 } catch (error) {
-                    returnFormat = numberFormat;
+                    try {
+                        returnFormat = this.intl.getDatePattern({ format: numberFormat, type: 'dateTime' }, true);
+                    } catch (error) {
+                        returnFormat = numberFormat;
+                    }
                 }
                 break;
             case 'date':
                 try {
                     returnFormat = this.intl.getDatePattern({ skeleton: numberFormat, type: 'date' }, true);
                 } catch (error) {
-                    returnFormat = numberFormat;
+                    try {
+                        returnFormat = this.intl.getDatePattern({ format: numberFormat, type: 'date' }, true);
+                    } catch (error) {
+                        returnFormat = numberFormat;
+                    }
                 }
                 break;
             case 'time':
                 try {
                     returnFormat = this.intl.getDatePattern({ skeleton: numberFormat, type: 'time' }, true);
                 } catch (error) {
-                    returnFormat = numberFormat;
+                    try {
+                        returnFormat = this.intl.getDatePattern({ format: numberFormat, type: 'time' }, true);
+                    } catch (error) {
+                        returnFormat = numberFormat;
+                    }
                 }
                 break;
             default:

@@ -113,6 +113,10 @@ export class FocusStrategy {
         let target: HTMLElement = <HTMLElement>e.target; if (!target) { return false; }
         if (this.currentInfo.skipAction) { this.clearIndicator(); return true; }
         if (['pageUp', 'pageDown'].indexOf(e.action) > -1) { this.clearIndicator(); return true; }
+        let th: boolean = closest(target, 'th') && !(closest(target, 'th') as HTMLElement).tabIndex;
+        if (th && closest(document.activeElement, '.e-filterbarcell') !== null) {
+            this.removeFocus();
+        }
         return (e.action === 'delete'
             || (this.parent.editSettings.mode !== 'Batch' && (this.parent.isEdit || ['insert', 'f2'].indexOf(e.action) > -1))
             || (closest(document.activeElement, '.e-filterbarcell') !== null ||
@@ -380,7 +384,7 @@ export class Matrix {
         let first: number = this.first(this.matrix[rowIndex], columnIndex, navigator, true, action);
         columnIndex = first === null ? tmp : first;
         let val: number = getValue(`${rowIndex}.${columnIndex}`, this.matrix);
-        if (rowIndex === this.rows && action === 'downArrow') {
+        if (rowIndex === this.rows && (action === 'downArrow' || action === 'enter')) {
             navigator[0] = -1;
         }
         return this.inValid(val) || !validator(rowIndex, columnIndex, action) ?
@@ -650,6 +654,10 @@ export class HeaderFocus extends ContentFocus implements IFocus {
         if (!target && this.parent.frozenRows !== 0) {
             target = <HTMLTableCellElement>((<HTMLElement>e.target).classList.contains('e-rowcell') ? e.target :
                 closest(<Element>e.target, 'td'));
+        }
+        if ((e.target as HTMLElement).classList.contains('e-columnheader') ||
+            (e.target as HTMLElement).querySelector('.e-stackedheadercell')) {
+            return false;
         }
         if (!target) { return; }
         let [rowIndex, cellIndex]: number[] = [(<HTMLTableRowElement>target.parentElement).rowIndex, target.cellIndex];

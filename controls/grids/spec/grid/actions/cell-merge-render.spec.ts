@@ -10,8 +10,8 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { data } from '../base/datasource.spec';
 import { extend } from '@syncfusion/ej2-base';
 import { GridModel } from '../../../src/grid/base/grid-model';
-import {VirtualScroll} from '../../../src/grid/actions/virtual-scroll';
-import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
+import { profile, inMB, getMemoryProfile } from '../base/common.spec';
 
 Grid.Inject(VirtualScroll);
 
@@ -30,17 +30,17 @@ describe('Cell Merge', () => {
                 dataSource: data,
                 allowReordering: false,
                 columns: [
-                    { field: 'OrderID',headerText: 'OrderID',width:150 },
+                    { field: 'OrderID', headerText: 'OrderID', width: 150 },
                     { field: 'CustomerID', headerText: 'CustomerID' },
-                    { field: 'EmployeeID', headerText: 'EmployeeID', width:150 },
-                    { field: 'Freight', headerText: 'Freight',width:200  },
-                    { field: 'ShipCity', headerText: 'ShipCity',visible: false, width:180  },
-                    { field: 'ShipName', headerText: 'Ship Name',  width:180  }],
-                queryCellInfo: function(args:any) {
-                    if(args.data.EmployeeID == 5 && args.column.field == 'EmployeeID'){
+                    { field: 'EmployeeID', headerText: 'EmployeeID', width: 150 },
+                    { field: 'Freight', headerText: 'Freight', width: 200 },
+                    { field: 'ShipCity', headerText: 'ShipCity', visible: false, width: 180 },
+                    { field: 'ShipName', headerText: 'Ship Name', width: 180 }],
+                queryCellInfo: function (args: any) {
+                    if (args.data.EmployeeID == 5 && args.column.field == 'EmployeeID') {
                         args.colSpan = 2;
-                    }        
-                    if(args.data.EmployeeID == 3 && args.column.field == 'EmployeeID'){
+                    }
+                    if (args.data.EmployeeID == 3 && args.column.field == 'EmployeeID') {
                         args.colSpan = 3;
                         args.rowSpan = 2;
                     }
@@ -50,8 +50,8 @@ describe('Cell Merge', () => {
                     if (args.data.OrderID == 10248 && args.column.field == 'OrderID') {
                         args.rowSpan = 2;
                     }
-                    
-                }                
+
+                }
             }, done);
         });
 
@@ -60,7 +60,7 @@ describe('Cell Merge', () => {
             let row3 = tr[3].querySelectorAll('td');
             let row0 = tr[0].querySelectorAll('td');
             expect(row0.length).toBe(5);
-            expect(row0[row0.length-1].getAttribute('colspan')).toBe(null);
+            expect(row0[row0.length - 1].getAttribute('colspan')).toBe(null);
             expect(row3[2].innerHTML).toBe('3');
             expect(row3.length).toBe(4);
             expect(row3[2].getAttribute('colspan')).toBe('3');
@@ -73,7 +73,7 @@ describe('Cell Merge', () => {
             expect((cMerge as any).containsKey("fname", "data")).toBe(false);
             (cMerge as any).backupMergeCells("fname", "data", 10);
             expect((cMerge as any).containsKey("fname", "data")).toBe(true);
-            let mCells: {[key: string]: number} = (cMerge as any).getMergeCells();
+            let mCells: { [key: string]: number } = (cMerge as any).getMergeCells();
             let value: number, merge: string[];
             for (let key in mCells) {
                 value = mCells[key];
@@ -103,10 +103,10 @@ describe('Cell Merge', () => {
                 options
             ),
         );
-        grid.appendTo(div);        
+        grid.appendTo(div);
         return grid;
     };
-    
+
     let destroy: EmitType<Object> = (grid: Grid) => {
         if (grid) {
             grid.destroy();
@@ -124,60 +124,60 @@ describe('Cell Merge', () => {
         return arr;
     })();
     describe('with Column virtualization', () => {
-        
-            describe('scroll left continous', () => {
-                let grid: Grid;
-                beforeAll((done: Function) => {
-                    grid = createGrid(
-                        {
-                            dataSource: data1,
-                            columns: count5000,
-                            enableVirtualization: true,
-                            enableColumnVirtualization: true,
-                            height: 300,
-                            width: 400,
-                            queryCellInfo: function(args: any) {
-                                if(args.column.field == 'Column2'){
-                                    args.colSpan = 4;
-                                }
-                            }
-                        },
-                        () => {
-                            (<HTMLElement>grid.getContent().firstChild).scrollLeft = 10;
-                            (<HTMLElement>grid.getContent().firstChild).scrollLeft = 500;
-                            done();
-                        }
-                    );
-                });
-                it('cell merge check on cell recreate', () => {
-                    let cRender = new ContentRender(grid, grid.serviceLocator);
-                    cRender.renderPanel();
-                    cRender.renderTable();
-                    (grid as any).inViewIndexes = [3,4,5];
-                    (cRender as any).contentTable = document.createElement('table');
-                    (cRender as any).contentTable.innerHTML = '<tbody></tbody>';
-                    cRender.refreshContentRows();
-                    expect(Object.getOwnPropertyNames(grid.mergeCells).length).toBeGreaterThan(0);
-                    let td = grid.getContentTable().querySelector('tbody tr').querySelectorAll('td');
-                    expect(td[1].getAttribute('colspan')).toBe('4');
-                    expect(td[1].getAttribute('aria-colspan')).toBe('4');
-                });
-                it('memory leak', () => {     
-                    profile.sample();
-                    let average: any = inMB(profile.averageChange)
-                    //Check average change in memory samples to not be over 10MB
-                    expect(average).toBeLessThan(10);
-                    let memory: any = inMB(getMemoryProfile())
-                    //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-                    expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-                });    
-                
-                afterAll(() => {
-                    destroy(grid);
-                    grid = null;
-                });
-            });        
 
-});
+        describe('scroll left continous', () => {
+            let grid: Grid;
+            beforeAll((done: Function) => {
+                grid = createGrid(
+                    {
+                        dataSource: data1,
+                        columns: count5000,
+                        enableVirtualization: true,
+                        enableColumnVirtualization: true,
+                        height: 300,
+                        width: 400,
+                        queryCellInfo: function (args: any) {
+                            if (args.column.field == 'Column2') {
+                                args.colSpan = 4;
+                            }
+                        }
+                    },
+                    () => {
+                        (<HTMLElement>grid.getContent().firstChild).scrollLeft = 10;
+                        (<HTMLElement>grid.getContent().firstChild).scrollLeft = 500;
+                        done();
+                    }
+                );
+            });
+            it('cell merge check on cell recreate', () => {
+                let cRender = new ContentRender(grid, grid.serviceLocator);
+                cRender.renderPanel();
+                cRender.renderTable();
+                (grid as any).inViewIndexes = [3, 4, 5, 6];
+                (cRender as any).contentTable = document.createElement('table');
+                (cRender as any).contentTable.innerHTML = '<tbody></tbody>';
+                cRender.refreshContentRows();
+                expect(Object.getOwnPropertyNames(grid.mergeCells).length).toBeGreaterThan(0);
+                let td = grid.getContentTable().querySelector('tbody tr').querySelectorAll('td');
+                expect(td[1].getAttribute('colspan')).toBe('4');
+                expect(td[1].getAttribute('aria-colspan')).toBe('4');
+            });
+            it('memory leak', () => {
+                profile.sample();
+                let average: any = inMB(profile.averageChange)
+                //Check average change in memory samples to not be over 10MB
+                expect(average).toBeLessThan(10);
+                let memory: any = inMB(getMemoryProfile())
+                //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+                expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+            });
+
+            afterAll(() => {
+                destroy(grid);
+                grid = null;
+            });
+        });
+
+    });
 
 });

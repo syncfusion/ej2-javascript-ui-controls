@@ -1060,7 +1060,15 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             detach(this.spinUp);
             detach(this.spinDown);
         }
-        this.container.parentElement.appendChild(this.cloneElement);
+        let attrArray: string[] = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
+            'autocorrect', 'aria-disabled', 'aria-placeholder', 'autocapitalize',
+            'spellcheck', 'aria-autocomplete', 'tabindex', 'aria-valuemin',
+            'aria-valuemax', 'aria-live', 'aria-valuenow', 'aria-invalid'];
+        attrArray.forEach((value: string): void => {
+            this.element.removeAttribute(value);
+        });
+        this.element.classList.remove('e-input');
+        this.container.insertAdjacentElement('afterend', this.element);
         detach(this.container);
         super.destroy();
     }

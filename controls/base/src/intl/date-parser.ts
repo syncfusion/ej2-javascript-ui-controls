@@ -230,6 +230,9 @@ export class DateParser {
         }
         for (let key of tKeys) {
             let tValue: number = (<any>options)[key];
+            if (isUndefined(tValue) && key === "day"){
+                res.setDate(1);
+            }
             if (!isUndefined(tValue)) {
                 if (key === 'month') {
                     tValue -= 1;

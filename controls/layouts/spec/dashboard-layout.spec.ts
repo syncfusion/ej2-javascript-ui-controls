@@ -219,6 +219,32 @@ describe('GridLayout', () => {
             gridLayOut.appendTo('#gridlayout');
             expect(gridLayOut.element.childElementCount === 1).toBe(true);
         });
+        it('Panel refresh after the resize', () => {
+            gridLayOut = new DashboardLayout({
+                cellAspectRatio: 1,
+                cellSpacing: [5, 5],
+                columns: 5,
+                panels: [
+                    { id:"first", "sizeX": 1, "sizeY": 1, "row": 0, "col": 0 },
+                    { id:"second", "sizeX": 3, "sizeY": 2, "row": 0, "col": 1 },
+                    { id:"third", "sizeX": 1, "sizeY": 3, "row": 0, "col": 4 },
+                    { id:"fourth", "sizeX": 1, "sizeY": 1, "row": 1, "col": 0 },
+                    { id:"fifth", "sizeX": 2, "sizeY": 1, "row": 2, "col": 0 },
+                    { id:"sixth", "sizeX": 1, "sizeY": 1, "row": 2, "col": 2 },
+                    { id:"seventh", "sizeX": 1, "sizeY": 1, "row": 2, "col": 3 }
+                ]
+            });
+            gridLayOut.appendTo('#gridlayout');
+            expect(document.getElementById('container').style.width).toEqual('1264px');
+            expect(gridLayOut.element.querySelector('#first').style.width).toEqual('248px');
+            expect(gridLayOut.element.querySelector('#second').style.width).toEqual('754px');
+            expect(gridLayOut.element.querySelector('#fifth').style.width).toEqual('501px');
+            (document.querySelectorAll('#container')[1] as HTMLElement).style.width = "800px";
+            gridLayOut.refresh();
+            expect(gridLayOut.element.querySelector('#first').style.width).not.toEqual('248px');
+            expect(gridLayOut.element.querySelector('#second').style.width).not.toEqual('754px');
+            expect(gridLayOut.element.querySelector('#fifth').style.width).not.toEqual('501px');
+        });
         it('Panles rendering with empty objects', () => {
             gridLayOut = new DashboardLayout({
                 cellAspectRatio: 1,
@@ -2982,7 +3008,7 @@ describe('GridLayout', () => {
             setCss(CellElements);
             expect(gridLayOut.element.classList.contains('e-dashboardlayout')).toBe(true);
             expect(gridLayOut.element.childElementCount == 6).toBe(true);
-            gridLayOut.onResize();
+            gridLayOut.refresh();
         });
         it('Responsive layout with px values test case', () => {
             let gridLayOut: any = new DashboardLayout({
@@ -2996,7 +3022,7 @@ describe('GridLayout', () => {
             setCss(CellElements);
             expect(gridLayOut.element.classList.contains('e-dashboardlayout')).toBe(true);
             expect(gridLayOut.element.childElementCount == 6).toBe(true);
-            gridLayOut.onResize();
+            gridLayOut.refresh();
         });
 
     });

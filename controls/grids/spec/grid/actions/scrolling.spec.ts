@@ -226,7 +226,7 @@ describe('Scrolling module', () => {
         });
 
         it('internal module call - Enable - false', () => {
-            grid.notify(uiUpdate, { enable: false, module: 'scroll' });
+            grid.notify(uiUpdate, { enable: false, module: 'scroll', properties:{} });
             expect((<HTMLElement>grid.element).style.width).toBe('100px');
         });
 

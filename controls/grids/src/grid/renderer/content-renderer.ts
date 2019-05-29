@@ -1,6 +1,6 @@
 import { Droppable, DropEventArgs } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
-import { setStyleAttribute, remove } from '@syncfusion/ej2-base';
+import { setStyleAttribute, remove, removeClass } from '@syncfusion/ej2-base';
 import { getUpdateUsingRaf, appendChildren } from '../base/util';
 import * as events from '../base/constant';
 import { IRenderer, IGrid, NotifyArgs, IModelGenerator, RowDataBoundEventArgs } from '../base/interface';
@@ -14,6 +14,7 @@ import { AriaService } from '../services/aria-service';
 import { RowModelGenerator } from '../services/row-model-generator';
 import { GroupModelGenerator } from '../services/group-model-generator';
 import { getScrollBarWidth, isGroupAdaptive } from '../base/util';
+import { Grid } from '../base/grid';
 
 
 /**
@@ -169,6 +170,7 @@ export class ContentRender implements IRenderer {
         let dataSource: Object = gObj.currentViewData; let frag: DocumentFragment = document.createDocumentFragment();
         let hdrfrag: DocumentFragment = document.createDocumentFragment(); let columns: Column[] = <Column[]>gObj.getColumns();
         let tr: Element; let hdrTbody: HTMLElement; let frzCols: number = gObj.getFrozenColumns();
+        let trElement: Element;
         let row: RowRenderer<Column> = new RowRenderer<Column>(this.serviceLocator, null, this.parent);
         this.rowElements = []; this.rows = [];
         let fCont: Element = this.getPanel().querySelector('.e-frozencontent');
@@ -268,9 +270,10 @@ export class ContentRender implements IRenderer {
                     } else {
                         // frag.appendChild(tr);
                         tr = appendChildren(frag, elements);
+                        trElement = tr.lastElementChild;
                     }
                 }
-                let arg: RowDataBoundEventArgs = { data: modelData[i].data, row: tr };
+                let arg: RowDataBoundEventArgs  = { data: modelData[i].data, row: trElement ? trElement : tr };
                 this.parent.trigger(events.rowDataBound, arg);
             }
             if (modelData[i].isDataRow) {
@@ -425,52 +428,90 @@ export class ContentRender implements IRenderer {
      */
     public setVisible(columns?: Column[]): void {
         let gObj: IGrid = this.parent;
-        let frzCols: number = gObj.getFrozenColumns();
-        let rows: Row<Column>[] = [];
-        if (frzCols) {
-            let fRows: Row<Column>[] = this.freezeRows;
-            let mRows: Row<Column>[] = this.movableRows;
-            let rowLen: number = fRows.length;
-            let cellLen: number;
-            for (let i: number = 0, row: Row<Column>; i < rowLen; i++) {
-                cellLen = mRows[i].cells.length;
-                row = fRows[i].clone();
-                for (let j: number = 0; j < cellLen; j++) {
-                    row.cells.push(mRows[i].cells[j]);
-                }
-                rows.push(row);
-            }
-        } else {
-            rows = <Row<Column>[]>this.getRows();
-        }
-        let element: Row<Column>;
-        let testRow: Row<Column>;
-        rows.some((r: Row<Column>) => { if (r.isDataRow) { testRow = r; } return r.isDataRow; });
-        let tasks: Function[] = [];
-
-        for (let c: number = 0, clen: number = columns.length; c < clen; c++) {
-            let column: Column = columns[c];
-            let idx: number = this.parent.getNormalizedColumnIndex(column.uid);
-            if (idx !== -1 && testRow && idx < testRow.cells.length) {
-            //used canSkip method to skip unwanted visible toggle operation. 
-            if (this.canSkip(column, testRow, idx)) {
-                continue;
-            }
-
-            let displayVal: string = column.visible === true ? '' : 'none';
+        if (!gObj.enableColumnVirtualization && !gObj.enableVirtualization) {
+            let frzCols: number = gObj.getFrozenColumns();
+            let rows: Row<Column>[] = [];
             if (frzCols) {
-                if (idx < frzCols) {
-                    setStyleAttribute(<HTMLElement>this.getColGroup().childNodes[idx], { 'display': displayVal });
-                } else {
-                    let mTable: Element = gObj.getContent().querySelector('.e-movablecontent').querySelector('colgroup');
-                    setStyleAttribute(<HTMLElement>mTable.childNodes[idx - frzCols], { 'display': displayVal });
+                let fRows: Row<Column>[] = this.freezeRows;
+                let mRows: Row<Column>[] = this.movableRows;
+                let rowLen: number = fRows.length;
+                let cellLen: number;
+                for (let i: number = 0, row: Row<Column>; i < rowLen; i++) {
+                    cellLen = mRows[i].cells.length;
+                    row = fRows[i].clone();
+                    for (let j: number = 0; j < cellLen; j++) {
+                        row.cells.push(mRows[i].cells[j]);
+                    }
+                    rows.push(row);
                 }
             } else {
-                setStyleAttribute(<HTMLElement>this.getColGroup().childNodes[idx], { 'display': displayVal });
+                rows = <Row<Column>[]>this.getRows();
+            }
+            let element: Row<Column>;
+            let testRow: Row<Column>;
+            rows.some((r: Row<Column>) => { if (r.isDataRow) { testRow = r; } return r.isDataRow; });
+            let tasks: Function[] = [];
+
+            let needFullRefresh: boolean = true;
+            if (!gObj.groupSettings.columns.length && testRow) {
+                needFullRefresh = false;
+            }
+            let tr: Object = (<Grid>gObj).contentModule.getTable().querySelectorAll('tr');
+            let frozenRows: Object = [];
+            for (let c: number = 0, clen: number = columns.length; c < clen; c++) {
+                let column: Column = columns[c];
+                let idx: number = this.parent.getNormalizedColumnIndex(column.uid);
+                let displayVal: string = column.visible === true ? '' : 'none';
+                let idxLessThanFrozenCol: boolean;
+                if (idx !== -1 && testRow && idx < testRow.cells.length) {
+                    if (frzCols) {
+                        if (idx < frzCols) {
+                            setStyleAttribute(<HTMLElement>this.getColGroup().childNodes[idx], { 'display': displayVal });
+                            idxLessThanFrozenCol = true;
+                        } else {
+                            let mTable: Element = gObj.getContent().querySelector('.e-movablecontent').querySelector('colgroup');
+                            idx = idx - frzCols;
+                            setStyleAttribute(<HTMLElement>mTable.childNodes[idx], { 'display': displayVal });
+                            tr = (<Grid>gObj).contentModule.getMovableContent().querySelectorAll('tr');
+                        }
+                    } else {
+                        setStyleAttribute(<HTMLElement>this.getColGroup().childNodes[idx], { 'display': displayVal });
+                    }
+                }
+                idx = gObj.isDetail() ? idx - 1 : idx;
+                if (!needFullRefresh) {
+                    if (gObj.frozenRows) {
+                        if (idxLessThanFrozenCol || !frzCols) {
+                            frozenRows = gObj.getHeaderTable().querySelector('tbody').querySelectorAll('tr');
+                        } else {
+                            let frozenContent: Element = gObj.getHeaderContent().querySelector('.e-movableheader');
+                            if (frozenContent) {
+                                frozenRows = frozenContent.querySelector('tbody').querySelectorAll('tr');
+                            }
+                        }
+                        this.setDisplayNone(frozenRows, idx, displayVal);
+                    }
+                    this.setDisplayNone(tr, idx, displayVal);
+                }
+            }
+            if (needFullRefresh) {
+                this.refreshContentRows({ requestType: 'refresh' });
             }
         }
     }
-        this.refreshContentRows({ requestType: 'refresh' });
+
+    /** 
+     * @hidden
+     */
+    public setDisplayNone(tr: Object, idx: number, displayVal: string): void {
+        Object.keys(tr).forEach((i: string) => {
+            if (tr[i].querySelectorAll('td.e-rowcell').length) {
+                setStyleAttribute(<HTMLElement>tr[i].querySelectorAll('td.e-rowcell')[idx], { 'display': displayVal });
+                if (tr[i].querySelectorAll('td.e-rowcell')[idx].classList.contains('e-hide')) {
+                    removeClass([tr[i].querySelectorAll('td.e-rowcell')[idx]], ['e-hide']);
+                }
+            }
+        });
     }
 
     private colGroupRefresh(): void {

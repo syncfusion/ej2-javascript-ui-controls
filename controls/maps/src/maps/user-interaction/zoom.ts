@@ -395,9 +395,6 @@ export class Zoom {
         let shapeIndex: number = parseFloat(element.id.split('_shapeIndex_')[1].split('_')[0]);
         let labelIndex: number = parseFloat(element.id.split('_LabelIndex_')[1].split('_')[0]);
         let duration: number = this.currentLayer.animationDuration;
-        let featureData: Object[] = (!isNullOrUndefined(this.maps.layersCollection[this.index].shapeData['geometries']) &&
-            (<Object[]>this.maps.layersCollection[this.index].shapeData['geometries']).length > 0 ? this.maps.layersCollection[this.index].shapeData['geometries'] :
-            this.maps.layersCollection[this.index].shapeData['features']);
         for (let l: number = 0; l < labelCollection.length; l++) {
             let label: Object = labelCollection[l];
             if (label['layerIndex'] === layerIndex && label['shapeIndex'] === shapeIndex
@@ -417,7 +414,7 @@ export class Zoom {
                     (<HTMLElement>element).style.top = y + 'px';
                 } else {
                     labelX = ((labelX + x) * scale); labelY = ((labelY + y) * scale);
-                    zoomtext = featureData[l]['properties'][labelPath];
+                    zoomtext = label['dataLabelText'];
                     zoomtextSize = measureText(zoomtext, style);
                     let start: number = labelY - zoomtextSize['height'] / 4;
                     let end: number = labelY + zoomtextSize['height'] / 4;

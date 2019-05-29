@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 17.1.49 (2019-05-29)
+
+### MaskedTextBox
+
+#### Bug Fixes
+
+- Now, MaskedTextBox renders properly after calling `refresh` method.
+
+### Uploader
+
+#### Bug Fixes
+
+- #235532 - Now, you can remove the uploaded files, while using the uploader within form.
+
 ## 17.1.44 (2019-05-07)
 
 ### MaskedTextBox

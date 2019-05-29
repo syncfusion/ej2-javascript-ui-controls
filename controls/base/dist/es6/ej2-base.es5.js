@@ -4615,6 +4615,9 @@ var DateParser = /** @__PURE__ @class */ (function () {
         for (var _i = 0, tKeys_1 = tKeys; _i < tKeys_1.length; _i++) {
             var key = tKeys_1[_i];
             var tValue = options[key];
+            if (isUndefined(tValue) && key === "day") {
+                res.setDate(1);
+            }
             if (!isUndefined(tValue)) {
                 if (key === 'month') {
                     tValue -= 1;
@@ -6431,8 +6434,13 @@ var L10n = /** @__PURE__ @class */ (function () {
      * @return string
      */
     L10n.prototype.getConstant = function (prop) {
-        /* tslint:disable no-any */
-        return this.currentLocale[prop] || this.localeStrings[prop] || '';
+        // Removed conditional operator because this method does not return correct value when passing 0 as value in localization
+        if (!isNullOrUndefined(this.currentLocale[prop])) {
+            return this.currentLocale[prop];
+        }
+        else {
+            return this.localeStrings[prop] || '';
+        }
     };
     /**
      * Returns the control constant object for current object and the locale specified.
@@ -6441,8 +6449,8 @@ var L10n = /** @__PURE__ @class */ (function () {
      * @returns {Object}
      */
     L10n.prototype.intGetControlConstant = function (curObject, locale) {
-        if (curObject[locale]) {
-            return curObject[locale][this.controlName];
+        if ((curObject)[locale]) {
+            return (curObject)[locale][this.controlName];
         }
         return null;
     };

@@ -69,7 +69,8 @@ export interface ScheduleModel extends ComponentModel{
     /**
      * To mark the active (current) date on the Schedule, `selectedDate` property can be defined.
      *  Usually, it defaults to the current System date.
-     * @default 'new Date()'
+     * @default new Date()
+     * @aspDefaultValue DateTime.Now
      */
     selectedDate?: Date;
 
@@ -304,13 +305,6 @@ export interface ScheduleModel extends ComponentModel{
      * @default null
      */
     cssClass?: string;
-
-    /**
-     * When set to `true`, enables the RTL mode on the Schedule, so that the Schedule and its content displays in the direction
-     *  from right to left.
-     * @default false
-     */
-    enableRtl?: boolean;
 
     /**
      * It enables the external drag and drop support for appointments on scheduler, to be able to move them out of the scheduler layout.

@@ -323,7 +323,8 @@ export class AggregateMenu {
         let fieldName: string = dialogElement.getAttribute('data-field');
         let buttonElement: HTMLElement;
         if (this.parentElement.querySelector('.' + cls.PIVOT_BUTTON_CLASS)) {
-            buttonElement = this.parentElement.querySelector('.' + cls.PIVOT_BUTTON_CLASS + '#' + fieldName) as HTMLElement;
+            buttonElement = this.parentElement.
+                querySelector('.' + cls.PIVOT_BUTTON_CLASS + '.' + fieldName.replace(/[^A-Z0-9]/ig, '')) as HTMLElement;
         }
         if (buttonElement) {
             let contentElement: HTMLElement = buttonElement.querySelector('.e-content') as HTMLElement;

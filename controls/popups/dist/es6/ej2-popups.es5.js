@@ -1576,7 +1576,7 @@ var ButtonProps = /** @__PURE__ @class */ (function (_super) {
         Property('Button')
     ], ButtonProps.prototype, "type", void 0);
     __decorate$1([
-        Property()
+        Event()
     ], ButtonProps.prototype, "click", void 0);
     return ButtonProps;
 }(ChildProperty));
@@ -1914,11 +1914,11 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                     _this.dlgContainer.style.display = 'none';
                 }
                 _this.trigger('close', _this.closeArgs);
-                if (!isNullOrUndefined(document.activeElement.blur)) {
-                    document.activeElement.blur();
+                var activeEle = document.activeElement;
+                if (!isNullOrUndefined(activeEle) && !isNullOrUndefined((activeEle).blur)) {
+                    activeEle.blur();
                 }
                 if (!isNullOrUndefined(_this.storeActiveElement)) {
-                    document.activeElement.blur();
                     _this.storeActiveElement.focus();
                 }
             }

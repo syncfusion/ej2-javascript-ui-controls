@@ -173,12 +173,6 @@ export interface ToolbarModel extends ComponentModel{
     overflowMode?: OverflowMode;
 
     /**
-     * Specifies the direction of the Toolbar commands. For cultures like Arabic, Hebrew, etc. direction can be switched to right to left.
-     * @default false
-     */
-    enableRtl?: boolean;
-
-    /**
      * The event will be fired on clicking the Toolbar elements.
      * @event
      */

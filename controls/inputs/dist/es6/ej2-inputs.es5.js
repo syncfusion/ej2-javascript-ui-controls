@@ -1427,6 +1427,7 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     NumericTextBox.prototype.destroy = function () {
+        var _this = this;
         this.unwireEvents();
         detach(this.hiddenInput);
         if (this.showSpinButton) {
@@ -1434,7 +1435,15 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
             detach(this.spinUp);
             detach(this.spinDown);
         }
-        this.container.parentElement.appendChild(this.cloneElement);
+        var attrArray = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
+            'autocorrect', 'aria-disabled', 'aria-placeholder', 'autocapitalize',
+            'spellcheck', 'aria-autocomplete', 'tabindex', 'aria-valuemin',
+            'aria-valuemax', 'aria-live', 'aria-valuenow', 'aria-invalid'];
+        attrArray.forEach(function (value) {
+            _this.element.removeAttribute(value);
+        });
+        this.element.classList.remove('e-input');
+        this.container.insertAdjacentElement('afterend', this.element);
         detach(this.container);
         _super.prototype.destroy.call(this);
     };
@@ -2513,7 +2522,9 @@ function addMaskErrorClass() {
 }
 function removeMaskError() {
     var parentElement = this.element.parentNode;
-    removeClass([parentElement], ERROR$1);
+    if (!isNullOrUndefined(parentElement)) {
+        removeClass([parentElement], ERROR$1);
+    }
     removeClass([this.element], ERROR$1);
     attributes(this.element, { 'aria-invalid': 'false' });
 }
@@ -2963,8 +2974,17 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
      * @return {void}
      */
     MaskedTextBox.prototype.destroy = function () {
+        var _this = this;
         unwireEvents.call(this);
-        this.inputObj.container.parentElement.appendChild(this.cloneElement);
+        var attrArray = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
+            'autocorrect', 'aria-disabled', 'aria-placeholder', 'autocapitalize',
+            'spellcheck', 'aria-autocomplete',
+            'aria-live', 'aria-valuenow', 'aria-invalid'];
+        attrArray.forEach(function (value) {
+            _this.element.removeAttribute(value);
+        });
+        this.element.classList.remove('e-input');
+        this.inputObj.container.insertAdjacentElement('afterend', this.element);
         detach(this.inputObj.container);
         _super.prototype.destroy.call(this);
     };
@@ -11347,7 +11367,7 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
         this.unWireEvents();
         this.respectiveElement.classList.remove('e-input');
         this.removeAttributes(['aria-placeholder', 'aria-disabled', 'aria-readonly', 'aria-labelledby']);
-        this.textboxWrapper.container.parentElement.appendChild(this.respectiveElement);
+        this.textboxWrapper.container.insertAdjacentElement('afterend', this.respectiveElement);
         detach(this.textboxWrapper.container);
         this.textboxWrapper = null;
         _super.prototype.destroy.call(this);

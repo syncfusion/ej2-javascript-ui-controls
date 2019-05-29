@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.49 (2019-05-29)
+
+### Common
+
+#### Bug Fixes
+
+- Fixed `parseDate` method returns invalid value when parsing `mm/yyyy` date format.
+
 ## 17.1.48 (2019-05-21)
 
 ### Common
@@ -34,6 +42,10 @@
 ## 17.1.32-beta (2019-03-13)
 
 ### Common
+
+#### Bug Fixes
+
+- #I234200 - Fixed `GetConstant` method does not return correct value when passing 0 as a value in localization.
 
 #### New Features
 

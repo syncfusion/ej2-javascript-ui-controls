@@ -4,7 +4,7 @@
 import { Chart, Series, getElement } from '../../index';
 import { StockChart } from '../stock-chart';
 import { Size } from '@syncfusion/ej2-svg-base';
-import { IZoomCompleteEventArgs, Axis, VisibleRangeModel, ILoadedEventArgs } from '../../chart/index';
+import { IZoomCompleteEventArgs, Axis, VisibleRangeModel, ILoadedEventArgs, IPointEventArgs } from '../../chart/index';
 import { remove, extend } from '@syncfusion/ej2-base';
 import { StockSeriesModel } from '../model/base-model';
 import { ITooltipRenderEventArgs, IAxisLabelRenderEventArgs, ISeriesRenderEventArgs } from '../../common/model/interface';
@@ -67,6 +67,12 @@ export class CartesianChart {
             },
             seriesRender : (args : ISeriesRenderEventArgs) => {
                 this.stockChart.trigger('seriesRender', args);
+            },
+            pointClick: (args: IPointEventArgs) => {
+                this.stockChart.trigger('pointClick', args);
+            },
+            pointMove: (args: IPointEventArgs) => {
+                this.stockChart.trigger('pointMove', args);
             },
             dataSource: stockChart.dataSource,
             series: this.findSeriesCollection(stockChart.series),

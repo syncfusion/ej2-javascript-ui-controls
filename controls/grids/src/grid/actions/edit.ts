@@ -34,7 +34,7 @@ export class Edit implements IAction {
     /** @hidden */
     public formObj: FormValidator;
     public mFormObj: FormValidator;
-    private editCellType: Object = {
+    private static editCellType: Object = {
         'dropdownedit': DropDownEditCell, 'numericedit': NumericEditCell,
         'datepickeredit': DatePickerEditCell, 'datetimepickeredit': DatePickerEditCell,
         'booleanedit': BooleanEditCell, 'defaultedit': DefaultEditCell,
@@ -73,10 +73,10 @@ export class Edit implements IAction {
         (<{columnModel?: Column[]}>this.parent).columnModel.forEach((col: Column) => {
             if (this.parent.editSettings.template || col.editTemplate) {
                 let templteCell: string = 'templateedit';
-                col.edit = extend(new this.editCellType[templteCell](this.parent), col.edit || {});
+                col.edit = extend(new Edit.editCellType[templteCell](this.parent), col.edit || {});
             } else {
                 col.edit = extend(
-                    new this.editCellType[col.editType && this.editCellType[col.editType] ?
+                    new Edit.editCellType[col.editType && Edit.editCellType[col.editType] ?
                         col.editType : 'defaultedit'](this.parent, this.serviceLocator),
                     col.edit || {}
                 );
@@ -868,6 +868,12 @@ export class Edit implements IAction {
         return !col.visible && !(this.parent.groupSettings.columns.indexOf(col.field) > -1);
     }
 
+    /**
+     * @hidden
+     */
+    public static AddEditors(editors: object): void {
+        Edit.editCellType = extend(Edit.editCellType, editors);
+    }
 }
 
 /** @hidden */

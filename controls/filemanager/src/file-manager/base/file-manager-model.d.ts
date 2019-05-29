@@ -64,12 +64,6 @@ export interface FileManagerModel extends ComponentModel{
     enablePersistence?: boolean;
 
     /**
-     * When set to true, enables RTL mode of the component that displays the content in the right-to-left direction.
-     * @default false
-     */
-    enableRtl?: boolean;
-
-    /**
      * Specifies the height of the file manager.
      * @default '400px'
      */

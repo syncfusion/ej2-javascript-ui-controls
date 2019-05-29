@@ -313,12 +313,6 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     @Property('Scrollable')
     public overflowMode: OverflowMode;
     /**
-     * Specifies the direction of the Toolbar commands. For cultures like Arabic, Hebrew, etc. direction can be switched to right to left.
-     * @default false
-     */
-    @Property(false)
-    public enableRtl: boolean;
-    /**
      * The event will be fired on clicking the Toolbar elements.
      * @event
      */

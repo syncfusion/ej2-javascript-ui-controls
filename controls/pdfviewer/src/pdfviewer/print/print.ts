@@ -1,6 +1,7 @@
 import { PdfViewer } from '../index';
 import { PdfViewerBase } from '../index';
 import { createElement, Browser } from '@syncfusion/ej2-base';
+import { AjaxHandler } from '../index';
 /**
  * Print module
  */
@@ -9,6 +10,7 @@ export class Print {
     private pdfViewerBase: PdfViewerBase;
     private printViewerContainer: HTMLElement;
     private printCanvas: HTMLCanvasElement;
+    private printRequestHandler: AjaxHandler;
     // tslint:disable-next-line
     private frameDoc: any;
     // tslint:disable-next-line
@@ -55,64 +57,75 @@ export class Print {
 
     private createRequestForPrint(pageIndex: number, pageWidth: number, pageHeight: number, pageCount: number): void {
         let proxy: Print = this;
-        let request: XMLHttpRequest = new XMLHttpRequest();
         // tslint: disable-next-line:max-line-length
         // set default zoomFactor value.  
         let jsonObject: object = {
             pageNumber: pageIndex, documentId: this.pdfViewerBase.documentId,
-            hashId: this.pdfViewerBase.hashId, zoomFactor: 1
+            hashId: this.pdfViewerBase.hashId, zoomFactor: 1,
+            action: 'PrintImages'
         };
-        request.open('POST', proxy.pdfViewer.serviceUrl + '/PrintImages', false);
-        request.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
-        if (this.pdfViewer.ajaxRequestSettings.ajaxHeaders) {
-            this.pdfViewerBase.setCustomAjaxHeaders(request);
-        }
-        request.send(JSON.stringify(jsonObject));
+        proxy.printRequestHandler = new AjaxHandler(proxy.pdfViewer);
+        proxy.printRequestHandler.url = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.print;
+        proxy.printRequestHandler.responseType =  null;
+        proxy.printRequestHandler.mode = false;
+        proxy.printRequestHandler.send(jsonObject);
         // tslint:disable-next-line
-        let printImage: any = request.responseText;
-        if (typeof printImage !== 'object') {
-            printImage = JSON.parse(printImage);
-        }
-        let annotationSource: string = '';
-        if (printImage.textMarkupAnnotation && this.pdfViewerBase.isTextMarkupAnnotationModule()) {
+        proxy.printRequestHandler.onSuccess = function(result: any) {
+            // tslint:disable-next-line
+            let printImage: any = result.data;
+            if (typeof printImage !== 'object') {
+                printImage = JSON.parse(printImage);
+            }
+            let annotationSource: string = '';
+            if (printImage.textMarkupAnnotation && proxy.pdfViewerBase.isTextMarkupAnnotationModule()) {
+                // tslint:disable-next-line:max-line-length
+                annotationSource = proxy.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(printImage.textMarkupAnnotation, pageIndex);
+            }
             // tslint:disable-next-line:max-line-length
-            annotationSource = this.pdfViewer.annotationModule.textMarkupAnnotationModule.printTextMarkupAnnotations(printImage.textMarkupAnnotation, pageIndex);
-        }
-        // tslint:disable-next-line:max-line-length
-        this.printCanvas = createElement('canvas', { id: this.pdfViewer.element.id + '_printCanvas_' + pageIndex, className: 'e-pv-print-canvas' }) as HTMLCanvasElement;
-        this.printCanvas.style.width = pageWidth + 'px';
-        this.printCanvas.style.height = pageHeight + 'px';
-        this.printCanvas.height = 1056 * window.devicePixelRatio;
-        this.printCanvas.width = 816 * window.devicePixelRatio;
-        let context: CanvasRenderingContext2D = this.printCanvas.getContext('2d');
-        let pageImage: HTMLImageElement = new Image();
-        let annotationImage: HTMLImageElement = new Image();
-        pageImage.onload = (): void => {
-            if (pageHeight > pageWidth) {
-                context.drawImage(pageImage, 0, 0, proxy.printCanvas.width, proxy.printCanvas.height);
-                if (annotationSource) {
-                    context.drawImage(annotationImage, 0, 0, proxy.printCanvas.width, proxy.printCanvas.height);
+            proxy.printCanvas = createElement('canvas', { id: proxy.pdfViewer.element.id + '_printCanvas_' + pageIndex, className: 'e-pv-print-canvas' }) as HTMLCanvasElement;
+            proxy.printCanvas.style.width = pageWidth + 'px';
+            proxy.printCanvas.style.height = pageHeight + 'px';
+            proxy.printCanvas.height = 1056 * window.devicePixelRatio;
+            proxy.printCanvas.width = 816 * window.devicePixelRatio;
+            let context: CanvasRenderingContext2D = proxy.printCanvas.getContext('2d');
+            let pageImage: HTMLImageElement = new Image();
+            let annotationImage: HTMLImageElement = new Image();
+            pageImage.onload = (): void => {
+                if (pageHeight > pageWidth) {
+                    context.drawImage(pageImage, 0, 0, proxy.printCanvas.width, proxy.printCanvas.height);
+                    if (annotationSource) {
+                        context.drawImage(annotationImage, 0, 0, proxy.printCanvas.width, proxy.printCanvas.height);
+                    }
+                } else {
+                    // translate to center canvas
+                    context.translate(proxy.printCanvas.width * 0.5, proxy.printCanvas.height * 0.5);
+                    // rotate the canvas to - 90 degree 
+                    context.rotate(-0.5 * Math.PI);
+                    // un translate the canvas back to origin
+                    context.translate(-proxy.printCanvas.height * 0.5, -proxy.printCanvas.width * 0.5);
+                    // draw the image
+                    context.drawImage(pageImage, 0, 0, proxy.printCanvas.height, proxy.printCanvas.width);
+                    if (annotationSource) {
+                        context.drawImage(annotationImage, 0, 0, proxy.printCanvas.height, proxy.printCanvas.width);
+                    }
                 }
-            } else {
-                // translate to center canvas
-                context.translate(proxy.printCanvas.width * 0.5, proxy.printCanvas.height * 0.5);
-                // rotate the canvas to - 90 degree 
-                context.rotate(-0.5 * Math.PI);
-                // un translate the canvas back to origin
-                context.translate(-proxy.printCanvas.height * 0.5, -proxy.printCanvas.width * 0.5);
-                // draw the image
-                context.drawImage(pageImage, 0, 0, proxy.printCanvas.height, proxy.printCanvas.width);
-                if (annotationSource) {
-                    context.drawImage(annotationImage, 0, 0, proxy.printCanvas.height, proxy.printCanvas.width);
+                if (pageIndex === (proxy.pdfViewerBase.pageCount - 1)) {
+                    proxy.printWindowOpen();
                 }
-            }
-            if (pageIndex === (proxy.pdfViewerBase.pageCount - 1)) {
-                proxy.printWindowOpen();
-            }
+            };
+            pageImage.src = printImage.image;
+            annotationImage.src = annotationSource;
+            proxy.printViewerContainer.appendChild(proxy.printCanvas);
         };
-        pageImage.src = printImage.image;
-        annotationImage.src = annotationSource;
-        this.printViewerContainer.appendChild(this.printCanvas);
+        // tslint:disable-next-line
+        this.printRequestHandler.onFailure = function(result: any) {
+            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText);
+        };
+        // tslint:disable-next-line
+        this.printRequestHandler.onError = function(result: any) {
+            proxy.pdfViewerBase.openNotificationPopup();
+            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText);
+        };
     }
 
     private printWindowOpen(): void {

@@ -35,7 +35,7 @@ let importRules: RuleModel = {
     }]
     };
 
-let qryBldrObj: QueryBuilder = new QueryBuilder({  width: '800px',  dataSource: orderData, columns: columnData, rule: importRules  });
+let qryBldrObj: QueryBuilder = new QueryBuilder({  width: '800px',  dataSource: orderData, columns: columnData, rule: importRules });
 qryBldrObj.appendTo('#querybuilder');
 let data: Object = new DataManager(orderData as JSON[]).executeLocal(new Query().take(20));
 let grid: Grid = new Grid(

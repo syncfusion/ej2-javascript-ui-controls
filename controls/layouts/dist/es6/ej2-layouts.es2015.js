@@ -1483,9 +1483,6 @@ __decorate([
     Property(true)
 ], Splitter.prototype, "enabled", void 0);
 __decorate([
-    Property(false)
-], Splitter.prototype, "enableRtl", void 0);
-__decorate([
     Property(null)
 ], Splitter.prototype, "separatorSize", void 0);
 __decorate([
@@ -1912,7 +1909,7 @@ let DashboardLayout = class DashboardLayout extends Component {
         }
     }
     bindEvents() {
-        window.addEventListener('resize', this.onResize.bind(this));
+        window.addEventListener('resize', this.refresh.bind(this));
         this.resizeEvents();
     }
     downResizeHandler(e) {
@@ -2250,7 +2247,10 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.sortedPanel();
     }
     ;
-    onResize() {
+    /**
+     * Refresh the panels of DashboardLayout component.
+     */
+    refresh() {
         if (this.checkMediaQuery()) {
             this.checkMediaQuerySizing();
         }
@@ -3924,9 +3924,6 @@ __decorate$1([
 __decorate$1([
     Property(null)
 ], DashboardLayout.prototype, "draggableHandle", void 0);
-__decorate$1([
-    Property(false)
-], DashboardLayout.prototype, "enableRtl", void 0);
 __decorate$1([
     Property('en-US')
 ], DashboardLayout.prototype, "locale", void 0);

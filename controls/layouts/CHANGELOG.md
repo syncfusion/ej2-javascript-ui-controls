@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.49 (2019-05-29)
+
+### Dashboard Layout
+
+#### New Features
+
+- #236095 - Support for refresh method has been provided, which allows to refresh the panels.
+
 ## 17.1.48 (2019-05-21)
 
 ### Dashboard Layout

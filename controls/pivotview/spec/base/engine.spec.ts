@@ -2,6 +2,7 @@ import { PivotEngine, IDataOptions, IDataSet, IAxisSet, IPageSettings, ICustomPr
 import { pivot_dataset, excel_data } from '../base/datasource.spec';
 import { PivotUtil } from '../../src/base/util';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
+import { L10n } from '@syncfusion/ej2-base';
 
 describe('PivotView spec', () => {
     /**
@@ -212,7 +213,7 @@ describe('PivotView spec', () => {
                 expect((pivotEngine.pivotValues[2][19] as IDataSet).value).toBe(776);
                 expect((pivotEngine.pivotValues[6][19] as IDataSet).value).toBe(7740600000000);
                 expect((pivotEngine.pivotValues[2][1] as IDataSet).formattedText).toBe('*');
-                expect((pivotEngine.pivotValues[4][11] as IDataSet).formattedText).toBe('0');
+                expect((pivotEngine.pivotValues[4][11] as IDataSet).formattedText).toBe('*');
             });
             it('DistinctCount type', () => {
                 dataSource.values[0].type = 'DistinctCount';
@@ -282,7 +283,7 @@ describe('PivotView spec', () => {
                 };
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSource);
                 expect((pivotEngine.pivotValues[2][1] as IDataSet).formattedText).toBe('7.62%');
-                expect((pivotEngine.pivotValues[21][1] as IDataSet).formattedText).toBe('45.65%');
+                expect((pivotEngine.pivotValues[23][1] as IDataSet).formattedText).toBe('45.65%');
             });
             it('% of Parent Total with multiple level in row type', () => {
                 dataSource = {
@@ -1676,7 +1677,7 @@ describe('PivotView spec', () => {
             let pivotEngine: PivotEngine;
             it('Check with range group date at code-behind', () => {
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSource);
-                expect(pivotEngine.pivotValues.length).toBe(34);
+                expect(pivotEngine.pivotValues.length).toBe(35);
                 expect(pivotEngine.pivotValues[0].length).toBe(7);
                 expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
                 expect((pivotEngine.pivotValues[3][0] as IDataSet).formattedText).toBe('1976');
@@ -1686,93 +1687,9 @@ describe('PivotView spec', () => {
                 dataSource.sortSettings = [{ name: 'date_years', order: 'Descending' }];
                 expect(dataSource.sortSettings.length === 1).toBeTruthy;
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSource);
-                expect(pivotEngine.pivotValues.length).toBe(34);
-                expect(pivotEngine.pivotValues[0].length).toBe(7);
-                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
-                expect((pivotEngine.pivotValues[3][0] as IDataSet).formattedText).toBe('2004');
-            });
-            it('With valuesorting enabled', () => {
-                dataSource.valueSortSettings = {
-                    headerText: 'Grand Total##balance',
-                    headerDelimiter: '##',
-                    sortOrder: 'Descending'
-                };
-                let customProperties: ICustomProperties = {
-                    mode: '',
-                    savedFieldList: undefined,
-                    enableValueSorting: true,
-                    isDrillThrough: undefined,
-                    localeObj: undefined
-                };
-                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSource,customProperties);
-                expect(dataSource.sortSettings.length === 1).toBeTruthy;
-                expect(pivotEngine.pivotValues.length).toBe(34);
-                expect(pivotEngine.pivotValues[0].length).toBe(7);
-                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
-                expect((pivotEngine.pivotValues[3][0] as IDataSet).formattedText).toBe('1977');
-            });
-            it('With ExpandAll enabled', () => {
-                dataSource.expandAll = true;
-                let customProperties: ICustomProperties = {
-                    mode: '',
-                    savedFieldList: undefined,
-                    enableValueSorting: true,
-                    isDrillThrough: undefined,
-                    localeObj: undefined
-                };
-                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSource,customProperties);
-                expect(pivotEngine.pivotValues.length).toBe(881);
-                expect(pivotEngine.pivotValues[0].length).toBe(7);
-                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
-                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText.toString()).toBe('Qtr1');
-            });
-            it('With Calculated Settings', () => {
-                dataSource.expandAll = false;
-                dataSource.calculatedFieldSettings = [{ name: 'total', formula: '"Sum(balance)"+"Sum(quantity)"' }];
-                dataSource.values = [{ name: 'balance' }, { name: 'total' }, { name: 'quantity' }];
-                let customProperties: ICustomProperties = {
-                    mode: '',
-                    savedFieldList: undefined,
-                    enableValueSorting: true,
-                    isDrillThrough: undefined,
-                    localeObj: undefined
-                };
-                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSource,customProperties);
-                expect(pivotEngine.pivotValues.length).toBe(34);
-                expect(pivotEngine.pivotValues[0].length).toBe(10);
-                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
-                expect((pivotEngine.pivotValues[3][0] as IDataSet).formattedText).toBe('1977');
-            });
-        });
-        describe('Range Group by Number', () => {
-            let ds: IDataSet[] = PivotUtil.getClonedData(pivot_dataset as IDataSet[]);
-            let dataSource: IDataOptions = {
-                data: ds,
-                allowLabelFilter: true,
-                formatSettings: [{ name: 'age', format: 'N' }, { name: 'balance', format: 'C' }, { name: 'date', format: 'dd/MM/yyyy-hh:mm a', type: 'date' }],
-                rows: [{ name: 'date', caption: 'TimeLine' }],
-                columns: [{ name: 'age'}, { name: 'gender', caption: 'Population' }],
-                values: [{ name: 'balance' }, { name: 'quantity' }],
-                filters: [{ name: 'product', caption: 'Category' }],
-                groupSettings: [{ name: 'date', type:'Date', groupInterval: ['Years', 'Quarters', 'Months', 'Days', 'Hours'], startingAt: new Date(1975, 0, 10), endingAt: new Date(2005, 10, 5) },
-                { name: 'age', type: 'Number', startingAt: 25, endingAt: 35, rangeInterval: 5 }]
-            };
-            let pivotEngine: PivotEngine;
-            it('Check with range and interval number at code-behind', () => {
-                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSource);
                 expect(pivotEngine.pivotValues.length).toBe(35);
-                expect(pivotEngine.pivotValues[0].length).toBe(9);
-                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('25-29');
-                expect((pivotEngine.pivotValues[3][0] as IDataSet).formattedText).toBe('1975');
-            });
-            it('With sorting enabled', () => {
-                dataSource.enableSorting = true;
-                dataSource.sortSettings = [{ name: 'date_years', order: 'Descending' }];
-                expect(dataSource.sortSettings.length === 1).toBeTruthy;
-                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSource);
-                expect(pivotEngine.pivotValues.length).toBe(35);
-                expect(pivotEngine.pivotValues[0].length).toBe(9);
-                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('25-29');
+                expect(pivotEngine.pivotValues[0].length).toBe(7);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
                 expect((pivotEngine.pivotValues[3][0] as IDataSet).formattedText).toBe('2005');
             });
             it('With valuesorting enabled', () => {
@@ -1791,8 +1708,8 @@ describe('PivotView spec', () => {
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSource,customProperties);
                 expect(dataSource.sortSettings.length === 1).toBeTruthy;
                 expect(pivotEngine.pivotValues.length).toBe(35);
-                expect(pivotEngine.pivotValues[0].length).toBe(9);
-                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('25-29');
+                expect(pivotEngine.pivotValues[0].length).toBe(7);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
                 expect((pivotEngine.pivotValues[3][0] as IDataSet).formattedText).toBe('1994');
             });
             it('With ExpandAll enabled', () => {
@@ -1802,13 +1719,27 @@ describe('PivotView spec', () => {
                     savedFieldList: undefined,
                     enableValueSorting: true,
                     isDrillThrough: undefined,
-                    localeObj: undefined
+                    localeObj: new L10n('pivotview', {
+                        Years: 'Years',
+                        Quarters: 'Quarters',
+                        Months: 'Months',
+                        Days: 'Days',
+                        Hours: 'Hours',
+                        Minutes: 'Minutes',
+                        Seconds: 'Seconds',
+                        qtr: 'Qtr',
+                        null: 'null',
+                        undefined: 'undefined',
+                        groupOutOfRange: 'Out of Range'
+                    }, 'en-US')
                 };
-                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSource,customProperties);
-                expect(pivotEngine.pivotValues.length).toBe(882);
-                expect(pivotEngine.pivotValues[0].length).toBe(21);
-                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('25-29');
-                expect((pivotEngine.pivotValues[4][0] as IDataSet).actualText.toString()).toBe('Qtr1');
+                pivotEngine = new PivotEngine();
+                dataSource.data = PivotUtil.getClonedData(pivot_dataset as IDataSet[]);
+                pivotEngine.renderEngine(dataSource,customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(886);
+                expect(pivotEngine.pivotValues[0].length).toBe(7);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).actualText.toString()).toBe('Out of Range');
             });
             it('With Calculated Settings', () => {
                 dataSource.expandAll = false;
@@ -1823,9 +1754,93 @@ describe('PivotView spec', () => {
                 };
                 pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSource,customProperties);
                 expect(pivotEngine.pivotValues.length).toBe(35);
-                expect(pivotEngine.pivotValues[0].length).toBe(13);
-                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('25-29');
+                expect(pivotEngine.pivotValues[0].length).toBe(10);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('female');
                 expect((pivotEngine.pivotValues[3][0] as IDataSet).formattedText).toBe('1994');
+            });
+        });
+        describe('Range Group by Number', () => {
+            let ds: IDataSet[] = PivotUtil.getClonedData(pivot_dataset as IDataSet[]);
+            let dataSource: IDataOptions = {
+                data: ds,
+                allowLabelFilter: true,
+                formatSettings: [{ name: 'age', format: 'N' }, { name: 'balance', format: 'C' }, { name: 'date', format: 'dd/MM/yyyy-hh:mm a', type: 'date' }],
+                rows: [{ name: 'date', caption: 'TimeLine' }],
+                columns: [{ name: 'age'}, { name: 'gender', caption: 'Population' }],
+                values: [{ name: 'balance' }, { name: 'quantity' }],
+                filters: [{ name: 'product', caption: 'Category' }],
+                groupSettings: [{ name: 'date', type:'Date', groupInterval: ['Years', 'Quarters', 'Months', 'Days', 'Hours'], startingAt: new Date(1975, 0, 10), endingAt: new Date(2005, 10, 5) },
+                { name: 'age', type: 'Number', startingAt: 25, endingAt: 35, rangeInterval: 5 }]
+            };
+            let pivotEngine: PivotEngine;
+            it('Check with range and interval number at code-behind', () => {
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSource);
+                expect(pivotEngine.pivotValues.length).toBe(36);
+                expect(pivotEngine.pivotValues[0].length).toBe(11);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('25-29');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).formattedText).toBe('1975');
+            });
+            it('With sorting enabled', () => {
+                dataSource.enableSorting = true;
+                dataSource.sortSettings = [{ name: 'date_years', order: 'Descending' }];
+                expect(dataSource.sortSettings.length === 1).toBeTruthy;
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSource);
+                expect(pivotEngine.pivotValues.length).toBe(36);
+                expect(pivotEngine.pivotValues[0].length).toBe(11);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('25-29');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).formattedText).toBe('undefined');
+            });
+            it('With valuesorting enabled', () => {
+                dataSource.valueSortSettings = {
+                    headerText: 'Grand Total##balance',
+                    headerDelimiter: '##',
+                    sortOrder: 'Descending'
+                };
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSource,customProperties);
+                expect(dataSource.sortSettings.length === 1).toBeTruthy;
+                expect(pivotEngine.pivotValues.length).toBe(36);
+                expect(pivotEngine.pivotValues[0].length).toBe(11);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('25-29');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).formattedText).toBe('undefined');
+            });
+            it('With ExpandAll enabled', () => {
+                dataSource.expandAll = true;
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSource,customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(887);
+                expect(pivotEngine.pivotValues[0].length).toBe(27);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('25-29');
+                expect((pivotEngine.pivotValues[4][0] as IDataSet).actualText.toString()).toBe('undefined');
+            });
+            it('With Calculated Settings', () => {
+                dataSource.expandAll = false;
+                dataSource.calculatedFieldSettings = [{ name: 'total', formula: '"Sum(balance)"+"Sum(quantity)"' }];
+                dataSource.values = [{ name: 'balance' }, { name: 'total' }, { name: 'quantity' }];
+                let customProperties: ICustomProperties = {
+                    mode: '',
+                    savedFieldList: undefined,
+                    enableValueSorting: true,
+                    isDrillThrough: undefined,
+                    localeObj: undefined
+                };
+                pivotEngine = new PivotEngine(); pivotEngine.renderEngine(dataSource,customProperties);
+                expect(pivotEngine.pivotValues.length).toBe(36);
+                expect(pivotEngine.pivotValues[0].length).toBe(16);
+                expect((pivotEngine.pivotValues[0][1] as IDataSet).actualText).toBe('25-29');
+                expect((pivotEngine.pivotValues[3][0] as IDataSet).formattedText).toBe('undefined');
             });
         });
         describe('enable/disable ValueSorting', () => {

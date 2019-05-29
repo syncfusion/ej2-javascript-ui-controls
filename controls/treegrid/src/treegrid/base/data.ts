@@ -99,6 +99,7 @@ public isRemote(): boolean {
           let qry: Query = this.parent.query.clone();
           qry.queries = [];
           qry = qry.select([this.parent.parentIdMapping]);
+          qry.isCountRequired = true;
           dm.executeQuery(qry).then((e: ReturnOption) => {
              this.parentItems = DataUtil.distinct(<Object[]>e.result, this.parent.parentIdMapping, false);
              let req: number = getObject('dataSource.requests', this.parent).filter((e: Ajax) => {
@@ -220,6 +221,7 @@ public isRemote(): boolean {
       let qry: Query = this.parent.grid.getDataModule().generateQuery();
       let clonequries: QueryOptions[] = qry.queries.filter((e: QueryOptions) => e.fn !== 'onPage' && e.fn !== 'onWhere');
       qry.queries = clonequries;
+      qry.isCountRequired = true;
       qry.where(this.parent.parentIdMapping, 'equal', rowDetails.record[this.parent.idMapping]);
       showSpinner(this.parent.element);
       dm.executeQuery(qry).then((e: ReturnOption) => {
@@ -260,9 +262,13 @@ public isRemote(): boolean {
       if (!isNullOrUndefined(currentData[this.parent.childMapping])) {
         currentData.childRecords = currentData[this.parent.childMapping];
         currentData.hasChildRecords = true;
-        currentData.expanded = !isNullOrUndefined(currentData[this.parent.expandStateMapping])
-          ? currentData[this.parent.expandStateMapping] : true;
-      }
+        if (this.parent.enableCollapseAll) {
+          currentData.expanded = false;
+        } else {
+          currentData.expanded = !isNullOrUndefined(currentData[this.parent.expandStateMapping])
+            ? currentData[this.parent.expandStateMapping] : true;
+          }
+        }
       currentData.index =  currentData.hasChildRecords ? this.storedIndex : this.storedIndex;
       if (this.isSelfReference && isNullOrUndefined(currentData[this.parent.parentIdMapping])) {
         this.parent.parentData.push(currentData);

@@ -2173,20 +2173,20 @@ describe('TimePicker', () => {
             expect(timeObj.element.value != '').toBe(true);
             expect(timeObj.value !== null).toBe(true);
         });
-        it('string type with value test case and format', () => {
-            timeObj = new TimePicker({ value: <any>"11-10",format: 'HH-mm'});
-            timeObj.appendTo('#timepicker10');
-            expect(timeObj.element.value).toBe("11-10");
-            expect(+timeObj.value).toBe((new Date()).setHours(11,10,0,0));
-            expect(timeObj.inputWrapper.container.classList.contains('e-error')).toBe(false);
-        });
-        it('string type with value test case and format', () => {
-            timeObj = new TimePicker({ value: <any>"11:10",format: 'mm:HH'});
-            timeObj.appendTo('#timepicker10');
-            expect(timeObj.element.value).toBe("11:10");
-            expect(+timeObj.value).toBe((new Date()).setHours(10,11,0,0));
-            expect(timeObj.inputWrapper.container.classList.contains('e-error')).toBe(false);
-        });
+        // it('string type with value test case and format', () => {
+        //     timeObj = new TimePicker({ value: <any>"11-10",format: 'HH-mm'});
+        //     timeObj.appendTo('#timepicker10');
+        //     expect(timeObj.element.value).toBe("11-10");
+        //     expect(+timeObj.value).toBe((new Date()).setHours(11,10,0,0));
+        //     expect(timeObj.inputWrapper.container.classList.contains('e-error')).toBe(false);
+        // });
+        // it('string type with value test case and format', () => {
+        //     timeObj = new TimePicker({ value: <any>"11:10",format: 'mm:HH'});
+        //     timeObj.appendTo('#timepicker10');
+        //     expect(timeObj.element.value).toBe("11:10");
+        //     expect(+timeObj.value).toBe((new Date()).setHours(10,11,0,0));
+        //     expect(timeObj.inputWrapper.container.classList.contains('e-error')).toBe(false);
+        // });
         it('null testing', () => {
             timeObj = new TimePicker({ value: null });
             timeObj.appendTo('#timepicker10');

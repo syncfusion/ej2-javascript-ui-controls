@@ -73,13 +73,9 @@ describe('excel Export =>', () => {
             expect(excelRows[0].cells.length).toBe(5);
         });
 
-        it("hide a column", (done) => {
-            gridObj.dataBound = () => {
-                expect(gridObj.getVisibleColumns().length).toBe(4);
-                gridObj.dataBound = null;
-                done();
-            }
+        it("hide a column", () => {
             gridObj.hideColumns('Title');
+            expect(gridObj.getVisibleColumns().length).toBe(4);            
         });
 
         it('visibility check', () => {
@@ -172,13 +168,9 @@ describe('excel Export =>', () => {
             expect((<any>excelRows[0]).cells[1].colSpan).toBe(2);
         });
 
-        it("hide a column", (done) => {
-            gridObj.dataBound = () => {
-                expect(gridObj.getVisibleColumns().length).toBe(4);
-                gridObj.dataBound = null;
-                done();
-            }
+        it("hide a column", () => {
             gridObj.hideColumns('Freight', 'field');
+            expect(gridObj.getVisibleColumns().length).toBe(4);            
         });
         it('stacked header visibility check', () => {
             let excelRows: ExcelRow[] = (<any>gridObj.excelExportModule).processGridExport(gridObj, undefined, {result: gridObj.dataSource });

@@ -9,7 +9,7 @@ import { IAction, PivotButtonArgs } from '../../common/base/interface';
 import { IFieldOptions, IFilter, IField, IDataOptions } from '../../base/engine';
 import { Button } from '@syncfusion/ej2-buttons';
 import { DragAndDropEventArgs, TreeView, NodeCheckEventArgs, SelectEventArgs } from '@syncfusion/ej2-navigations';
-import { Dialog } from '@syncfusion/ej2-popups';
+import { Dialog, ButtonPropsModel } from '@syncfusion/ej2-popups';
 import { Operators, FilterType } from '../../base/types';
 import { AggregateMenu } from '../popups/aggregate-menu';
 import { AxisFieldRenderer } from '../../pivotfieldlist/renderer/axis-field-renderer';
@@ -29,6 +29,7 @@ export class PivotButton implements IAction {
     private axisField: AxisFieldRenderer;
     private fieldName: string;
     private valueFiedDropDownList: DropDownList;
+    private index: number;
 
     /** Constructor for render module */
     constructor(parent: PivotView | PivotFieldList) {
@@ -99,7 +100,7 @@ export class PivotButton implements IAction {
                                 attrs: { 'data-tag': axis + ':' + field[i].name }
                             });
                             let buttonElement: HTMLElement = createElement('div', {
-                                id: field[i].name, className: cls.PIVOT_BUTTON_CLASS,
+                                id: field[i].name, className: cls.PIVOT_BUTTON_CLASS + ' ' + field[i].name.replace(/[^A-Z0-9]/ig, ''),
                                 attrs: {
                                     'data-uid': field[i].name, 'tabindex': '0', 'isvalue': i === valuePos ? 'true' : 'false',
                                     'aria-disabled': 'false', 'aria-label': field[i].caption ? field[i].caption : field[i].name,
@@ -490,15 +491,40 @@ export class PivotButton implements IAction {
     }
     private bindDialogEvents(): void {
         if (this.parent.pivotCommon.filterDialog.allowExcelLikeFilter && this.parent.pivotCommon.filterDialog.tabObj) {
-            this.updateDialogButtonEvents(this.parent.pivotCommon.filterDialog.tabObj.selectedItem);
-            this.dialogPopUp.buttons[1].click = this.ClearFilter.bind(this);
+            this.index = this.parent.pivotCommon.filterDialog.tabObj.selectedItem;
+            this.updateDialogButtonEvents();
+            this.dialogPopUp.buttons = this.buttonModel();
+            this.dialogPopUp.dataBind();
             this.parent.pivotCommon.filterDialog.tabObj.selected = this.tabSelect.bind(this);
         } else {
-            this.updateDialogButtonEvents(0);
+            this.index = 0;
+            this.updateDialogButtonEvents();
         }
     }
+    private buttonModel(): ButtonPropsModel[] {
+        return [
+            {
+                buttonModel: {
+                    cssClass: cls.OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true
+                },
+                click: (this.index === 0 ? this.updateFilterState.bind(this, this.fieldName) : this.updateCustomFilter.bind(this))
+            },
+            {
+                buttonModel: {
+                    cssClass: 'e-clear-filter-button' + (this.parent.pivotCommon.filterDialog.allowExcelLikeFilter ? '' : ' ' + cls.ICON_DISABLE),
+                    iconCss: 'e-icons e-clear-filter-icon', enableRtl: this.parent.enableRtl,
+                    content: this.parent.localeObj.getConstant('clearFilter'), disabled: (this.parent.pivotCommon.filterDialog.filterObject ? false : true)
+                },
+                click: this.ClearFilter.bind(this)
+            },
+            {
+                click: this.parent.pivotCommon.filterDialog.closeFilterDialog.bind(this),
+                buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS, content: this.parent.localeObj.getConstant('cancel') }
+            }];
+    }
     private tabSelect(e: SelectEventArgs): void {
-        this.updateDialogButtonEvents(e.selectedIndex);
+        this.index = e.selectedIndex;
+        this.updateDialogButtonEvents();
         removeClass([].slice.call(this.dialogPopUp.element.querySelectorAll('.e-selected-tab')), 'e-selected-tab');
         if (e.selectedIndex > 0) {
             /* tslint:disable-next-line:max-line-length */
@@ -511,9 +537,9 @@ export class PivotButton implements IAction {
             this.dialogPopUp.element.querySelector('.' + cls.OK_BUTTON_CLASS).removeAttribute('disabled');
         }
     }
-    private updateDialogButtonEvents(index: number): void {
-        this.dialogPopUp.buttons[0].click = (index === 0 ?
-            this.updateFilterState.bind(this, this.fieldName) : this.updateCustomFilter.bind(this));
+    private updateDialogButtonEvents(): void {
+        this.dialogPopUp.buttons = this.buttonModel();
+        this.dialogPopUp.dataBind();
     }
     private updateCustomFilter(args: Event): void {
         let dialogElement: HTMLElement =

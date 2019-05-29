@@ -11821,11 +11821,13 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
     DialogEdit.prototype.getMinimumStartDate = function () {
         var minDate = DataUtil.aggregates.min(this.parent.flatData, 'ganttProperties.startDate');
         if (!isNullOrUndefined(minDate)) {
-            return new Date(minDate.getTime());
+            minDate = new Date(minDate.getTime());
         }
         else {
-            return new Date(this.parent.timelineModule.timelineStartDate.getTime());
+            minDate = new Date(this.parent.timelineModule.timelineStartDate.getTime());
         }
+        minDate = this.parent.dateValidationModule.checkStartDate(minDate);
+        return new Date(minDate.getTime());
     };
     /**
      * @private

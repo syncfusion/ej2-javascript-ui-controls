@@ -14,6 +14,7 @@ import { InterSectionObserver } from '../services/intersection-observer';
 import { RendererFactory } from '../services/renderer-factory';
 import { VirtualRowModelGenerator } from '../services/virtual-row-model-generator';
 import { isGroupAdaptive } from '../base/util';
+import { setStyleAttribute } from '@syncfusion/ej2-base';
 /**
  * VirtualContentRenderer
  * @hidden
@@ -210,7 +211,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         }
     }
 
-    private onDataReady(e?: NotifyArgs): void {
+    protected onDataReady(e?: NotifyArgs): void {
         if (!isNullOrUndefined(e.count)) {
             this.count = e.count;
             this.maxPage = Math.ceil(e.count / this.parent.pageSettings.pageSize);
@@ -404,6 +405,49 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         this.vgenerator.refreshColOffsets();
         this.setVirtualHeight();
     }
+
+    public setVisible(columns?: Column[]): void {
+        let gObj: IGrid = this.parent;
+        if (gObj.enableColumnVirtualization || gObj.enableVirtualization) {
+            let rows: Row<Column>[] = [];
+            rows = <Row<Column>[]>this.getRows();
+            let testRow: Row<Column>;
+            rows.some((r: Row<Column>) => { if (r.isDataRow) { testRow = r; } return r.isDataRow; });
+
+            let needFullRefresh: boolean = true;
+            if (!gObj.groupSettings.columns.length && testRow) {
+                needFullRefresh = false;
+            }
+            let tr: Object = this.getTable().querySelectorAll('tr');
+            for (let c: number = 0, clen: number = columns.length; c < clen; c++) {
+                let column: Column = columns[c];
+                let idx: number = gObj.getNormalizedColumnIndex(column.uid);
+                let displayVal: string = column.visible === true ? '' : 'none';
+
+                if (idx !== -1 && testRow && idx < testRow.cells.length) {
+                    setStyleAttribute(<HTMLElement>this.getColGroup().childNodes[idx], { 'display': displayVal });
+                }
+                if (!needFullRefresh) {
+                    let width: number;
+                    if (column.visible) {
+                        width = this.virtualEle.wrapper.offsetWidth + parseInt(column.width.toString(), 10);
+                    } else {
+                        width = this.virtualEle.wrapper.offsetWidth - parseInt(column.width.toString(), 10);
+                    }
+                    if (width > gObj.width) {
+                        this.setDisplayNone(tr, idx, displayVal);
+                        this.virtualEle.setWrapperWidth(width + '');
+                        this.vgenerator.refreshColOffsets();
+                    } else {
+                        this.refreshContentRows({ requestType: 'refresh' });
+                    }
+                }
+            }
+            if (needFullRefresh) {
+                this.refreshContentRows({ requestType: 'refresh' });
+            }
+        }
+    }
 }
 /**
  * @hidden
@@ -437,6 +481,49 @@ export class VirtualHeaderRenderer extends HeaderRender implements IRenderer {
         this.gen.refreshColOffsets();
         this.parent.setColumnIndexesInView(this.gen.getColumnIndexes(<HTMLElement>this.getPanel().firstChild));
         super.refreshUI();
+    }
+
+    public setVisible(columns?: Column[]): void {
+        let gObj: IGrid = this.parent;
+        if (gObj.enableColumnVirtualization || gObj.enableVirtualization) {
+            let displayVal: string;
+            let idx: number;
+
+            for (let c: number = 0, clen: number = columns.length; c < clen; c++) {
+                let column: Column = columns[c];
+                idx = gObj.getNormalizedColumnIndex(column.uid);
+                displayVal = column.visible ? '' : 'none';
+
+                setStyleAttribute(<HTMLElement>this.getColGroup().children[idx], { 'display': displayVal });
+                if (gObj.enableColumnVirtualization && !gObj.groupSettings.columns.length) {
+                    let tablewidth: number;
+                    if (column.visible) {
+                        tablewidth = this.virtualEle.wrapper.offsetWidth + parseInt(column.width.toString(), 10);
+                    } else {
+                        tablewidth = this.virtualEle.wrapper.offsetWidth - parseInt(column.width.toString(), 10);
+                    }
+                    if (tablewidth > gObj.width) {
+                        this.setDisplayNone(column, displayVal);
+                        this.virtualEle.setWrapperWidth(tablewidth + '');
+                        this.gen.refreshColOffsets();
+                    } else {
+                        this.refreshUI();
+                    }
+                } else {
+                    this.refreshUI();
+                }
+            }
+        }
+    }
+
+    private setDisplayNone(col: Column, displayVal: string): void {
+        for (let ele of [].slice.apply(this.getTable().querySelectorAll('th.e-headercell'))) {
+            if (ele.querySelector('[e-mappinguid]') &&
+                ele.querySelector('[e-mappinguid]').getAttribute('e-mappinguid') === col.uid) {
+                setStyleAttribute(<HTMLElement>ele, { 'display': displayVal });
+                break;
+            }
+        }
     }
 }
 /**

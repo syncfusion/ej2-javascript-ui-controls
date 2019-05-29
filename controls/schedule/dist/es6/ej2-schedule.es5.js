@@ -7175,9 +7175,6 @@ var RecurrenceEditor = /** @__PURE__ @class */ (function (_super) {
         Property()
     ], RecurrenceEditor.prototype, "cssClass", void 0);
     __decorate$1([
-        Property(false)
-    ], RecurrenceEditor.prototype, "enableRtl", void 0);
-    __decorate$1([
         Property()
     ], RecurrenceEditor.prototype, "value", void 0);
     __decorate$1([
@@ -11751,9 +11748,6 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property()
     ], Schedule.prototype, "cssClass", void 0);
-    __decorate([
-        Property(false)
-    ], Schedule.prototype, "enableRtl", void 0);
     __decorate([
         Property()
     ], Schedule.prototype, "eventDragArea", void 0);

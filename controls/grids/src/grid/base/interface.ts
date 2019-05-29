@@ -1,7 +1,7 @@
 import { Component, NumberFormatOptions, DateFormatOptions, EmitType, KeyboardEventArgs, L10n } from '@syncfusion/ej2-base';
 import { Query, DataManager, Group } from '@syncfusion/ej2-data';
 import { ItemModel, MenuItemModel, BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
-import { ButtonModel, CheckBoxModel } from '@syncfusion/ej2-buttons';
+import { ButtonModel, CheckBoxModel, SwitchModel } from '@syncfusion/ej2-buttons';
 import { Column, ColumnModel } from '../models/column';
 import {
     SortSettingsModel, TextWrapSettingsModel, SelectionSettingsModel,
@@ -19,11 +19,11 @@ import { CheckState, ColumnQueryModeType, HierarchyGridPrintMode } from './enum'
 import { Edit } from '../actions/edit';
 import { Selection } from '../actions/selection';
 import { Resize } from '../actions/resize';
-import { DropDownListModel } from '@syncfusion/ej2-dropdowns';
-import { NumericTextBoxModel } from '@syncfusion/ej2-inputs';
+import { DropDownListModel, MultiSelectModel, ComboBoxModel } from '@syncfusion/ej2-dropdowns';
+import { NumericTextBoxModel, MaskedTextBoxModel } from '@syncfusion/ej2-inputs';
 import { FormValidator } from '@syncfusion/ej2-inputs';
 import { Data } from '../actions/data';
-import { DatePickerModel, DateTimePickerModel } from '@syncfusion/ej2-calendars';
+import { DatePickerModel, DateTimePickerModel, TimePickerModel } from '@syncfusion/ej2-calendars';
 import { PdfStandardFont, PdfTrueTypeFont, PdfGridCell } from '@syncfusion/ej2-pdf-export';
 import { Matrix } from '../services/focus-strategy';
 import { CheckBoxFilter } from '../actions/checkbox-filter';
@@ -39,6 +39,7 @@ import { Print } from '../actions/print';
 import { PdfPaddings } from '@syncfusion/ej2-pdf-export';
 import { AutoCompleteModel } from '@syncfusion/ej2-dropdowns';
 import { Page } from '../actions/page';
+import { Scroll } from '../actions/scroll';
 
 /**
  * Specifies grid interfaces.
@@ -402,6 +403,8 @@ export interface IGrid extends Component<HTMLElement> {
 
     selectionModule?: Selection;
 
+    scrollModule?: Scroll;
+
     resizeModule: Resize;
 
     mergeCells?: { [key: string]: number };
@@ -539,6 +542,7 @@ export interface IGrid extends Component<HTMLElement> {
     destroyTemplate?(templateName: string[], index?: any): void;
     getQuery?(): Query;
     log?(type: string | string[], args?: Object): void;
+    isDetail?(): boolean;
 }
 
 /** @hidden */
@@ -572,6 +576,7 @@ export interface IRenderer {
     getRowInfo?(target: Element): RowInfo;
     getState?(): Object;
     getMovableHeader?(): Element;
+    getMovableContent?(): Element;
     destroyTemplate?(templateName: string[]): void;
 }
 
@@ -619,7 +624,9 @@ export interface IEditCell {
     create?: Element | Function | string;
     read?: Object | Function | string;
     write?: void | Function | string;
-    params?: DatePickerModel | NumericTextBoxModel | DropDownListModel | CheckBoxModel;
+    params?: DatePickerModel | NumericTextBoxModel | DropDownListModel |
+    CheckBoxModel | MultiSelectModel | AutoCompleteModel | ComboBoxModel | SwitchModel |
+    TimePickerModel | MaskedTextBoxModel;
     destroy?: Function | string;
 }
 /**
@@ -989,6 +996,7 @@ export interface ColumnDragEventArgs {
     /** Defines the column object that is dragged. */
     column?: Column;
 }
+
 export interface RowDataBoundEventArgs {
     /** Defines the current row data. */
     data?: Object;
@@ -2048,10 +2056,12 @@ export interface ColumnMenuClickEventArgs extends MenuEventArgs {
 
 export interface ContextMenuClickEventArgs extends MenuEventArgs {
     column?: Column;
+    rowInfo?: RowInfo;
 }
 
 export interface ContextMenuOpenEventArgs extends BeforeOpenCloseMenuEventArgs {
     column?: Column;
+    rowInfo?: RowInfo;
 }
 
 export interface ExcelExportCompleteArgs {

@@ -200,6 +200,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
   /**
    * It is used to render TreeGrid table rows.
    * @default []
+   * @isDataSource true
    */
   @Property([])
   public dataSource: Object | DataManager;
@@ -987,7 +988,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
    * @param  {string} toFName - Defines the destination field name. 
    * @return {void} 
    */
-  public reorderColumns(fromFName: string, toFName: string): void {
+  public reorderColumns(fromFName: string | string[], toFName: string): void {
     this.grid.reorderColumns(fromFName, toFName);
   }
 
@@ -1287,7 +1288,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
   // }
   private bindGridProperties(): void {
     let edit: GridEditModel = {};
-    this.grid.dataSource = isRemoteData(this) ? this.dataSource : this.flatData;
+    this.grid.dataSource = !(this.dataSource instanceof DataManager) ? this.flatData : this.dataSource;
     this.grid.enableRtl = this.enableRtl;
     this.grid.allowKeyboard = this.allowKeyboard;
     this.grid.columns = this.getGridColumns(this.columns as Column[]);
@@ -1409,7 +1410,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       } else if (treeGrid.flatData.length === 0 && isOffline(treeGrid) && treeGrid.dataSource instanceof DataManager) {
         let dm: DataManager = <DataManager>treeGrid.dataSource;
         treeGrid.dataModule.convertToFlatData(dm.dataSource.json);
-        args.result = treeGrid.flatData;
+        args.result = dm.dataSource.json = treeGrid.flatData;
       }
       if (!isRemoteData(treeGrid)) {
         treeGrid.notify('dataProcessor', args);
@@ -1510,10 +1511,6 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       this.trigger(events.actionComplete, args);
     };
     this.grid.rowDataBound = function (args: RowDataBoundEventArgs): void {
-      if (args.row instanceof DocumentFragment) {
-        let row: Element  = (<Element>(args.row)).querySelector('tr');
-        args.row = row;
-      }
       if (isNullOrUndefined((<IGrid>this).isPrinting)) {
         setValue('isPrinting', false, args);
       } else {
@@ -2381,11 +2378,11 @@ private getGridEditSettings(): GridEditModel {
    */
   public expandAtLevel(level: number): void {
     if (this.allowPaging && this.pageSettings.pageSizeMode === 'All') {
-      let rec: ITreeData[] = this.flatData.filter((e: ITreeData) => {
-          if (e.hasChildRecords && e.level === level) {
-            e.expanded = true;
-          }
-          return e.hasChildRecords && e.level === level;
+      let rec: ITreeData[] = (<ITreeData[]>this.grid.dataSource).filter((e: ITreeData) => {
+        if (e.hasChildRecords && e.level === level) {
+          e.expanded = true;
+        }
+        return e.hasChildRecords && e.level === level;
       });
       this.expandRow(null, rec);
     } else {
@@ -2412,13 +2409,13 @@ private getGridEditSettings(): GridEditModel {
    */
   public collapseAtLevel(level: number): void {
     if (this.allowPaging && this.pageSettings.pageSizeMode === 'All') {
-      let rec: ITreeData[] = this.flatData.filter((e: ITreeData) => {
-          if (e.hasChildRecords && e.level === level) {
-            e.expanded = false;
-          }
-          return e.hasChildRecords && e.level === level;
+      let record: ITreeData[] = (<ITreeData[]>this.grid.dataSource).filter((e: ITreeData) => {
+        if (e.hasChildRecords && e.level === level) {
+          e.expanded = false;
+        }
+        return e.hasChildRecords && e.level === level;
       });
-      this.collapseRow(null, rec);
+      this.collapseRow(null, record);
     } else {
       let rec: Object = this.getRecordDetails(level);
       let rows: HTMLTableRowElement[] = getObject('rows', rec);
@@ -2464,12 +2461,19 @@ private getGridEditSettings(): GridEditModel {
   }
   private expandCollapse(action: string, row: HTMLTableRowElement, record?: ITreeData, isChild?: boolean): void {
     let gridRows: HTMLTableRowElement[] = this.getRows();
+    if (this.rowTemplate) {
+      let rows: HTMLCollection = (this.getContentTable() as HTMLTableElement).rows;
+      gridRows = [].slice.call(rows);
+    }
     let rowIndex: number;
     if (isNullOrUndefined(row)) {
       rowIndex = record.index;
       row = gridRows[rowIndex];
     } else {
       rowIndex = +row.getAttribute('aria-rowindex');
+    }
+    if (!isNullOrUndefined(row)) {
+      row.setAttribute('aria-expanded', action === 'expand' ? 'true' : 'false');
     }
     if (this.allowPaging && this.pageSettings.pageSizeMode === 'All' && !isRemoteData(this)) {
       this.notify(events.localPagedExpandCollapse, {action: action, row: row, record: record});
@@ -2535,7 +2539,7 @@ private getGridEditSettings(): GridEditModel {
     }
   }
   private updateAltRow(rows: HTMLTableRowElement[]) : void {
-    if (this.enableAltRow) {
+    if (this.enableAltRow && !this.rowTemplate) {
       let visibleRowCount: number = 0;
       for (let i: number = 0; i < rows.length; i++) {
         let gridRow: HTMLTableRowElement = rows[i];
@@ -2559,8 +2563,9 @@ private getGridEditSettings(): GridEditModel {
       rData.expanded = false;
       rows[i].style.display = 'none';
       if (rows[i].querySelector('.e-treecolumn-container .e-treegridexpand')) {
-        removeClass([rows[i].getElementsByClassName('e-icons')[0]], 'e-treegridexpand');
-        addClass([rows[i].getElementsByClassName('e-icons')[0]], 'e-treegridcollapse');
+        let targetEle: Element = rows[i].getElementsByClassName('e-treegridexpand')[0];
+        removeClass([targetEle], 'e-treegridexpand');
+        addClass([targetEle], 'e-treegridcollapse');
         let cRow: HTMLTableRowElement[] = this.getRows().filter(
           (r: HTMLTableRowElement) =>
             r.classList.contains(

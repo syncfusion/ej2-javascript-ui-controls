@@ -469,27 +469,27 @@ export class Toolbar {
                 items: toDisable ? [] : [
                     {
                         text: this.parent.localeObj.getConstant('column'),
-                        id: 'Column'
+                        id: this.parent.element.id + '_' + 'Column',
                     },
                     {
                         text: this.parent.localeObj.getConstant('bar'),
-                        id: 'Bar'
+                        id: this.parent.element.id + '_' + 'Bar'
                     },
                     {
                         text: this.parent.localeObj.getConstant('line'),
-                        id: 'Line'
+                        id: this.parent.element.id + '_' + 'Line'
                     },
                     {
                         text: this.parent.localeObj.getConstant('area'),
-                        id: 'Area'
+                        id: this.parent.element.id + '_' + 'Area'
                     },
                     {
                         text: this.parent.localeObj.getConstant('scatter'),
-                        id: 'Scatter'
+                        id: this.parent.element.id + '_' + 'Scatter'
                     },
                     {
                         text: this.parent.localeObj.getConstant('polar'),
-                        id: 'Polar'
+                        id: this.parent.element.id + '_' + 'Polar'
                     }
                 ]
             }
@@ -727,7 +727,7 @@ export class Toolbar {
 
     private chartClick(args: ClickEventArgs): void {
         if (args.item && args.item.text) {
-            this.parent.chartSettings.chartSeries.type = args.item.id as ChartSeriesType;
+            this.parent.chartSettings.chartSeries.type = args.item.id.split('_')[args.item.id.split('_').length - 1] as ChartSeriesType;
             if (this.parent.grid && this.parent.chart) {
                 this.parent.grid.element.style.display = 'none';
                 this.parent.chart.element.style.display = '';

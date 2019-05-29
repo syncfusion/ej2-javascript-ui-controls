@@ -1606,25 +1606,25 @@ describe('MaskedTextBox Component', () => {
             EventHandler.trigger(input, 'keypress', eventUp);
         });
     });
-    describe('Cut and Paste functionalities', () => {
+    describe('Cut functionalities', () => {
         let maskBox: MaskedTextBox;
         beforeEach((): void => {
             maskBox = undefined;
             let ele: HTMLElement = createElement('input', { id: 'mask1' });
             document.body.appendChild(ele);
-        });
-        afterEach((): void => {
-            if (maskBox) {
-                maskBox.destroy();
-            }
-            document.body.innerHTML = '';
-        });
-        it('Cut functionality', (done: Function) => {
             maskBox = new MaskedTextBox({
                 mask: "99 999 9999",
                 value: "980325679"
             });
             maskBox.appendTo('#mask1');
+        });
+        afterEach(():void => {
+            if (maskBox) {
+                maskBox.destroy();
+            }
+            document.body.innerHTML = '';
+        })
+        it('Cut functionality', (done: Function) => {
             let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
             input.selectionStart = 0;
             input.selectionEnd = input.value.length;
@@ -1637,14 +1637,23 @@ describe('MaskedTextBox Component', () => {
                     expect(input.value === '__ ___ ____').toEqual(true);
                     done();
                 },
-                1500);
+            2500);
         });
-        it('Paste functionality', (done: Function) => {
+    });
+
+    describe('Paste functionalities', () => {
+        let maskBox: MaskedTextBox;
+        beforeEach((): void => {
+            maskBox = undefined;
+            let ele: HTMLElement = createElement('input', { id: 'mask1' });
+            document.body.appendChild(ele);
             maskBox = new MaskedTextBox({
                 mask: "99 999 9999",
                 value: "980325679"
             });
             maskBox.appendTo('#mask1');
+        });
+        it('Paste functionality', (done: Function) => {
             let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
             let event: any = eventObject('KeyboardEvent', 'paste');
             event.key = 'v';
@@ -1658,14 +1667,19 @@ describe('MaskedTextBox Component', () => {
             setTimeout(
                 () => {
                     expect(input.value === '98 032 5679').toEqual(true);
+                    if (maskBox) {
+                        maskBox.destroy();
+                    }
+                    document.body.innerHTML = '';
                     done();
                 },
-                1500);
+                2500);
             let eventArgs: any = { preventDefault: function () { } };
             maskInputDropHandler(eventArgs);
             setMaskValue();
         });
     });
+
     describe('MaskedTextBox -  Mobile Support', () => {
         let maskBox: MaskedTextBox;
         beforeEach((): void => {
@@ -1759,67 +1773,7 @@ describe('MaskedTextBox Component', () => {
             EventHandler.trigger(input, 'keyup', event);
             expect(input.value === '__ ___ ____').toEqual(true);
         });
-        it('Edit MaskedTextBox with invalid value at last index', () => {
-            maskBox = new MaskedTextBox({
-                mask: "99 999 9999",
-                value: "856678897"
-            });
-            maskBox.appendTo('#mask1');
-            let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
-            input.value = "85 667 8897p";
-            input.selectionStart = 12;
-            let event: any = eventObject('KeyboardEvent', 'keyup');
-            event.keyCode = 229;
-            EventHandler.trigger(input, 'keyup', event);
-            expect(input.value === '85 667 8897').toEqual(true);
-            input.value = "85 667 88973";
-            input.selectionStart = 12;
-            EventHandler.trigger(input, 'keyup', event);
-        });
-        it('Remove value in MaskedTextBox for Mobile devices- with value', (done: Function) => {
-            maskBox = new MaskedTextBox({
-                mask: "99 999 9999",
-            });
-            maskBox.appendTo('#mask1');
-            let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
-            input.value = "8__ ___ ____";
-            input.selectionStart = 1;
-            let eventUp: any = eventObject('KeyboardEvent', 'keyup');
-            eventUp.keyCode = 229;
-            EventHandler.trigger(input, 'keyup', eventUp);
-            let event: any = eventObject('KeyboardEvent', 'keydown');
-            event.keyCode = 229;
-            EventHandler.trigger(input, 'keydown', event);
-            input.value = "_ ___ ____";
-            input.selectionStart = 0;
-            EventHandler.trigger(input, 'keydown', event);
-            setTimeout(
-                () => {
-                    expect(input.value === '_ ___ ____').toEqual(true);
-                    EventHandler.trigger(input, 'keyup', eventUp);
-                    done();
-                },
-                1500);
-        });
-        it('Remove value in MaskedTextBox for Mobile devices- without value', (done: Function) => {
-            maskBox = new MaskedTextBox({
-                mask: "99 999 9999",
-            });
-            maskBox.appendTo('#mask1');
-            let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
-            let event: any = eventObject('KeyboardEvent', 'keydown');
-            event.keyCode = 229;
-            input.value = "_ ___ ____";
-            mobileRemoveFunction.call(maskBox);
-            input.selectionStart = 0;
-            EventHandler.trigger(input, 'keydown', event);
-            setTimeout(
-                () => {
-                    expect(input.value === '__ ___ ____').toEqual(true);
-                    done();
-                },
-                1500);
-        });
+        
         it('Edit value in MaskedTextBox for touch swipe', () => {
             maskBox = new MaskedTextBox({
                 mask: "(LLL) LL",
@@ -1860,6 +1814,104 @@ describe('MaskedTextBox Component', () => {
             expect(input.value === '5____').toEqual(true);
         });
     });
+
+    describe('MaskedTextBox -  Mobile Support-01', () => {
+        let maskBox: MaskedTextBox;
+        beforeEach((): void => {
+            maskBox = undefined;
+            let ele: HTMLElement = createElement('input', { id: 'mask1' });
+            document.body.appendChild(ele);
+            maskBox = new MaskedTextBox({
+                mask: "99 999 9999",
+                value: "856678897"
+            });
+            maskBox.appendTo('#mask1');
+        });
+        afterEach((): void => {
+            if (maskBox) {
+                maskBox.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+
+        it('Edit MaskedTextBox with invalid value at last index', (done: Function) => {
+            let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
+            input.value = "85 667 8897p";
+            input.selectionStart = 12;
+            let event: any = eventObject('KeyboardEvent', 'keyup');
+            event.keyCode = 229;
+            EventHandler.trigger(input, 'keyup', event);
+            expect(input.value === '85 667 8897').toEqual(true);
+            input.value = "85 667 88973";
+            input.selectionStart = 12;
+            EventHandler.trigger(input, 'keyup', event);
+            setTimeout(
+                () => {
+                    expect(input.value === '85 667 8897').toEqual(true);
+                    done();
+                },
+                2500);
+        });
+    });
+
+
+    describe('MaskedTextBox -  Mobile Support-02', () => {
+        let maskBox: MaskedTextBox;
+        beforeEach((): void => {
+            maskBox = undefined;
+            let ele: HTMLElement = createElement('input', { id: 'mask1' });
+            document.body.appendChild(ele);
+            maskBox = new MaskedTextBox({
+                mask: "99 999 9999",
+            });
+            maskBox.appendTo('#mask1');
+        });
+        afterEach((): void => {
+            if (maskBox) {
+                maskBox.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+
+        it('Remove value in MaskedTextBox for Mobile devices- with value', (done: Function) => {
+            
+            let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
+            input.value = "8__ ___ ____";
+            input.selectionStart = 1;
+            let eventUp: any = eventObject('KeyboardEvent', 'keyup');
+            eventUp.keyCode = 229;
+            EventHandler.trigger(input, 'keyup', eventUp);
+            let event: any = eventObject('KeyboardEvent', 'keydown');
+            event.keyCode = 229;
+            EventHandler.trigger(input, 'keydown', event);
+            input.value = "_ ___ ____";
+            input.selectionStart = 0;
+            EventHandler.trigger(input, 'keydown', event);
+            setTimeout(
+                () => {
+                    expect(input.value === '_ ___ ____').toEqual(true);
+                    EventHandler.trigger(input, 'keyup', eventUp);
+                    done();
+                },
+                2500);
+        });
+        it('Remove value in MaskedTextBox for Mobile devices- without value', (done: Function) => {
+            let input: HTMLInputElement = <HTMLInputElement>document.getElementById('mask1');
+            let event: any = eventObject('KeyboardEvent', 'keydown');
+            event.keyCode = 229;
+            input.value = "_ ___ ____";
+            mobileRemoveFunction.call(maskBox);
+            input.selectionStart = 0;
+            EventHandler.trigger(input, 'keydown', event);
+            setTimeout(
+                () => {
+                    expect(input.value === '__ ___ ____').toEqual(true);
+                    done();
+                },
+                2500);
+        });
+    });
+
     describe('MaskedTextBox -  Clear Icon Support', () => {
         let maskBox: MaskedTextBox;
         let mask:any;

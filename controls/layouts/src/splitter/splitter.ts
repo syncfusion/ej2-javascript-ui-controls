@@ -210,14 +210,6 @@ export class Splitter extends Component<HTMLElement> {
     public enabled: boolean;
 
     /**
-     * Enables or disables rendering of control from right-to-left (RTL) direction.
-     * When it is set to true, the Splitter and its content will be displayed from right-to-left.
-     * @default false
-     */
-    @Property(false)
-    public enableRtl: boolean;
-
-    /**
      * Specifies the size of the separator line for both horizontal or vertical orientation.
      * The separator is used to separate the panes by lines.
      * @default null

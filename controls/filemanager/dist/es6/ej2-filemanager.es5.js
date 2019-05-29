@@ -4460,9 +4460,6 @@ var FileManager = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], FileManager.prototype, "enablePersistence", void 0);
     __decorate$7([
-        Property(false)
-    ], FileManager.prototype, "enableRtl", void 0);
-    __decorate$7([
         Property('400px')
     ], FileManager.prototype, "height", void 0);
     __decorate$7([

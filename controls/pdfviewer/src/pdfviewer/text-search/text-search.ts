@@ -1,6 +1,6 @@
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import { CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
-import { PdfViewer, PdfViewerBase } from '../index';
+import { PdfViewer, PdfViewerBase, AjaxHandler } from '../index';
 
 /**
  * TextSearch module
@@ -30,6 +30,7 @@ export class TextSearch {
     private searchPageIndex: number = null;
     private searchString: string = null;
     private isMatchCase: boolean = false;
+    private searchRequestHandler: AjaxHandler = null;
     // tslint:disable-next-line
     private textContents: Array<string[]> = new Array();
     // tslint:disable-next-line
@@ -801,42 +802,36 @@ export class TextSearch {
     }
 
     private createRequestForSearch(pageIndex: number): void {
+        let proxy: TextSearch =  this;
         let jsonObject: object;
         // tslint:disable-next-line:max-line-length
-        jsonObject = { xCoordinate: 0, yCoordinate: 0, pageNumber: pageIndex, documentId: this.pdfViewerBase.getDocumentId(), hashId: this.pdfViewerBase.hashId, zoomFactor: this.pdfViewerBase.getZoomFactor() };
-        let request: XMLHttpRequest = new XMLHttpRequest();
-        request.open('POST', this.pdfViewer.serviceUrl + '/' + this.pdfViewer.serverActionSettings.renderPages);
-        request.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
-        if (this.pdfViewer.ajaxRequestSettings.ajaxHeaders) {
-            this.pdfViewerBase.setCustomAjaxHeaders(request);
-        }
-        request.responseType = 'json';
-        request.send(JSON.stringify(jsonObject));
+        jsonObject = { xCoordinate: 0, yCoordinate: 0, pageNumber: pageIndex, documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId, zoomFactor: proxy.pdfViewerBase.getZoomFactor(), action: 'RenderPdfPages' };
+        this.searchRequestHandler = new AjaxHandler(this.pdfViewer);
+        this.searchRequestHandler.url = this.pdfViewer.serviceUrl + '/' + this.pdfViewer.serverActionSettings.renderPages;
+        this.searchRequestHandler.responseType = 'json';
+        this.searchRequestHandler.send(jsonObject);
         // tslint:disable-next-line
-        request.onreadystatechange = (event: any): void => { // jshint ignore:line
-            let proxy: PdfViewerBase = this.pdfViewerBase;
-            if (request.readyState === 4 && request.status === 200) {
-                // tslint:disable-next-line
-                let data: any = event.currentTarget.response;
-                // tslint:disable-next-line:max-line-length
-                if (typeof data !== 'object') {
-                    data = JSON.parse(data);
+        this.searchRequestHandler.onSuccess = function(result: any) {
+            // tslint:disable-next-line
+            let data: any = result.data;
+            if (typeof data !== 'object') {
+                data = JSON.parse(data);
+            }
+            if (data) {
+                if (data.pageText) {
+                    proxy.pdfViewerBase.storeWinData(data, pageIndex);
+                    proxy.initSearch(pageIndex, false);
                 }
-                if (data) {
-                    if (data.pageText) {
-                        proxy.storeWinData(data, pageIndex);
-                        this.initSearch(pageIndex, false);
-                    }
-                }
-            } else if (request.readyState === 4 && request.status === 400) {
-                // error
-                this.pdfViewer.fireAjaxRequestFailed(request.status, request.statusText);
             }
         };
         // tslint:disable-next-line
-        request.onerror = (event: any): void => {
-            this.pdfViewerBase.openNotificationPopup();
-            this.pdfViewer.fireAjaxRequestFailed(request.status, request.statusText);
+        this.searchRequestHandler.onFailure = function(result: any) {
+            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText);
+        };
+        // tslint:disable-next-line
+        this.searchRequestHandler.onError = function(result: any) {
+            proxy.pdfViewerBase.openNotificationPopup();
+            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText);
         };
     }
 

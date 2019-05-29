@@ -97,12 +97,6 @@ export interface InPlaceEditorModel extends ComponentModel{
     actionOnBlur?: ActionBlur;
 
     /**
-     * Specifies the direction of In-place editor. For cultures like Arabic, Hebrew, etc. direction can be switched to right to left.
-     * @default false
-     */
-    enableRtl?: boolean;
-
-    /**
      * Enable or disable persisting component's state between page reloads. If enabled, following list of states will be persisted.
      * 1. value
      * @default false

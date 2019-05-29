@@ -154,6 +154,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     /**
      * Sets the start date on recurrence editor.
      * @default new Date()
+     * @aspDefaultValue DateTime.Now
      */
     @Property(new Date())
     public startDate: Date;
@@ -176,12 +177,6 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     @Property()
     public cssClass: string;
     /**
-     * Allows recurrence editor to render in RTL mode.
-     * @default false
-     */
-    @Property(false)
-    public enableRtl: boolean;
-    /**
      * Sets the recurrence rule as its output values.
      * @default null
      */
@@ -190,12 +185,14 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     /**
      * Sets the minimum date on recurrence editor.
      * @default new Date(1900, 1, 1)
+     * @aspDefaultValue new DateTime(1900, 0, 1)
      */
     @Property(new Date(1900, 1, 1))
     public minDate: Date;
     /**
      * Sets the maximum date on recurrence editor.
      * @default new Date(2099, 12, 31)
+     * @aspDefaultValue new DateTime(2099, 11, 31)
      */
     @Property(new Date(2099, 12, 31))
     public maxDate: Date;

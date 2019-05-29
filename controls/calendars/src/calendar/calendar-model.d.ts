@@ -11,12 +11,14 @@ export interface CalendarBaseModel extends ComponentModel{
     /**
      * Gets or sets the minimum date that can be selected in the Calendar.
      * @default new Date(1900, 00, 01)
+     * @aspDefaultValue new DateTime(1900, 01, 01)
      */
     min?: Date;
 
     /**
      * Gets or sets the maximum date that can be selected in the Calendar.
      * @default new Date(2099, 11, 31)
+     * @aspDefaultValue new DateTime(2099, 12, 31)
      */
     max?: Date;
 
@@ -106,12 +108,6 @@ export interface CalendarBaseModel extends ComponentModel{
      * @default true
      */
     showTodayButton?: boolean;
-
-    /**
-     * When set to true, enables RTL mode of the component that displays the content in the right-to-left direction.
-     * @default false
-     */
-    enableRtl?: boolean;
 
     /**
      * Enable or disable persisting component's state between page reloads. If enabled, following list of states will be persisted.

@@ -57,6 +57,16 @@ export class Render {
         if (summaryRow) {
             addClass([args.row], 'e-summaryrow');
         }
+        if (args.row.querySelector('.e-treegridexpand')) {
+            args.row.setAttribute('aria-expanded', 'true');
+        } else if (args.row.querySelector('.e-treegridcollapse')) {
+            args.row.setAttribute('aria-expanded', 'false');
+        }
+        if (this.parent.enableCollapseAll && this.parent.initialRender) {
+            if (!isNullOrUndefined(data.parentItem)) {
+                (<HTMLTableRowElement>args.row).style.display = 'none';
+            }
+        }
         this.parent.trigger(events.rowDataBound, args);
     }
     /**

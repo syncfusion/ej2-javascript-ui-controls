@@ -709,15 +709,47 @@ describe('TreeGrid base module', () => {
       destroy(gridObj);
     });
   });
+  describe('Checking aria-expanded attribute for tr element', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress'],
+        },
+        done
+      );
+    });
+    it('Checking aria-expanded attribute for tr element at initial rendering', () => {
+      rows = gridObj.getRows();
+      expect(rows[0].hasAttribute('aria-expanded') === true).toBe(true);
+      expect(rows[1].hasAttribute('aria-expanded') === false).toBe(true);
+      expect(rows[5].hasAttribute('aria-expanded') === true).toBe(true);
+      expect(rows[6].hasAttribute('aria-expanded') === false).toBe(true);
+      expect(rows[11].hasAttribute('aria-expanded') === true).toBe(true);
+      });
+      it('Checking aria-expanded attribute for tr element after collaping', () => {
+        gridObj.collapseRow(null,gridObj.flatData[0]);
+        rows = gridObj.getRows();
+        expect(rows[0].getAttribute('aria-expanded') == "false").toBe(true);
+        gridObj.expandRow(null,gridObj.flatData[0]);
+        expect(rows[0].getAttribute('aria-expanded') == "true").toBe(true);
+      });
+      afterAll(() => {
+        destroy(gridObj);
+      });
+    });
 
-
-  it('memory leak', () => {
-    profile.sample();
-    let average: any = inMB(profile.averageChange)
-    //Check average change in memory samples to not be over 10MB
-    expect(average).toBeLessThan(10);
-    let memory: any = inMB(getMemoryProfile())
-    //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
-    expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-});
-});
+    it('memory leak', () => {
+      profile.sample();
+      let average: any = inMB(profile.averageChange)
+      //Check average change in memory samples to not be over 10MB
+      expect(average).toBeLessThan(10);
+      let memory: any = inMB(getMemoryProfile())
+      //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
+      expect(memory).toBeLessThan(profile.samples[0] + 0.25);
+    });
+  });

@@ -181,13 +181,6 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     public enablePersistence: boolean;
 
     /**
-     * When set to true, enables RTL mode of the component that displays the content in the right-to-left direction.
-     * @default false
-     */
-    @Property(false)
-    public enableRtl: boolean;
-
-    /**
      * Specifies the height of the file manager.
      * @default '400px'
      */

@@ -1,7 +1,7 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from '../base/treegridutil.spec';
-import { sampleData, projectData } from '../base/datasource.spec';
-import { ResizeArgs, ColumnDragEventArgs, getObject } from '@syncfusion/ej2-grids';
+import { sampleData, projectData, employeeData } from '../base/datasource.spec';
+import { ResizeArgs, ColumnDragEventArgs, getObject, Column } from '@syncfusion/ej2-grids';
 import { EmitType } from '@syncfusion/ej2-base';
 import { Reorder } from '../../src/treegrid/actions/reorder';
 import { Resize } from '../../src/treegrid/actions/resize';
@@ -204,6 +204,34 @@ describe('TreeGrid Reordering', () => {
     let memory: any = inMB(getMemoryProfile())
     //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
     expect(memory).toBeLessThan(profile.samples[0] + 0.25);
-});  
+}); 
+describe('Reorder Columns by using method', () => {
+  let TreeGridObj: TreeGrid;
+  let headers: any;
+  let columns: Column[];
+
+  beforeAll((done: Function) => {
+    TreeGridObj = createGrid(
+          {
+              dataSource: employeeData,
+              allowReordering: true,
+              columns: [{ field: 'EmployeeID' }, 
+              { field: 'Address' }, 
+              { field: 'DOB' }],
+          }, done);
+  });
+
+  it('Reorder Column method', () => {
+      TreeGridObj.reorderColumns(['EmployeeID','Address'],'DOB');
+      columns = TreeGridObj.grid.getColumns() as Column[];
+      headers = TreeGridObj.getHeaderContent().querySelectorAll('.e-headercell');
+      expect(headers[0].querySelector('.e-headercelldiv').textContent).toBe('DOB');
+      expect(headers[1].querySelector('.e-headercelldiv').textContent).toBe('EmployeeID');
+      expect(headers[2].querySelector('.e-headercelldiv').textContent).toBe('Address');
+      expect(columns[0].field).toBe('DOB');
+      expect(columns[1].field).toBe('EmployeeID');
+      expect(columns[2].field).toBe('Address');
+  });
+});
 });
 

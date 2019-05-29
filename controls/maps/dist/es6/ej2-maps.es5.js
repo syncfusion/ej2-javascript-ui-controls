@@ -5784,6 +5784,7 @@ var DataLabel = /** @__PURE__ @class */ (function () {
             }
         }
         text = (!isNullOrUndefined(datasrcObj)) ? datasrcObj[labelpath].toString() : shapeData['properties'][labelpath];
+        var dataLabelText = text;
         var projectionType = this.maps.projectionType;
         location = findMidPointOfPolygon(shapePoint[midIndex], projectionType);
         if (!isNullOrUndefined(text) && !isNullOrUndefined(location)) {
@@ -5927,7 +5928,8 @@ var DataLabel = /** @__PURE__ @class */ (function () {
                 element: isNullOrUndefined(labelElement) ? element : labelElement,
                 layerIndex: layerIndex,
                 shapeIndex: index,
-                labelIndex: index
+                labelIndex: index,
+                dataLabelText: dataLabelText
             });
             if (labelTemplateElement.childElementCount > 0 && !this.maps.element.contains(labelTemplateElement)) {
                 document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(labelTemplateElement);
@@ -8318,9 +8320,6 @@ var Zoom = /** @__PURE__ @class */ (function () {
         var shapeIndex = parseFloat(element.id.split('_shapeIndex_')[1].split('_')[0]);
         var labelIndex = parseFloat(element.id.split('_LabelIndex_')[1].split('_')[0]);
         var duration = this.currentLayer.animationDuration;
-        var featureData = (!isNullOrUndefined(this.maps.layersCollection[this.index].shapeData['geometries']) &&
-            this.maps.layersCollection[this.index].shapeData['geometries'].length > 0 ? this.maps.layersCollection[this.index].shapeData['geometries'] :
-            this.maps.layersCollection[this.index].shapeData['features']);
         for (var l = 0; l < labelCollection.length; l++) {
             var label = labelCollection[l];
             if (label['layerIndex'] === layerIndex && label['shapeIndex'] === shapeIndex
@@ -8342,7 +8341,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 else {
                     labelX = ((labelX + x) * scale);
                     labelY = ((labelY + y) * scale);
-                    zoomtext = featureData[l]['properties'][labelPath];
+                    zoomtext = label['dataLabelText'];
                     zoomtextSize = measureText(zoomtext, style);
                     var start = labelY - zoomtextSize['height'] / 4;
                     var end = labelY + zoomtextSize['height'] / 4;

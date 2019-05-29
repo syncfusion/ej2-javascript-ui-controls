@@ -12306,7 +12306,7 @@ var Image$1 = /** @__PURE__ @class */ (function (_super) {
         Property('')
     ], Image.prototype, "source", void 0);
     __decorate$4([
-        Property('')
+        Property('None')
     ], Image.prototype, "scale", void 0);
     __decorate$4([
         Property('None')

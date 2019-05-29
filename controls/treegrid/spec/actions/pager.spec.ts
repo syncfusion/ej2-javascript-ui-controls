@@ -7,6 +7,7 @@ import { RowExpandedEventArgs, RowCollapsedEventArgs, RowCollapsingEventArgs } f
 import { Filter } from '../../src/treegrid/actions/filter';
 import { ActionEventArgs } from '@syncfusion/ej2-grids';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * Grid Toolbar spec 
@@ -397,7 +398,40 @@ describe('TreeGrid Pager module', () => {
       destroy(gridObj);
     });
   });
-
+  describe('Checking enableCollapseAll with paging', () => {
+    let gridObj: TreeGrid;
+    let rows: Element[];
+    let expanded: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          allowPaging: true,
+          columns: ['taskID', 'taskName', 'startDate', 'endDate', 'duration', 'progress'],
+          enableCollapseAll: true,
+        },
+        done
+      );
+    });
+    it('enableCollapseAll testing', () => {
+        expect(gridObj.element.querySelectorAll('.e-treegridexpand').length).toBe(0);
+    });
+    it('expanding record with enableCollapseAll', (done: Function) => {
+        rows = gridObj.getRows();
+        gridObj.expanded = (args?: RowExpandedEventArgs) => {
+            rows = gridObj.getRows();
+            expect(rows[0].getElementsByClassName('e-treecolumn-container')[0].querySelector('.e-treegridexpand').classList.contains('e-treegridexpand')).toBe(true);
+            expect(isNullOrUndefined(rows[5].getElementsByClassName('e-treecolumn-container')[0].querySelector('.e-treegridexpand'))).toBe(true);
+            done();
+        }
+        (rows[0].getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
+    });
+    afterAll(() => {
+        destroy(gridObj);
+      });
+    });
   
   it('memory leak', () => {
     profile.sample();

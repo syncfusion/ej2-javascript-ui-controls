@@ -660,4 +660,65 @@ describe('CSV-Export', () => {
             }
         });
     });
+    it('Custom-NumberFormat-Date', (done) => {
+        let book: Workbook = new Workbook({
+            worksheets: [
+                {
+                    name: 'Custom-NumberFormat-Date',
+                    rows: [
+                        { index: 1, cells: [{ index: 1, value: new Date(), style: { numberFormat: "ccc dd.MM.yyyy" } }] },
+                        { index: 2, cells: [{ index: 1, value: new Date(), style: { numberFormat: "ccc" } }] },
+                        { index: 3, cells: [{ index: 1, value: new Date(), style: { numberFormat: "yyy" } }] },
+                        { index: 4, cells: [{ index: 1, value: new Date(), style: { numberFormat: "LLL" } }] },
+                        { index: 5, cells: [{ index: 1, value: new Date(), style: { numberFormat: "EEE" } }] },
+                        { index: 6, cells: [{ index: 1, value: new Date(), style: { numberFormat: "d" } }] },
+                        { index: 7, cells: [{ index: 1, value: new Date(), style: { numberFormat: "m" } }] },
+                        { index: 8, cells: [{ index: 1, value: new Date(), style: { numberFormat: "s" } }] },
+                        { index: 9, cells: [{ index: 1, value: new Date(), style: { numberFormat: "hh:mm:ss a" } }] },
+                        { index: 10, cells: [{ index: 1, value: new Date(), style: { numberFormat: "z" } }] },
+                        { index: 11, cells: [{ index: 1, value: new Date(), style: { numberFormat: "hh" } }] },  
+                    ],
+                }]
+        }, 'csv');
+        book.saveAsBlob("text/csv").then((csvBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(csvBlob.blobData, 'Custom-NumberFormat-Date.csv');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(csvBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+    });
+    it('NewLineCharacter', (done) => {
+        let book: Workbook = new Workbook({
+            worksheets: [
+                {
+                    name: 'Rows Add',
+                    rows: [
+                        { index: 1, cells: [{ index: 1, value: "Simple\nText" },{ index: 2, value: "Sample,Text" }] },
+                        { index: 2, cells: [{ index: 1, value: "Simple\nText, Separator" }] },
+                        { index: 3, cells: [{ index: 1, value: "Values2" }] },
+                    ],
+
+                }]
+        }, 'csv');
+        book.saveAsBlob("text/csv").then((csvBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(csvBlob.blobData, 'NewLineCharacter.csv');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(csvBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+    });
 });

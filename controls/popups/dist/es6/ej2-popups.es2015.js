@@ -1528,7 +1528,7 @@ __decorate$1([
     Property('Button')
 ], ButtonProps.prototype, "type", void 0);
 __decorate$1([
-    Property()
+    Event()
 ], ButtonProps.prototype, "click", void 0);
 /**
  * Configures the animation properties for both open and close the dialog.
@@ -1855,11 +1855,11 @@ let Dialog = class Dialog extends Component {
                     this.dlgContainer.style.display = 'none';
                 }
                 this.trigger('close', this.closeArgs);
-                if (!isNullOrUndefined(document.activeElement.blur)) {
-                    document.activeElement.blur();
+                let activeEle = document.activeElement;
+                if (!isNullOrUndefined(activeEle) && !isNullOrUndefined((activeEle).blur)) {
+                    activeEle.blur();
                 }
                 if (!isNullOrUndefined(this.storeActiveElement)) {
-                    document.activeElement.blur();
                     this.storeActiveElement.focus();
                 }
             }

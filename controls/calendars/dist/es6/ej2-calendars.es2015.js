@@ -61,6 +61,7 @@ let CalendarBase = class CalendarBase extends Component {
     constructor(options, element) {
         super(options, element);
         this.effect = '';
+        this.isPopupClicked = false;
         this.keyConfigs = {
             controlUp: 'ctrl+38',
             controlDown: 'ctrl+40',
@@ -1749,9 +1750,6 @@ __decorate([
 ], CalendarBase.prototype, "showTodayButton", void 0);
 __decorate([
     Property(false)
-], CalendarBase.prototype, "enableRtl", void 0);
-__decorate([
-    Property(false)
 ], CalendarBase.prototype, "enablePersistence", void 0);
 __decorate([
     Event()
@@ -1959,6 +1957,7 @@ let Calendar = class Calendar extends CalendarBase {
     }
     clickHandler(e) {
         let eve = e.currentTarget;
+        this.isPopupClicked = true;
         if (eve.classList.contains(OTHERMONTH)) {
             if (this.isMultiSelection) {
                 let copyValues = this.copyValues(this.values);
@@ -3032,11 +3031,22 @@ let DatePicker = class DatePicker extends Calendar {
         }
     }
     ;
+    bindInputEvent() {
+        if (!isNullOrUndefined(this.formatString)) {
+            if (this.formatString.indexOf('y') === -1) {
+                EventHandler.add(this.inputElement, 'input', this.inputHandler, this);
+            }
+            else {
+                EventHandler.remove(this.inputElement, 'input', this.inputHandler);
+            }
+        }
+    }
     bindEvents() {
         if (this.enabled) {
             EventHandler.add(this.inputWrapper.buttons[0], 'mousedown touchstart', this.dateIconHandler, this);
             EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
             EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
+            this.bindInputEvent();
             // To prevent the twice triggering.
             EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
             if (this.showClearButton && this.inputWrapper.clearButton) {
@@ -3163,6 +3173,9 @@ let DatePicker = class DatePicker extends Calendar {
         this.trigger('focus', focusArguments);
         this.updateIconState();
     }
+    inputHandler(e) {
+        this.isPopupClicked = false;
+    }
     inputBlurHandler(e) {
         this.strictModeUpdate();
         if (this.inputElement.value === '' && isNullOrUndefined(this.value)) {
@@ -3189,6 +3202,7 @@ let DatePicker = class DatePicker extends Calendar {
                 keyConfigs: this.calendarKeyConfigs
             });
         }
+        this.isPopupClicked = false;
     }
     documentHandler(e) {
         if (e.type !== 'touchstart') {
@@ -3331,6 +3345,12 @@ let DatePicker = class DatePicker extends Calendar {
         }
         else {
             date = this.globalize.parseDate(this.inputElement.value, dateOptions);
+            if (!isNullOrUndefined(this.formatString) && this.inputElement.value !== '' && this.strictMode) {
+                if ((this.isPopupClicked || (!this.isPopupClicked && this.inputElement.value === this.previousElementValue))
+                    && this.formatString.indexOf('y') === -1) {
+                    date.setFullYear(this.value.getFullYear());
+                }
+            }
         }
         if (this.strictMode && date) {
             Input.setValue(this.globalize.formatDate(date, dateOptions), this.inputElement, this.floatLabelType, this.showClearButton);
@@ -4025,6 +4045,7 @@ let DatePicker = class DatePicker extends Calendar {
                     break;
                 case 'format':
                     this.checkFormat();
+                    this.bindInputEvent();
                     this.updateInput();
                     break;
                 case 'allowEdit':
@@ -4127,9 +4148,6 @@ __decorate$1([
 __decorate$1([
     Property(true)
 ], DatePicker.prototype, "allowEdit", void 0);
-__decorate$1([
-    Property(false)
-], DatePicker.prototype, "enableRtl", void 0);
 __decorate$1([
     Property(false)
 ], DatePicker.prototype, "enablePersistence", void 0);
@@ -8170,9 +8188,6 @@ __decorate$2([
     Property(false)
 ], DateRangePicker.prototype, "enablePersistence", void 0);
 __decorate$2([
-    Property(false)
-], DateRangePicker.prototype, "enableRtl", void 0);
-__decorate$2([
     Property(new Date(1900, 0, 1))
 ], DateRangePicker.prototype, "min", void 0);
 __decorate$2([
@@ -10299,9 +10314,6 @@ __decorate$3([
     Property(true)
 ], TimePicker.prototype, "allowEdit", void 0);
 __decorate$3([
-    Property(false)
-], TimePicker.prototype, "enableRtl", void 0);
-__decorate$3([
     Event()
 ], TimePicker.prototype, "change", void 0);
 __decorate$3([
@@ -11626,9 +11638,6 @@ __decorate$4([
 __decorate$4([
     Property(1000)
 ], DateTimePicker.prototype, "zIndex", void 0);
-__decorate$4([
-    Property(false)
-], DateTimePicker.prototype, "enableRtl", void 0);
 __decorate$4([
     Property(false)
 ], DateTimePicker.prototype, "enablePersistence", void 0);

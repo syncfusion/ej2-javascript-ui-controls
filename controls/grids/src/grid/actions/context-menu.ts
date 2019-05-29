@@ -14,6 +14,7 @@ import { Group } from '../actions/group';
 import { Sort } from '../actions/sort';
 import { PdfExport } from '../actions/pdf-export';
 import { ExcelExport } from '../actions/excel-export';
+import { RowInfo } from '../base/interface';
 
 export const menuClass: CMenuClassList = {
     header: '.e-gridheader',
@@ -89,6 +90,7 @@ export class ContextMenu implements IAction {
     public row: HTMLTableRowElement;
     public cell: HTMLTableCellElement;
     private keyPressHandlerFunction: Function;
+    private targetRowdata: RowInfo;
 
     constructor(parent?: IGrid, serviceLocator?: ServiceLocator) {
         this.parent = parent;
@@ -271,6 +273,7 @@ export class ContextMenu implements IAction {
                 break;
         }
         args.column = this.targetColumn;
+        args.rowInfo = this.targetRowdata;
         this.parent.trigger(events.contextMenuClick, args);
     }
 
@@ -307,6 +310,7 @@ export class ContextMenu implements IAction {
             args.cancel = true;
         } else {
             this.targetColumn = this.getColumn(args.event);
+            this.targetRowdata = this.parent.getRowInfo(args.event.target as Element);
             if ((isNullOrUndefined(args.parentItem))) {
                 this.selectRow(args.event, ((args.event.target as Element).classList.contains('e-selectionbackground')
                     && this.parent.selectionSettings.type === 'Multiple') ? false : true);
@@ -352,6 +356,7 @@ export class ContextMenu implements IAction {
             }
             this.eventArgs = args.event;
             args.column = this.targetColumn;
+            args.rowInfo = this.targetRowdata;
             this.parent.trigger(events.contextMenuOpen, args);
             if (this.hiddenItems.length === args.items.length && !args.parentItem) {
                 this.updateItemStatus();
@@ -601,8 +606,10 @@ export class ContextMenu implements IAction {
         if (cell) {
             let uid: string = cell.querySelector('.e-headercelldiv, .e-stackedheadercelldiv').getAttribute('e-mappinguid');
             return this.parent.getColumnByUid(uid);
+        } else {
+            let ele: Column = (this.parent.getRowInfo(e.target as Element).column) as Column;
+            return ele || null;
         }
-        return null;
     }
 
     private selectRow(e: Event, isSelectable: boolean): void {

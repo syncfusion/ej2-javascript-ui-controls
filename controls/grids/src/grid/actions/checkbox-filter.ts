@@ -403,11 +403,13 @@ export class CheckBoxFilter {
                     fObj.operator = isNotEqual ? 'notequal' : 'equal';
                 }
                 if (value === '' || isNullOrUndefined(value)) {
+                    if (this.options.type === 'string') {
                     coll.push(
                         {
                             field: defaults.field, ignoreAccent: defaults.ignoreAccent, matchCase: defaults.matchCase,
                             operator: defaults.operator, predicate: defaults.predicate, value: ''
                         });
+                    }
                     coll.push(
                         {
                             field: defaults.field,
@@ -418,9 +420,9 @@ export class CheckBoxFilter {
                             field: defaults.field, matchCase: defaults.matchCase, operator: defaults.operator,
                             predicate: defaults.predicate, value: undefined
                         });
-                } else {
-                    coll.push(fObj);
-                }
+                    } else {
+                        coll.push(fObj);
+                    }
                 if (isActionPrevent(this.parent)) {
                     this.parent.notify(events.preventBatch, {
                         instance: this, handler: this.fltrBtnHandler, arg1: fObj.field, arg2: fObj.predicate, arg3: fObj.operator,

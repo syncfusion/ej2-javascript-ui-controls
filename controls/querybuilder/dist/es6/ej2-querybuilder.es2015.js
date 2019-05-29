@@ -929,10 +929,17 @@ let QueryBuilder = class QueryBuilder extends Component {
                 multiselectObj.hideSpinner();
                 let data = this.dataManager.executeQuery(new Query().select(value));
                 let deferred = new Deferred();
+                let dummyData;
                 this.createSpinner(closest(element, '.e-multi-select-wrapper').parentElement);
                 showSpinner(closest(element, '.e-multi-select-wrapper').parentElement);
                 data.then((e) => {
-                    this.dataColl = extend(this.dataColl, e.result, [], true);
+                    if (e.actual.result) {
+                        dummyData = e.actual.result;
+                    }
+                    else {
+                        dummyData = e.result;
+                    }
+                    this.dataColl = extend(this.dataColl, dummyData, [], true);
                     let ds = this.getDistinctValues(this.dataColl, value);
                     multiselectObj.dataSource = ds;
                     hideSpinner(closest(element, '.e-multi-select-wrapper').parentElement);
@@ -1887,7 +1894,12 @@ let QueryBuilder = class QueryBuilder extends Component {
         let data = this.dataManager.executeQuery(query);
         let deferred = new Deferred();
         data.then((e) => {
-            this.dataColl = e.result;
+            if (e.actual.result) {
+                this.dataColl = e.actual.result;
+            }
+            else {
+                this.dataColl = e.result;
+            }
             this.initControl();
         }).catch((e) => {
             deferred.reject(e);
@@ -2669,9 +2681,6 @@ __decorate([
 __decorate([
     Property('Horizontal')
 ], QueryBuilder.prototype, "displayMode", void 0);
-__decorate([
-    Property(false)
-], QueryBuilder.prototype, "enableRtl", void 0);
 __decorate([
     Property(false)
 ], QueryBuilder.prototype, "enablePersistence", void 0);

@@ -870,6 +870,17 @@ class Render {
         if (summaryRow) {
             addClass([args.row], 'e-summaryrow');
         }
+        if (args.row.querySelector('.e-treegridexpand')) {
+            args.row.setAttribute('aria-expanded', 'true');
+        }
+        else if (args.row.querySelector('.e-treegridcollapse')) {
+            args.row.setAttribute('aria-expanded', 'false');
+        }
+        if (this.parent.enableCollapseAll && this.parent.initialRender) {
+            if (!isNullOrUndefined(data.parentItem)) {
+                args.row.style.display = 'none';
+            }
+        }
         this.parent.trigger(rowDataBound, args);
     }
     /**
@@ -1152,6 +1163,7 @@ class DataManipulation {
                     let qry = this.parent.query.clone();
                     qry.queries = [];
                     qry = qry.select([this.parent.parentIdMapping]);
+                    qry.isCountRequired = true;
                     dm.executeQuery(qry).then((e) => {
                         this.parentItems = DataUtil.distinct(e.result, this.parent.parentIdMapping, false);
                         let req = getObject('dataSource.requests', this.parent).filter((e) => {
@@ -1276,6 +1288,7 @@ class DataManipulation {
             let qry = this.parent.grid.getDataModule().generateQuery();
             let clonequries = qry.queries.filter((e) => e.fn !== 'onPage' && e.fn !== 'onWhere');
             qry.queries = clonequries;
+            qry.isCountRequired = true;
             qry.where(this.parent.parentIdMapping, 'equal', rowDetails.record[this.parent.idMapping]);
             showSpinner(this.parent.element);
             dm.executeQuery(qry).then((e) => {
@@ -1316,8 +1329,13 @@ class DataManipulation {
             if (!isNullOrUndefined(currentData[this.parent.childMapping])) {
                 currentData.childRecords = currentData[this.parent.childMapping];
                 currentData.hasChildRecords = true;
-                currentData.expanded = !isNullOrUndefined(currentData[this.parent.expandStateMapping])
-                    ? currentData[this.parent.expandStateMapping] : true;
+                if (this.parent.enableCollapseAll) {
+                    currentData.expanded = false;
+                }
+                else {
+                    currentData.expanded = !isNullOrUndefined(currentData[this.parent.expandStateMapping])
+                        ? currentData[this.parent.expandStateMapping] : true;
+                }
             }
             currentData.index = currentData.hasChildRecords ? this.storedIndex : this.storedIndex;
             if (this.isSelfReference && isNullOrUndefined(currentData[this.parent.parentIdMapping])) {
@@ -2142,7 +2160,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     //   return this.flatData;
     // }
     bindGridProperties() {
-        this.grid.dataSource = isRemoteData(this) ? this.dataSource : this.flatData;
+        this.grid.dataSource = !(this.dataSource instanceof DataManager) ? this.flatData : this.dataSource;
         this.grid.enableRtl = this.enableRtl;
         this.grid.allowKeyboard = this.allowKeyboard;
         this.grid.columns = this.getGridColumns(this.columns);
@@ -2264,7 +2282,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             else if (treeGrid.flatData.length === 0 && isOffline(treeGrid) && treeGrid.dataSource instanceof DataManager) {
                 let dm = treeGrid.dataSource;
                 treeGrid.dataModule.convertToFlatData(dm.dataSource.json);
-                args.result = treeGrid.flatData;
+                args.result = dm.dataSource.json = treeGrid.flatData;
             }
             if (!isRemoteData(treeGrid)) {
                 treeGrid.notify('dataProcessor', args);
@@ -2364,10 +2382,6 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             this.trigger(actionComplete, args);
         };
         this.grid.rowDataBound = function (args) {
-            if (args.row instanceof DocumentFragment) {
-                let row = (args.row).querySelector('tr');
-                args.row = row;
-            }
             if (isNullOrUndefined(this.isPrinting)) {
                 setValue('isPrinting', false, args);
             }
@@ -3217,7 +3231,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
      */
     expandAtLevel(level) {
         if (this.allowPaging && this.pageSettings.pageSizeMode === 'All') {
-            let rec = this.flatData.filter((e) => {
+            let rec = this.grid.dataSource.filter((e) => {
                 if (e.hasChildRecords && e.level === level) {
                     e.expanded = true;
                 }
@@ -3249,13 +3263,13 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
      */
     collapseAtLevel(level) {
         if (this.allowPaging && this.pageSettings.pageSizeMode === 'All') {
-            let rec = this.flatData.filter((e) => {
+            let record = this.grid.dataSource.filter((e) => {
                 if (e.hasChildRecords && e.level === level) {
                     e.expanded = false;
                 }
                 return e.hasChildRecords && e.level === level;
             });
-            this.collapseRow(null, rec);
+            this.collapseRow(null, record);
         }
         else {
             let rec = this.getRecordDetails(level);
@@ -3302,6 +3316,10 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     }
     expandCollapse(action, row, record, isChild) {
         let gridRows = this.getRows();
+        if (this.rowTemplate) {
+            let rows = this.getContentTable().rows;
+            gridRows = [].slice.call(rows);
+        }
         let rowIndex;
         if (isNullOrUndefined(row)) {
             rowIndex = record.index;
@@ -3309,6 +3327,9 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         }
         else {
             rowIndex = +row.getAttribute('aria-rowindex');
+        }
+        if (!isNullOrUndefined(row)) {
+            row.setAttribute('aria-expanded', action === 'expand' ? 'true' : 'false');
         }
         if (this.allowPaging && this.pageSettings.pageSizeMode === 'All' && !isRemoteData(this)) {
             this.notify(localPagedExpandCollapse, { action: action, row: row, record: record });
@@ -3368,7 +3389,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         }
     }
     updateAltRow(rows) {
-        if (this.enableAltRow) {
+        if (this.enableAltRow && !this.rowTemplate) {
             let visibleRowCount = 0;
             for (let i = 0; i < rows.length; i++) {
                 let gridRow = rows[i];
@@ -3392,8 +3413,9 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             rData.expanded = false;
             rows[i].style.display = 'none';
             if (rows[i].querySelector('.e-treecolumn-container .e-treegridexpand')) {
-                removeClass([rows[i].getElementsByClassName('e-icons')[0]], 'e-treegridexpand');
-                addClass([rows[i].getElementsByClassName('e-icons')[0]], 'e-treegridcollapse');
+                let targetEle = rows[i].getElementsByClassName('e-treegridexpand')[0];
+                removeClass([targetEle], 'e-treegridexpand');
+                addClass([targetEle], 'e-treegridcollapse');
                 let cRow = this.getRows().filter((r) => r.classList.contains('e-gridrowindex' + rData.index + 'level' + (rData.level + 1)));
                 this.collapseRemoteChild(cRow);
             }
@@ -5637,5 +5659,5 @@ class CommandColumn$1 {
  * Export TreeGrid component
  */
 
-export { TreeGrid, load, rowDataBound, dataBound, queryCellInfo, beforeDataBound, actionBegin, actionComplete, rowSelecting, rowSelected, checkboxChange, rowDeselected, toolbarClick, beforeExcelExport, beforePdfExport, resizeStop, expanded, expanding, collapsed, collapsing, remoteExpand, localPagedExpandCollapse, pagingActions, printGridInit, contextMenuOpen, contextMenuClick, savePreviousRowPosition, crudAction, beginEdit, beginAdd, recordDoubleClick, cellSave, cellSaved, cellEdit, batchDelete, batchCancel, batchAdd, beforeBatchAdd, beforeBatchSave, batchSave, keyPressed, updateData, doubleTap, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, DataManipulation, Reorder$1 as Reorder, Resize$1 as Resize, Column, EditSettings, FilterSettings, PageSettings, SearchSettings, SelectionSettings, AggregateColumn, AggregateRow, Render, isRemoteData, findParentRecords, getExpandStatus, findChildrenRecords, isOffline, extendArray, getPlainData, getParentData, ToolbarItem, ContextMenuItems, Filter$1 as Filter, ExcelExport$1 as ExcelExport, PdfExport$1 as PdfExport, Page$1 as Page, Toolbar$1 as Toolbar, Aggregate$1 as Aggregate, Sort$1 as Sort, ColumnMenu$1 as ColumnMenu, ContextMenu$1 as ContextMenu, Edit$1 as Edit, CommandColumn$1 as CommandColumn, Selection };
+export { TreeGrid, load, rowDataBound, dataBound, queryCellInfo, beforeDataBound, actionBegin, actionComplete, rowSelecting, rowSelected, checkboxChange, rowDeselected, toolbarClick, beforeExcelExport, beforePdfExport, resizeStop, expanded, expanding, collapsed, collapsing, remoteExpand, localPagedExpandCollapse, pagingActions, printGridInit, contextMenuOpen, contextMenuClick, savePreviousRowPosition, crudAction, beginEdit, beginAdd, recordDoubleClick, cellSave, cellSaved, cellEdit, batchDelete, batchCancel, batchAdd, beforeBatchAdd, beforeBatchSave, batchSave, keyPressed, updateData, doubleTap, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, DataManipulation, Reorder$1 as Reorder, Resize$1 as Resize, Column, EditSettings, FilterSettings, PageSettings, SearchSettings, SelectionSettings, AggregateColumn, AggregateRow, SortDescriptor, SortSettings, Render, isRemoteData, findParentRecords, getExpandStatus, findChildrenRecords, isOffline, extendArray, getPlainData, getParentData, ToolbarItem, ContextMenuItems, Filter$1 as Filter, ExcelExport$1 as ExcelExport, PdfExport$1 as PdfExport, Page$1 as Page, Toolbar$1 as Toolbar, Aggregate$1 as Aggregate, Sort$1 as Sort, ColumnMenu$1 as ColumnMenu, ContextMenu$1 as ContextMenu, Edit$1 as Edit, CommandColumn$1 as CommandColumn, Selection };
 //# sourceMappingURL=ej2-treegrid.es2015.js.map

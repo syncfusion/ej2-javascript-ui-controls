@@ -11734,7 +11734,7 @@ __decorate$4([
     Property('')
 ], Image$1.prototype, "source", void 0);
 __decorate$4([
-    Property('')
+    Property('None')
 ], Image$1.prototype, "scale", void 0);
 __decorate$4([
     Property('None')

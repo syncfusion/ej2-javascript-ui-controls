@@ -7,7 +7,7 @@ import { RangeNavigator, IThemeStyle, appendChildElement, redrawElement, Series 
 import { Size, Rect, TextOption, measureText, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Axis } from '../chart/index';
 import { Periods } from '../common/model/base';
-import { IRangeSelectorRenderEventArgs, ITooltipRenderEventArgs } from '../common/model/interface';
+import { IRangeSelectorRenderEventArgs, ITooltipRenderEventArgs, IMouseEventArgs, IPointEventArgs } from '../common/model/interface';
 import { IAxisLabelRenderEventArgs, ISeriesRenderEventArgs } from '../common/model/interface';
 import { PeriodsModel } from '../common/model/base-model';
 import { ChartTheme } from '../chart/index';
@@ -261,6 +261,63 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      */
     @Event()
     public selectorRender: EmitType<IRangeSelectorRenderEventArgs>;
+
+    /**
+     * Triggers on hovering the stock chart.
+     * @event
+     */
+
+    @Event()
+    public stockChartMouseMove: EmitType<IMouseEventArgs>;
+
+    /**
+     * Triggers when cursor leaves the chart.
+     * @event
+     */
+
+    @Event()
+    public stockChartMouseLeave: EmitType<IMouseEventArgs>;
+
+    /**
+     * Triggers on mouse down.
+     * @event
+     */
+
+    @Event()
+    public stockChartMouseDown: EmitType<IMouseEventArgs>;
+
+    /**
+     * Triggers on mouse up.
+     * @event
+     */
+
+    @Event()
+    public stockChartMouseUp: EmitType<IMouseEventArgs>;
+
+    /**
+     * Triggers on clicking the stock chart.
+     * @event
+     */
+
+    @Event()
+    public stockChartMouseClick: EmitType<IMouseEventArgs>;
+
+    /**
+     * Triggers on point click.
+     * @event
+     */
+
+    @Event()
+    public pointClick: EmitType<IPointEventArgs>;
+
+    /**
+     * Triggers on point move.
+     * @event
+     */
+
+    @Event()
+    public pointMove: EmitType<IPointEventArgs>;
+
 
     /**
      * Specifies whether series or data point has to be selected. They are,
@@ -550,11 +607,11 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         /*! UnBind the Event handler */
 
         EventHandler.remove(this.element, startEvent, this.stockChartOnMouseDown);
-        EventHandler.remove(this.element, moveEvent, this.stockChartMouseMove);
+        EventHandler.remove(this.element, moveEvent, this.stockChartOnMouseMove);
         EventHandler.remove(this.element, stopEvent, this.stockChartMouseEnd);
         EventHandler.remove(this.element, 'click', this.stockChartOnMouseClick);
         EventHandler.remove(this.element, 'contextmenu', this.stockChartRightClick);
-        EventHandler.remove(this.element, cancelEvent, this.stockChartMouseLeave);
+        EventHandler.remove(this.element, cancelEvent, this.stockChartOnMouseLeave);
 
         window.removeEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
@@ -571,11 +628,11 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
         /*! Bind the Event handler */
         EventHandler.add(this.element, Browser.touchStartEvent, this.stockChartOnMouseDown, this);
-        EventHandler.add(this.element, Browser.touchMoveEvent, this.stockChartMouseMove, this);
+        EventHandler.add(this.element, Browser.touchMoveEvent, this.stockChartOnMouseMove, this);
         EventHandler.add(this.element, Browser.touchEndEvent, this.stockChartMouseEnd, this);
         EventHandler.add(this.element, 'click', this.stockChartOnMouseClick, this);
         EventHandler.add(this.element, 'contextmenu', this.stockChartRightClick, this);
-        EventHandler.add(this.element, cancelEvent, this.stockChartMouseLeave, this);
+        EventHandler.add(this.element, cancelEvent, this.stockChartOnMouseLeave, this);
 
         window.addEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
@@ -824,6 +881,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         let offset: number = Browser.isDevice ? 20 : 30;
         let rect: ClientRect = this.chart.element.getBoundingClientRect();
         let element: Element = <Element>e.target;
+        this.trigger('stockChartMouseDown', { target: element.id, x: this.mouseX, y: this.mouseY });
         if (e.type === 'touchstart') {
             this.isTouch = true;
             touchArg = <TouchEvent & PointerEvent>e;
@@ -882,7 +940,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     public stockChartOnMouseUp(e: PointerEvent | TouchEvent): boolean {
         let element: Element = <Element>e.target;
-        //this.trigger(chartMouseUp, { target: element.id, x: this.mouseX, y: this.mouseY });
+        this.trigger('stockChartMouseUp', { target: element.id, x: this.mouseX, y: this.mouseY });
         this.isChartDrag = false;
         this.allowPan = false;
         if (this.isTouch) {
@@ -910,7 +968,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * @return {boolean}
      * @private
      */
-    public stockChartMouseMove(e: PointerEvent): boolean {
+    public stockChartOnMouseMove(e: PointerEvent): boolean {
         let pageX: number;
         let touchArg: TouchEvent; let pageY: number;
         if (e.type === 'touchmove') {
@@ -921,6 +979,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
             this.isTouch = e.pointerType === 'touch' || e.pointerType === '2' || this.isTouch;
             pageX = e.clientX; pageY = e.clientY;
         }
+        this.trigger('stockChartMouseMove', { target: (e.target as Element).id, x: this.mouseX, y: this.mouseY });
         this.setMouseXY(pageX, pageY);
         this.chartOnMouseMove(e);
         return false;
@@ -990,6 +1049,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      */
     public stockChartOnMouseClick(e: PointerEvent | TouchEvent): boolean {
         let element: Element = <Element>e.target;
+        this.trigger('stockChartMouseClick', { target: element.id, x: this.mouseX, y: this.mouseY });
         this.notify('click', e);
         return false;
     }
@@ -1009,7 +1069,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * @return {boolean}
      * @private
      */
-    public stockChartMouseLeave(e: PointerEvent): boolean {
+    public stockChartOnMouseLeave(e: PointerEvent): boolean {
         let touchArg: TouchEvent; let pageX: number; let pageY: number;
         if (e.type === 'touchleave') {
             this.isTouch = true; touchArg = <TouchEvent & PointerEvent>e;
@@ -1020,7 +1080,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
         }
         this.setMouseXY(pageX, pageY);
         this.allowPan = false;
-        this.stockChartOnMouseLeave(e);
+        this.stockChartOnMouseLeaveEvent(e);
         return false;
     }
 
@@ -1029,10 +1089,10 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
      * @return {boolean}
      * @private
      */
-    public stockChartOnMouseLeave(e: PointerEvent | TouchEvent): boolean {
+    public stockChartOnMouseLeaveEvent(e: PointerEvent | TouchEvent): boolean {
         let element: Element = <Element>e.target;
         let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
-        //this.trigger(chartMouseLeave, { target: element.id, x: this.mouseX, y: this.mouseY });
+        this.trigger('stockChartMouseLeave', { target: element.id, x: this.mouseX, y: this.mouseY });
         this.isChartDrag = false;
         this.notify(cancelEvent, e);
         if (this.stockEvent) {

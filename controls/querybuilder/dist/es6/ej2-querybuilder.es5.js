@@ -959,10 +959,17 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 multiselectObj_1.hideSpinner();
                 var data = this.dataManager.executeQuery(new Query().select(value_1));
                 var deferred_1 = new Deferred();
+                var dummyData_1;
                 this.createSpinner(closest(element_1, '.e-multi-select-wrapper').parentElement);
                 showSpinner(closest(element_1, '.e-multi-select-wrapper').parentElement);
                 data.then(function (e) {
-                    _this.dataColl = extend(_this.dataColl, e.result, [], true);
+                    if (e.actual.result) {
+                        dummyData_1 = e.actual.result;
+                    }
+                    else {
+                        dummyData_1 = e.result;
+                    }
+                    _this.dataColl = extend(_this.dataColl, dummyData_1, [], true);
                     var ds = _this.getDistinctValues(_this.dataColl, value_1);
                     multiselectObj_1.dataSource = ds;
                     hideSpinner(closest(element_1, '.e-multi-select-wrapper').parentElement);
@@ -1919,7 +1926,12 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var data = this.dataManager.executeQuery(query);
         var deferred = new Deferred();
         data.then(function (e) {
-            _this.dataColl = e.result;
+            if (e.actual.result) {
+                _this.dataColl = e.actual.result;
+            }
+            else {
+                _this.dataColl = e.result;
+            }
             _this.initControl();
         }).catch(function (e) {
             deferred.reject(e);
@@ -2700,9 +2712,6 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property('Horizontal')
     ], QueryBuilder.prototype, "displayMode", void 0);
-    __decorate([
-        Property(false)
-    ], QueryBuilder.prototype, "enableRtl", void 0);
     __decorate([
         Property(false)
     ], QueryBuilder.prototype, "enablePersistence", void 0);

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.49 (2019-05-29)
+
+### Gantt
+
+#### Bug Fixes
+
+- #F144145 - Task Id duplication issue while adding new record has been fixed.
+
 ## 17.1.47 (2019-05-14)
 
 ### Gantt

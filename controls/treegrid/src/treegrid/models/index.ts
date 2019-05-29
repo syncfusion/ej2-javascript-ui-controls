@@ -14,3 +14,5 @@ export * from './selection-settings';
 export * from './selection-settings-model';
 export * from './summary';
 export * from './summary-model';
+export * from './sort-settings';
+export * from './sort-settings-model';

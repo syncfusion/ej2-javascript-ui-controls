@@ -31,7 +31,7 @@ export class ButtonProps extends ChildProperty<ButtonProps> {
      * Event triggers when `click` the dialog button.
      * @event
      */
-    @Property()
+    @Event()
     public click: EmitType<Object>;
 }
 
@@ -705,11 +705,11 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     this.dlgContainer.style.display = 'none';
                 }
                 this.trigger('close', this.closeArgs);
-                if (!isNullOrUndefined((document.activeElement as HTMLElement).blur)) {
-                    (document.activeElement as HTMLElement).blur();
+                let activeEle: HTMLElement = document.activeElement as HTMLElement;
+                if (!isNullOrUndefined(activeEle) && !isNullOrUndefined((activeEle).blur)) {
+                    activeEle.blur();
                 }
                 if (!isNullOrUndefined(this.storeActiveElement)) {
-                    (document.activeElement as HTMLElement).blur();
                     this.storeActiveElement.focus();
                 }
             }

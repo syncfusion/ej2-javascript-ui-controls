@@ -162,7 +162,10 @@ export class Table {
                     this.removeResizeEle();
                 }
             }
-            ele = (ele && ele.tagName !== 'TD' && ele.tagName !== 'TH') ? closest(ele, 'td') as HTMLElement : ele;
+            if (ele && ele.tagName !== 'TD' && ele.tagName !== 'TH') {
+                let closestTd: HTMLElement = closest(ele, 'td') as HTMLElement;
+                ele = !isNullOrUndefined(closestTd) && this.parent.inputElement.contains(closestTd) ? closestTd : ele;
+            }
             if (ele && (ele.tagName === 'TD' || ele.tagName === 'TH')) {
                 switch ((event as KeyboardEventArgs).keyCode) {
                     case 9:

@@ -172,12 +172,6 @@ export class DatePicker extends Calendar implements IInput {
     @Property(true)
     public allowEdit: boolean;
     /** 
-     * When set to true, enables RTL mode of the component that displays the content in the       right-to-left direction.
-     * @default false
-     */
-    @Property(false)
-    public enableRtl: boolean;
-    /** 
      * Enable or disable persisting component's state between page reloads. If enabled, following list of states will be persisted.
      * 1. value
      * @default false
@@ -493,11 +487,21 @@ export class DatePicker extends Calendar implements IInput {
             }
         }
     };
+    private bindInputEvent(): void {
+        if (!isNullOrUndefined(this.formatString)) {
+            if (this.formatString.indexOf('y') === -1) {
+                EventHandler.add(this.inputElement, 'input', this.inputHandler, this);
+            } else {
+                EventHandler.remove(this.inputElement, 'input', this.inputHandler);
+            }
+        }
+    }
     protected bindEvents(): void {
         if (this.enabled) {
             EventHandler.add(this.inputWrapper.buttons[0], 'mousedown touchstart', this.dateIconHandler, this);
             EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
             EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
+            this.bindInputEvent();
             // To prevent the twice triggering.
             EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
             if (this.showClearButton && this.inputWrapper.clearButton) {
@@ -623,6 +627,9 @@ export class DatePicker extends Calendar implements IInput {
         this.trigger('focus', focusArguments);
         this.updateIconState();
     }
+    private inputHandler(e: MouseEvent): void {
+        this.isPopupClicked = false;
+    }
     private inputBlurHandler(e: MouseEvent): void {
         this.strictModeUpdate();
         if (this.inputElement.value === '' && isNullOrUndefined(this.value)) {
@@ -649,6 +656,7 @@ export class DatePicker extends Calendar implements IInput {
                 keyConfigs: this.calendarKeyConfigs
             });
         }
+        this.isPopupClicked = false;
     }
     private documentHandler(e: MouseEvent): void {
         if (e.type !== 'touchstart') {
@@ -783,6 +791,12 @@ export class DatePicker extends Calendar implements IInput {
             }
         } else {
             date = this.globalize.parseDate(this.inputElement.value, dateOptions);
+            if (!isNullOrUndefined(this.formatString) && this.inputElement.value !== '' && this.strictMode) {
+                if ((this.isPopupClicked || (!this.isPopupClicked && this.inputElement.value === this.previousElementValue))
+                    && this.formatString.indexOf('y') === -1) {
+                    date.setFullYear(this.value.getFullYear());
+                }
+            }
         }
         if (this.strictMode && date) {
             Input.setValue(this.globalize.formatDate(date, dateOptions), this.inputElement, this.floatLabelType, this.showClearButton);
@@ -1447,6 +1461,7 @@ export class DatePicker extends Calendar implements IInput {
                     break;
                 case 'format':
                     this.checkFormat();
+                    this.bindInputEvent();
                     this.updateInput();
                     break;
                 case 'allowEdit':

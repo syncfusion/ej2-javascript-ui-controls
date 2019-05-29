@@ -148,11 +148,7 @@ export class HeaderRender implements IRenderer {
     public renderPanel(): void {
         let div: Element = this.parent.createElement('div', { className: 'e-gridheader' });
         let innerDiv: Element = this.parent.createElement('div', { className: 'e-headercontent' });
-        let column: Column[] = this.parent.columns as Column[];
-        let stackedHdr: boolean = column.some((column: Column) => column.columns !== undefined);
-        if (stackedHdr) {
-            div.classList.add('e-stackedheader');
-        }
+        this.toggleStackClass(div);
         div.appendChild(innerDiv);
         this.setPanel(div);
         this.parent.element.appendChild(div);
@@ -518,36 +514,36 @@ export class HeaderRender implements IRenderer {
      */
     public setVisible(columns?: Column[]): void {
         let gObj: IGrid = this.parent;
-        let rows: HTMLTableRowElement[] = [].slice.call(this.getRows()); //NodeList -> Array        
-        let displayVal: string = '';
-        let idx: number;
-        let className: Function;
-        let element: HTMLTableRowElement;
-        let frzCols: number = gObj.getFrozenColumns();
+        if (!gObj.enableColumnVirtualization && !gObj.enableVirtualization) {
+            let rows: HTMLTableRowElement[] = [].slice.call(this.getRows()); //NodeList -> Array        
+            let displayVal: string;
+            let idx: number;
+            let className: Function;
+            let element: HTMLTableRowElement;
+            let frzCols: number = gObj.getFrozenColumns();
 
-        for (let c: number = 0, clen: number = columns.length; c < clen; c++) {
-            let column: Column = columns[c];
+            for (let c: number = 0, clen: number = columns.length; c < clen; c++) {
+                let column: Column = columns[c];
 
-            idx = gObj.getNormalizedColumnIndex(column.uid);
+                idx = gObj.getNormalizedColumnIndex(column.uid);
 
-            if (column.visible === false) {
-                displayVal = 'none';
-            }
-
-            if (frzCols) {
-                if (idx < frzCols) {
-                    setStyleAttribute(<HTMLElement>this.getColGroup().children[idx], { 'display': displayVal });
+                displayVal = column.visible ? '' : 'none';
+                if (frzCols) {
+                    if (idx < frzCols) {
+                        setStyleAttribute(<HTMLElement>this.getColGroup().children[idx], { 'display': displayVal });
+                    } else {
+                        let mTblColGrp: Element = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('colgroup');
+                        setStyleAttribute(<HTMLElement>mTblColGrp.children[idx - frzCols], { 'display': displayVal });
+                    }
                 } else {
-                    let mTblColGrp: Element = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('colgroup');
-                    setStyleAttribute(<HTMLElement>mTblColGrp.children[idx - frzCols], { 'display': displayVal });
+                    setStyleAttribute(<HTMLElement>this.getColGroup().children[idx], { 'display': displayVal });
                 }
-            } else {
-                setStyleAttribute(<HTMLElement>this.getColGroup().children[idx], { 'display': displayVal });
-            }
 
-            this.refreshUI();
+                this.refreshUI();
+            }
         }
     }
+
 
     private colPosRefresh(): void {
         this.refreshUI();
@@ -559,6 +555,7 @@ export class HeaderRender implements IRenderer {
      */
     public refreshUI(): void {
         let headerDiv: Element = this.getPanel();
+        this.toggleStackClass(headerDiv);
         let table: Element = this.getTable();
         let frzCols: number = this.parent.getFrozenColumns();
         if (this.getTable()) {
@@ -594,6 +591,17 @@ export class HeaderRender implements IRenderer {
             }
         }
     }
+
+    public toggleStackClass(div: Element): void {
+        let column: Column[] = this.parent.columns as Column[];
+        let stackedHdr: boolean = column.some((column: Column) => column.columns !== undefined);
+        if (stackedHdr) {
+            div.classList.add('e-stackedheader');
+        } else {
+            div.classList.remove('e-stackedheader');
+        }
+    }
+
 
     public appendContent(table?: Element): void {
         this.getPanel().firstChild.appendChild(table);

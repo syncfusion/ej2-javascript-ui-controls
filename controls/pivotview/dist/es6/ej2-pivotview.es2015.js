@@ -100,6 +100,7 @@ class PivotEngine {
         this.data = [];
         this.frameHeaderObjectsCollection = false;
         this.headerObjectsCollection = {};
+        this.groupingFields = {};
         /* private makeMirrorObject(elements: number[], obj: NumberIndex): void {
              for (let lp: number = 0, end: number = elements.length; lp < end; lp++) {
                  obj[elements[lp]] = elements[lp];
@@ -143,6 +144,7 @@ class PivotEngine {
         let fields;
         this.globalize = new Internationalization();
         this.localeObj = customProperties ? customProperties.localeObj : undefined;
+        this.fieldsType = customProperties ? customProperties.fieldsType : {};
         this.enableSort = dataSource.enableSorting;
         this.alwaysShowValueHeader = dataSource.alwaysShowValueHeader;
         this.showSubTotals = isNullOrUndefined(dataSource.showSubTotals) ? true : dataSource.showSubTotals;
@@ -366,6 +368,7 @@ class PivotEngine {
                     let unframedSet = [];
                     let dataLength = data.length;
                     let cnt = 0;
+                    this.groupingFields[fieldName] = fieldName;
                     while (cnt < dataLength) {
                         unframedSet.push(data[cnt][fieldName]);
                         if (data[cnt][fieldName] && framedSet.indexOf(data[cnt][fieldName]) === -1) {
@@ -424,6 +427,7 @@ class PivotEngine {
                         }
                     }
                 }
+                this.groupingFields = extend(this.groupingFields, groupFields);
             }
             else {
                 return fieldkeySet;
@@ -527,7 +531,7 @@ class PivotEngine {
         else {
             while (len--) { /** while is used for better performance than for */
                 let key = keys[len];
-                type = PivotUtil.getType(fields[key]);
+                type = (this.fieldsType && this.fieldsType[key]) ? this.fieldsType[key] : PivotUtil.getType(fields[key]);
                 if (!this.fieldList) {
                     this.fieldList = {};
                 }
@@ -659,49 +663,54 @@ class PivotEngine {
             //let sort: string[] = [];
             for (let dl = 0; dl < dlen; dl++) {
                 let mkey = data[dl][key];
-                if (!isNullOrUndefined(mkey)) {
-                    if (!isDataAvail) {
-                        let fKey = mkey;
-                        let formattedValue = (this.pageSettings && !(this.formatFields[key] &&
-                            (['date', 'dateTime', 'time'].indexOf(this.formatFields[key].type) > -1))) ? ({
-                            formattedText: isNullOrUndefined(mkey) ? mkey : mkey.toString(),
-                            actualText: mkey
-                        }) : this.getFormattedValue(mkey, key);
-                        if (formattedValue.formattedText) {
-                            fKey = formattedValue.formattedText;
-                        }
-                        if (!members.hasOwnProperty(mkey)) {
-                            membersCnt++;
-                            members[mkey] = {
-                                index: [dl], ordinal: membersCnt,
-                                isDrilled: this.isExpandAll ? true : false
-                            };
-                            /* tslint:disable-next-line:max-line-length */
-                            dateMember.push({ formattedText: formattedValue.formattedText, actualText: (formattedValue.dateText ? formattedValue.dateText : formattedValue.actualText) });
-                            //sort.push(mkey);
-                        }
-                        else {
-                            members[mkey].index.push(dl);
-                        }
-                        if (!formattedMembers.hasOwnProperty(fKey)) {
-                            fmembersCnt++;
-                            formattedMembers[fKey] = {
-                                index: [dl], ordinal: fmembersCnt,
-                                isDrilled: this.isExpandAll ? true : false
-                            };
-                        }
-                        else {
-                            formattedMembers[fKey].index.push(dl);
-                        }
+                // if (!isNullOrUndefined(mkey)) {
+                if (!isDataAvail) {
+                    let fKey = mkey;
+                    let formattedValue = (this.pageSettings && !(this.formatFields[key] &&
+                        (['date', 'dateTime', 'time'].indexOf(this.formatFields[key].type) > -1))) ? ({
+                        formattedText: mkey === null ? (this.localeObj ? this.localeObj.getConstant('null') : String(mkey)) :
+                            mkey === undefined ? (this.localeObj ? (key in this.groupingFields) ?
+                                this.localeObj.getConstant('groupOutOfRange') : this.localeObj.getConstant('undefined') :
+                                String(mkey)) : mkey.toString(), actualText: mkey === null ? (this.localeObj ?
+                            this.localeObj.getConstant('null') : String(mkey)) : mkey === undefined ? (this.localeObj ?
+                            (key in this.groupingFields) ? this.localeObj.getConstant('groupOutOfRange') :
+                                this.localeObj.getConstant('undefined') : String(mkey)) : mkey
+                    }) : this.getFormattedValue(mkey, key);
+                    if (formattedValue.formattedText) {
+                        fKey = formattedValue.formattedText;
                     }
-                    if (!(indMat[dl])) {
-                        indMat[dl] = [];
-                        indMat[dl][kl] = members[mkey].ordinal;
+                    if (!members.hasOwnProperty(mkey)) {
+                        membersCnt++;
+                        members[mkey] = {
+                            index: [dl], ordinal: membersCnt,
+                            isDrilled: this.isExpandAll ? true : false
+                        };
+                        /* tslint:disable-next-line:max-line-length */
+                        dateMember.push({ formattedText: formattedValue.formattedText, actualText: (formattedValue.dateText ? formattedValue.dateText : formattedValue.actualText) });
+                        //sort.push(mkey);
                     }
                     else {
-                        indMat[dl][kl] = members[mkey].ordinal;
+                        members[mkey].index.push(dl);
+                    }
+                    if (!formattedMembers.hasOwnProperty(fKey)) {
+                        fmembersCnt++;
+                        formattedMembers[fKey] = {
+                            index: [dl], ordinal: fmembersCnt,
+                            isDrilled: this.isExpandAll ? true : false
+                        };
+                    }
+                    else {
+                        formattedMembers[fKey].index.push(dl);
                     }
                 }
+                if (!(indMat[dl])) {
+                    indMat[dl] = [];
+                    indMat[dl][kl] = members[mkey].ordinal;
+                }
+                else {
+                    indMat[dl][kl] = members[mkey].ordinal;
+                }
+                // }
             }
             /*sort = Object.keys(members).sort();
             let sortedMembers: Members = {};
@@ -2098,16 +2107,25 @@ class PivotEngine {
                     this.indexMatrix[position[pos]][childrens.index];
                 let headerValue = isNoData ? Object.keys(savedMembers)[0] :
                     data[position[pos]][fieldName];
-                if (isNullOrUndefined(headerValue)) {
-                    continue;
-                }
+                // if (isNullOrUndefined(headerValue)) {
+                //     continue;
+                // }
                 delete savedMembers[headerValue];
                 if (showNoDataItems && this.fieldFilterMem[fieldName] &&
                     this.fieldFilterMem[fieldName].memberObj[headerValue] === headerValue) {
                     continue;
                 }
-                let formattedValue = isDateType ?
-                    this.getFormattedValue(headerValue, fieldName) : { formattedText: headerValue.toString(), actualText: headerValue };
+                let formattedValue = isDateType ? this.getFormattedValue(headerValue, fieldName) :
+                    {
+                        formattedText: headerValue === null ? (this.localeObj ? this.localeObj.getConstant('null') : String(headerValue)) :
+                            headerValue === undefined ? (this.localeObj ? (fieldName in this.groupingFields) ?
+                                this.localeObj.getConstant('groupOutOfRange') : this.localeObj.getConstant('undefined') :
+                                String(headerValue)) : String(headerValue), actualText: headerValue === null ? (this.localeObj ?
+                            this.localeObj.getConstant('null') : String(headerValue)) : headerValue === undefined ?
+                            (this.localeObj ? (fieldName in this.groupingFields) ?
+                                this.localeObj.getConstant('groupOutOfRange') : this.localeObj.getConstant('undefined') :
+                                String(headerValue)) : headerValue
+                    };
                 member.actualText = formattedValue.actualText;
                 member.formattedText = formattedValue.formattedText;
                 if (isDateType) {
@@ -3080,7 +3098,7 @@ class PivotEngine {
                     let val = ((totalValues.cVal) * (totalValues.gTotalVal)) / ((totalValues.rTotalVal) * (totalValues.cTotalVal));
                     value = (rows[rln].members.length > 0 && ((!isNullOrUndefined(rows[rln].showSubTotals) && !rows[rln].showSubTotals) ||
                         !this.showRowSubTotals || !this.showSubTotals)) ? undefined :
-                        (isNaN(val) ? 0 : val);
+                        (isNullOrUndefined(totalValues.cVal) ? totalValues.cVal : (isNaN(val) ? 0 : val));
                 }
                 break;
             case 'PercentageOfGrandTotal':
@@ -3099,7 +3117,7 @@ class PivotEngine {
                     let val = ((totalValues.cVal) / (totalValues.gTotalVal));
                     value = (rows[rln].members.length > 0 && ((!isNullOrUndefined(rows[rln].showSubTotals) && !rows[rln].showSubTotals) ||
                         !this.showSubTotals || !this.showRowSubTotals)) ? undefined :
-                        (isNaN(val) ? 0 : val);
+                        (isNullOrUndefined(totalValues.cVal) ? totalValues.cVal : (isNaN(val) ? 0 : val));
                 }
                 break;
             default:
@@ -3127,8 +3145,8 @@ class PivotEngine {
         value = cellDetails.value;
         let isSum = rows[rln].hasChild || columns[cln].hasChild ||
             rows[rln].type === 'grand sum' || columns[cln].type === 'grand sum';
-        let subTotal = (rows[rln].isDrilled && ((!isNullOrUndefined(rows[rln].showSubTotals) && !rows[rln].showSubTotals) ||
-            !this.showSubTotals || !this.showRowSubTotals));
+        let subTotal = (rows[rln].members.length > 0 && ((!isNullOrUndefined(rows[rln].showSubTotals) &&
+            !rows[rln].showSubTotals) || !this.showSubTotals || !this.showRowSubTotals));
         let formattedText = subTotal ?
             '' : (value === undefined) ? this.emptyCellTextContent :
             aggregate === 'Count' ? value.toLocaleString() : this.getFormattedValue(value, field).formattedText;
@@ -3252,7 +3270,7 @@ class PivotEngine {
                 if (columnIndex[rowIndex[ri]] !== undefined) {
                     isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
-                    cellValue += (this.valueMatrix[rowIndex[ri]][value] === undefined ? 0 : 1);
+                    cellValue += (isNullOrUndefined(this.valueMatrix[rowIndex[ri]][value]) ? 0 : 1);
                 }
                 ri++;
             }
@@ -3261,10 +3279,10 @@ class PivotEngine {
             let duplicateValues = [];
             while (rowIndex[ri] !== undefined) {
                 if (columnIndex[rowIndex[ri]] !== undefined) {
-                    isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
+                    isValueExist = true;
                     let currentVal = this.valueMatrix[rowIndex[ri]][value];
-                    if (currentVal !== undefined) {
+                    if (!isNullOrUndefined(currentVal)) {
                         if (duplicateValues.length === 0 || (duplicateValues.length > 0 && duplicateValues.indexOf(currentVal) === -1)) {
                             cellValue += 1;
                             duplicateValues.push(currentVal);
@@ -3280,9 +3298,12 @@ class PivotEngine {
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                     isValueExist = true;
                     let currentVal = this.valueMatrix[rowIndex[ri]][value];
-                    if (currentVal !== undefined) {
-                        cellValue = (isInit ? 1 : (cellValue === 0 ? 1 : cellValue));
+                    if (!isNullOrUndefined(currentVal)) {
+                        cellValue = ((isInit || isNullOrUndefined(cellValue)) ? 1 : cellValue);
                         cellValue *= currentVal;
+                    }
+                    else if (isInit) {
+                        cellValue = currentVal;
                     }
                     isInit = false;
                 }
@@ -3301,7 +3322,7 @@ class PivotEngine {
                     isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                     let currentVal = this.valueMatrix[rowIndex[ri]][value];
-                    if (currentVal !== undefined) {
+                    if (!isNullOrUndefined(currentVal)) {
                         val += currentVal;
                         indexVal.push(currentVal);
                         i++;
@@ -3328,16 +3349,22 @@ class PivotEngine {
         }
         else if (type && type.toLowerCase() === 'min') {
             let isFirst = true;
+            cellValue = undefined;
             while (rowIndex[ri] !== undefined) {
-                if (columnIndex[rowIndex[ri]] !== undefined) {
+                if (columnIndex[rowIndex[ri]] !== undefined && this.valueMatrix[rowIndex[ri]][value] !== undefined) {
                     isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
-                    if (isFirst) {
+                    if (isNullOrUndefined(cellValue) && isNullOrUndefined(this.valueMatrix[rowIndex[ri]][value])) {
                         cellValue = this.valueMatrix[rowIndex[ri]][value];
-                        isFirst = false;
                     }
                     else {
-                        cellValue = this.valueMatrix[rowIndex[ri]][value] < cellValue ? this.valueMatrix[rowIndex[ri]][value] : cellValue;
+                        if (isFirst) {
+                            cellValue = this.valueMatrix[rowIndex[ri]][value];
+                            isFirst = false;
+                        }
+                        else {
+                            cellValue = this.valueMatrix[rowIndex[ri]][value] < cellValue ? this.valueMatrix[rowIndex[ri]][value] : cellValue;
+                        }
                     }
                 }
                 ri++;
@@ -3346,7 +3373,7 @@ class PivotEngine {
         else if (type && type.toLowerCase() === 'max') {
             let isMaxFirst = true;
             while (rowIndex[ri] !== undefined) {
-                if (columnIndex[rowIndex[ri]] !== undefined) {
+                if (columnIndex[rowIndex[ri]] !== undefined && this.valueMatrix[rowIndex[ri]][value] !== undefined) {
                     isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                     if (isMaxFirst) {
@@ -3378,26 +3405,37 @@ class PivotEngine {
                                 value = this.getAggregateValue(rowIndex, columnIndex, aggregatedValue.index, type);
                                 aggregateField[aggregatedValue.formula] = value;
                             }
-                            actualFormula = (actualFormula).replace(aggregatedValue.formula, value.toString());
+                            actualFormula = (actualFormula).replace(aggregatedValue.formula, String(value));
                         }
                     }
                     /* tslint:disable */
                     cellValue = eval(actualFormula);
-                    (cellValue === Infinity ? Infinity : JSON.parse(cellValue.toString()));
+                    (cellValue === Infinity ? Infinity : (cellValue === undefined || isNaN(cellValue)) ? undefined : JSON.parse(String(cellValue)));
                     /* tslint:enable */
                 }
                 ri++;
             }
         }
         else {
+            cellValue = undefined;
             while (rowIndex[ri] !== undefined) {
                 if (columnIndex[rowIndex[ri]] !== undefined) {
                     isValueExist = true;
                     this.rawIndexObject[rowIndex[ri]] = rowIndex[ri];
                     //let cIndx: number = isLeastLevel ? columnIndex.splice(columnIndex.indexOf(rowIndex[ri]), 1)[0] : rowIndex[ri];
                     let currentVal = this.valueMatrix[rowIndex[ri]][value];
-                    cellValue += (currentVal === undefined ? 0 : currentVal);
-                    avgCnt++;
+                    if (isNullOrUndefined(cellValue) && isNullOrUndefined(currentVal)) {
+                        cellValue = currentVal;
+                    }
+                    else {
+                        if (isNullOrUndefined(cellValue)) {
+                            cellValue = 0;
+                        }
+                        cellValue += (isNullOrUndefined(currentVal) ? 0 : currentVal);
+                    }
+                    if (!isNullOrUndefined(currentVal)) {
+                        avgCnt++;
+                    }
                 }
                 ri++;
             }
@@ -3422,15 +3460,22 @@ class PivotEngine {
                  ri++;
              }
          } */
-        return ((type && type.toLowerCase() === 'avg' && cellValue !== 0) ? (cellValue / avgCnt) : isValueExist ? cellValue : undefined);
+        return ((type && type.toLowerCase() === 'avg' && cellValue !== 0 &&
+            !isNullOrUndefined(cellValue)) ? (cellValue / avgCnt) : isValueExist ? cellValue : undefined);
     }
     /* tslint:enable */
     /** hidden */
     getFormattedValue(value, fieldName) {
         let formattedValue = {
-            formattedText: value !== undefined ? value === null ? 'null' : value.toString() : undefined,
-            actualText: value !== undefined ? value === null ? 'null' : value : undefined,
-            dateText: value !== undefined ? value === null ? 'null' : value : undefined
+            formattedText: value === null ? (this.localeObj ? this.localeObj.getConstant('null') : String(value)) : value === undefined ?
+                (this.localeObj ? (fieldName in this.groupingFields) ? this.localeObj.getConstant('groupOutOfRange') :
+                    this.localeObj.getConstant('undefined') : String(value)) : value.toString(),
+            actualText: value === null ? (this.localeObj ? this.localeObj.getConstant('null') : String(value)) : value === undefined ?
+                (this.localeObj ? (fieldName in this.groupingFields) ? this.localeObj.getConstant('groupOutOfRange') :
+                    this.localeObj.getConstant('undefined') : String(value)) : value,
+            dateText: value === null ? (this.localeObj ? this.localeObj.getConstant('null') : String(value)) : value === undefined ?
+                (this.localeObj ? (fieldName in this.groupingFields) ? this.localeObj.getConstant('groupOutOfRange') :
+                    this.localeObj.getConstant('undefined') : String(value)) : value
         };
         if (this.formatFields[fieldName] && value) {
             let formatField = (this.formatFields[fieldName].properties ?
@@ -4450,7 +4495,8 @@ class AggregateMenu {
         let fieldName = dialogElement.getAttribute('data-field');
         let buttonElement;
         if (this.parentElement.querySelector('.' + PIVOT_BUTTON_CLASS)) {
-            buttonElement = this.parentElement.querySelector('.' + PIVOT_BUTTON_CLASS + '#' + fieldName);
+            buttonElement = this.parentElement.
+                querySelector('.' + PIVOT_BUTTON_CLASS + '.' + fieldName.replace(/[^A-Z0-9]/ig, ''));
         }
         if (buttonElement) {
             let contentElement = buttonElement.querySelector('.e-content');
@@ -8641,6 +8687,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         this.isPopupClicked = false;
         this.isMouseDown = false;
         this.isMouseUp = false;
+        this.fieldsType = {};
         this.defaultItems = {};
         this.isCellBoxMultiSelection = false;
         /** @hidden */
@@ -8899,7 +8946,10 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             emptyInput: 'Enter a value',
             newReportConfirm: 'Want to save changes to report?',
             emptyReportName: 'Enter a report name',
-            qtr: 'Qtr'
+            qtr: 'Qtr',
+            null: 'null',
+            undefined: 'undefined',
+            groupOutOfRange: 'Out of Range'
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.isDragging = false;
@@ -9124,7 +9174,9 @@ let PivotView = PivotView_1 = class PivotView extends Component {
     render() {
         this.cellTemplateFn = this.templateParser(this.cellTemplate);
         createSpinner({ target: this.element }, this.createElement);
-        this.trigger(load, { 'dataSource': this.dataSource, 'pivotview': this });
+        let loadArgs = { 'dataSource': this.dataSource, 'pivotview': this, fieldsType: {} };
+        this.trigger(load, loadArgs);
+        this.fieldsType = loadArgs.fieldsType;
         this.updateClass();
         this.notify(initSubComponent, {});
         this.notify(initialLoad, {});
@@ -9357,7 +9409,9 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             savedFieldList: this.engineModule.fieldList,
             pageSettings: this.pageSettings,
             enableValueSorting: this.enableValueSorting,
-            isDrillThrough: (this.allowDrillThrough || this.editSettings.allowEditing)
+            isDrillThrough: (this.allowDrillThrough || this.editSettings.allowEditing),
+            localeObj: this.localeObj,
+            fieldsType: this.fieldsType
         };
         let isSorted = Object.keys(this.lastSortInfo).length > 0 ? true : false;
         let isFiltered = Object.keys(this.lastFilterInfo).length > 0 ? true : false;
@@ -10286,7 +10340,8 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             pageSettings: this.pageSettings,
             enableValueSorting: this.enableValueSorting,
             isDrillThrough: (this.allowDrillThrough || this.editSettings.allowEditing),
-            localeObj: this.localeObj
+            localeObj: this.localeObj,
+            fieldsType: this.fieldsType
         };
         this.engineModule.renderEngine(this.dataSource, customProperties, this.getValueCellInfo.bind(this));
         this.setProperties({ pivotValues: this.engineModule.pivotValues }, true);
@@ -11931,6 +11986,10 @@ class FilterDialog {
         }
         return undefined;
     }
+    /**
+     * To close filter dialog.
+     * @hidden
+     */
     closeFilterDialog() {
         if (this.allowExcelLikeFilter) {
             if (this.tabObj && !this.tabObj.isDestroyed) {
@@ -13028,7 +13087,7 @@ class PivotButton {
                                 attrs: { 'data-tag': axis + ':' + field[i].name }
                             });
                             let buttonElement = createElement('div', {
-                                id: field[i].name, className: PIVOT_BUTTON_CLASS,
+                                id: field[i].name, className: PIVOT_BUTTON_CLASS + ' ' + field[i].name.replace(/[^A-Z0-9]/ig, ''),
                                 attrs: {
                                     'data-uid': field[i].name, 'tabindex': '0', 'isvalue': i === valuePos ? 'true' : 'false',
                                     'aria-disabled': 'false', 'aria-label': field[i].caption ? field[i].caption : field[i].name,
@@ -13434,16 +13493,42 @@ class PivotButton {
     }
     bindDialogEvents() {
         if (this.parent.pivotCommon.filterDialog.allowExcelLikeFilter && this.parent.pivotCommon.filterDialog.tabObj) {
-            this.updateDialogButtonEvents(this.parent.pivotCommon.filterDialog.tabObj.selectedItem);
-            this.dialogPopUp.buttons[1].click = this.ClearFilter.bind(this);
+            this.index = this.parent.pivotCommon.filterDialog.tabObj.selectedItem;
+            this.updateDialogButtonEvents();
+            this.dialogPopUp.buttons = this.buttonModel();
+            this.dialogPopUp.dataBind();
             this.parent.pivotCommon.filterDialog.tabObj.selected = this.tabSelect.bind(this);
         }
         else {
-            this.updateDialogButtonEvents(0);
+            this.index = 0;
+            this.updateDialogButtonEvents();
         }
     }
+    buttonModel() {
+        return [
+            {
+                buttonModel: {
+                    cssClass: OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true
+                },
+                click: (this.index === 0 ? this.updateFilterState.bind(this, this.fieldName) : this.updateCustomFilter.bind(this))
+            },
+            {
+                buttonModel: {
+                    cssClass: 'e-clear-filter-button' + (this.parent.pivotCommon.filterDialog.allowExcelLikeFilter ? '' : ' ' + ICON_DISABLE),
+                    iconCss: 'e-icons e-clear-filter-icon', enableRtl: this.parent.enableRtl,
+                    content: this.parent.localeObj.getConstant('clearFilter'), disabled: (this.parent.pivotCommon.filterDialog.filterObject ? false : true)
+                },
+                click: this.ClearFilter.bind(this)
+            },
+            {
+                click: this.parent.pivotCommon.filterDialog.closeFilterDialog.bind(this),
+                buttonModel: { cssClass: CANCEL_BUTTON_CLASS, content: this.parent.localeObj.getConstant('cancel') }
+            }
+        ];
+    }
     tabSelect(e) {
-        this.updateDialogButtonEvents(e.selectedIndex);
+        this.index = e.selectedIndex;
+        this.updateDialogButtonEvents();
         removeClass([].slice.call(this.dialogPopUp.element.querySelectorAll('.e-selected-tab')), 'e-selected-tab');
         if (e.selectedIndex > 0) {
             /* tslint:disable-next-line:max-line-length */
@@ -13457,9 +13542,9 @@ class PivotButton {
             this.dialogPopUp.element.querySelector('.' + OK_BUTTON_CLASS).removeAttribute('disabled');
         }
     }
-    updateDialogButtonEvents(index) {
-        this.dialogPopUp.buttons[0].click = (index === 0 ?
-            this.updateFilterState.bind(this, this.fieldName) : this.updateCustomFilter.bind(this));
+    updateDialogButtonEvents() {
+        this.dialogPopUp.buttons = this.buttonModel();
+        this.dialogPopUp.dataBind();
     }
     updateCustomFilter(args) {
         let dialogElement = this.dialogPopUp.element.querySelector('.e-selected-tab');
@@ -14010,7 +14095,10 @@ let PivotFieldList = class PivotFieldList extends Component {
             baseItem: 'Base item :',
             example: 'e.g:',
             editorDataLimitMsg: ' more items. Search to refine further.',
-            deferLayoutUpdate: 'Defer Layout Update'
+            deferLayoutUpdate: 'Defer Layout Update',
+            null: 'null',
+            undefined: 'undefined',
+            groupOutOfRange: 'Out of Range'
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.isDragging = false;
@@ -16947,27 +17035,27 @@ class Toolbar$2 {
                 items: toDisable ? [] : [
                     {
                         text: this.parent.localeObj.getConstant('column'),
-                        id: 'Column'
+                        id: this.parent.element.id + '_' + 'Column',
                     },
                     {
                         text: this.parent.localeObj.getConstant('bar'),
-                        id: 'Bar'
+                        id: this.parent.element.id + '_' + 'Bar'
                     },
                     {
                         text: this.parent.localeObj.getConstant('line'),
-                        id: 'Line'
+                        id: this.parent.element.id + '_' + 'Line'
                     },
                     {
                         text: this.parent.localeObj.getConstant('area'),
-                        id: 'Area'
+                        id: this.parent.element.id + '_' + 'Area'
                     },
                     {
                         text: this.parent.localeObj.getConstant('scatter'),
-                        id: 'Scatter'
+                        id: this.parent.element.id + '_' + 'Scatter'
                     },
                     {
                         text: this.parent.localeObj.getConstant('polar'),
-                        id: 'Polar'
+                        id: this.parent.element.id + '_' + 'Polar'
                     }
                 ]
             }
@@ -17194,7 +17282,7 @@ class Toolbar$2 {
     }
     chartClick(args) {
         if (args.item && args.item.text) {
-            this.parent.chartSettings.chartSeries.type = args.item.id;
+            this.parent.chartSettings.chartSeries.type = args.item.id.split('_')[args.item.id.split('_').length - 1];
             if (this.parent.grid && this.parent.chart) {
                 this.parent.grid.element.style.display = 'none';
                 this.parent.chart.element.style.display = '';

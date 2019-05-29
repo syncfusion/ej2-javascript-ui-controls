@@ -220,11 +220,6 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      */
     displayMode: DisplayMode;
     /**
-     * Enables or disables the RTL support it is extended from the component class.
-     * @default false.
-     */
-    enableRtl: boolean;
-    /**
      * Enable or disable persisting component's state between page reloads.
      * If enabled, filter states will be persisted.
      * @default false.

@@ -1504,9 +1504,6 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         Property(true)
     ], Splitter.prototype, "enabled", void 0);
     __decorate([
-        Property(false)
-    ], Splitter.prototype, "enableRtl", void 0);
-    __decorate([
         Property(null)
     ], Splitter.prototype, "separatorSize", void 0);
     __decorate([
@@ -1956,7 +1953,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DashboardLayout.prototype.bindEvents = function () {
-        window.addEventListener('resize', this.onResize.bind(this));
+        window.addEventListener('resize', this.refresh.bind(this));
         this.resizeEvents();
     };
     DashboardLayout.prototype.downResizeHandler = function (e) {
@@ -2294,7 +2291,10 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.sortedPanel();
     };
     
-    DashboardLayout.prototype.onResize = function () {
+    /**
+     * Refresh the panels of DashboardLayout component.
+     */
+    DashboardLayout.prototype.refresh = function () {
         if (this.checkMediaQuery()) {
             this.checkMediaQuerySizing();
         }
@@ -3993,9 +3993,6 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property(null)
     ], DashboardLayout.prototype, "draggableHandle", void 0);
-    __decorate$1([
-        Property(false)
-    ], DashboardLayout.prototype, "enableRtl", void 0);
     __decorate$1([
         Property('en-US')
     ], DashboardLayout.prototype, "locale", void 0);

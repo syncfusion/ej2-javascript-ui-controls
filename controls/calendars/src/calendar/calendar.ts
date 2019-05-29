@@ -90,6 +90,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected todayDate: Date;
     //this.element clone
     protected calendarElement: HTMLElement;
+    protected isPopupClicked: boolean = false;
     protected keyConfigs: { [key: string]: string } = {
         controlUp: 'ctrl+38',
         controlDown: 'ctrl+40',
@@ -115,12 +116,14 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     /**
      * Gets or sets the minimum date that can be selected in the Calendar.
      * @default new Date(1900, 00, 01)
+     * @aspDefaultValue new DateTime(1900, 01, 01)
      */
     @Property(new Date(1900, 0, 1))
     public min: Date;
     /**
      * Gets or sets the maximum date that can be selected in the Calendar.
      * @default new Date(2099, 11, 31)
+     * @aspDefaultValue new DateTime(2099, 12, 31)
      */
     @Property(new Date(2099, 11, 31))
     public max: Date;
@@ -211,12 +214,6 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      */
     @Property(true)
     public showTodayButton: boolean;
-    /** 
-     * When set to true, enables RTL mode of the component that displays the content in the right-to-left direction.
-     * @default false
-     */
-    @Property(false)
-    public enableRtl: boolean;
     /** 
      * Enable or disable persisting component's state between page reloads. If enabled, following list of states will be persisted.
      * 1. value
@@ -2066,6 +2063,7 @@ export class Calendar extends CalendarBase {
     }
     protected clickHandler(e: MouseEvent): void {
         let eve: Element = <HTMLElement>e.currentTarget;
+        this.isPopupClicked = true;
         if (eve.classList.contains(OTHERMONTH)) {
             if (this.isMultiSelection) {
                 let copyValues: Date[] = this.copyValues(this.values);

@@ -27809,6 +27809,12 @@ class CartesianChart {
             seriesRender: (args) => {
                 this.stockChart.trigger('seriesRender', args);
             },
+            pointClick: (args) => {
+                this.stockChart.trigger('pointClick', args);
+            },
+            pointMove: (args) => {
+                this.stockChart.trigger('pointMove', args);
+            },
             dataSource: stockChart.dataSource,
             series: this.findSeriesCollection(stockChart.series),
             zoomSettings: this.copyObject(stockChart.zoomSettings),
@@ -29471,11 +29477,11 @@ class StockChart extends Component {
         let cancelEvent = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         /*! UnBind the Event handler */
         EventHandler.remove(this.element, startEvent, this.stockChartOnMouseDown);
-        EventHandler.remove(this.element, moveEvent, this.stockChartMouseMove);
+        EventHandler.remove(this.element, moveEvent, this.stockChartOnMouseMove);
         EventHandler.remove(this.element, stopEvent, this.stockChartMouseEnd);
         EventHandler.remove(this.element, 'click', this.stockChartOnMouseClick);
         EventHandler.remove(this.element, 'contextmenu', this.stockChartRightClick);
-        EventHandler.remove(this.element, cancelEvent, this.stockChartMouseLeave);
+        EventHandler.remove(this.element, cancelEvent, this.stockChartOnMouseLeave);
         window.removeEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.stockChartResize);
     }
     wireEvents() {
@@ -29483,11 +29489,11 @@ class StockChart extends Component {
         let cancelEvent = Browser.isPointer ? 'pointerleave' : 'mouseleave';
         /*! Bind the Event handler */
         EventHandler.add(this.element, Browser.touchStartEvent, this.stockChartOnMouseDown, this);
-        EventHandler.add(this.element, Browser.touchMoveEvent, this.stockChartMouseMove, this);
+        EventHandler.add(this.element, Browser.touchMoveEvent, this.stockChartOnMouseMove, this);
         EventHandler.add(this.element, Browser.touchEndEvent, this.stockChartMouseEnd, this);
         EventHandler.add(this.element, 'click', this.stockChartOnMouseClick, this);
         EventHandler.add(this.element, 'contextmenu', this.stockChartRightClick, this);
-        EventHandler.add(this.element, cancelEvent, this.stockChartMouseLeave, this);
+        EventHandler.add(this.element, cancelEvent, this.stockChartOnMouseLeave, this);
         window.addEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.stockChartResize.bind(this));
         this.setStyle(this.element);
     }
@@ -29717,6 +29723,7 @@ class StockChart extends Component {
         let offset = Browser.isDevice ? 20 : 30;
         let rect = this.chart.element.getBoundingClientRect();
         let element = e.target;
+        this.trigger('stockChartMouseDown', { target: element.id, x: this.mouseX, y: this.mouseY });
         if (e.type === 'touchstart') {
             this.isTouch = true;
             touchArg = e;
@@ -29776,7 +29783,7 @@ class StockChart extends Component {
      */
     stockChartOnMouseUp(e) {
         let element = e.target;
-        //this.trigger(chartMouseUp, { target: element.id, x: this.mouseX, y: this.mouseY });
+        this.trigger('stockChartMouseUp', { target: element.id, x: this.mouseX, y: this.mouseY });
         this.isChartDrag = false;
         this.allowPan = false;
         if (this.isTouch) {
@@ -29802,7 +29809,7 @@ class StockChart extends Component {
      * @return {boolean}
      * @private
      */
-    stockChartMouseMove(e) {
+    stockChartOnMouseMove(e) {
         let pageX;
         let touchArg;
         let pageY;
@@ -29817,6 +29824,7 @@ class StockChart extends Component {
             pageX = e.clientX;
             pageY = e.clientY;
         }
+        this.trigger('stockChartMouseMove', { target: e.target.id, x: this.mouseX, y: this.mouseY });
         this.setMouseXY(pageX, pageY);
         this.chartOnMouseMove(e);
         return false;
@@ -29877,6 +29885,7 @@ class StockChart extends Component {
      */
     stockChartOnMouseClick(e) {
         let element = e.target;
+        this.trigger('stockChartMouseClick', { target: element.id, x: this.mouseX, y: this.mouseY });
         this.notify('click', e);
         return false;
     }
@@ -29894,7 +29903,7 @@ class StockChart extends Component {
      * @return {boolean}
      * @private
      */
-    stockChartMouseLeave(e) {
+    stockChartOnMouseLeave(e) {
         let touchArg;
         let pageX;
         let pageY;
@@ -29911,7 +29920,7 @@ class StockChart extends Component {
         }
         this.setMouseXY(pageX, pageY);
         this.allowPan = false;
-        this.stockChartOnMouseLeave(e);
+        this.stockChartOnMouseLeaveEvent(e);
         return false;
     }
     /**
@@ -29919,10 +29928,10 @@ class StockChart extends Component {
      * @return {boolean}
      * @private
      */
-    stockChartOnMouseLeave(e) {
+    stockChartOnMouseLeaveEvent(e) {
         let element = e.target;
         let cancelEvent = Browser.isPointer ? 'pointerleave' : 'mouseleave';
-        //this.trigger(chartMouseLeave, { target: element.id, x: this.mouseX, y: this.mouseY });
+        this.trigger('stockChartMouseLeave', { target: element.id, x: this.mouseX, y: this.mouseY });
         this.isChartDrag = false;
         this.notify(cancelEvent, e);
         if (this.stockEvent) {
@@ -30068,6 +30077,27 @@ __decorate$9([
 __decorate$9([
     Event()
 ], StockChart.prototype, "selectorRender", void 0);
+__decorate$9([
+    Event()
+], StockChart.prototype, "stockChartMouseMove", void 0);
+__decorate$9([
+    Event()
+], StockChart.prototype, "stockChartMouseLeave", void 0);
+__decorate$9([
+    Event()
+], StockChart.prototype, "stockChartMouseDown", void 0);
+__decorate$9([
+    Event()
+], StockChart.prototype, "stockChartMouseUp", void 0);
+__decorate$9([
+    Event()
+], StockChart.prototype, "stockChartMouseClick", void 0);
+__decorate$9([
+    Event()
+], StockChart.prototype, "pointClick", void 0);
+__decorate$9([
+    Event()
+], StockChart.prototype, "pointMove", void 0);
 __decorate$9([
     Property('None')
 ], StockChart.prototype, "selectionMode", void 0);

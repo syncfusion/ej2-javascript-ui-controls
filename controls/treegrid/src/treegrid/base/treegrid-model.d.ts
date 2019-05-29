@@ -58,6 +58,7 @@ export interface TreeGridModel extends ComponentModel{
     /**
    * It is used to render TreeGrid table rows.
    * @default []
+   * @isDataSource true
    */
     dataSource?: Object | DataManager;
 

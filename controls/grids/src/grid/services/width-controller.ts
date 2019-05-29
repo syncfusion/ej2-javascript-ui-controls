@@ -17,6 +17,7 @@ export class ColumnWidthService {
 
     public setWidthToColumns(): void {
         let i: number = 0; let indexes: number[] = this.parent.getColumnIndexesInView(); let wFlag: boolean = true;
+        let totalColumnsWidth: number = 0;
         if (this.parent.allowGrouping) {
             for (let len: number = this.parent.groupSettings.columns.length; i < len; i++) {
                 if (this.parent.enableColumnVirtualization && indexes.indexOf(i) === -1) { wFlag = false; continue; }
@@ -34,13 +35,54 @@ export class ColumnWidthService {
         (<Column[]>this.parent.getColumns()).forEach((column: Column, index: number) => {
             this.setColumnWidth(column, wFlag && this.parent.enableColumnVirtualization ? undefined : index + i);
         });
+        totalColumnsWidth = this.getTableWidth(this.parent.getColumns());
+        this.setMinwidthBycalculation(totalColumnsWidth);
+    }
+
+    public setMinwidthBycalculation(tWidth?: number): void {
+        let difference: number = 0;
+        let collection: Column[] = this.parent.getColumns().filter((a: Column) => {
+            return isNullOrUndefined(a.width) || a.width === 'auto';
+        });
+        if (collection.length) {
+            if (!isNullOrUndefined(this.parent.width) && this.parent.width !== 'auto') {
+                difference = (typeof this.parent.width === 'string' ? parseInt(this.parent.width, 10) : this.parent.width) - tWidth;
+            }
+            let tmWidth: number = 0;
+            for (let cols of collection) {
+
+                tmWidth += !isNullOrUndefined(cols.minWidth) ?
+                    ((typeof cols.minWidth === 'string' ? parseInt(cols.minWidth, 10) : cols.minWidth)) : 0;
+            }
+            for (let i: number = 0; i < collection.length; i++) {
+                if (tWidth === 0 && this.parent.allowResizing && this.isWidthUndefined() && (i !== collection.length - 1)) {
+                    this.setUndefinedColumnWidth(collection);
+                }
+                if (tWidth !== 0 && difference < tmWidth) {
+                    this.setWidth(collection[i].minWidth, this.parent.getColumnIndexByField(collection[i].field));
+                } else if (tWidth !== 0 && difference > tmWidth) {
+                    this.setWidth('', this.parent.getColumnIndexByField(collection[i].field), true);
+                }
+            }
+        }
+    }
+
+    public setUndefinedColumnWidth(collection?: Column[]): void {
+        for (let k: number = 0; k < collection.length; k++) {
+            if (k !== collection.length - 1) {
+                collection[k].width = 200;
+                this.setWidth(200, this.parent.getColumnIndexByField(collection[k].field));
+            }
+        }
     }
 
     public setColumnWidth(column: Column, index?: number, module?: string): void {
         let columnIndex: number = isNullOrUndefined(index) ? this.parent.getNormalizedColumnIndex(column.uid) : index;
         let cWidth: string | number = this.getWidth(column);
+        let tgridWidth: number = this.getTableWidth(this.parent.getColumns());
         if (cWidth !== null) {
             this.setWidth(cWidth, columnIndex);
+            this.setMinwidthBycalculation(tgridWidth);
             if ((this.parent.allowResizing && module === 'resize') || (this.parent.getFrozenColumns() && this.parent.allowResizing)) {
                 this.setWidthToTable();
             }
@@ -48,7 +90,7 @@ export class ColumnWidthService {
         }
     }
 
-    private setWidth(width: string | number, index: number): void {
+    private setWidth(width: string | number, index: number, clear?: boolean): void {
         let chrome: string = 'chrome';
         let webstore: string = 'webstore';
         if (typeof (width) === 'string' && width.indexOf('%') !== -1 &&
@@ -67,8 +109,10 @@ export class ColumnWidthService {
         } else {
             headerCol = (<HTMLTableColElement>header.querySelector('colgroup').children[index]);
         }
-        if (headerCol) {
+        if (headerCol && !clear) {
             headerCol.style.width = fWidth;
+        } else if (headerCol && clear) {
+            headerCol.style.width = ' ';
         }
         let contentCol: HTMLTableColElement;
         if (frzCols && index >= frzCols) {
@@ -77,8 +121,10 @@ export class ColumnWidthService {
         } else {
             contentCol = (<HTMLTableColElement>content.querySelector('colgroup').children[index]);
         }
-        if (contentCol) {
+        if (contentCol && !clear) {
             contentCol.style.width = fWidth;
+        } else if (contentCol && clear) {
+            contentCol.style.width = ' ';
         }
         let edit: NodeListOf<Element> = this.parent.element.querySelectorAll('.e-table.e-inline-edit');
         let editTableCol: HTMLTableColElement[] = [];
@@ -112,9 +158,16 @@ export class ColumnWidthService {
 
         return result;
     }
+    public isWidthUndefined(): boolean {
+        let isWidUndefCount: number = this.parent.getColumns().filter((col: Column) => {
+            return isNullOrUndefined(col.width) && isNullOrUndefined(col.minWidth);
+        }).length;
+        return (this.parent.getColumns().length === isWidUndefCount);
+    }
 
     public getWidth(column: Column): string | number {
-        if (isNullOrUndefined(column.width) && this.parent.allowResizing) {
+        if (isNullOrUndefined(column.width) && this.parent.allowResizing
+            && isNullOrUndefined(column.minWidth) && !this.isWidthUndefined()) {
             column.width = 200;
         }
         if (!column.width) { return null; }
@@ -132,6 +185,9 @@ export class ColumnWidthService {
         let tWidth: number = 0;
         for (let column of columns) {
             let cWidth: string | number = this.getWidth(column);
+            if (column.width === 'auto') {
+                cWidth = 0;
+            }
             if (column.visible !== false && cWidth !== null) {
                 tWidth += parseInt(cWidth.toString(), 10);
             }
@@ -156,7 +212,14 @@ export class ColumnWidthService {
     }
 
     private setWidthToMovableTable(): void {
-        let movableWidth: string = this.calcMovableOrFreezeColWidth('movable');
+        let movableWidth: string = '';
+        let isColUndefined: boolean = this.parent.getColumns().filter((a: Column) => { return isNullOrUndefined(a.width); }).length >= 1;
+        let isWidthAuto: boolean = this.parent.getColumns().filter((a: Column) => { return (a.width === 'auto'); }).length >= 1;
+        if (typeof this.parent.width === 'number' && !isColUndefined && !isWidthAuto) {
+            movableWidth = formatUnit(this.parent.width - parseInt(this.calcMovableOrFreezeColWidth('freeze').split('px')[0], 10) - 5);
+        } else if (!isColUndefined && !isWidthAuto) {
+            movableWidth = this.calcMovableOrFreezeColWidth('movable');
+        }
         if (this.parent.getHeaderContent().querySelector('.e-movableheader').firstElementChild) {
             (this.parent.getHeaderContent().querySelector('.e-movableheader').firstElementChild as HTMLTableElement).style.width
                 = movableWidth;
@@ -170,7 +233,7 @@ export class ColumnWidthService {
     }
     private setWidthToMovableEditTable(): void {
         let movableWidth: string = this.calcMovableOrFreezeColWidth('movable');
-        (this.parent.element.querySelectorAll('.e-table.e-inline-edit')[1]as HTMLTableElement).style.width = movableWidth;
+        (this.parent.element.querySelectorAll('.e-table.e-inline-edit')[1] as HTMLTableElement).style.width = movableWidth;
     }
     public setWidthToTable(): void {
         let tWidth: string = formatUnit(this.getTableWidth(<Column[]>this.parent.getColumns()));

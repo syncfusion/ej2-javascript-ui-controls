@@ -491,7 +491,9 @@ export class Filter implements IAction {
             this.removeFilteredColsByField(this.parent.getColumnByUid(filteredcols[i]).field, false);
         }
         this.refresh = true;
-        this.parent.renderModule.refresh();
+        if (filteredcols.length) {
+            this.parent.renderModule.refresh();
+        }
         if (this.parent.filterSettings.columns.length === 0 && this.parent.element.querySelector('.e-filtered')) {
             let fltrElement: Element[] = [].slice.call(this.parent.element.querySelectorAll('.e-filtered'));
             for (let i: number = 0, len: number = fltrElement.length; i < len; i++) {

@@ -1053,9 +1053,6 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
     ], DropDownBase.prototype, "fields", void 0);
     __decorate([
         Property(false)
-    ], DropDownBase.prototype, "enableRtl", void 0);
-    __decorate([
-        Property(false)
     ], DropDownBase.prototype, "enablePersistence", void 0);
     __decorate([
         Property(null)
@@ -5427,10 +5424,11 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         if (!this.list) {
             _super.prototype.render.call(this);
         }
-        return this.ulElement ? this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li
-            + ':not(.' + HIDE_LIST + ')') : null;
+        return this.ulElement ? (this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li).length > 0 &&
+            this.ulElement.querySelectorAll('.' + dropDownBaseClasses.li
+                + ':not(.' + HIDE_LIST + ')')) : null;
     };
-    MultiSelect.prototype.focusIn = function (e) {
+    MultiSelect.prototype.focusInHandler = function (e) {
         if (this.enabled) {
             this.showOverAllClear();
             this.inputFocus = true;
@@ -6469,7 +6467,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     MultiSelect.prototype.wireEvent = function () {
         EventHandler.add(this.componentWrapper, 'mousedown', this.wrapperClick, this);
         EventHandler.add(window, 'resize', this.windowResize, this);
-        EventHandler.add(this.inputElement, 'focus', this.focusIn, this);
+        EventHandler.add(this.inputElement, 'focus', this.focusInHandler, this);
         EventHandler.add(this.inputElement, 'keydown', this.onKeyDown, this);
         EventHandler.add(this.inputElement, 'keyup', this.KeyUp, this);
         if (this.mode !== 'CheckBox') {
@@ -6870,6 +6868,24 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
+     * Sets the focus to widget for interaction.
+     * @returns void
+     */
+    MultiSelect.prototype.focusIn = function () {
+        if (document.activeElement !== this.inputElement && this.enabled) {
+            this.inputElement.focus();
+        }
+    };
+    /**
+     * Remove the focus from widget, if the widget is in focus state.
+     * @returns void
+     */
+    MultiSelect.prototype.focusOut = function () {
+        if (document.activeElement === this.inputElement && this.enabled) {
+            this.inputElement.blur();
+        }
+    };
+    /**
      * Shows the spinner loader.
      * @returns void.
      */
@@ -7067,7 +7083,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     MultiSelect.prototype.unWireEvent = function () {
         EventHandler.remove(this.componentWrapper, 'mousedown', this.wrapperClick);
         EventHandler.remove(window, 'resize', this.windowResize);
-        EventHandler.remove(this.inputElement, 'focus', this.focusIn);
+        EventHandler.remove(this.inputElement, 'focus', this.focusInHandler);
         EventHandler.remove(this.inputElement, 'keydown', this.onKeyDown);
         if (this.mode !== 'CheckBox') {
             EventHandler.remove(this.inputElement, 'input', this.onInput);

@@ -1,5 +1,5 @@
 import { IPivotValues, IDataOptions, PivotEngine, IFieldListOptions, IFieldOptions, IAxisSet, IDataSet } from '../../base/engine';
-import { IDrilledItem } from '../../base/engine';
+import { IDrilledItem, IStringIndex } from '../../base/engine';
 import { Mode, SelectionMode, PdfBorderStyle } from '../base/enum';
 import { L10n } from '@syncfusion/ej2-base';
 import { Grid, ExcelStyle, CellSelectionMode, SelectionType, CheckboxSelectionType } from '@syncfusion/ej2-grids';
@@ -18,6 +18,8 @@ import { PivotView } from '../../pivotview';
 export interface LoadEventArgs {
     /** Defines current dataSource */
     dataSource?: IDataOptions;
+    pivotview?: PivotView;
+    fieldsType?: IStringIndex;
 }
 
 export interface SaveReportArgs {
@@ -424,21 +426,21 @@ export interface AggregateEventArgs {
     skipFormatting?: boolean;
 }
 
-export interface QueryCellInfoEventArgs  {
-     /** Defines the row data associated with this cell. */
-     data?: Object;
-     /** Defines the cell element. */
-     cell?: Element;
-     /** Defines the column object associated with this cell. */
-     column?: Column;
-     /** Defines the no. of columns to be spanned */
-     colSpan?: number;
-     /** Defines the no. of rows to be spanned */
-     rowSpan?: number;
-     /** Defines the current action. */
-     requestType?: string;
-     /** Define the foreignKey row data associated with this column */
-     foreignKeyData?: Object;
-     /** Define the pivot component object */
-     pivotview?: PivotView;
+export interface QueryCellInfoEventArgs {
+    /** Defines the row data associated with this cell. */
+    data?: Object;
+    /** Defines the cell element. */
+    cell?: Element;
+    /** Defines the column object associated with this cell. */
+    column?: Column;
+    /** Defines the no. of columns to be spanned */
+    colSpan?: number;
+    /** Defines the no. of rows to be spanned */
+    rowSpan?: number;
+    /** Defines the current action. */
+    requestType?: string;
+    /** Define the foreignKey row data associated with this column */
+    foreignKeyData?: Object;
+    /** Define the pivot component object */
+    pivotview?: PivotView;
 }

@@ -20,6 +20,7 @@ export class BulletsAndNumberingDialog {
     private listLevelPattern: ListLevelPattern;
     private listFormat: WListFormat;
     private abstractList: WAbstractList;
+    private tabObj: Tab;
     /**
      * @private
      */
@@ -44,7 +45,7 @@ export class BulletsAndNumberingDialog {
         this.createNumberList(id);
         this.createBulletList(id);
         //Initialize Tab component
-        let tabObj: Tab = new Tab({
+        this.tabObj = new Tab({
             items: [
                 {
                     header: { 'text': locale.getConstant('Numbering') },
@@ -62,8 +63,7 @@ export class BulletsAndNumberingDialog {
             width: 272,
         });
         //Render initialized Tab component
-        tabObj.appendTo(tabTarget);
-        tabObj.refresh();
+        this.tabObj.appendTo(tabTarget);
     }
     private createNumberList(id: string): void {
         let numberListDiv: HTMLElement = createElement('div', { className: 'e-de-style-numbered-list', id: id + '_Number' });
@@ -208,6 +208,7 @@ export class BulletsAndNumberingDialog {
         }];
         this.owner.dialog.dataBind();
         this.owner.dialog.show();
+        this.tabObj.refresh();
     }
     /**
      * @private
@@ -357,6 +358,10 @@ export class BulletsAndNumberingDialog {
         if (this.abstractList) {
             this.abstractList.destroy();
             this.abstractList = undefined;
+        }
+        if (this.tabObj) {
+            this.tabObj.destroy();
+            this.tabObj = undefined;
         }
         if (this.target && this.target.parentElement) {
             this.target.parentElement.removeChild(this.target);

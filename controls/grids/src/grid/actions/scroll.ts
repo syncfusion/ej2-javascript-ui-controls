@@ -3,7 +3,7 @@ import { addClass, removeClass } from '@syncfusion/ej2-base';
 import { formatUnit, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IGrid, IAction, NotifyArgs } from '../base/interface';
 import { getScrollBarWidth, getUpdateUsingRaf } from '../base/util';
-import { scroll, contentReady, uiUpdate, onEmpty, headerRefreshed } from '../base/constant';
+import { scroll, contentReady, uiUpdate, onEmpty, headerRefreshed, textWrapRefresh } from '../base/constant';
 import { ColumnWidthService } from '../services/width-controller';
 import { Grid } from '../base/grid';
 
@@ -41,8 +41,11 @@ export class Scroll implements IAction {
     /**
      * @hidden
      */
-    public setWidth(): void {
+    public setWidth(uiupdate?: boolean): void {
         this.parent.element.style.width = formatUnit(this.parent.width);
+        if (uiupdate) {
+            this.widthService.setWidthToColumns();
+        }
         if ((<Grid>this.parent).toolbarModule && (<Grid>this.parent).toolbarModule.toolbar &&
             (<Grid>this.parent).toolbarModule.toolbar.element) {
             (<Grid>this.parent).toolbarModule.toolbar.refreshOverflow();
@@ -118,6 +121,7 @@ export class Scroll implements IAction {
         this.parent.on(onEmpty, this.wireEvents, this);
         this.parent.on(contentReady, this.wireEvents, this);
         this.parent.on(uiUpdate, this.onPropertyChanged, this);
+        this.parent.on(textWrapRefresh, this.wireEvents, this);
         this.parent.on(headerRefreshed, this.setScrollLeft, this);
     }
     /**
@@ -128,6 +132,7 @@ export class Scroll implements IAction {
         this.parent.off(onEmpty, this.wireEvents);
         this.parent.off(contentReady, this.wireEvents);
         this.parent.off(uiUpdate, this.onPropertyChanged);
+        this.parent.off(textWrapRefresh, this.wireEvents);
         this.parent.off(headerRefreshed, this.setScrollLeft);
     }
 
@@ -221,7 +226,7 @@ export class Scroll implements IAction {
             } else {
                 cont = this.parent.getContent().querySelector('.e-frozencontent');
                 if (this.previousValues.top === top && (top < 0 || (cont.scrollHeight - cont.clientHeight) < top)
-                   || (top < 0 || (cont.scrollHeight - cont.clientHeight) < top)) {
+                    || (top < 0 || (cont.scrollHeight - cont.clientHeight) < top)) {
                     return;
                 }
                 e.preventDefault();
@@ -321,7 +326,7 @@ export class Scroll implements IAction {
                 }
                 if (this.parent.frozenColumns && this.header.querySelector('.e-movableheader')) {
                     (this.header.querySelector('.e-movableheader') as HTMLElement).scrollLeft =
-                    (this.content.querySelector('.e-movablecontent') as HTMLElement).scrollLeft;
+                        (this.content.querySelector('.e-movablecontent') as HTMLElement).scrollLeft;
                 }
             },
         );
@@ -342,6 +347,9 @@ export class Scroll implements IAction {
     private ensureOverflow(content: HTMLElement): void {
         if (this.parent.getFrozenColumns()) {
             (content.querySelector('.e-movablecontent') as HTMLElement).style.overflowY = this.parent.height === 'auto' ? 'auto' : 'scroll';
+            if ((content.querySelector('.e-movablecontent') as HTMLElement).style.overflowY === 'scroll') {
+                this.setPadding();
+            }
         } else {
             content.style.overflowY = this.parent.height === 'auto' ? 'auto' : 'scroll';
         }
@@ -358,7 +366,8 @@ export class Scroll implements IAction {
         }
         this.wireEvents();
         this.setHeight();
-        this.setWidth();
+        let width: string = 'width';
+        this.setWidth(!isNullOrUndefined(e.properties[width]));
     }
     /**
      * @hidden

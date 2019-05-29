@@ -108,6 +108,7 @@ export class DataLabel {
             }
         }
         text = (!isNullOrUndefined(datasrcObj)) ? datasrcObj[labelpath].toString() : shapeData['properties'][labelpath]
+        let dataLabelText : string = text;
         let projectionType : string = this.maps.projectionType;
         location = findMidPointOfPolygon(shapePoint[midIndex], projectionType);
         if (!isNullOrUndefined(text) && !isNullOrUndefined(location)) {
@@ -254,7 +255,8 @@ export class DataLabel {
                 element: isNullOrUndefined(labelElement) ? element : labelElement,
                 layerIndex: layerIndex,
                 shapeIndex: index,
-                labelIndex: index
+                labelIndex: index,
+                dataLabelText: dataLabelText
             });
             if (labelTemplateElement.childElementCount > 0 && !this.maps.element.contains(labelTemplateElement)) {
                 document.getElementById(this.maps.element.id + '_Secondary_Element').appendChild(labelTemplateElement);

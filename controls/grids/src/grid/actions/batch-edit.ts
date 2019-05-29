@@ -133,6 +133,9 @@ export class BatchEdit {
         let mHdr: Element = this.parent.getHeaderContent().querySelector('.e-movableheader');
         let clear: boolean = (!e.container.isContent || !e.container.isDataCell) && !(this.parent.frozenRows && e.container.isHeader);
         if (!e.byKey || clear) {
+            if (this.parent.isEdit && clear) {
+                this.saveCell();
+            }
             return;
         }
         let [rowIndex, cellIndex]: number[] = e.container.indexes;

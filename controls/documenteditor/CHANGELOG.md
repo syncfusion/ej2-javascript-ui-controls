@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.49 (2019-05-29)
+
+### Document Editor
+
+#### Bug Fixes
+
+- #226399 - Header and Footer is now layout properly if document contains section break
+
 ## 17.1.48 (2019-05-21)
 
 ### Document Editor

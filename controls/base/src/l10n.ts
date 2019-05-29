@@ -1,4 +1,4 @@
-import {  extend } from './util';
+import { extend, isNullOrUndefined } from './util';
 import { defaultCulture } from './internationalization';
 /**
  * L10n modules provides localized text for different culture.
@@ -61,8 +61,12 @@ export class L10n {
      * @return string
      */
     public getConstant(prop: string): string {
-       /* tslint:disable no-any */
-       return (<any>this.currentLocale)[prop] || (<any>this.localeStrings)[prop] || '';
+        // Removed conditional operator because this method does not return correct value when passing 0 as value in localization
+        if (!isNullOrUndefined(this.currentLocale[prop])) {
+            return this.currentLocale[prop];
+        } else {
+            return this.localeStrings[prop] || '';
+        }
     }
 
     /**
@@ -73,8 +77,8 @@ export class L10n {
      */
 
     private intGetControlConstant(curObject: Object, locale: string): Object {
-        if ((<any>curObject)[locale]) {
-            return (<any>curObject)[locale][this.controlName];
+        if ((curObject)[locale]) {
+            return (curObject)[locale][this.controlName];
         }
         return null;
     }

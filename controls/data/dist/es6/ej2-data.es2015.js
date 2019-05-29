@@ -3367,6 +3367,12 @@ class ODataAdaptor extends UrlAdaptor {
      * @returns aggregateResult
      */
     processResponse(data, ds, query, xhr, request, changes) {
+        let metaCheck = 'odata.metadata';
+        if ((request && request.type === 'GET') && !this.rootUrl && data[metaCheck]) {
+            let dataUrls = data[metaCheck].split('/$metadata#');
+            this.rootUrl = dataUrls[0];
+            this.resourceTableName = dataUrls[1];
+        }
         let pvtData = 'pvtData';
         if (!isNullOrUndefined(data.d)) {
             let dataCopy = ((query && query.isCountRequired) ? data.d.results : data.d);
@@ -3516,7 +3522,9 @@ class ODataAdaptor extends UrlAdaptor {
      */
     batchRequest(dm, changes, e, query, original) {
         let initialGuid = e.guid = DataUtil.getGuid(this.options.batchPre);
-        let url = dm.dataSource.url.replace(/\/*$/, '/' + this.options.batch);
+        let url = this.rootUrl ? this.rootUrl + '/' + this.options.batch :
+            dm.dataSource.url.replace(/\/*$/, '/' + this.options.batch);
+        e.url = this.resourceTableName ? this.resourceTableName : e.url;
         let args = {
             url: e.url,
             key: e.key,
@@ -3840,6 +3848,12 @@ class ODataV4Adaptor extends ODataAdaptor {
      * @returns aggregateResult
      */
     processResponse(data, ds, query, xhr, request, changes) {
+        let metaName = '@odata.context';
+        if ((request && request.type === 'GET') && !this.rootUrl && data[metaName]) {
+            let dataUrl = data[metaName].split('/$metadata#');
+            this.rootUrl = dataUrl[0];
+            this.resourceTableName = dataUrl[1];
+        }
         let pvtData = 'pvtData';
         let pvt = request && request[pvtData];
         let emptyAndBatch = super.processBatchResponse(data, query, xhr, request, changes);
@@ -4433,6 +4447,7 @@ class DataManager {
      * @param  {Function} always - Defines the callback function and triggers when the Promise is resolved or rejected.
      */
     executeQuery(query, done, fail, always) {
+        let makeRequest = 'makeRequest';
         if (typeof query === 'function') {
             always = fail;
             fail = done;
@@ -4447,9 +4462,15 @@ class DataManager {
         }
         let deffered = new Deferred();
         let args = { query: query };
-        if (!this.dataSource.offline && (this.dataSource.url !== undefined && this.dataSource.url !== '')) {
+        if (!this.dataSource.offline && (this.dataSource.url !== undefined && this.dataSource.url !== '')
+            || (!isNullOrUndefined(this.adaptor[makeRequest]))) {
             let result = this.adaptor.processQuery(this, query);
-            this.makeRequest(result, deffered, args, query);
+            if (!isNullOrUndefined(this.adaptor[makeRequest])) {
+                this.adaptor[makeRequest](result, deffered, args, query);
+            }
+            else {
+                this.makeRequest(result, deffered, args, query);
+            }
         }
         else {
             DataManager.nextTick(() => {
@@ -4645,10 +4666,16 @@ class DataManager {
             tableName = null;
         }
         let req = this.adaptor.insert(this, data, tableName, query, position);
+        let doAjaxRequest = 'doAjaxRequest';
         if (this.dataSource.offline) {
             return req;
         }
-        return this.doAjaxRequest(req);
+        if (!isNullOrUndefined(this.adaptor[doAjaxRequest])) {
+            return this.adaptor[doAjaxRequest](req);
+        }
+        else {
+            return this.doAjaxRequest(req);
+        }
     }
     /**
      * Removes data from the table with the given key.
@@ -4666,10 +4693,16 @@ class DataManager {
             tableName = null;
         }
         let res = this.adaptor.remove(this, keyField, value, tableName, query);
+        let doAjaxRequest = 'doAjaxRequest';
         if (this.dataSource.offline) {
             return res;
         }
-        return this.doAjaxRequest(res);
+        if (!isNullOrUndefined(this.adaptor[doAjaxRequest])) {
+            return this.adaptor[doAjaxRequest](res);
+        }
+        else {
+            return this.doAjaxRequest(res);
+        }
     }
     /**
      * Updates existing record in the given table.
@@ -4684,10 +4717,16 @@ class DataManager {
             tableName = null;
         }
         let res = this.adaptor.update(this, keyField, value, tableName, query, original);
+        let doAjaxRequest = 'doAjaxRequest';
         if (this.dataSource.offline) {
             return res;
         }
-        return this.doAjaxRequest(res);
+        if (!isNullOrUndefined(this.adaptor[doAjaxRequest])) {
+            return this.adaptor[doAjaxRequest](res);
+        }
+        else {
+            return this.doAjaxRequest(res);
+        }
     }
     doAjaxRequest(res) {
         let defer = new Deferred();

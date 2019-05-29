@@ -1409,7 +1409,15 @@ let NumericTextBox = class NumericTextBox extends Component {
             detach(this.spinUp);
             detach(this.spinDown);
         }
-        this.container.parentElement.appendChild(this.cloneElement);
+        let attrArray = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
+            'autocorrect', 'aria-disabled', 'aria-placeholder', 'autocapitalize',
+            'spellcheck', 'aria-autocomplete', 'tabindex', 'aria-valuemin',
+            'aria-valuemax', 'aria-live', 'aria-valuenow', 'aria-invalid'];
+        attrArray.forEach((value) => {
+            this.element.removeAttribute(value);
+        });
+        this.element.classList.remove('e-input');
+        this.container.insertAdjacentElement('afterend', this.element);
         detach(this.container);
         super.destroy();
     }
@@ -2482,7 +2490,9 @@ function addMaskErrorClass() {
 }
 function removeMaskError() {
     let parentElement = this.element.parentNode;
-    removeClass([parentElement], ERROR$1);
+    if (!isNullOrUndefined(parentElement)) {
+        removeClass([parentElement], ERROR$1);
+    }
     removeClass([this.element], ERROR$1);
     attributes(this.element, { 'aria-invalid': 'false' });
 }
@@ -2914,7 +2924,15 @@ let MaskedTextBox = class MaskedTextBox extends Component {
      */
     destroy() {
         unwireEvents.call(this);
-        this.inputObj.container.parentElement.appendChild(this.cloneElement);
+        let attrArray = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
+            'autocorrect', 'aria-disabled', 'aria-placeholder', 'autocapitalize',
+            'spellcheck', 'aria-autocomplete',
+            'aria-live', 'aria-valuenow', 'aria-invalid'];
+        attrArray.forEach((value) => {
+            this.element.removeAttribute(value);
+        });
+        this.element.classList.remove('e-input');
+        this.inputObj.container.insertAdjacentElement('afterend', this.element);
         detach(this.inputObj.container);
         super.destroy();
     }
@@ -11114,7 +11132,7 @@ let TextBox = class TextBox extends Component {
         this.unWireEvents();
         this.respectiveElement.classList.remove('e-input');
         this.removeAttributes(['aria-placeholder', 'aria-disabled', 'aria-readonly', 'aria-labelledby']);
-        this.textboxWrapper.container.parentElement.appendChild(this.respectiveElement);
+        this.textboxWrapper.container.insertAdjacentElement('afterend', this.respectiveElement);
         detach(this.textboxWrapper.container);
         this.textboxWrapper = null;
         super.destroy();

@@ -75,6 +75,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
     function CalendarBase(options, element) {
         var _this = _super.call(this, options, element) || this;
         _this.effect = '';
+        _this.isPopupClicked = false;
         _this.keyConfigs = {
             controlUp: 'ctrl+38',
             controlDown: 'ctrl+40',
@@ -1766,9 +1767,6 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
     ], CalendarBase.prototype, "showTodayButton", void 0);
     __decorate([
         Property(false)
-    ], CalendarBase.prototype, "enableRtl", void 0);
-    __decorate([
-        Property(false)
     ], CalendarBase.prototype, "enablePersistence", void 0);
     __decorate([
         Event()
@@ -1980,6 +1978,7 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
     };
     Calendar.prototype.clickHandler = function (e) {
         var eve = e.currentTarget;
+        this.isPopupClicked = true;
         if (eve.classList.contains(OTHERMONTH)) {
             if (this.isMultiSelection) {
                 var copyValues = this.copyValues(this.values);
@@ -3071,11 +3070,22 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     
+    DatePicker.prototype.bindInputEvent = function () {
+        if (!isNullOrUndefined(this.formatString)) {
+            if (this.formatString.indexOf('y') === -1) {
+                EventHandler.add(this.inputElement, 'input', this.inputHandler, this);
+            }
+            else {
+                EventHandler.remove(this.inputElement, 'input', this.inputHandler);
+            }
+        }
+    };
     DatePicker.prototype.bindEvents = function () {
         if (this.enabled) {
             EventHandler.add(this.inputWrapper.buttons[0], 'mousedown touchstart', this.dateIconHandler, this);
             EventHandler.add(this.inputElement, 'focus', this.inputFocusHandler, this);
             EventHandler.add(this.inputElement, 'blur', this.inputBlurHandler, this);
+            this.bindInputEvent();
             // To prevent the twice triggering.
             EventHandler.add(this.inputElement, 'change', this.inputChangeHandler, this);
             if (this.showClearButton && this.inputWrapper.clearButton) {
@@ -3202,6 +3212,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         this.trigger('focus', focusArguments);
         this.updateIconState();
     };
+    DatePicker.prototype.inputHandler = function (e) {
+        this.isPopupClicked = false;
+    };
     DatePicker.prototype.inputBlurHandler = function (e) {
         this.strictModeUpdate();
         if (this.inputElement.value === '' && isNullOrUndefined(this.value)) {
@@ -3228,6 +3241,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 keyConfigs: this.calendarKeyConfigs
             });
         }
+        this.isPopupClicked = false;
     };
     DatePicker.prototype.documentHandler = function (e) {
         if (e.type !== 'touchstart') {
@@ -3370,6 +3384,12 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             date = this.globalize.parseDate(this.inputElement.value, dateOptions);
+            if (!isNullOrUndefined(this.formatString) && this.inputElement.value !== '' && this.strictMode) {
+                if ((this.isPopupClicked || (!this.isPopupClicked && this.inputElement.value === this.previousElementValue))
+                    && this.formatString.indexOf('y') === -1) {
+                    date.setFullYear(this.value.getFullYear());
+                }
+            }
         }
         if (this.strictMode && date) {
             Input.setValue(this.globalize.formatDate(date, dateOptions), this.inputElement, this.floatLabelType, this.showClearButton);
@@ -4067,6 +4087,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'format':
                     this.checkFormat();
+                    this.bindInputEvent();
                     this.updateInput();
                     break;
                 case 'allowEdit':
@@ -4168,9 +4189,6 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property(true)
     ], DatePicker.prototype, "allowEdit", void 0);
-    __decorate$1([
-        Property(false)
-    ], DatePicker.prototype, "enableRtl", void 0);
     __decorate$1([
         Property(false)
     ], DatePicker.prototype, "enablePersistence", void 0);
@@ -8250,9 +8268,6 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], DateRangePicker.prototype, "enablePersistence", void 0);
     __decorate$2([
-        Property(false)
-    ], DateRangePicker.prototype, "enableRtl", void 0);
-    __decorate$2([
         Property(new Date(1900, 0, 1))
     ], DateRangePicker.prototype, "min", void 0);
     __decorate$2([
@@ -10399,9 +10414,6 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         Property(true)
     ], TimePicker.prototype, "allowEdit", void 0);
     __decorate$3([
-        Property(false)
-    ], TimePicker.prototype, "enableRtl", void 0);
-    __decorate$3([
         Event()
     ], TimePicker.prototype, "change", void 0);
     __decorate$3([
@@ -11745,9 +11757,6 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
     __decorate$4([
         Property(1000)
     ], DateTimePicker.prototype, "zIndex", void 0);
-    __decorate$4([
-        Property(false)
-    ], DateTimePicker.prototype, "enableRtl", void 0);
     __decorate$4([
         Property(false)
     ], DateTimePicker.prototype, "enablePersistence", void 0);

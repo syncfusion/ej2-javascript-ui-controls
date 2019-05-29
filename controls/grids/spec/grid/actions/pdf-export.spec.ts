@@ -72,13 +72,9 @@ describe('pdf Export =>', () => {
             expect((<any>pdfGrid.headers).rows.length).toBe(1);
         });
 
-        it("hide a column", (done) => {
-            gridObj.dataBound = () => {
-                expect(gridObj.getVisibleColumns().length).toBe(4);
-                gridObj.dataBound = null;
-                done();
-            }
+        it("hide a column", () => {
             gridObj.hideColumns('Title');
+            expect(gridObj.getVisibleColumns().length).toBe(4);            
         });
 
         it('visibility check', () => {
@@ -172,13 +168,9 @@ describe('pdf Export =>', () => {
             expect((<any>pdfGrid.headers).rows[1].gridCells.cells.length).toBe(5);
         });
 
-        it("hide a column", (done) => {
-            gridObj.dataBound = () => {
-                expect(gridObj.getVisibleColumns().length).toBe(4);
-                gridObj.dataBound = null;
-                done();
-            }
+        it("hide a column", () => {
             gridObj.hideColumns('Freight', 'field');
+            expect(gridObj.getVisibleColumns().length).toBe(4); 
         });
         it('stacked header visibility check', () => {
             let pdfGrid: PdfGrid = (<any>gridObj.pdfExportModule).processGridExport(gridObj, {result: gridObj.dataSource } ,{});

@@ -930,6 +930,17 @@ var Render = /** @__PURE__ @class */ (function () {
         if (summaryRow) {
             addClass([args.row], 'e-summaryrow');
         }
+        if (args.row.querySelector('.e-treegridexpand')) {
+            args.row.setAttribute('aria-expanded', 'true');
+        }
+        else if (args.row.querySelector('.e-treegridcollapse')) {
+            args.row.setAttribute('aria-expanded', 'false');
+        }
+        if (this.parent.enableCollapseAll && this.parent.initialRender) {
+            if (!isNullOrUndefined(data.parentItem)) {
+                args.row.style.display = 'none';
+            }
+        }
         this.parent.trigger(rowDataBound, args);
     };
     /**
@@ -1215,6 +1226,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
                     var qry = this.parent.query.clone();
                     qry.queries = [];
                     qry = qry.select([this.parent.parentIdMapping]);
+                    qry.isCountRequired = true;
                     dm.executeQuery(qry).then(function (e) {
                         _this.parentItems = DataUtil.distinct(e.result, _this.parent.parentIdMapping, false);
                         var req = getObject('dataSource.requests', _this.parent).filter(function (e) {
@@ -1340,6 +1352,7 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
             var qry = this.parent.grid.getDataModule().generateQuery();
             var clonequries = qry.queries.filter(function (e) { return e.fn !== 'onPage' && e.fn !== 'onWhere'; });
             qry.queries = clonequries;
+            qry.isCountRequired = true;
             qry.where(this.parent.parentIdMapping, 'equal', rowDetails.record[this.parent.idMapping]);
             showSpinner(this.parent.element);
             dm.executeQuery(qry).then(function (e) {
@@ -1380,8 +1393,13 @@ var DataManipulation = /** @__PURE__ @class */ (function () {
             if (!isNullOrUndefined(currentData[this.parent.childMapping])) {
                 currentData.childRecords = currentData[this.parent.childMapping];
                 currentData.hasChildRecords = true;
-                currentData.expanded = !isNullOrUndefined(currentData[this.parent.expandStateMapping])
-                    ? currentData[this.parent.expandStateMapping] : true;
+                if (this.parent.enableCollapseAll) {
+                    currentData.expanded = false;
+                }
+                else {
+                    currentData.expanded = !isNullOrUndefined(currentData[this.parent.expandStateMapping])
+                        ? currentData[this.parent.expandStateMapping] : true;
+                }
             }
             currentData.index = currentData.hasChildRecords ? this.storedIndex : this.storedIndex;
             if (this.isSelfReference && isNullOrUndefined(currentData[this.parent.parentIdMapping])) {
@@ -2305,7 +2323,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     //   return this.flatData;
     // }
     TreeGrid.prototype.bindGridProperties = function () {
-        this.grid.dataSource = isRemoteData(this) ? this.dataSource : this.flatData;
+        this.grid.dataSource = !(this.dataSource instanceof DataManager) ? this.flatData : this.dataSource;
         this.grid.enableRtl = this.enableRtl;
         this.grid.allowKeyboard = this.allowKeyboard;
         this.grid.columns = this.getGridColumns(this.columns);
@@ -2428,7 +2446,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             else if (treeGrid.flatData.length === 0 && isOffline(treeGrid) && treeGrid.dataSource instanceof DataManager) {
                 var dm = treeGrid.dataSource;
                 treeGrid.dataModule.convertToFlatData(dm.dataSource.json);
-                args.result = treeGrid.flatData;
+                args.result = dm.dataSource.json = treeGrid.flatData;
             }
             if (!isRemoteData(treeGrid)) {
                 treeGrid.notify('dataProcessor', args);
@@ -2530,10 +2548,6 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             _this.trigger(actionComplete, args);
         };
         this.grid.rowDataBound = function (args) {
-            if (args.row instanceof DocumentFragment) {
-                var row = (args.row).querySelector('tr');
-                args.row = row;
-            }
             if (isNullOrUndefined(this.isPrinting)) {
                 setValue('isPrinting', false, args);
             }
@@ -3390,7 +3404,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      */
     TreeGrid.prototype.expandAtLevel = function (level) {
         if (this.allowPaging && this.pageSettings.pageSizeMode === 'All') {
-            var rec = this.flatData.filter(function (e) {
+            var rec = this.grid.dataSource.filter(function (e) {
                 if (e.hasChildRecords && e.level === level) {
                     e.expanded = true;
                 }
@@ -3422,13 +3436,13 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      */
     TreeGrid.prototype.collapseAtLevel = function (level) {
         if (this.allowPaging && this.pageSettings.pageSizeMode === 'All') {
-            var rec = this.flatData.filter(function (e) {
+            var record = this.grid.dataSource.filter(function (e) {
                 if (e.hasChildRecords && e.level === level) {
                     e.expanded = false;
                 }
                 return e.hasChildRecords && e.level === level;
             });
-            this.collapseRow(null, rec);
+            this.collapseRow(null, record);
         }
         else {
             var rec = this.getRecordDetails(level);
@@ -3475,6 +3489,10 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     };
     TreeGrid.prototype.expandCollapse = function (action, row, record, isChild) {
         var gridRows = this.getRows();
+        if (this.rowTemplate) {
+            var rows = this.getContentTable().rows;
+            gridRows = [].slice.call(rows);
+        }
         var rowIndex;
         if (isNullOrUndefined(row)) {
             rowIndex = record.index;
@@ -3482,6 +3500,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             rowIndex = +row.getAttribute('aria-rowindex');
+        }
+        if (!isNullOrUndefined(row)) {
+            row.setAttribute('aria-expanded', action === 'expand' ? 'true' : 'false');
         }
         if (this.allowPaging && this.pageSettings.pageSizeMode === 'All' && !isRemoteData(this)) {
             this.notify(localPagedExpandCollapse, { action: action, row: row, record: record });
@@ -3545,7 +3566,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         }
     };
     TreeGrid.prototype.updateAltRow = function (rows) {
-        if (this.enableAltRow) {
+        if (this.enableAltRow && !this.rowTemplate) {
             var visibleRowCount = 0;
             for (var i = 0; i < rows.length; i++) {
                 var gridRow = rows[i];
@@ -3569,8 +3590,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             rData.expanded = false;
             rows[i].style.display = 'none';
             if (rows[i].querySelector('.e-treecolumn-container .e-treegridexpand')) {
-                removeClass([rows[i].getElementsByClassName('e-icons')[0]], 'e-treegridexpand');
-                addClass([rows[i].getElementsByClassName('e-icons')[0]], 'e-treegridcollapse');
+                var targetEle = rows[i].getElementsByClassName('e-treegridexpand')[0];
+                removeClass([targetEle], 'e-treegridexpand');
+                addClass([targetEle], 'e-treegridcollapse');
                 var cRow = this_1.getRows().filter(function (r) {
                     return r.classList.contains('e-gridrowindex' + rData.index + 'level' + (rData.level + 1));
                 });
@@ -5853,5 +5875,5 @@ var CommandColumn$1 = /** @__PURE__ @class */ (function () {
  * Export TreeGrid component
  */
 
-export { TreeGrid, load, rowDataBound, dataBound, queryCellInfo, beforeDataBound, actionBegin, actionComplete, rowSelecting, rowSelected, checkboxChange, rowDeselected, toolbarClick, beforeExcelExport, beforePdfExport, resizeStop, expanded, expanding, collapsed, collapsing, remoteExpand, localPagedExpandCollapse, pagingActions, printGridInit, contextMenuOpen, contextMenuClick, savePreviousRowPosition, crudAction, beginEdit, beginAdd, recordDoubleClick, cellSave, cellSaved, cellEdit, batchDelete, batchCancel, batchAdd, beforeBatchAdd, beforeBatchSave, batchSave, keyPressed, updateData, doubleTap, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, DataManipulation, Reorder$1 as Reorder, Resize$1 as Resize, Column, EditSettings, FilterSettings, PageSettings, SearchSettings, SelectionSettings, AggregateColumn, AggregateRow, Render, isRemoteData, findParentRecords, getExpandStatus, findChildrenRecords, isOffline, extendArray, getPlainData, getParentData, ToolbarItem, ContextMenuItems, Filter$1 as Filter, ExcelExport$1 as ExcelExport, PdfExport$1 as PdfExport, Page$1 as Page, Toolbar$1 as Toolbar, Aggregate$1 as Aggregate, Sort$1 as Sort, ColumnMenu$1 as ColumnMenu, ContextMenu$1 as ContextMenu, Edit$1 as Edit, CommandColumn$1 as CommandColumn, Selection };
+export { TreeGrid, load, rowDataBound, dataBound, queryCellInfo, beforeDataBound, actionBegin, actionComplete, rowSelecting, rowSelected, checkboxChange, rowDeselected, toolbarClick, beforeExcelExport, beforePdfExport, resizeStop, expanded, expanding, collapsed, collapsing, remoteExpand, localPagedExpandCollapse, pagingActions, printGridInit, contextMenuOpen, contextMenuClick, savePreviousRowPosition, crudAction, beginEdit, beginAdd, recordDoubleClick, cellSave, cellSaved, cellEdit, batchDelete, batchCancel, batchAdd, beforeBatchAdd, beforeBatchSave, batchSave, keyPressed, updateData, doubleTap, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, DataManipulation, Reorder$1 as Reorder, Resize$1 as Resize, Column, EditSettings, FilterSettings, PageSettings, SearchSettings, SelectionSettings, AggregateColumn, AggregateRow, SortDescriptor, SortSettings, Render, isRemoteData, findParentRecords, getExpandStatus, findChildrenRecords, isOffline, extendArray, getPlainData, getParentData, ToolbarItem, ContextMenuItems, Filter$1 as Filter, ExcelExport$1 as ExcelExport, PdfExport$1 as PdfExport, Page$1 as Page, Toolbar$1 as Toolbar, Aggregate$1 as Aggregate, Sort$1 as Sort, ColumnMenu$1 as ColumnMenu, ContextMenu$1 as ContextMenu, Edit$1 as Edit, CommandColumn$1 as CommandColumn, Selection };
 //# sourceMappingURL=ej2-treegrid.es5.js.map

@@ -373,11 +373,23 @@ class CsvHelper {
             if (cell.value instanceof Date) {
                 if (cell.style !== undefined && cell.style.numberFormat !== undefined) {
                     /* tslint:disable-next-line:max-line-length */
-                    csv += this.parseCellValue(this.formatter.displayText(cell.value, { type: 'dateTime', skeleton: cell.style.numberFormat }));
+                    try {
+                        csv += this.parseCellValue(this.formatter.displayText(cell.value, { type: 'dateTime', skeleton: cell.style.numberFormat }));
+                    }
+                    catch (error) {
+                        /* tslint:disable-next-line:max-line-length */
+                        csv += this.parseCellValue(this.formatter.displayText(cell.value, { type: 'dateTime', format: cell.style.numberFormat }));
+                    }
                 }
                 else if (cell.style !== undefined && cell.style.name !== undefined && this.globalStyles.has(cell.style.name)) {
                     /* tslint:disable-next-line:max-line-length */
-                    csv += this.parseCellValue(this.formatter.displayText(cell.value, { type: 'dateTime', skeleton: this.globalStyles.get(cell.style.name) }));
+                    try {
+                        csv += this.parseCellValue(this.formatter.displayText(cell.value, { type: 'dateTime', skeleton: this.globalStyles.get(cell.style.name) }));
+                    }
+                    catch (error) {
+                        /* tslint:disable-next-line:max-line-length */
+                        csv += this.parseCellValue(this.formatter.displayText(cell.value, { type: 'dateTime', format: this.globalStyles.get(cell.style.name) }));
+                    }
                 }
                 else {
                     csv += cell.value;
@@ -406,7 +418,7 @@ class CsvHelper {
         this.csvStr = csv;
     }
     parseCellValue(value) {
-        if (value.indexOf(',') !== -1) {
+        if (value.indexOf(',') !== -1 || value.indexOf('\n') !== -1) {
             return value = '\"' + value + '\"';
         }
         else {
@@ -1099,7 +1111,12 @@ class Workbook {
                     returnFormat = this.intl.getDatePattern({ skeleton: numberFormat, type: 'dateTime' }, true);
                 }
                 catch (error) {
-                    returnFormat = numberFormat;
+                    try {
+                        returnFormat = this.intl.getDatePattern({ format: numberFormat, type: 'dateTime' }, true);
+                    }
+                    catch (error) {
+                        returnFormat = numberFormat;
+                    }
                 }
                 break;
             case 'date':
@@ -1107,7 +1124,12 @@ class Workbook {
                     returnFormat = this.intl.getDatePattern({ skeleton: numberFormat, type: 'date' }, true);
                 }
                 catch (error) {
-                    returnFormat = numberFormat;
+                    try {
+                        returnFormat = this.intl.getDatePattern({ format: numberFormat, type: 'date' }, true);
+                    }
+                    catch (error) {
+                        returnFormat = numberFormat;
+                    }
                 }
                 break;
             case 'time':
@@ -1115,7 +1137,12 @@ class Workbook {
                     returnFormat = this.intl.getDatePattern({ skeleton: numberFormat, type: 'time' }, true);
                 }
                 catch (error) {
-                    returnFormat = numberFormat;
+                    try {
+                        returnFormat = this.intl.getDatePattern({ format: numberFormat, type: 'time' }, true);
+                    }
+                    catch (error) {
+                        returnFormat = numberFormat;
+                    }
                 }
                 break;
             default:

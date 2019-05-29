@@ -166,13 +166,6 @@ export interface RichTextEditorModel extends ComponentModel{
     enablePersistence?: boolean;
 
     /**
-     * Specifies the direction of the RichTextEditor component.
-     * For cultures like Arabic, Hebrew, etc. direction can be switched to right to left
-     * @default false.
-     */
-    enableRtl?: boolean;
-
-    /**
      * Allows additional HTML attributes such as title, name, etc., and 
      * It will be accepts n number of attributes in a key-value pair format.
      * @default {}.

@@ -460,7 +460,15 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
      */
     public destroy(): void {
         unwireEvents.call(this);
-        this.inputObj.container.parentElement.appendChild(this.cloneElement);
+        let attrArray: string[] = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
+            'autocorrect', 'aria-disabled', 'aria-placeholder', 'autocapitalize',
+            'spellcheck', 'aria-autocomplete',
+            'aria-live', 'aria-valuenow', 'aria-invalid'];
+        attrArray.forEach((value: string): void => {
+            this.element.removeAttribute(value);
+        });
+        this.element.classList.remove('e-input');
+        this.inputObj.container.insertAdjacentElement('afterend', this.element);
         detach(this.inputObj.container);
         super.destroy();
     }

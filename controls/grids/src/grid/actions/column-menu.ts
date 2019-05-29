@@ -448,7 +448,7 @@ export class ColumnMenu implements IAction {
 
     private createChooserItems(): ColumnMenuItemModel[] {
         let items: ColumnMenuItemModel[] = [];
-        for (let col of this.parent.getColumns()) {
+        for (let col of (<{ columnModel?: Column[] }>this.parent).columnModel) {
             if (col.showInColumnChooser && col.field) {
                 items.push({ id: this.generateID(col.field, this.CHOOSER), text: col.headerText ? col.headerText : col.field });
             }

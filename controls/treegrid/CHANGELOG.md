@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 17.1.49 (2019-05-29)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- #236554 - Expand/Collapse icon for 2nd level parent while using remote data works fine
+
+- #236554 - enableCollapseAll works fine with paging
+
 ## 17.1.48 (2019-05-21)
 
 ### TreeGrid

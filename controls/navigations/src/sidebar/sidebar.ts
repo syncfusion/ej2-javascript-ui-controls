@@ -116,12 +116,6 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
     @Property(false)
     public isOpen: boolean;
     /**
-     * Specifies the Sidebar in RTL mode that displays the content in the right-to-left direction.
-     * @default false
-     */
-    @Property(false)
-    public enableRtl: boolean;
-    /**
      * Enable or disable the animation transitions on expanding or collapsing the Sidebar.
      * @default true
      */
@@ -353,7 +347,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
             isInteracted: !isNullOrUndefined(e),
             event: (e || null)
         };
-        this.trigger('close', closeArguments);
+        if (this.isOpen) { this.trigger('close', closeArguments); } else { return; }
         if (!closeArguments.cancel) {
             if (this.element.classList.contains(CLOSE)) {
                 return;

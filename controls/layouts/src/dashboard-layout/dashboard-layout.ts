@@ -332,14 +332,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     public draggableHandle: string;
 
     /**
-     * Enable or disable rendering component in right to left direction.
-     * *
-     * @default false
-     */
-    @Property(false)
-    public enableRtl: boolean;
-
-    /**
      * Locale property.
      * This is not a dashboard layout property.
      * @default 'en-US'
@@ -722,9 +714,10 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
     }
 
     protected bindEvents(): void {
-        window.addEventListener('resize', this.onResize.bind(this));
+        window.addEventListener('resize', this.refresh.bind(this));
         this.resizeEvents();
     }
+
     protected downResizeHandler(e: MouseEvent): void {
         this.resizeCalled = false;
         let el: HTMLElement = (<HTMLElement>closest(<HTMLElement>(<HTMLElement>(e.currentTarget)), '.e-panel'));
@@ -1056,7 +1049,10 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.sortedPanel();
     };
 
-    protected onResize(): void {
+    /**
+     * Refresh the panels of DashboardLayout component. 
+     */
+    public refresh(): void {
         if (this.checkMediaQuery()) {
             this.checkMediaQuerySizing();
         } else {

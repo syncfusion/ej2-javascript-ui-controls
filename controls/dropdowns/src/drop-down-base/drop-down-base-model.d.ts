@@ -68,13 +68,6 @@ export interface DropDownBaseModel extends ComponentModel{
     fields?: FieldSettingsModel;
 
     /**
-     * When set to true, enables RTL mode of the component that 
-     * displays the content in the right-to-left direction.
-     * @default false
-     */
-    enableRtl?: boolean;
-
-    /**
      * Enable or disable persisting component's state between page reloads. 
      * If enabled, following list of states will be persisted.
      * 1. value

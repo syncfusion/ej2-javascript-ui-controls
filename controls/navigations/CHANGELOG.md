@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.49 (2019-05-29)
+
+### TreeView
+
+#### Bug Fixes
+
+- #234147 - Issue with getting checked nodes value using `getAllCheckedNodes` method has been fixed.
+
 ## 17.1.48 (2019-05-21)
 
 ### Sidebar

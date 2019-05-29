@@ -294,9 +294,9 @@ export class Image extends Shape {
      * * None - Scale value will be set as None for the image
      * * Meet - Scale value Meet will be set for the image
      * * Slice - Scale value Slice will be set for the image
-     * @default ''
+     * @default 'None'
      */
-    @Property('')
+    @Property('None')
     public scale: Scale;
 
     /**
@@ -1305,7 +1305,7 @@ export class UmlActivityShape extends Shape {
      * * ReceiveSignal - Sets the type of the UMLActivity Shape as ReceiveSignal
      * * StructuredNode - Sets the type of the UMLActivity Shape as StructuredNode
      * * Note - Sets the type of the UMLActivity Shape as Note
-     * @default 'Rectangle'
+     * @default 'Action'
      * @IgnoreSingular
      */
     @Property('Action')
@@ -1361,14 +1361,14 @@ export class MethodArguments extends ChildProperty<MethodArguments> {
 export class UmlClassAttribute extends MethodArguments {
     /**
      * Defines the type of the attributes
-     * @default ''
+     * @default 'Public'
      * @IgnoreSingular
      */
     @Property('Public')
     public scope: UmlScope;
     /**
      * Defines the separator of the attributes
-     * @default ''
+     * @default false
      * @IgnoreSingular
      */
     @Property(false)
@@ -1454,7 +1454,7 @@ export class UmlClass extends ChildProperty<UmlClass> {
 export class UmlInterface extends UmlClass {
     /**
      * Defines the separator of the attributes
-     * @default ''
+     * @default false
      * @IgnoreSingular
      */
     @Property(false)
@@ -1489,7 +1489,7 @@ export class UmlEnumerationMember extends ChildProperty<UmlEnumerationMember> {
     public value: string;
     /**
      * Defines the separator of the attributes
-     * @default ''
+     * @default false
      * @IgnoreSingular
      */
     @Property(false)

@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 17.1.49 (2019-05-29)
+
+### MultiSelect
+
+#### New Features
+
+- #236816 - Provided method for `focusIn` and `focusOut`.
+
+#### Bug Fixes
+
+- #231920 - In IE browser, script error throws when calling getItems method has been fixed.
+
 ## 17.1.48 (2019-05-21)
 
 ### ListBox

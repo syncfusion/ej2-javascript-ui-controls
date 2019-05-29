@@ -189,7 +189,7 @@ export interface ImageModel extends ShapeModel{
      * * None - Scale value will be set as None for the image
      * * Meet - Scale value Meet will be set for the image
      * * Slice - Scale value Slice will be set for the image
-     * @default ''
+     * @default 'None'
      */
     scale?: Scale;
 
@@ -1030,7 +1030,7 @@ export interface UmlActivityShapeModel extends ShapeModel{
      * * ReceiveSignal - Sets the type of the UMLActivity Shape as ReceiveSignal
      * * StructuredNode - Sets the type of the UMLActivity Shape as StructuredNode
      * * Note - Sets the type of the UMLActivity Shape as Note
-     * @default 'Rectangle'
+     * @default 'Action'
      * @IgnoreSingular
      */
     shape?: UmlActivityShapes;
@@ -1072,14 +1072,14 @@ export interface UmlClassAttributeModel extends MethodArgumentsModel{
 
     /**
      * Defines the type of the attributes
-     * @default ''
+     * @default 'Public'
      * @IgnoreSingular
      */
     scope?: UmlScope;
 
     /**
      * Defines the separator of the attributes
-     * @default ''
+     * @default false
      * @IgnoreSingular
      */
     isSeparator?: boolean;
@@ -1143,7 +1143,7 @@ export interface UmlInterfaceModel extends UmlClassModel{
 
     /**
      * Defines the separator of the attributes
-     * @default ''
+     * @default false
      * @IgnoreSingular
      */
     isSeparator?: boolean;
@@ -1171,7 +1171,7 @@ export interface UmlEnumerationMemberModel {
 
     /**
      * Defines the separator of the attributes
-     * @default ''
+     * @default false
      * @IgnoreSingular
      */
     isSeparator?: boolean;

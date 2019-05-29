@@ -4461,6 +4461,9 @@ class DateParser {
         }
         for (let key of tKeys) {
             let tValue = options[key];
+            if (isUndefined(tValue) && key === "day") {
+                res.setDate(1);
+            }
             if (!isUndefined(tValue)) {
                 if (key === 'month') {
                     tValue -= 1;
@@ -6175,8 +6178,13 @@ class L10n {
      * @return string
      */
     getConstant(prop) {
-        /* tslint:disable no-any */
-        return this.currentLocale[prop] || this.localeStrings[prop] || '';
+        // Removed conditional operator because this method does not return correct value when passing 0 as value in localization
+        if (!isNullOrUndefined(this.currentLocale[prop])) {
+            return this.currentLocale[prop];
+        }
+        else {
+            return this.localeStrings[prop] || '';
+        }
     }
     /**
      * Returns the control constant object for current object and the locale specified.
@@ -6185,8 +6193,8 @@ class L10n {
      * @returns {Object}
      */
     intGetControlConstant(curObject, locale) {
-        if (curObject[locale]) {
-            return curObject[locale][this.controlName];
+        if ((curObject)[locale]) {
+            return (curObject)[locale][this.controlName];
         }
         return null;
     }

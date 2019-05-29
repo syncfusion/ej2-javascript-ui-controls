@@ -401,10 +401,6 @@ export class ExcelExport {
                     if (tCell.index > hIndex) {
                         hIndex = tCell.index;
                     }
-                    /* tslint:disable-next-line:no-any */
-                    (tCell as any).style = this.getCaptionThemeStyle(this.theme);
-                    let col: AggregateColumnModel = groupCaptionSummaryRows[0].cells[tCell.index - 1].column;
-                    this.aggregateStyle(col, tCell.style, col.field);
                     if (cells[cells.length - 1].index !== tCell.index) {
                         cells.push(tCell);
                     }
@@ -465,7 +461,7 @@ export class ExcelExport {
                 }
                 let column: Column = gCell.column;
                 let field: string = column.field;
-                let cellValue: string = !isNullOrUndefined(field) ? getValue(field, row.data) : '';
+                let cellValue: string = !isNullOrUndefined(field) ? (column.valueAccessor as Function)(field, row.data, column) : '';
                 let value: string = !isNullOrUndefined(cellValue) ? cellValue : '';
                 let fkData: Object;
                 if (column.isForeignColumn && column.isForeignColumn()) {

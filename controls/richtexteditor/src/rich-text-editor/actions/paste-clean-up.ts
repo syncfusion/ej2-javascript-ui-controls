@@ -23,7 +23,7 @@ export class PasteCleanup {
   private i10n: L10n;
   private saveSelection: NodeSelection;
   private nodeSelectionObj: NodeSelection;
-  private inlineNode: string[] = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'br', 'button',
+  private inlineNode: string[] = ['a', 'abbr', 'acronym', 'audio', 'b', 'bdi', 'bdo', 'big', 'button',
     'canvas', 'cite', 'code', 'data', 'datalist', 'del', 'dfn', 'em', 'embed', 'i', 'iframe', 'img', 'input',
     'ins', 'kbd', 'label', 'map', 'mark', 'meter', 'noscript', 'object', 'output', 'picture', 'progress',
     'q', 'ruby', 's', 'samp', 'script', 'select', 'slot', 'small', 'span', 'strong', 'sub', 'sup', 'svg',
@@ -222,26 +222,31 @@ export class PasteCleanup {
   }
   private detachInlineElements(element: HTMLElement): void {
     while (!isNullOrUndefined(element)) {
-      element = (element.firstElementChild as HTMLElement) ? (element.firstElementChild as HTMLElement) : element;
       let isInlineElement: boolean = false;
       for (let j: number = 0; j < this.inlineNode.length && !isInlineElement; j++) {
         if (element.tagName.toLocaleLowerCase() === this.inlineNode[j]) {
           let node: HTMLElement = (element.nextElementSibling as HTMLElement) ?
           (element.nextElementSibling as HTMLElement) : (element.parentElement.nextElementSibling as HTMLElement);
           if (!isNullOrUndefined(element.childNodes[0]) && element.childNodes[0].textContent !== '') {
-            element.parentElement.insertBefore(this.getTextNode(element.childNodes[0]), element);
+            element.parentElement.insertBefore(this.getTextNode(element), element);
           }
           detach(element);
           element = node;
           isInlineElement = true;
         }
       }
-      if (!isNullOrUndefined(element) && element.children.length > 0 || isInlineElement) {
-        element = element;
-      } else if (element.nextElementSibling) {
-        element = element.nextElementSibling as HTMLElement;
-      } else if (element.parentElement.nextElementSibling) {
-        element = element.parentElement.nextElementSibling as HTMLElement;
+      if (!isNullOrUndefined(element)) {
+        if (isInlineElement) {
+          element = element;
+        } else if (element.firstElementChild) {
+          element = element.firstElementChild as HTMLElement;
+        } else if (element.nextElementSibling) {
+          element = element.nextElementSibling as HTMLElement;
+        } else if (element.parentElement.nextElementSibling) {
+          element = element.parentElement.nextElementSibling as HTMLElement;
+        } else {
+          element = null;
+        }
       } else {
         element = null;
       }
@@ -253,10 +258,32 @@ export class PasteCleanup {
     return rootElement.childNodes[0];
   }
 
+  private insertAfter(newNode: Element, referenceNode: Element): void {
+    referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+  }
+
   private getTextContent(element: Element): string {
     let result: string;
     let text: string;
     result = '';
+    let brElement: NodeListOf<HTMLBRElement> = element.nodeType === 1 ? element.querySelectorAll('br') : null;
+    if (brElement) {
+      for (let i: number = 0; i < brElement.length; i++) {
+        if (!isNullOrUndefined(brElement[i].previousSibling)) {
+          let resultElement: HTMLElement = this.parent.createElement('div') as HTMLElement;
+          resultElement.innerHTML = brElement[i].previousSibling.textContent;
+          detach(brElement[i].previousSibling);
+          brElement[i].parentElement.insertBefore(resultElement, brElement[i]);
+        }
+        if (i + 1 === brElement.length && !isNullOrUndefined(brElement[i].nextSibling)) {
+          let divNextElement: HTMLElement = this.parent.createElement('div') as HTMLElement;
+          divNextElement.innerHTML = brElement[i].nextSibling.textContent;
+          detach(brElement[i].nextSibling);
+          this.insertAfter(divNextElement, brElement[i]);
+        }
+        detach(brElement[i]);
+      }
+    }
     if (element.children.length === 0 && element.textContent.trim() !== '') {
       text = '<p>' + element.textContent + '</p>';
       result += text;

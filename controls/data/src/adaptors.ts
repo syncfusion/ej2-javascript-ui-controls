@@ -756,6 +756,20 @@ export class ODataAdaptor extends UrlAdaptor {
         return 'ODataAdaptor';
     }
 
+    /**
+     * Specifies the root url of the provided odata url.
+     * @hidden
+     * @default null
+     */
+    public rootUrl: string;
+
+    /**
+     * Specifies the resource name of the provided odata table.
+     * @hidden
+     * @default null
+     */
+    public resourceTableName: string;
+
     // options replaced the default adaptor options
     protected options: RemoteOptions = extend({}, this.options, {
         requestType: 'get',
@@ -1005,6 +1019,12 @@ export class ODataAdaptor extends UrlAdaptor {
      */
     public processResponse(
         data: DataResult, ds?: DataOptions, query?: Query, xhr?: XMLHttpRequest, request?: Ajax, changes?: CrudOptions): Object {
+        let metaCheck: string = 'odata.metadata';
+        if ((request && request.type === 'GET') && !this.rootUrl && data[metaCheck]) {
+            let dataUrls: string[] = data[metaCheck].split('/$metadata#');
+            this.rootUrl = dataUrls[0];
+            this.resourceTableName = dataUrls[1];
+        }
         let pvtData: string = 'pvtData';
         if (!isNullOrUndefined(data.d)) {
             let dataCopy: Object[] = <Object[]>((query && query.isCountRequired) ? (<DataResult>data.d).results : data.d);
@@ -1159,7 +1179,9 @@ export class ODataAdaptor extends UrlAdaptor {
      */
     public batchRequest(dm: DataManager, changes: CrudOptions, e: RemoteArgs, query: Query, original?: CrudOptions): Object {
         let initialGuid: string = e.guid = DataUtil.getGuid(this.options.batchPre);
-        let url: string = dm.dataSource.url.replace(/\/*$/, '/' + this.options.batch);
+        let url: string = this.rootUrl ? this.rootUrl + '/' + this.options.batch :
+                                        dm.dataSource.url.replace(/\/*$/, '/' + this.options.batch);
+        e.url = this.resourceTableName ? this.resourceTableName : e.url;
         let args: RemoteArgs = {
             url: e.url,
             key: e.key,
@@ -1504,6 +1526,12 @@ export class ODataV4Adaptor extends ODataAdaptor {
      */
     public processResponse(
         data: DataResult, ds?: DataOptions, query?: Query, xhr?: XMLHttpRequest, request?: Ajax, changes?: CrudOptions): Object {
+        let metaName: string = '@odata.context';
+        if ((request && request.type === 'GET') && !this.rootUrl && data[metaName]) {
+            let dataUrl: string[] = data[metaName].split('/$metadata#');
+            this.rootUrl = dataUrl[0];
+            this.resourceTableName = dataUrl[1];
+        }
         let pvtData: string = 'pvtData';
         let pvt: PvtOptions = request && request[pvtData];
 

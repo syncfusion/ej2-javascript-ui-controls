@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.49 (2019-05-29)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- #235461 - Thrown the console error while rendering the RichTextEditor within a table element and pressing the tab key from edit area that issue has been resolved.
+
 ## 17.1.48 (2019-05-21)
 
 ### RichTextEditor

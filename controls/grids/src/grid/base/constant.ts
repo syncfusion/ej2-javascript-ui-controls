@@ -315,6 +315,8 @@ export const beforeFragAppend: string = 'beforeFragAppend';
 /** @hidden */
 export const frozenHeight: string = 'frozenHeight';
 /** @hidden */
+export const textWrapRefresh: string = 'textWrapRefresh';
+/** @hidden */
 export const recordAdded: string = 'recordAdded';
 /** @hidden */
 export const cancelBegin: string = 'cancel-Begin';

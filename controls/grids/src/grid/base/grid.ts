@@ -3919,7 +3919,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.enableBoxSelection();
     }
 
-    private dataReady(): void {
+    public dataReady(): void {
         this.scrollModule.setWidth();
         this.scrollModule.setHeight();
         if (this.height !== 'auto') {
@@ -4300,7 +4300,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         });
     }
 
-    private isDetail(): boolean {
+    /** 
+     * @hidden
+     */
+    public isDetail(): boolean {
         return !isNullOrUndefined(this.detailTemplate) || !isNullOrUndefined(this.childGrid);
     }
 
@@ -4486,15 +4489,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public hideScroll(): void {
         let content: HTMLElement = this.getContent().querySelector('.e-content');
         let cTable: HTMLElement = content.querySelector('.e-movablecontent') ? content.querySelector('.e-movablecontent') : content;
-        if (cTable.scrollHeight <= cTable.clientHeight) {
+        let fTable: HTMLElement = content.querySelector('.e-frozencontent') ? content.querySelector('.e-frozencontent') : content;
+        if (cTable.scrollHeight <= cTable.clientHeight && fTable.scrollHeight <= fTable.clientHeight) {
             this.scrollModule.removePadding();
             cTable.style.overflowY = 'auto';
         }
-        if(this.frozenColumns && cTable.scrollWidth <= cTable.clientWidth){
-            let frozenTable: HTMLElement = this.getContent().querySelector('.e-frozencontent') as HTMLElement;
-            frozenTable.style.height = cTable.offsetHeight + 1 + 'px';
-            frozenTable.style.borderBottom = '0';
-            cTable.style.overflowX = 'auto';    
+        if (this.frozenColumns && cTable.scrollWidth <= cTable.clientWidth) {
+            cTable.style.overflowX = 'auto';
+            cTable.style.overflowY = 'auto';
+            this.notify(events.frozenHeight, 0);
         }
     }
 

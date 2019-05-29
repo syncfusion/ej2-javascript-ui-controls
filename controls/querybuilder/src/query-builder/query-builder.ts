@@ -265,12 +265,6 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     @Property('Horizontal')
     public displayMode: DisplayMode;
     /**
-     * Enables or disables the RTL support it is extended from the component class.
-     * @default false.
-     */
-    @Property(false)
-    public enableRtl: boolean;
-    /**
      * Enable or disable persisting component's state between page reloads. 
      * If enabled, filter states will be persisted.
      * @default false.
@@ -1087,14 +1081,19 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 let multiselectObj: MultiSelect = (getComponent(element as HTMLElement, 'multiselect') as MultiSelect);
                 multiselectObj.hideSpinner();
                 let data: Promise<Object> = this.dataManager.executeQuery(new Query().select(value)) as Promise<Object>;
-                let deferred: Deferred = new Deferred();
+                let deferred: Deferred = new Deferred();  let dummyData: Object[];
                 this.createSpinner(closest(element, '.e-multi-select-wrapper').parentElement);
                 showSpinner(closest(element, '.e-multi-select-wrapper').parentElement as HTMLElement);
-                data.then((e: { result: Object[]}) => {
-                    this.dataColl = extend(this.dataColl, e.result, [], true) as object [];
-                    let ds: object[] = this.getDistinctValues(this.dataColl, value);
-                    multiselectObj.dataSource = ds as {[key: string]: object}[];
-                    hideSpinner(closest(element, '.e-multi-select-wrapper').parentElement as HTMLElement);
+                data.then((e: {actual: {result: Object[], count: number}, result: Object[]}) => {
+                   if (e.actual.result) {
+                       dummyData = e.actual.result;
+                   } else {
+                       dummyData = e.result;
+                   }
+                   this.dataColl = extend(this.dataColl, dummyData, [], true) as object [];
+                   let ds: object[] = this.getDistinctValues(this.dataColl, value);
+                   multiselectObj.dataSource = ds as {[key: string]: object}[];
+                   hideSpinner(closest(element, '.e-multi-select-wrapper').parentElement as HTMLElement);
                 }).catch((e: ReturnType) => {
                     deferred.reject(e);
                 });
@@ -1974,8 +1973,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private executeDataManager(query: Query): void {
         let data: Promise<Object> = this.dataManager.executeQuery(query) as Promise<Object>;
         let deferred: Deferred = new Deferred();
-        data.then((e: { result: Object[]}) => {
-            this.dataColl = e.result;
+        data.then((e: {actual: {result: Object[], count: number}, result: Object[]}) => {
+            if (e.actual.result) {
+                this.dataColl = e.actual.result;
+            } else {
+                this.dataColl = e.result;
+            }
             this.initControl();
         }).catch((e: ReturnType) => {
             deferred.reject(e);

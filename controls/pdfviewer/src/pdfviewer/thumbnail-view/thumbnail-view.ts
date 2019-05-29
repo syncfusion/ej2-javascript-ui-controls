@@ -1,4 +1,4 @@
-import { PdfViewer, PdfViewerBase } from '../index';
+import { PdfViewer, PdfViewerBase, AjaxHandler } from '../index';
 import { createElement } from '@syncfusion/ej2-base';
 
 /**
@@ -16,6 +16,7 @@ export class ThumbnailView {
     private thumbnailLimit: number = 30;
     private thumbnailThreshold: number = 50;
     private thumbnailTopMargin: number = 10;
+    private thumbnailRequestHandler: AjaxHandler;
     /**
      * @private
      */
@@ -83,35 +84,33 @@ export class ThumbnailView {
             // tslint:disable-next-line:max-line-length
             proxy.thumbnailLimit = proxy.startIndex + proxy.thumbnailThreshold < proxy.pdfViewer.pageCount ? proxy.startIndex + proxy.thumbnailThreshold : proxy.pdfViewer.pageCount;
         }
-        let request: XMLHttpRequest = new XMLHttpRequest();
         // tslint:disable-next-line:max-line-length
-        let jsonObject: object = { startPage: proxy.startIndex, endPage: proxy.thumbnailLimit, sizeX: 99.7, sizeY: 141, hashId: proxy.pdfViewerBase.hashId };
-        request.open('POST', proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.renderThumbnail);
-        request.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
-        if (this.pdfViewer.ajaxRequestSettings.ajaxHeaders) {
-            this.pdfViewerBase.setCustomAjaxHeaders(request);
-        }
-        request.responseType = 'json';
-        request.send(JSON.stringify(jsonObject));
+        let jsonObject: object = { startPage: proxy.startIndex, endPage: proxy.thumbnailLimit, sizeX: 99.7, sizeY: 141, hashId: proxy.pdfViewerBase.hashId, action: 'RenderThumbnailImages' };
+        this.thumbnailRequestHandler = new AjaxHandler(this.pdfViewer);
+        this.thumbnailRequestHandler.url = proxy.pdfViewer.serviceUrl + '/' + proxy.pdfViewer.serverActionSettings.renderThumbnail;
+        this.thumbnailRequestHandler.responseType = 'json';
+        this.thumbnailRequestHandler.send(jsonObject);
         // tslint:disable-next-line
-        request.onreadystatechange = (event: any): void => {
-            if (request.readyState === 4 && request.status === 200) {
-                // tslint:disable-next-line
-                let data: any = event.currentTarget.response;
-                if (typeof data !== 'object') {
-                    data = JSON.parse(data);
-                }
-                proxy.renderThumbnailImage(data);
-                if (!proxy.isThumbnailCompleted) {
-                    proxy.startIndex = proxy.thumbnailLimit;
-                    proxy.isThumbnailCompleted = true;
-                }
+        this.thumbnailRequestHandler.onSuccess = function(result: any) {
+            // tslint:disable-next-line    
+            let data: any = result.data;
+            if (typeof data !== 'object') {
+                data = JSON.parse(data);
+            }
+            proxy.renderThumbnailImage(data);
+            if (!proxy.isThumbnailCompleted) {
+                proxy.startIndex = proxy.thumbnailLimit;
+                proxy.isThumbnailCompleted = true;
             }
         };
         // tslint:disable-next-line
-        request.onerror = (event: any): void => {
-            this.pdfViewerBase.openNotificationPopup();
-            proxy.pdfViewer.fireAjaxRequestFailed(request.status, request.statusText);
+        this.thumbnailRequestHandler.onFailure = function(result: any) {
+            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText);
+        };
+        // tslint:disable-next-line
+        this.thumbnailRequestHandler.onError = function(result: any) {
+            proxy.pdfViewerBase.openNotificationPopup();
+            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText);
         };
     }
 

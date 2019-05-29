@@ -22,6 +22,7 @@ export interface RecurrenceEditorModel extends ComponentModel{
     /**
      * Sets the start date on recurrence editor.
      * @default new Date()
+     * @aspDefaultValue DateTime.Now
      */
     startDate?: Date;
 
@@ -44,12 +45,6 @@ export interface RecurrenceEditorModel extends ComponentModel{
     cssClass?: string;
 
     /**
-     * Allows recurrence editor to render in RTL mode.
-     * @default false
-     */
-    enableRtl?: boolean;
-
-    /**
      * Sets the recurrence rule as its output values.
      * @default null
      */
@@ -58,12 +53,14 @@ export interface RecurrenceEditorModel extends ComponentModel{
     /**
      * Sets the minimum date on recurrence editor.
      * @default new Date(1900, 1, 1)
+     * @aspDefaultValue new DateTime(1900, 0, 1)
      */
     minDate?: Date;
 
     /**
      * Sets the maximum date on recurrence editor.
      * @default new Date(2099, 12, 31)
+     * @aspDefaultValue new DateTime(2099, 11, 31)
      */
     maxDate?: Date;
 

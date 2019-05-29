@@ -466,6 +466,40 @@ describe("paste cleanup testing", () => {
       done();
     }, 100);
   });
+  
+  it("EJ2-26404 - Breakline issue - Plain paste with prompt with br tags", (done) => {
+    let localElem: string = `<p>To break lines<br>in a text,<br>use the br element.</p>`;
+    keyBoardEvent.clipboardData = {
+      getData: () => {
+        return localElem;
+      },
+      items: []
+    };
+    rteObj.pasteCleanupSettings.prompt = true;
+    rteObj.pasteCleanupSettings.deniedTags = [];
+    rteObj.pasteCleanupSettings.deniedAttrs = [];
+    rteObj.pasteCleanupSettings.allowedStyleProps = [];
+    rteObj.dataBind();
+    (rteObj as any).inputElement.focus();
+    setCursorPoint((rteObj as any).inputElement, 0);
+    rteObj.onPaste(keyBoardEvent);
+    setTimeout(() => {
+      if (rteObj.pasteCleanupSettings.prompt) {
+        let keepFormat: any = document.getElementById(rteObj.getID() + "_pasteCleanupDialog").getElementsByClassName(CLS_RTE_PASTE_PLAIN_FORMAT);
+        keepFormat[0].click();
+        let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+        pasteOK[0].click();
+      }
+      let allElem: any = (rteObj as any).inputElement.firstElementChild;
+      let expected: boolean = true;
+      let expectedElem: string = `<p>To break lines</p><p>in a text,</p><p>use the br element.</p>`;
+      if (allElem.innerHTML !== expectedElem) {
+        expected = false;
+      }
+      expect(expected).toBe(true);
+      done();
+    }, 100);
+  });
 
   it("Paste URL", (done) => {
     keyBoardEvent.clipboardData = {

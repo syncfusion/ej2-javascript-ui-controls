@@ -20,6 +20,7 @@ export class DataManager {
     private isDataAvailable: boolean;
     private requests: Ajax[] = [];
 
+    protected dotnetInstance: object;
 
     /**
      * Constructor for DataManager class
@@ -160,6 +161,7 @@ export class DataManager {
      * @param  {Function} always - Defines the callback function and triggers when the Promise is resolved or rejected.
      */
     public executeQuery(query: Query | Function, done?: Function, fail?: Function, always?: Function): Promise<Ajax> {
+        let makeRequest: string = 'makeRequest';
         if (typeof query === 'function') {
             always = fail;
             fail = done;
@@ -178,9 +180,14 @@ export class DataManager {
         let deffered: Deferred = new Deferred();
         let args: Object = { query: query };
 
-        if (!this.dataSource.offline && (this.dataSource.url !== undefined && this.dataSource.url !== '')) {
+        if (!this.dataSource.offline && (this.dataSource.url !== undefined && this.dataSource.url !== '')
+            || (!isNullOrUndefined(this.adaptor[makeRequest]))) {
             let result: ReturnOption = this.adaptor.processQuery(this, query);
-            this.makeRequest(result, deffered, args, <Query>query);
+            if (!isNullOrUndefined(this.adaptor[makeRequest])) {
+                this.adaptor[makeRequest](result, deffered, args, <Query>query);
+            } else {
+                this.makeRequest(result, deffered, args, <Query>query);
+            }
         } else {
             DataManager.nextTick(
                 () => {
@@ -399,11 +406,17 @@ export class DataManager {
 
         let req: Object = this.adaptor.insert(this, data, tableName, query, position);
 
+        let doAjaxRequest: string = 'doAjaxRequest';
+
         if (this.dataSource.offline) {
             return req;
         }
 
-        return this.doAjaxRequest(req);
+        if (!isNullOrUndefined(this.adaptor[doAjaxRequest])) {
+            return this.adaptor[doAjaxRequest](req);
+        } else {
+            return this.doAjaxRequest(req);
+        }
     }
 
     /**
@@ -425,11 +438,17 @@ export class DataManager {
 
         let res: Object = this.adaptor.remove(this, keyField, value, tableName, query);
 
+        let doAjaxRequest: string = 'doAjaxRequest';
+
         if (this.dataSource.offline) {
             return res;
         }
 
-        return this.doAjaxRequest(res);
+        if (!isNullOrUndefined(this.adaptor[doAjaxRequest])) {
+            return this.adaptor[doAjaxRequest](res);
+        } else {
+            return this.doAjaxRequest(res);
+        }
     }
     /**
      * Updates existing record in the given table.
@@ -447,11 +466,17 @@ export class DataManager {
 
         let res: Object = this.adaptor.update(this, keyField, value, tableName, query, original);
 
+        let doAjaxRequest: string = 'doAjaxRequest';
+
         if (this.dataSource.offline) {
             return res;
         }
 
-        return this.doAjaxRequest(res);
+        if (!isNullOrUndefined(this.adaptor[doAjaxRequest])) {
+            return this.adaptor[doAjaxRequest](res);
+        } else {
+            return this.doAjaxRequest(res);
+        }
     }
 
     private doAjaxRequest(res: Object): Promise<Ajax> {

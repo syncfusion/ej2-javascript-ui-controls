@@ -183,7 +183,7 @@ describe('default stock chart', () => {
                 clientX: 100,
                 clientY: 350
             };
-            chart.stockChartMouseMove(<PointerEvent>eventObj);
+            chart.stockChartOnMouseMove(<PointerEvent>eventObj);
             let currentRange: VisibleRangeModel = (chart.chart.primaryXAxis as Axis).visibleRange;
             expect(previousRange.min).not.toEqual(currentRange.min);
             eventObj = {
@@ -234,7 +234,7 @@ describe('default stock chart', () => {
                 clientY: 350,
                 changedTouches: [{ clientX: 200, clientY: 350}]
             };
-            chart.stockChartMouseMove(<PointerEvent>eventObj);
+            chart.stockChartOnMouseMove(<PointerEvent>eventObj);
             let currentRange: VisibleRangeModel = (chart.chart.primaryXAxis as Axis).visibleRange;
             expect(previousRange.min).not.toEqual(currentRange.min);
             eventObj = {
@@ -287,7 +287,7 @@ describe('default stock chart', () => {
                 clientY: 350,
                 changedTouches: [{ clientX: 100, clientY: 350}]
             };
-            chart.stockChartMouseMove(<PointerEvent>eventObj);
+            chart.stockChartOnMouseMove(<PointerEvent>eventObj);
             let currentRange: VisibleRangeModel = (chart.chart.primaryXAxis as Axis).visibleRange;
             expect(previousRange.min).not.toEqual(currentRange.min);
             eventObj = {

@@ -3,7 +3,7 @@ import { Column } from '../models/column';
 import { IGrid, IAction, ResizeArgs } from '../base/interface';
 import { ColumnWidthService } from '../services/width-controller';
 import * as events from '../base/constant';
-import { getScrollBarWidth, parentsUntil  } from '../base/util';
+import { getScrollBarWidth, parentsUntil } from '../base/util';
 import { OffsetPosition } from '@syncfusion/ej2-popups';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
@@ -85,7 +85,7 @@ export class Resize implements IAction {
         let contentTextClone: NodeListOf<Element>;
         let frzCols: number = gObj.getFrozenColumns();
         if (!isNullOrUndefined(gObj.getFooterContent())) {
-        footerTable = gObj.getFooterContentTable();
+            footerTable = gObj.getFooterContentTable();
         }
         if (frzCols) {
             if (index < frzCols) {
@@ -112,7 +112,7 @@ export class Resize implements IAction {
             }
         }
         let detailsElement: HTMLElement = <HTMLElement>contentTable.querySelector('.e-detailrowcollapse') ||
-         <HTMLElement>contentTable.querySelector('.e-detailrowexpand');
+            <HTMLElement>contentTable.querySelector('.e-detailrowexpand');
         if ((this.parent.detailTemplate || this.parent.childGrid) && detailsElement) {
             indentWidth += detailsElement.offsetWidth;
         }
@@ -157,7 +157,7 @@ export class Resize implements IAction {
         }
         if (!isNullOrUndefined(footerTable)) {
             footerTable.classList.add('e-tableborder');
-           }
+        }
     }
 
     /**
@@ -219,7 +219,7 @@ export class Resize implements IAction {
     /**
      * @hidden
      */
-    public addEventListener() : void {
+    public addEventListener(): void {
         if (this.parent.isDestroyed) {
             return;
         }
@@ -306,8 +306,8 @@ export class Resize implements IAction {
                     let ftr: NodeListOf<HTMLElement> = ftbody.querySelectorAll('tr');
                     for (let i: number = 0; i < mtr.length; i++) {
                         if (this.parent.rowHeight) {
-                             mtr[i].style.height = this.parent.rowHeight + 'px';
-                             ftr[i].style.height = this.parent.rowHeight + 'px';
+                            mtr[i].style.height = this.parent.rowHeight + 'px';
+                            ftr[i].style.height = this.parent.rowHeight + 'px';
                         } else {
                             mtr[i].style.removeProperty('height');
                             ftr[i].style.removeProperty('height');
@@ -323,7 +323,7 @@ export class Resize implements IAction {
                         - (this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0);
                 } else {
                     this.minMove = (this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0)
-                        - parseFloat(this.column.width.toString());
+                        - parseFloat(isNullOrUndefined(this.column.width) ? '' : this.column.width.toString());
                 }
                 this.minMove += this.pageX;
             }
@@ -373,8 +373,9 @@ export class Resize implements IAction {
     }
 
     private getColData(column: Column, mousemove: number): { [key: string]: number } {
-       return {
-            width: parseFloat(this.widthService.getWidth(column).toString()) + mousemove,
+        return {
+            width: parseFloat(isNullOrUndefined(this.widthService.getWidth(column)) || this.widthService.getWidth(column) === 'auto'  ? '0'
+                : this.widthService.getWidth(column).toString()) + mousemove,
             minWidth: column.minWidth ? parseFloat(column.minWidth.toString()) : null,
             maxWidth: column.maxWidth ? parseFloat(column.maxWidth.toString()) : null
         };
@@ -384,6 +385,10 @@ export class Resize implements IAction {
         if (isNullOrUndefined(this.column)) {
             return;
         }
+        let offsetWidth: number = 0;
+        if (isNullOrUndefined(this.column)) {
+            offsetWidth = (parentsUntil(this.element, 'th') as HTMLTableCellElement).offsetWidth;
+        }
         if (this.parent.allowTextWrap) {
             this.element.style.height = this.element.parentElement.offsetHeight + 'px';
             this.setHelperHeight();
@@ -391,13 +396,17 @@ export class Resize implements IAction {
         let pageX: number = this.getPointX(e);
         let mousemove: number = this.parent.enableRtl ? -(pageX - this.pageX) : (pageX - this.pageX);
         let colData: { [key: string]: number } = this.getColData(this.column, mousemove);
+        if (!colData.width) {
+            colData.width = (closest(this.element, 'th') as HTMLElement).offsetWidth;
+        }
         let width: number = this.getWidth(colData.width, colData.minWidth, colData.maxWidth);
-        this.parent.log('resize_min_max', {column: this.column, width});
+        this.parent.log('resize_min_max', { column: this.column, width });
         if ((!this.parent.enableRtl && this.minMove >= pageX) || (this.parent.enableRtl && this.minMove <= pageX)) {
             width = this.column.minWidth ? parseFloat(this.column.minWidth.toString()) : 0;
             this.pageX = pageX = this.minMove;
         }
-        if (width !== parseFloat(this.column.width.toString())) {
+        if (width !== parseFloat(isNullOrUndefined(this.column.width) || this.column.width === 'auto' ?
+            offsetWidth.toString() : this.column.width.toString())) {
             this.pageX = pageX;
             this.column.width = formatUnit(width);
             let args: ResizeArgs = {
@@ -466,6 +475,12 @@ export class Resize implements IAction {
             e: e,
             column: this.column
         };
+        let content: HTMLElement = this.parent.getContent().querySelector('.e-content');
+        let cTable: HTMLElement = content.querySelector('.e-movablecontent') ? content.querySelector('.e-movablecontent') : content;
+        if (cTable.scrollHeight >= cTable.clientHeight) {
+            this.parent.scrollModule.setPadding();
+            cTable.style.overflowY = 'scroll';
+        }
         this.parent.trigger(events.resizeStop, args);
         closest(this.element, '.e-headercell').classList.add('e-resized');
         if (parentsUntil(this.element, 'e-frozenheader')) {
@@ -474,7 +489,10 @@ export class Resize implements IAction {
             this.isFrozenColResized = false;
         }
         if (this.parent.getFrozenColumns()) {
-            this.parent.notify(events.freezeRender, { case: 'textwrap'});
+            this.parent.notify(events.freezeRender, { case: 'textwrap' });
+        }
+        if (this.parent.allowTextWrap) {
+            this.parent.notify(events.textWrapRefresh, { case: 'textwrap' });
         }
         this.refresh();
         this.doubleTapEvent(e);
@@ -513,7 +531,7 @@ export class Resize implements IAction {
         for (const col of column.columns as Column[]) {
             if (col.visible !== false) {
                 if (col.columns) {
-                   this.getStackedWidth(col, width);
+                    this.getStackedWidth(col, width);
                 } else {
                     width += col.width as number;
                 }

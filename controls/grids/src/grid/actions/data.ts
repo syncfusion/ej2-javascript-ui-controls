@@ -414,7 +414,7 @@ export class Data implements IDataProcessor {
                 promise = this.dataManager.update(key, args.data, query.fromTable, query, args.previousData) as Promise<Object>;
                 break;
         }
-        args[pr] = args[pr] ? args[pr] :  promise;
+        args[pr] = promise ? promise : args[pr];
         this.parent.notify(events.crudAction, args);
     }
 

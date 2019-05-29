@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.49 (2019-05-29)
+
+### Stock Chart
+
+#### Bug Fixes
+
+- #236896 - Provided mouse event in stock charts
+
 ## 17.1.47 (2019-05-14)
 
 ### Chart

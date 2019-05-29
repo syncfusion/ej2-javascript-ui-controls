@@ -196,12 +196,6 @@ export interface TabModel extends ComponentModel{
     overflowMode?: OverflowMode;
 
     /**
-     * Specifies the direction of the Tab. For the culture like Arabic, direction can be switched as right-to-left.
-     * @default false
-     */
-    enableRtl?: boolean;
-
-    /**
      * Enable or disable persisting component's state between page reloads. 
      * If enabled, following list of states will be persisted.
      * 1. selectedItem

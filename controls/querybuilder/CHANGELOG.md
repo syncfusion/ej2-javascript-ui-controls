@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.49 (2019-05-29)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- DataManager related issue resolved.
+
 ## 17.1.48 (2019-05-21)
 
 ### QueryBuilder

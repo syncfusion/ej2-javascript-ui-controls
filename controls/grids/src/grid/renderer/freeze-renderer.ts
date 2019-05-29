@@ -1,5 +1,5 @@
 import { remove, addClass } from '@syncfusion/ej2-base';
-import { IGrid, IRenderer, IModelGenerator } from '../base/interface';
+import { IGrid, IRenderer, IModelGenerator, NotifyArgs } from '../base/interface';
 import { Column } from '../models/column';
 import { HeaderRender } from './header-renderer';
 import { ContentRender } from './content-renderer';
@@ -85,11 +85,13 @@ export class FreezeRender extends HeaderRender implements IRenderer {
     public addEventListener(): void {
         this.parent.on(events.freezeRender, this.refreshFreeze, this);
         this.parent.on(events.frozenHeight, this.setFrozenHeight, this);
+        this.parent.on(events.uiUpdate, this.enableAfterRender, this);
     }
 
     public removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.frozenHeight, this.setFrozenHeight);
+        this.parent.off(events.uiUpdate, this.enableAfterRender);
     }
 
     public renderTable(): void {
@@ -118,6 +120,7 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         this.rfshMovable();
         this.getMovableHeader().querySelector('tbody').innerHTML = tbody.innerHTML;
         this.updateColgroup();
+        this.widthService.setWidthToTable();
         this.parent.updateDefaultCursor();
         renderMovable(this.parent.getContentTable().querySelector('colgroup'), this.parent.getFrozenColumns());
         this.initializeHeaderDrag();
@@ -188,6 +191,11 @@ export class FreezeRender extends HeaderRender implements IRenderer {
             this.refreshStackedHdrHgt();
         }
     }
+    private enableAfterRender(e: NotifyArgs): void {
+        if (e.module === 'scroll') {
+            this.setFrozenHeight();
+        }
+    }
 
     private updateResizeHandler(): void {
         [].slice.call(this.parent.getHeaderContent().querySelectorAll('.e-rhandler')).forEach((ele: HTMLElement) => {
@@ -207,8 +215,10 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         let height: number[] = [];
         let width: number[] = [];
         for (let i: number = 0, len: number = fRows.length; i < len; i++) { //separate loop for performance issue 
-            height[i] = fRows[i].offsetHeight; //https://pagebuildersandwich.com/increased-plugins-performance-200/
-            width[i] = mRows[i].offsetHeight;
+            if (!fRows[i].classList.contains('e-columnheader')) {
+                height[i] = fRows[i].offsetHeight; //https://pagebuildersandwich.com/increased-plugins-performance-200/
+                width[i] = mRows[i].offsetHeight;
+            }
         }
         for (let i: number = 0, len: number = fRows.length; i < len; i++) {
             if (isModeChg && ((wrapMode === 'Header' && isContReset) || ((wrapMode === 'Content' && tHead.contains(fRows[i]))
@@ -232,12 +242,21 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         }
     }
 
-    private setFrozenHeight(): void {
+    private setFrozenHeight(height: number = getScrollBarWidth()): void {
         let movableContentHeight: number = this.parent.element.querySelector('.e-movablecontent').getBoundingClientRect().height;
-        let frozenContentHeight: number = this.parent.element.querySelector('.e-frozencontent').getBoundingClientRect().height;
-        if (movableContentHeight > frozenContentHeight) {
-            (this.parent.element.querySelector('.e-frozencontent') as HTMLElement).style.height = movableContentHeight -
-                getScrollBarWidth() + 'px';
+        let movableContent: HTMLElement = this.parent.element.querySelector('.e-movablecontent') as HTMLElement;
+        let frozenContent: HTMLElement = this.parent.element.querySelector('.e-frozencontent') as HTMLElement;
+        if (movableContent.scrollWidth - movableContent.clientWidth) {
+            frozenContent.style.height = movableContentHeight -
+                height + 'px';
+            frozenContent.style.borderBottom = '';
+        } else {
+            frozenContent.style.height = movableContentHeight + 'px';
+            if ((frozenContent.scrollHeight <= frozenContent.clientHeight) ||
+                (movableContent.scrollHeight <= movableContent.clientHeight)) {
+                this.parent.scrollModule.removePadding();
+            }
+            frozenContent.style.borderBottom = '0px';
         }
     }
 

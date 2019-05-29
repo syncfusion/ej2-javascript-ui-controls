@@ -3424,6 +3424,12 @@ var ODataAdaptor = /** @__PURE__ @class */ (function (_super) {
      * @returns aggregateResult
      */
     ODataAdaptor.prototype.processResponse = function (data, ds, query, xhr, request, changes) {
+        var metaCheck = 'odata.metadata';
+        if ((request && request.type === 'GET') && !this.rootUrl && data[metaCheck]) {
+            var dataUrls = data[metaCheck].split('/$metadata#');
+            this.rootUrl = dataUrls[0];
+            this.resourceTableName = dataUrls[1];
+        }
         var pvtData = 'pvtData';
         if (!isNullOrUndefined(data.d)) {
             var dataCopy = ((query && query.isCountRequired) ? data.d.results : data.d);
@@ -3575,7 +3581,9 @@ var ODataAdaptor = /** @__PURE__ @class */ (function (_super) {
      */
     ODataAdaptor.prototype.batchRequest = function (dm, changes, e, query, original) {
         var initialGuid = e.guid = DataUtil.getGuid(this.options.batchPre);
-        var url = dm.dataSource.url.replace(/\/*$/, '/' + this.options.batch);
+        var url = this.rootUrl ? this.rootUrl + '/' + this.options.batch :
+            dm.dataSource.url.replace(/\/*$/, '/' + this.options.batch);
+        e.url = this.resourceTableName ? this.resourceTableName : e.url;
         var args = {
             url: e.url,
             key: e.key,
@@ -3905,6 +3913,12 @@ var ODataV4Adaptor = /** @__PURE__ @class */ (function (_super) {
      * @returns aggregateResult
      */
     ODataV4Adaptor.prototype.processResponse = function (data, ds, query, xhr, request, changes) {
+        var metaName = '@odata.context';
+        if ((request && request.type === 'GET') && !this.rootUrl && data[metaName]) {
+            var dataUrl = data[metaName].split('/$metadata#');
+            this.rootUrl = dataUrl[0];
+            this.resourceTableName = dataUrl[1];
+        }
         var pvtData = 'pvtData';
         var pvt = request && request[pvtData];
         var emptyAndBatch = _super.prototype.processBatchResponse.call(this, data, query, xhr, request, changes);
@@ -4517,6 +4531,7 @@ var DataManager = /** @__PURE__ @class */ (function () {
      */
     DataManager.prototype.executeQuery = function (query, done, fail, always) {
         var _this = this;
+        var makeRequest = 'makeRequest';
         if (typeof query === 'function') {
             always = fail;
             fail = done;
@@ -4531,9 +4546,15 @@ var DataManager = /** @__PURE__ @class */ (function () {
         }
         var deffered = new Deferred();
         var args = { query: query };
-        if (!this.dataSource.offline && (this.dataSource.url !== undefined && this.dataSource.url !== '')) {
+        if (!this.dataSource.offline && (this.dataSource.url !== undefined && this.dataSource.url !== '')
+            || (!isNullOrUndefined(this.adaptor[makeRequest]))) {
             var result = this.adaptor.processQuery(this, query);
-            this.makeRequest(result, deffered, args, query);
+            if (!isNullOrUndefined(this.adaptor[makeRequest])) {
+                this.adaptor[makeRequest](result, deffered, args, query);
+            }
+            else {
+                this.makeRequest(result, deffered, args, query);
+            }
         }
         else {
             DataManager.nextTick(function () {
@@ -4736,10 +4757,16 @@ var DataManager = /** @__PURE__ @class */ (function () {
             tableName = null;
         }
         var req = this.adaptor.insert(this, data, tableName, query, position);
+        var doAjaxRequest = 'doAjaxRequest';
         if (this.dataSource.offline) {
             return req;
         }
-        return this.doAjaxRequest(req);
+        if (!isNullOrUndefined(this.adaptor[doAjaxRequest])) {
+            return this.adaptor[doAjaxRequest](req);
+        }
+        else {
+            return this.doAjaxRequest(req);
+        }
     };
     /**
      * Removes data from the table with the given key.
@@ -4757,10 +4784,16 @@ var DataManager = /** @__PURE__ @class */ (function () {
             tableName = null;
         }
         var res = this.adaptor.remove(this, keyField, value, tableName, query);
+        var doAjaxRequest = 'doAjaxRequest';
         if (this.dataSource.offline) {
             return res;
         }
-        return this.doAjaxRequest(res);
+        if (!isNullOrUndefined(this.adaptor[doAjaxRequest])) {
+            return this.adaptor[doAjaxRequest](res);
+        }
+        else {
+            return this.doAjaxRequest(res);
+        }
     };
     /**
      * Updates existing record in the given table.
@@ -4775,10 +4808,16 @@ var DataManager = /** @__PURE__ @class */ (function () {
             tableName = null;
         }
         var res = this.adaptor.update(this, keyField, value, tableName, query, original);
+        var doAjaxRequest = 'doAjaxRequest';
         if (this.dataSource.offline) {
             return res;
         }
-        return this.doAjaxRequest(res);
+        if (!isNullOrUndefined(this.adaptor[doAjaxRequest])) {
+            return this.adaptor[doAjaxRequest](res);
+        }
+        else {
+            return this.doAjaxRequest(res);
+        }
     };
     DataManager.prototype.doAjaxRequest = function (res) {
         var _this = this;

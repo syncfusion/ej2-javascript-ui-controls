@@ -1187,9 +1187,6 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
     ], InPlaceEditor.prototype, "actionOnBlur", void 0);
     __decorate$1([
         Property(false)
-    ], InPlaceEditor.prototype, "enableRtl", void 0);
-    __decorate$1([
-        Property(false)
     ], InPlaceEditor.prototype, "enablePersistence", void 0);
     __decorate$1([
         Property(false)

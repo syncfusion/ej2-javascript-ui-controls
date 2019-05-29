@@ -833,4 +833,38 @@ describe('CellStyle', () => {
             }
         });
     });
+    it('Custom-NumberFormat-Date', (done) => {
+        let book: Workbook = new Workbook({
+            worksheets: [
+                {
+                    name: 'CellStyle',
+                    rows: [
+                        { index: 1, cells: [{ index: 1, value: new Date(), style: { numberFormat: "ccc dd.MM.yyyy" } }] },
+                        { index: 2, cells: [{ index: 1, value: new Date(), style: { numberFormat: "ccc" } }] },
+                        { index: 3, cells: [{ index: 1, value: new Date(), style: { numberFormat: "yyy" } }] },
+                        { index: 4, cells: [{ index: 1, value: new Date(), style: { numberFormat: "LLL" } }] },
+                        { index: 5, cells: [{ index: 1, value: new Date(), style: { numberFormat: "EEE" } }] },
+                        { index: 6, cells: [{ index: 1, value: new Date(), style: { numberFormat: "d" } }] },
+                        { index: 7, cells: [{ index: 1, value: new Date(), style: { numberFormat: "m" } }] },
+                        { index: 8, cells: [{ index: 1, value: new Date(), style: { numberFormat: "s" } }] },
+                        { index: 9, cells: [{ index: 1, value: new Date(), style: { numberFormat: "hh:mm:ss a" } }] },
+                        { index: 10, cells: [{ index: 1, value: new Date(), style: { numberFormat: "z" } }] },
+                        { index: 11, cells: [{ index: 1, value: new Date(), style: { numberFormat: "hh" } }] },  
+                    ],
+                }]
+        }, 'xlsx');
+        book.saveAsBlob('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet').then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'Custom-NumberFormat-Date.xlsx');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+    });
 });

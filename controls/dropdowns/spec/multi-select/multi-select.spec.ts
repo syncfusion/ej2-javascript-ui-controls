@@ -225,7 +225,7 @@ describe('MultiSelect', () => {
                 expect((<any>listObj).inputElement.getAttribute(multiSelectData.inputARIA[a])).not.toBe(null);//12
             }
             expect((<any>listObj).inputElement.classList.toString()).toEqual(multiSelectData.inputElement);//13
-            (<any>listObj).focusIn();
+            (<any>listObj).focusInHandler();
             listObj.destroy();
         });
         it('wrapper element - Default Mode', () => {
@@ -282,7 +282,7 @@ describe('MultiSelect', () => {
             listObj.enabled = false;
             listObj.dataBind();
             (<any>listObj).mouseIn();
-            (<any>listObj).focusIn();
+            (<any>listObj).focusInHandler();
             listObj.destroy();
         });
         it('List Popup Element Validation.', () => {
@@ -354,7 +354,7 @@ describe('MultiSelect', () => {
             expect(elem.parentElement).toBe(null);
             (<any>listObj).value = ["JAVA"];
             (<any>listObj).dataBind();
-            (<any>listObj).focusIn();
+            (<any>listObj).focusInHandler();
             (<any>listObj).onMobileChipInteraction({ target: elem, preventDefault: function () { } });
             (<any>listObj).overAllWrapper.classList.add(multiSelectData.inputFocus);
             (<any>listObj).onListMouseDown({ preventDefault: function () { } });
@@ -379,7 +379,7 @@ describe('MultiSelect', () => {
             expect((<HTMLElement>elem.lastElementChild).style.display).toBe('');
             (<any>listObj).value = ["JAVA"];
             (<any>listObj).dataBind();
-            (<any>listObj).focusIn();
+            (<any>listObj).focusInHandler();
             (<any>listObj).onMobileChipInteraction({ target: elem, preventDefault: function () { } });
             (<any>listObj).overAllWrapper.classList.add(multiSelectData.inputFocus);
             (<any>listObj).onListMouseDown({ preventDefault: function () { } });
@@ -424,7 +424,7 @@ describe('MultiSelect', () => {
             expect((<HTMLElement>elem.lastElementChild).style.display).toBe('none');
             (<any>listObj).value = ["JAVA"];
             (<any>listObj).dataBind();
-            (<any>listObj).focusIn();
+            (<any>listObj).focusInHandler();
             (<any>listObj).onMobileChipInteraction({ target: elem, preventDefault: function () { } });
             (<any>listObj).overAllWrapper.classList.add(multiSelectData.inputFocus);
             (<any>listObj).onListMouseDown({ preventDefault: function () { } });
@@ -2672,7 +2672,7 @@ describe('MultiSelect', () => {
             listObj.showPopup();
             setTimeout( function() {
                 (<any>listObj).focusAtLastListItem(null);
-                (<any>listObj).focusIn();
+                (<any>listObj).focusInHandler();
                 expect(checker).toBe(true);//64
                 checker = false;
                 (<any>listObj).onBlur();
@@ -2730,7 +2730,7 @@ describe('MultiSelect', () => {
                 }
             });
             listObj.appendTo(element);
-            (<any>listObj).focusIn();
+            (<any>listObj).focusInHandler();
             expect(checker).toBe(true);//64
             checker = false;
             (<any>listObj).onBlur();
@@ -2842,7 +2842,7 @@ describe('MultiSelect', () => {
         });
         it('floating-Auto: check floating to top by focusing', () => {
             let floatElement = (listObj as any).componentWrapper.querySelector('.e-float-text');
-            (listObj as any).focusIn();
+            (listObj as any).focusInHandler();
             expect(floatElement.classList.contains('e-label-top')).toBe(true);
         });
         it('floating-Auto: check floating to bottom by focus out', () => {
@@ -2936,7 +2936,7 @@ describe('MultiSelect', () => {
             });
             it('floating-Always: check floating to top by focusing', () => {
                 let floatElement = (listObj as any).componentWrapper.querySelector('.e-float-text');
-                (listObj as any).focusIn();
+                (listObj as any).focusInHandler();
                 expect(floatElement.classList.contains('e-label-top')).toBe(true);
                 listObj.destroy();
             });
@@ -2953,7 +2953,7 @@ describe('MultiSelect', () => {
             });
             it('floating-Always: check floating to top by focusing', () => {
                 let floatElement = (listObj as any).componentWrapper.querySelector('.e-float-text');
-                (listObj as any).focusIn();
+                (listObj as any).focusInHandler();
                 expect(floatElement.classList.contains('e-label-top')).toBe(true);
                 listObj.destroy();
             });
@@ -3058,7 +3058,7 @@ describe('MultiSelect', () => {
             });
             it('floating-Always: check focus in', () => {
                 let floatElement = (listObj as any).componentWrapper.querySelector('.e-float-text');
-                (listObj as any).focusIn();
+                (listObj as any).focusInHandler();
                 expect(floatElement.classList.contains('e-label-top')).toBe(true);
             });
             it('floating-Auto: check floating to bottom', () => {
@@ -3069,7 +3069,7 @@ describe('MultiSelect', () => {
             });
             it('floating-Auto: check floating to top by focusing', () => {
                 let floatElement = (listObj as any).componentWrapper.querySelector('.e-float-text');
-                (listObj as any).focusIn();
+                (listObj as any).focusInHandler();
                 expect(floatElement.classList.contains('e-label-top')).toBe(true);
                 mouseEventArgs.type = 'click';
                 mouseEventArgs.target = document.body;
@@ -3083,7 +3083,7 @@ describe('MultiSelect', () => {
                 expect(floatElement.classList.contains('e-label-top')).toBe(true);
             });
             it('floating-Auto: with value focusIn', () => {
-                (listObj as any).focusIn();
+                (listObj as any).focusInHandler();
                 let floatElement = (listObj as any).componentWrapper.querySelector('.e-float-text');
                 expect(floatElement.classList.contains('e-label-top')).toBe(true);
                 mouseEventArgs.type = 'click';
@@ -3100,7 +3100,7 @@ describe('MultiSelect', () => {
             it('floating-Auto: without value focus', () => {
                 let floatElement = (listObj as any).componentWrapper.querySelector('.e-float-text');
                 floatElement.classList.add('e-label-bottom');
-                (listObj as any).focusIn();
+                (listObj as any).focusInHandler();
                 floatElement = (listObj as any).componentWrapper.querySelector('.e-float-text');
                 expect(floatElement.classList.contains('e-label-top')).toBe(true);
                 expect(floatElement.classList.contains('e-label-bottom')).toBe(false);
@@ -3483,7 +3483,7 @@ describe('MultiSelect', () => {
         });
 
         it('Check whether clear icon is disabled when read only is true', () => {
-           dropDowns.focusIn();
+           dropDowns.focusInHandler();
            expect(dropDowns.overAllClear.style.display).toBe('none');
         });
     });
@@ -5080,6 +5080,31 @@ describe('MultiSelect', () => {
             (<any>listObj).inputElement.focus();
             (<any>listObj).inputElement.blur();
         });
+
+        it('Check focus event through public method', (done) => {
+            focusCount = 0;
+            listObj.focus = (args: FocusEventArgs): void => {
+                focusCount++;
+                expect(args.event.type).toBe('focus');
+                setTimeout((): void => {
+                    expect(focusCount).toBe(1);
+                    done();
+                }, 200);
+            }
+            (<any>listObj).focusIn();
+        });
+        it('Check blur event through public method', (done) => {
+            blurCount = 0;
+            listObj.blur = (): void => {
+                blurCount++;
+                setTimeout((): void => {
+                    expect(blurCount).toBe(1);
+                    done();
+                }, 200);
+            }
+            (<any>listObj).focusIn();
+            (<any>listObj).focusOut();
+        });
     });
     describe('EJ2-13148 - Multiselect key navigation is not working with Home , Endkeys', () => {
         let listObj: MultiSelect;
@@ -5178,7 +5203,7 @@ describe('MultiSelect', () => {
                 placeholder: "select counties Select or search maximum 8 playersssssssssssssssss" , showDropDownIcon: true , width: 300 });
             listObj.appendTo(element);
             let wrapper: HTMLElement = (<any>listObj).inputElement.parentElement.parentElement;
-            (<any>listObj).focusIn();
+            (<any>listObj).focusInHandler();
             if (wrapper && wrapper.firstElementChild && wrapper.firstChild.nextSibling) {
                 expect(getComputedStyle((<any>listObj).searchWrapper).width).toBe('calc(100% + -20px)');
             }
@@ -5202,7 +5227,7 @@ describe('MultiSelect', () => {
             listObj = new MultiSelect({ hideSelectedItem: false, dataSource: datasource2, 
                 placeholder: "select counties Select or search maximum 8 playersssssssssssssssss" , value: ['PHP','HTML'],showDropDownIcon: true , width: 300 });
             listObj.appendTo(element);
-            (<any>listObj).focusIn();
+            (<any>listObj).focusInHandler();
             let wrapper: HTMLElement = (<any>listObj).inputElement.parentElement.parentElement;
             if (wrapper && wrapper.firstElementChild && wrapper.firstChild.nextSibling) {
                 expect((<any>listObj).searchWrapper.classList.contains('e-zero-size')).toBe(false);
@@ -5409,7 +5434,7 @@ describe('MultiSelect', () => {
                 (<any>listObj).onBlur();
             }
 
-            (<any>listObj).focusIn();
+            (<any>listObj).focusInHandler();
         });
     });
     describe('EJ2-23146 - floating label misplaced when it is focused', () => {
@@ -5542,7 +5567,7 @@ describe('MultiSelect', () => {
                 (<any>listObj).onBlur();
             }
 
-            (<any>listObj).focusIn();
+            (<any>listObj).focusInHandler();
         });
     });
     it('memory leak', () => {     

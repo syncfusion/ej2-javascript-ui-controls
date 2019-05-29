@@ -257,21 +257,17 @@ export class DateRangePicker extends CalendarBase {
      */
     @Property(false)
     public enablePersistence: boolean;
-    /** 
-     * Specifies the DateRangePicker in RTL mode that displays the content in the right-to-left direction.
-     * @default false
-     */
-    @Property(false)
-    public enableRtl: boolean;
     /**
      * Gets or sets the minimum date that can be selected in the calendar-popup.
      * @default new Date(1900, 00, 01)
+     * @aspDefaultValue new DateTime(1900, 01, 01)
      */
     @Property(new Date(1900, 0, 1))
     public min: Date;
     /**
      * Gets or sets the maximum date that can be selected in the calendar-popup.
      * @default new Date(2099, 11, 31)
+     * @aspDefaultValue new DateTime(2099, 12, 31)
      */
     @Property(new Date(2099, 11, 31))
     public max: Date;
@@ -413,7 +409,7 @@ export class DateRangePicker extends CalendarBase {
     /**
      *  Specifies the minimum span of days that can be allowed in date range selection.
      * > For more details refer to 
-     * [`Range Span`] (../../daterangepicker/range-selection/#range-span) documentation.
+     * [`Range Span`](../../daterangepicker/range-restriction/#range-span) documentation.
      * @default null    
      * @aspType int
      */
@@ -422,7 +418,7 @@ export class DateRangePicker extends CalendarBase {
     /**
      *  Specifies the maximum span of days that can be allowed in a date range selection.
      * > For more details refer to 
-     * [`Range Span`] (../../daterangepicker/range-selection/#range-span) documentation.
+     * [`Range Span`](../../daterangepicker/range-restriction/#range-span) documentation.
      * @default null
      * @aspType int
      */
@@ -431,7 +427,7 @@ export class DateRangePicker extends CalendarBase {
     /**
      * Specifies the component to act as strict which allows entering only a valid date range in a DateRangePicker.
      * > For more details refer to 
-     * [`Strict Mode`](../../daterangepicker/range-selection#strict-mode)documentation.
+     * [`Strict Mode`](../../daterangepicker/range-restriction#strict-mode)documentation.
      * @default false
      */
     @Property(false)
