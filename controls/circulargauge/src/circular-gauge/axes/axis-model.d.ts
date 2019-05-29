@@ -7,6 +7,7 @@ export interface LineModel {
 
     /**
      * The width of the line in pixels.
+     * @aspDefaultValueIgnore
      * @default 2
      */
 

@@ -11,7 +11,7 @@ import { TooltipShape, TooltipTheme } from './enum';
 
 /**
  * Configures the fonts in charts.
- * @private
+ * @public
  */
 
 export class TextStyle extends ChildProperty<TextStyle> {
@@ -150,7 +150,7 @@ export class ToolLocation extends ChildProperty<ToolLocation> {
  *   tooltipObj.appendTo("#tooltip");
  * </script>
  * ```
- * @private
+ * @public
  */
 @NotifyPropertyChanges
 export class Tooltip extends Component<HTMLElement> implements INotifyPropertyChanged {

@@ -438,13 +438,6 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     public sequentialUpload: boolean;
 
     /**
-     * When this property is enabled, the uploader component elements are aligned from right-to-left direction to support locales.
-     * @default false
-     */
-    @Property(false)
-    public enableRtl: boolean;
-
-    /**
      * Specifies the CSS class name that can be appended with root element of the uploader.
      * One or more custom CSS classes can be added to a uploader.
      * @default ''

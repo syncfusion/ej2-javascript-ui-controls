@@ -645,6 +645,7 @@ var INTREGEXP = new RegExp('^(-)?(\\d*)$');
 var DECIMALSEPARATOR = '.';
 var COMPONENT = 'e-numerictextbox';
 var CONTROL = 'e-control';
+var NUMERIC_FOCUS = 'e-input-focus';
 /**
  * Represents the NumericTextBox component that allows the user to enter only numeric values.
  * ```html
@@ -897,8 +898,8 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         }
     };
     NumericTextBox.prototype.wireEvents = function () {
-        EventHandler.add(this.element, 'focus', this.focusIn, this);
-        EventHandler.add(this.element, 'blur', this.focusOut, this);
+        EventHandler.add(this.element, 'focus', this.focusHandler, this);
+        EventHandler.add(this.element, 'blur', this.focusOutHandler, this);
         EventHandler.add(this.element, 'keydown', this.keyDownHandler, this);
         EventHandler.add(this.element, 'keyup', this.keyUpHandler, this);
         EventHandler.add(this.element, 'input', this.inputHandler, this);
@@ -922,8 +923,8 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         EventHandler.add(this.spinDown, Browser.touchMoveEvent, this.touchMoveOnSpinner, this);
     };
     NumericTextBox.prototype.unwireEvents = function () {
-        EventHandler.remove(this.element, 'focus', this.focusIn);
-        EventHandler.remove(this.element, 'blur', this.focusOut);
+        EventHandler.remove(this.element, 'focus', this.focusHandler);
+        EventHandler.remove(this.element, 'blur', this.focusOutHandler);
         EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         EventHandler.remove(this.element, 'input', this.inputHandler);
         EventHandler.remove(this.element, 'keydown', this.keyDownHandler);
@@ -1271,7 +1272,7 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         }
         this.cancelEvent(event);
     };
-    NumericTextBox.prototype.focusIn = function (event) {
+    NumericTextBox.prototype.focusHandler = function (event) {
         var _this = this;
         this.focusEventArgs = { event: event, value: this.value, container: this.container };
         this.trigger('focus', this.focusEventArgs);
@@ -1296,7 +1297,7 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         }
     };
     
-    NumericTextBox.prototype.focusOut = function (event) {
+    NumericTextBox.prototype.focusOutHandler = function (event) {
         var _this = this;
         this.blurEventArgs = { event: event, value: this.value, container: this.container };
         this.trigger('blur', this.blurEventArgs);
@@ -1454,6 +1455,26 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
         return this.element.value;
     };
     /**
+     * Sets the focus to widget for interaction.
+     * @returns void
+     */
+    NumericTextBox.prototype.focusIn = function () {
+        if (document.activeElement !== this.element && this.enabled) {
+            this.element.focus();
+            addClass([this.container], [NUMERIC_FOCUS]);
+        }
+    };
+    /**
+     * Remove the focus from widget, if the widget is in focus state.
+     * @returns void
+     */
+    NumericTextBox.prototype.focusOut = function () {
+        if (document.activeElement === this.element && this.enabled) {
+            this.element.blur();
+            removeClass([this.container], [NUMERIC_FOCUS]);
+        }
+    };
+    /**
      * Gets the properties to be maintained in the persisted state.
      * @return {string}
      */
@@ -1605,9 +1626,6 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(true)
     ], NumericTextBox.prototype, "enabled", void 0);
-    __decorate([
-        Property(false)
-    ], NumericTextBox.prototype, "enableRtl", void 0);
     __decorate([
         Property(false)
     ], NumericTextBox.prototype, "showClearButton", void 0);
@@ -2723,6 +2741,7 @@ var ROOT$1 = 'e-widget e-control-wrapper e-mask';
 var INPUT = 'e-input';
 var COMPONENT$1 = 'e-maskedtextbox';
 var CONTROL$1 = 'e-control';
+var MASKINPUT_FOCUS = 'e-input-focus';
 /**
  * The MaskedTextBox allows the user to enter the valid input only based on the provided mask.
  * ```html
@@ -2968,6 +2987,26 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
         return unstrippedValue.call(this, this.element);
     };
     /**
+     * Sets the focus to widget for interaction.
+     * @returns void
+     */
+    MaskedTextBox.prototype.focusIn = function () {
+        if (document.activeElement !== this.element && this.enabled) {
+            this.element.focus();
+            addClass([this.inputObj.container], [MASKINPUT_FOCUS]);
+        }
+    };
+    /**
+     * Remove the focus from widget, if the widget is in focus state.
+     * @returns void
+     */
+    MaskedTextBox.prototype.focusOut = function () {
+        if (document.activeElement === this.element && this.enabled) {
+            this.element.blur();
+            removeClass([this.inputObj.container], [MASKINPUT_FOCUS]);
+        }
+    };
+    /**
      * Removes the component from the DOM and detaches all its related event handlers.
      * Also it maintains the initial input element from the DOM.
      * @method destroy
@@ -3009,9 +3048,6 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property(false)
     ], MaskedTextBox.prototype, "enablePersistence", void 0);
-    __decorate$1([
-        Property(false)
-    ], MaskedTextBox.prototype, "enableRtl", void 0);
     __decorate$1([
         Property(null)
     ], MaskedTextBox.prototype, "mask", void 0);
@@ -9095,9 +9131,6 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], Uploader.prototype, "sequentialUpload", void 0);
     __decorate$4([
-        Property(false)
-    ], Uploader.prototype, "enableRtl", void 0);
-    __decorate$4([
         Property('')
     ], Uploader.prototype, "cssClass", void 0);
     __decorate$4([
@@ -10933,9 +10966,6 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], ColorPicker.prototype, "disabled", void 0);
     __decorate$5([
-        Property(false)
-    ], ColorPicker.prototype, "enableRtl", void 0);
-    __decorate$5([
         Property('Picker')
     ], ColorPicker.prototype, "mode", void 0);
     __decorate$5([
@@ -11016,6 +11046,7 @@ var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 var HIDE_CLEAR = 'e-clear-icon-hide';
+var TEXTBOX_FOCUS = 'e-input-focus';
 /**
  * Represents the TextBox component that allows the user to enter the values based on it's type.
  * ```html
@@ -11436,6 +11467,26 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    /**
+     * Sets the focus to widget for interaction.
+     * @returns void
+     */
+    TextBox.prototype.focusIn = function () {
+        if (document.activeElement !== this.respectiveElement && this.enabled) {
+            this.respectiveElement.focus();
+            addClass([this.textboxWrapper.container], [TEXTBOX_FOCUS]);
+        }
+    };
+    /**
+     * Remove the focus from widget, if the widget is in focus state.
+     * @returns void
+     */
+    TextBox.prototype.focusOut = function () {
+        if (document.activeElement === this.respectiveElement && this.enabled) {
+            this.respectiveElement.blur();
+            removeClass([this.textboxWrapper.container], [TEXTBOX_FOCUS]);
+        }
+    };
     __decorate$6([
         Property('text')
     ], TextBox.prototype, "type", void 0);
@@ -11454,9 +11505,6 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
     __decorate$6([
         Property(null)
     ], TextBox.prototype, "placeholder", void 0);
-    __decorate$6([
-        Property(false)
-    ], TextBox.prototype, "enableRtl", void 0);
     __decorate$6([
         Property(false)
     ], TextBox.prototype, "multiline", void 0);

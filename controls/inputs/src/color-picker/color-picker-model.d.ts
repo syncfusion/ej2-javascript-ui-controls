@@ -27,12 +27,6 @@ export interface ColorPickerModel extends ComponentModel{
     disabled?: boolean;
 
     /**
-     * It is used to render the ColorPicker component from right to left direction.
-     * @default false
-     */
-    enableRtl?: boolean;
-
-    /**
      * It is used to render the ColorPicker with the specified mode.
      * @default 'Picker'
      */

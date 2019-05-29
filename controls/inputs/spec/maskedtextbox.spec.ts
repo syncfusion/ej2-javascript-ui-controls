@@ -2,7 +2,7 @@
  * MaskedTextBox spec document
  */
 
-import { createElement, KeyboardEvents, EventHandler, extend  } from '@syncfusion/ej2-base';
+import { createElement, KeyboardEvents, EmitType, EventHandler, extend  } from '@syncfusion/ej2-base';
 import { MaskedTextBox, MaskChangeEventArgs, MaskFocusEventArgs, MaskBlurEventArgs} from '../src/maskedtextbox/maskedtextbox/maskedtextbox';
 import { maskInput, setMaskValue, getVal, getMaskedVal, mobileRemoveFunction, maskInputDropHandler, maskInputBlurHandler } from '../src/maskedtextbox/base/mask-base';
 import  {profile , inMB, getMemoryProfile} from './common.spec';
@@ -1606,6 +1606,42 @@ describe('MaskedTextBox Component', () => {
             EventHandler.trigger(input, 'keypress', eventUp);
         });
     });
+
+    describe('Event testing', () => {
+        let maskObj: any;
+        let onfocus: EmitType<Object> = jasmine.createSpy('focus');
+        let onBlur: EmitType<Object> = jasmine.createSpy('blur');
+        let originalTimeout: number;
+        beforeEach((): void => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
+            let element: HTMLElement = createElement('input', {id: 'textbox'});
+            document.body.appendChild(element);
+            maskObj = new MaskedTextBox({ focus: onfocus, blur: onBlur });
+            maskObj.appendTo(document.getElementById('textbox'));
+        });
+        afterEach(():void => {
+            if (maskObj) {
+                maskObj.destroy();
+            }
+            document.body.innerHTML = '';
+        })
+        it('focus event through public method', () => {
+            maskObj.focusIn();
+            expect(onfocus).toHaveBeenCalled();
+        });
+        it('blur event through public method', (done: Function) => {
+            maskObj.focusOut();
+            setTimeout(
+                () => {
+                    expect(onBlur).toHaveBeenCalled();
+                    done();
+                },
+            2500);
+            
+        });
+    });
+
     describe('Cut functionalities', () => {
         let maskBox: MaskedTextBox;
         beforeEach((): void => {

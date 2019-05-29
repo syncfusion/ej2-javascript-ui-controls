@@ -1,11 +1,13 @@
 import { Component, Property, Event, EmitType, EventHandler, L10n, setValue, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { NotifyPropertyChanges, INotifyPropertyChanged, detach, Internationalization, getUniqueID, closest } from '@syncfusion/ej2-base';
+import { addClass, removeClass } from '@syncfusion/ej2-base';
 import { FloatLabelType, Input, InputObject } from '../input/input';
 import { TextBoxModel} from './textbox-model';
 
 const ROOT: string = 'e-textbox';
 const CONTROL: string = 'e-control';
 const HIDE_CLEAR: string = 'e-clear-icon-hide';
+const TEXTBOX_FOCUS: string = 'e-input-focus';
 
 export interface FocusInEventArgs {
     /** Returns the TextBox container element */
@@ -113,14 +115,6 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
      */
     @Property(null)
     public placeholder: string;
-
-    /**
-     * Specifies a Boolean value that enable or disable the RTL mode on the Textbox. The content of Textbox
-     * display from right to left direction when enable this RTL mode.
-     * @default false
-     */
-    @Property(false)
-    public enableRtl: boolean;
 
     /**
      * Specifies a boolean value that enable or disable the multiline on the TextBox. 
@@ -596,6 +590,28 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             } else {
                 this.respectiveElement.removeAttribute(key);
             }
+        }
+    }
+
+    /**
+     * Sets the focus to widget for interaction.
+     * @returns void
+     */
+    public focusIn(): void {
+        if (document.activeElement !== this.respectiveElement && this.enabled) {
+            this.respectiveElement.focus();
+            addClass([this.textboxWrapper.container], [TEXTBOX_FOCUS]);
+        }
+    }
+
+    /**
+     * Remove the focus from widget, if the widget is in focus state. 
+     * @returns void
+     */
+    public focusOut(): void {
+        if (document.activeElement === this.respectiveElement && this.enabled) {
+            this.respectiveElement.blur();
+            removeClass([this.textboxWrapper.container], [TEXTBOX_FOCUS]);
         }
     }
 }

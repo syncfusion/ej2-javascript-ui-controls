@@ -11,6 +11,7 @@ const ROOT: string = 'e-widget e-control-wrapper e-mask';
 const INPUT: string = 'e-input';
 const COMPONENT: string = 'e-maskedtextbox';
 const CONTROL: string = 'e-control';
+const MASKINPUT_FOCUS: string = 'e-input-focus';
 
 /**
  * The MaskedTextBox allows the user to enter the valid input only based on the provided mask.
@@ -109,18 +110,10 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
     public enablePersistence: boolean;
 
     /**
-     * Sets a value that enables or disables the RTL mode on the MaskedTextBox. If it is true, 
-     * MaskedTextBox will display the content in the right to left direction.
-     * @default false
-     */
-    @Property(false)
-    public enableRtl: boolean;
-
-    /**
      * Sets a value that masks the MaskedTextBox to allow/validate the user input.
-     * * Mask allows <b><a href="../../maskedtextbox/mask-configuration/#standard-mask-elements" target="_blank">standard mask elements
-     * </a></b>, <b><a href="../../maskedtextbox/mask-configuration/#custom-characters" target="_blank">custom characters</a></b> and
-     * <b><a href="../../maskedtextbox/mask-configuration/#regular-expression" target="_blank">regular expression</a></b> as mask
+     * * Mask allows [`standard mask elements`](../../maskedtextbox/mask-configuration/#standard-mask-elements)
+     * </b>, <b>[`custom characters`](../../maskedtextbox/mask-configuration/#custom-characters)</b> and
+     * <b>[`regular expression`](../../maskedtextbox/mask-configuration/#regular-expression)</b> as mask
      * elements.
      * For more information on mask, refer to
      * [mask](../../maskedtextbox/mask-configuration/#standard-mask-elements).
@@ -450,6 +443,28 @@ export class MaskedTextBox extends Component<HTMLInputElement> implements INotif
      */
     public getMaskedValue(): string {
         return unstrippedValue.call(this, this.element);
+    }
+
+    /**
+     * Sets the focus to widget for interaction.
+     * @returns void
+     */
+    public focusIn(): void {
+        if (document.activeElement !== this.element && this.enabled) {
+            this.element.focus();
+            addClass([this.inputObj.container], [MASKINPUT_FOCUS]);
+        }
+    }
+
+    /**
+     * Remove the focus from widget, if the widget is in focus state. 
+     * @returns void
+     */
+    public focusOut(): void {
+        if (document.activeElement === this.element && this.enabled) {
+            this.element.blur();
+            removeClass([this.inputObj.container], [MASKINPUT_FOCUS]);
+        }
     }
 
     /**

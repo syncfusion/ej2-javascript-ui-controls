@@ -6613,10 +6613,13 @@ class ThumbnailView {
         this.pdfViewerBase.navigationPane.sideBarContent.appendChild(this.thumbnailView);
     }
     /**
-     * @public
+     * Open the thumbnail pane of the PdfViewer.
+     * @returns void
      */
     openThumbnailPane() {
-        this.pdfViewerBase.navigationPane.openThumbnailPane();
+        if (this.pdfViewerBase.navigationPane) {
+            this.pdfViewerBase.navigationPane.openThumbnailPane();
+        }
     }
     /**
      * @private

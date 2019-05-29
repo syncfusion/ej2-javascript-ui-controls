@@ -3,7 +3,6 @@ import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
  * Interface for a class TextStyle
- * @private
  */
 export interface TextStyleModel {
 
@@ -118,7 +117,6 @@ export interface ToolLocationModel {
 
 /**
  * Interface for a class Tooltip
- * @private
  */
 export interface TooltipModel extends ComponentModel{
 

@@ -1,6 +1,6 @@
 /**
  * This has the basic properties required for SvgRenderer and CanvasRenderer
- * @private
+ * @public
  */
 export interface BaseAttibutes {
     /**
@@ -82,7 +82,7 @@ export interface BaseAttibutes {
 }
 /**
  * This has the properties for a SVG element
- * @private
+ * @public
  */
 export interface SVGAttributes extends BaseAttibutes {
     /**
@@ -96,7 +96,7 @@ export interface SVGAttributes extends BaseAttibutes {
 }
 /**
  * Properties required to render a circle
- * @private
+ * @public
  */
 export interface CircleAttributes extends BaseAttibutes {
     /**
@@ -114,7 +114,7 @@ export interface CircleAttributes extends BaseAttibutes {
 }
 /**
  * Properties required to render a line
- * @private
+ * @public
  */
 export interface LineAttributes extends BaseAttibutes {
     /**
@@ -136,7 +136,7 @@ export interface LineAttributes extends BaseAttibutes {
 }
 /**
  * Properties required to render a rectangle
- * @private
+ * @public
  */
 export interface RectAttributes extends BaseAttibutes {
     /**
@@ -146,7 +146,7 @@ export interface RectAttributes extends BaseAttibutes {
 }
 /**
  * Properties required to render path
- * @private
+ * @public
  */
 export interface PathAttributes extends BaseAttibutes {
     /**
@@ -188,7 +188,7 @@ export interface PathAttributes extends BaseAttibutes {
 }
 /**
  * Properties required to render a polyline
- * @private
+ * @public
  */
 export interface PolylineAttributes extends BaseAttibutes {
     /**
@@ -198,7 +198,7 @@ export interface PolylineAttributes extends BaseAttibutes {
 }
 /**
  * Properties required to render ellipse
- * @private
+ * @public
  */
 export interface EllipseAttributes extends CircleAttributes {
     /**
@@ -222,7 +222,7 @@ export interface PatternAttributes extends BaseAttibutes {
 }
 /**
  * Properties required to render an image
- * @private
+ * @public
  */
 export interface ImageAttributes extends BaseAttibutes {
     /**
@@ -236,7 +236,7 @@ export interface ImageAttributes extends BaseAttibutes {
 }
 /**
  * Properties required to render text
- * @private
+ * @public
  */
 export interface TextAttributes extends BaseAttibutes {
     /**
@@ -270,7 +270,7 @@ export interface TextAttributes extends BaseAttibutes {
 }
 /**
  * Properties required to render radial gradient
- * @private
+ * @public
  */
 export interface RadialGradient {
     /**
@@ -300,7 +300,7 @@ export interface RadialGradient {
 }
 /**
  * Properties required to render linear gradient
- * @private
+ * @public
  */
 export interface LinearGradient {
     /**
@@ -326,6 +326,7 @@ export interface LinearGradient {
 }
 /**
  * Properties required to render a circle
+ *  @public
  */
 export interface SVGCanvasAttributes {
     /**
@@ -335,7 +336,7 @@ export interface SVGCanvasAttributes {
 }
 /**
  * Properties required to render a gradient
- * @private
+ * @public
  */
 export interface GradientColor {
     /**

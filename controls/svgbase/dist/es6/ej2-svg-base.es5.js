@@ -1167,7 +1167,7 @@ var __decorate = (undefined && undefined.__decorate) || function (decorators, ta
 };
 /**
  * Configures the fonts in charts.
- * @private
+ * @public
  */
 var TextStyle = /** @__PURE__ @class */ (function (_super) {
     __extends(TextStyle, _super);
@@ -1260,7 +1260,7 @@ var ToolLocation = /** @__PURE__ @class */ (function (_super) {
  *   tooltipObj.appendTo("#tooltip");
  * </script>
  * ```
- * @private
+ * @public
  */
 var Tooltip = /** @__PURE__ @class */ (function (_super) {
     __extends(Tooltip, _super);

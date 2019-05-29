@@ -1841,6 +1841,14 @@ describe('TextBox ', () => {
             inputObj.focusOutHandler(mouseEvent);
             expect(onBlur).toHaveBeenCalled();
         });
+        it('focus event through public method', () => {
+            inputObj.focusIn();
+            expect(onfocus).toHaveBeenCalled();
+        });
+        it('blur event through public method', () => {
+            inputObj.focusOut();
+            expect(onBlur).toHaveBeenCalled();
+        });
         it('blur event with change event', () => {
             let mouseEvent = document.createEvent('MouseEvents');
             inputObj.previousValue = '';

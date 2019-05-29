@@ -1,4 +1,4 @@
-import { Component, Property, Event, EmitType, EventHandler, L10n, setValue, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, detach, Internationalization, getUniqueID, closest } from '@syncfusion/ej2-base';import { FloatLabelType, Input, InputObject } from '../input/input';
+import { Component, Property, Event, EmitType, EventHandler, L10n, setValue, getValue, isNullOrUndefined } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, detach, Internationalization, getUniqueID, closest } from '@syncfusion/ej2-base';import { addClass, removeClass } from '@syncfusion/ej2-base';import { FloatLabelType, Input, InputObject } from '../input/input';
 import {ChangedEventArgs,FocusOutEventArgs,FocusInEventArgs,InputEventArgs} from "./textbox";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -47,13 +47,6 @@ export interface TextBoxModel extends ComponentModel{
      * @default null
      */
     placeholder?: string;
-
-    /**
-     * Specifies a Boolean value that enable or disable the RTL mode on the Textbox. The content of Textbox
-     * display from right to left direction when enable this RTL mode.
-     * @default false
-     */
-    enableRtl?: boolean;
 
     /**
      * Specifies a boolean value that enable or disable the multiline on the TextBox. 

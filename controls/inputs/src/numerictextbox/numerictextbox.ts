@@ -17,6 +17,7 @@ const INTREGEXP: RegExp = new RegExp('^(-)?(\\d*)$');
 const DECIMALSEPARATOR: string = '.';
 const COMPONENT: string = 'e-numerictextbox';
 const CONTROL: string = 'e-control';
+const NUMERIC_FOCUS: string = 'e-input-focus';
 
 /**
  * Represents the NumericTextBox component that allows the user to enter only numeric values.
@@ -150,14 +151,6 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      */
     @Property(true)
     public enabled: boolean;
-
-    /**
-     * Sets a value that enables or disables the RTL mode on the NumericTextBox. If it is true, 
-     * NumericTextBox will display the content in the right to left direction.
-     * @default false
-     */
-    @Property(false)
-    public enableRtl: boolean;
 
     /**
      * Specifies whether to show or hide the clear icon.
@@ -539,8 +532,8 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     }
 
     private wireEvents(): void {
-        EventHandler.add(this.element, 'focus', this.focusIn, this);
-        EventHandler.add(this.element, 'blur', this.focusOut, this);
+        EventHandler.add(this.element, 'focus', this.focusHandler, this);
+        EventHandler.add(this.element, 'blur', this.focusOutHandler, this);
         EventHandler.add(this.element, 'keydown', this.keyDownHandler, this);
         EventHandler.add(this.element, 'keyup', this.keyUpHandler, this);
         EventHandler.add(this.element, 'input', this.inputHandler, this);
@@ -566,8 +559,8 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     }
 
     private unwireEvents(): void {
-        EventHandler.remove(this.element, 'focus', this.focusIn);
-        EventHandler.remove(this.element, 'blur', this.focusOut);
+        EventHandler.remove(this.element, 'focus', this.focusHandler);
+        EventHandler.remove(this.element, 'blur', this.focusOutHandler);
         EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
         EventHandler.remove(this.element, 'input', this.inputHandler);
         EventHandler.remove(this.element, 'keydown', this.keyDownHandler);
@@ -902,7 +895,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         this.cancelEvent(event);
     }
 
-    private focusIn(event: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent): void {
+    private focusHandler(event: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent): void {
         this.focusEventArgs = {event: event, value: this.value, container: this.container };
         this.trigger('focus', this.focusEventArgs);
         if (!this.enabled || this.readonly) { return; }
@@ -926,7 +919,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
         }
     };
 
-    private focusOut(event: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent): void {
+    private focusOutHandler(event: MouseEvent | FocusEvent | TouchEvent | KeyboardEvent): void {
         this.blurEventArgs = {event: event, value: this.value, container: this.container };
         this.trigger('blur', this.blurEventArgs);
         if (this.isPrevFocused) {
@@ -1078,6 +1071,28 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
      */
     public getText(): string {
         return this.element.value;
+    }
+
+    /**
+     * Sets the focus to widget for interaction.
+     * @returns void
+     */
+    public focusIn(): void {
+        if (document.activeElement !== this.element && this.enabled) {
+            this.element.focus();
+            addClass([this.container], [NUMERIC_FOCUS]);
+        }
+    }
+
+    /**
+     * Remove the focus from widget, if the widget is in focus state. 
+     * @returns void
+     */
+    public focusOut(): void {
+        if (document.activeElement === this.element && this.enabled) {
+            this.element.blur();
+            removeClass([this.container], [NUMERIC_FOCUS]);
+        }
     }
 
     /**

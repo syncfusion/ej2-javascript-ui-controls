@@ -44,10 +44,13 @@ export class ThumbnailView {
     }
 
     /**
-     * @public
+     * Open the thumbnail pane of the PdfViewer. 
+     * @returns void
      */
     public openThumbnailPane(): void {
-        this.pdfViewerBase.navigationPane.openThumbnailPane();
+        if (this.pdfViewerBase.navigationPane) {
+            this.pdfViewerBase.navigationPane.openThumbnailPane();
+        }
     }
 
     /**

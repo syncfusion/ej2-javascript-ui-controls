@@ -81,13 +81,6 @@ export interface NumericTextBoxModel extends ComponentModel{
     enabled?: boolean;
 
     /**
-     * Sets a value that enables or disables the RTL mode on the NumericTextBox. If it is true, 
-     * NumericTextBox will display the content in the right to left direction.
-     * @default false
-     */
-    enableRtl?: boolean;
-
-    /**
      * Specifies whether to show or hide the clear icon.
      * @default false
      */

@@ -6693,10 +6693,13 @@ var ThumbnailView = /** @__PURE__ @class */ (function () {
         this.pdfViewerBase.navigationPane.sideBarContent.appendChild(this.thumbnailView);
     };
     /**
-     * @public
+     * Open the thumbnail pane of the PdfViewer.
+     * @returns void
      */
     ThumbnailView.prototype.openThumbnailPane = function () {
-        this.pdfViewerBase.navigationPane.openThumbnailPane();
+        if (this.pdfViewerBase.navigationPane) {
+            this.pdfViewerBase.navigationPane.openThumbnailPane();
+        }
     };
     /**
      * @private

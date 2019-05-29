@@ -4,7 +4,23 @@
 
 ## 17.1.49 (2019-05-29)
 
+### TextBox
+
+#### New Features
+
+- #236816 - Provided method to `focusIn` and `focusOut`.
+
+### NumericTextBox
+
+#### New Features
+
+- #236816 - Provided method to `focusIn` and `focusOut`.
+
 ### MaskedTextBox
+
+#### New Features
+
+- #236816 - Provided method to `focusIn` and `focusOut`.
 
 #### Bug Fixes
 

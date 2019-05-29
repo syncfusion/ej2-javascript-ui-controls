@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 17.1.49 (2019-05-29)
+
+### Maps
+
+#### Bug Fixes
+
+- #I237041 - The issue in the sublayers are not re-rendered when zooming or panning is fixed.
+
 ## 17.1.48 (2019-05-21)
 
 ### Maps

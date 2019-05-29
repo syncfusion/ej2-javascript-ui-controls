@@ -1127,7 +1127,7 @@ var __decorate = (undefined && undefined.__decorate) || function (decorators, ta
 };
 /**
  * Configures the fonts in charts.
- * @private
+ * @public
  */
 class TextStyle extends ChildProperty {
 }
@@ -1200,7 +1200,7 @@ __decorate([
  *   tooltipObj.appendTo("#tooltip");
  * </script>
  * ```
- * @private
+ * @public
  */
 let Tooltip = class Tooltip extends Component {
     /**

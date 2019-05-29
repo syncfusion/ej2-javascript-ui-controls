@@ -115,13 +115,6 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
     public disabled: boolean;
 
     /**
-     * It is used to render the ColorPicker component from right to left direction.
-     * @default false
-     */
-    @Property(false)
-    public enableRtl: boolean;
-
-    /**
      * It is used to render the ColorPicker with the specified mode.
      * @default 'Picker'
      */

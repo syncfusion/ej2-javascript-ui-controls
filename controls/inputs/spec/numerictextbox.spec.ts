@@ -308,7 +308,7 @@ describe('Numerictextbox Control', () => {
             expect(document.getElementById('tsNumeric').parentElement.classList.contains('e-disabled')).toEqual(true);
             expect(document.getElementById('tsNumeric').classList.contains('e-disabled')).toEqual(true);
             expect(document.getElementById('tsNumeric').getAttribute('aria-disabled')).toEqual('true');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
         });
 
         it('Enable the numeric textbox control', () => {
@@ -345,7 +345,7 @@ describe('Numerictextbox Control', () => {
         it('Set the readonly to numerictextbox', () => {
             numerictextbox = new NumericTextBox({ readonly: true }, '#tsNumeric');
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).readOnly).toBe(true);
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
         });
 
         it('Set the read only value as false to numerictextbox', () => {
@@ -442,7 +442,7 @@ describe('Numerictextbox Control', () => {
         it('Set the decimals value as 3 in numeric', () => {
             numerictextbox = new NumericTextBox({ format: 'n4', value: 10.88888, decimals: 3 }, '#tsNumeric');
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('10.8890');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('10.889');
             expect(numerictextbox.value).toEqual(10.889);
         });
@@ -450,7 +450,7 @@ describe('Numerictextbox Control', () => {
         it('Set the decimals value as null in numeric', () => {
             numerictextbox = new NumericTextBox({ format: 'n4', value: 10.88888, decimals: null }, '#tsNumeric');
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('10.8889');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('10.88888');
             expect(numerictextbox.value).toEqual(10.88888);
         });
@@ -458,7 +458,7 @@ describe('Numerictextbox Control', () => {
         it('Set the decimals value as 3 in currency', () => {
             numerictextbox = new NumericTextBox({ format: 'c4', value: 15.88888, decimals: 3 }, '#tsNumeric');
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$15.8890');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('15.889');
             expect(numerictextbox.value).toEqual(15.889);
         });
@@ -466,7 +466,7 @@ describe('Numerictextbox Control', () => {
          it('Set the decimals value as null in currency', () => {
             numerictextbox = new NumericTextBox({ format: 'c4', value: 15.88888, decimals: null }, '#tsNumeric');
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$15.8889');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('15.88888');
             expect(numerictextbox.value).toEqual(15.88888);
         });
@@ -474,21 +474,21 @@ describe('Numerictextbox Control', () => {
             numerictextbox = new NumericTextBox({ value: 10 }, '#tsNumeric');
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('10.00');
             numerictextbox.value = "a";
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('10.00');
             expect(numerictextbox.value).toEqual(10);
         });
          it('Set the validateonDecimal in numeric', () => {
             numerictextbox = new NumericTextBox({ value: 10.88888, decimals: 2 }, '#tsNumeric');
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('10.89');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('10.89');
             expect(numerictextbox.value).toEqual(10.89);
             let eventArgs: any = { keyCode: 53, which: 53, altKey: false, ctrlKey: false, shiftKey: false, preventDefault: function () { }, stopPropagation: function () { } };
             let result: boolean = numerictextbox.keyPressHandler(extend({}, {}, eventArgs));
             expect(result).toEqual(true);
             numerictextbox.validateDecimalOnType = true;
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             numerictextbox.value = '5.56';
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '5.56';
             let result1: boolean = numerictextbox.keyPressHandler(extend({}, {}, eventArgs));
@@ -652,7 +652,7 @@ describe('Change Event testing', () => {
             });
             numeric.appendTo('#tsNumeric');
             expect(j).toEqual(0);
-            numeric.focusIn(); 
+            numeric.focusIn();
             expect(j).toEqual(1);
             expect(name).toEqual("focus");
         });
@@ -1997,21 +1997,21 @@ describe('Change Event testing', () => {
             ele.dispatchEvent(mouseEvent);
             mouseEvent2.initEvent("mouseup", true, true);
             ele.dispatchEvent(mouseEvent2);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$11.00');
         });
 
         it('Increment currency value with spin up button after focusing the control', () => {
             numerictextbox = new NumericTextBox({ value: 10, format: 'c2' }, '#tsNumeric');
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$10.00');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('10');
             let ele = document.getElementById('tsNumeric').parentElement.querySelector(".e-spin-up");
             mouseEvent.initEvent("mousedown", true, true);
             ele.dispatchEvent(mouseEvent);
             mouseEvent2.initEvent("mouseup", true, true);
             ele.dispatchEvent(mouseEvent2);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$11.00');
         });
 
@@ -2022,7 +2022,7 @@ describe('Change Event testing', () => {
             ele.dispatchEvent(mouseEvent);
             mouseEvent2.initEvent("mouseup", true, true);
             ele.dispatchEvent(mouseEvent2);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$9.00');
         });
 
@@ -2033,7 +2033,7 @@ describe('Change Event testing', () => {
             ele.dispatchEvent(mouseEvent);
             mouseEvent2.initEvent("mouseup", true, true);
             ele.dispatchEvent(mouseEvent2);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('-$9.00');
         });
 
@@ -2044,7 +2044,7 @@ describe('Change Event testing', () => {
             ele.dispatchEvent(mouseEvent);
             mouseEvent2.initEvent("mouseup", true, true);
             ele.dispatchEvent(mouseEvent2);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('-$11.00');
         });
 
@@ -2055,7 +2055,7 @@ describe('Change Event testing', () => {
             ele.dispatchEvent(mouseEvent);
             mouseEvent2.initEvent("mouseup", true, true);
             ele.dispatchEvent(mouseEvent2);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$10.00');
         });
 
@@ -2066,7 +2066,7 @@ describe('Change Event testing', () => {
             ele.dispatchEvent(mouseEvent);
             mouseEvent2.initEvent("mouseup", true, true);
             ele.dispatchEvent(mouseEvent2);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$5.00');
         });
 
@@ -2077,7 +2077,7 @@ describe('Change Event testing', () => {
             ele.dispatchEvent(mouseEvent);
             mouseEvent2.initEvent("mouseup", true, true);
             ele.dispatchEvent(mouseEvent2);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('-$10.00');
         });
 
@@ -2088,7 +2088,7 @@ describe('Change Event testing', () => {
             ele.dispatchEvent(mouseEvent);
             mouseEvent2.initEvent("mouseup", true, true);
             ele.dispatchEvent(mouseEvent2);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('-$15.00');
         });
 
@@ -2099,7 +2099,7 @@ describe('Change Event testing', () => {
             ele.dispatchEvent(mouseEvent);
             mouseEvent2.initEvent("mouseup", true, true);
             ele.dispatchEvent(mouseEvent2);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$5.00');
         });
 
@@ -2110,7 +2110,7 @@ describe('Change Event testing', () => {
             ele.dispatchEvent(mouseEvent);
             mouseEvent2.initEvent("mouseup", true, true);
             ele.dispatchEvent(mouseEvent2);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$5.00');
         });
 
@@ -2122,7 +2122,7 @@ describe('Change Event testing', () => {
             ele.dispatchEvent(mouseEvent);
             mouseEvent2.initEvent("mouseup", true, true);
             ele.dispatchEvent(mouseEvent2);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$31.00');
         });
 
@@ -2134,7 +2134,7 @@ describe('Change Event testing', () => {
             ele.dispatchEvent(mouseEvent);
             mouseEvent2.initEvent("mouseup", true, true);
             ele.dispatchEvent(mouseEvent2);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$2.00');
         });
 
@@ -2145,7 +2145,7 @@ describe('Change Event testing', () => {
             ele.dispatchEvent(mouseEvent);
             mouseEvent2.initEvent("mouseup", true, true);
             ele.dispatchEvent(mouseEvent2);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$15.00');
         });
 
@@ -2156,7 +2156,7 @@ describe('Change Event testing', () => {
             ele.dispatchEvent(mouseEvent);
             mouseEvent2.initEvent("mouseup", true, true);
             ele.dispatchEvent(mouseEvent2);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$5.00');
         });
 
@@ -2167,7 +2167,7 @@ describe('Change Event testing', () => {
             ele.dispatchEvent(mouseEvent);
             mouseEvent2.initEvent("mouseup", true, true);
             ele.dispatchEvent(mouseEvent2);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$5.00');
         });
 
@@ -2178,7 +2178,7 @@ describe('Change Event testing', () => {
             ele.dispatchEvent(mouseEvent);
             mouseEvent2.initEvent("mouseup", true, true);
             ele.dispatchEvent(mouseEvent2);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$15.00');
         });
 
@@ -2189,7 +2189,7 @@ describe('Change Event testing', () => {
             ele.dispatchEvent(mouseEvent);
             mouseEvent2.initEvent("mouseup", true, true);
             ele.dispatchEvent(mouseEvent2);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$10.00');
         });
 
@@ -2200,7 +2200,7 @@ describe('Change Event testing', () => {
             ele.dispatchEvent(mouseEvent);
             mouseEvent2.initEvent("mouseup", true, true);
             ele.dispatchEvent(mouseEvent2);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$5.00');
         });
 
@@ -2212,7 +2212,7 @@ describe('Change Event testing', () => {
             ele.dispatchEvent(mouseEvent);
             mouseEvent2.initEvent("mouseup", true, true);
             ele.dispatchEvent(mouseEvent2);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$10.00');
         });
 
@@ -2224,7 +2224,7 @@ describe('Change Event testing', () => {
             ele.dispatchEvent(mouseEvent);
             mouseEvent2.initEvent("mouseup", true, true);
             ele.dispatchEvent(mouseEvent2);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$5.00');
         });
 
@@ -2362,7 +2362,7 @@ describe('Change Event testing', () => {
 
         it('Paste handler on the input element for code coverage', () => {
             numerictextbox = new NumericTextBox({ value: 10 }, '#tsNumeric');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             let ele = document.getElementById('tsNumeric');
             numerictextbox.pasteHandler();
             setInterval(function () {
@@ -2373,7 +2373,7 @@ describe('Change Event testing', () => {
 
         it('Paste handler on the input element with alphabets', () => {
             numerictextbox = new NumericTextBox({ value: 10 }, '#tsNumeric');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             let ele = document.getElementById('tsNumeric');
             numerictextbox.container.querySelector('.e-numerictextbox').value = "A";
             numerictextbox.pasteHandler();
@@ -2679,7 +2679,7 @@ describe('Change Event testing', () => {
             numerictextbox.dataBind();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('10.89');
             expect(numerictextbox.value).toEqual(10.8889);
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('10.8889');
         });
 
@@ -2693,7 +2693,7 @@ describe('Change Event testing', () => {
             numerictextbox.dataBind();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('15.79');
             expect(numerictextbox.value).toEqual(15.788888888);
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('15.788888888');
         });
 
@@ -2706,7 +2706,7 @@ describe('Change Event testing', () => {
             numerictextbox.dataBind();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('10.89');
             expect(numerictextbox.value).toEqual(10.8889);
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('10.8889');
         });
 
@@ -2720,7 +2720,7 @@ describe('Change Event testing', () => {
             numerictextbox.dataBind();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('15.79');
             expect(numerictextbox.value).toEqual(15.788888888);
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('15.788888888');
         });
 
@@ -3809,7 +3809,7 @@ describe('Change Event testing', () => {
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '35';
             numerictextbox.isFocused = true;
             numerictextbox.keyDownHandler(extend({}, {}, eventArgs));
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('36.00');
             expect(numerictextbox.value).toEqual(36);
         });
@@ -3821,7 +3821,7 @@ describe('Change Event testing', () => {
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '35';
             numerictextbox.isFocused = true;
             numerictextbox.keyDownHandler(extend({}, {}, eventArgs));
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('25.00');
             expect(numerictextbox.value).toEqual(25);
         });
@@ -3833,7 +3833,7 @@ describe('Change Event testing', () => {
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '3';
             numerictextbox.isFocused = true;
             numerictextbox.keyDownHandler(extend({}, {}, eventArgs));
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('310.00%');
             expect(numerictextbox.value).toEqual(3.1);
         });
@@ -3845,7 +3845,7 @@ describe('Change Event testing', () => {
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '35';
             numerictextbox.isFocused = true;
             numerictextbox.keyDownHandler(extend({}, {}, eventArgs));
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$36.00');
             expect(numerictextbox.value).toEqual(36);
         });
@@ -3857,7 +3857,7 @@ describe('Change Event testing', () => {
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '35';
             numerictextbox.isFocused = true;
             numerictextbox.keyDownHandler(extend({}, {}, eventArgs));
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$25.00');
             expect(numerictextbox.value).toEqual(25);
         });
@@ -3870,7 +3870,7 @@ describe('Change Event testing', () => {
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '35';
             numerictextbox.isFocused = true;
             numerictextbox.keyDownHandler(extend({}, {}, eventArgs));
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('34.00');
             expect(numerictextbox.value).toEqual(34);
         });
@@ -3882,7 +3882,7 @@ describe('Change Event testing', () => {
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '5';
             numerictextbox.isFocused = true;
             numerictextbox.keyDownHandler(extend({}, {}, eventArgs));
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('10.00');
             expect(numerictextbox.value).toEqual(10);
         });
@@ -3894,7 +3894,7 @@ describe('Change Event testing', () => {
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '3.5';
             numerictextbox.isFocused = true;
             numerictextbox.keyDownHandler(extend({}, {}, eventArgs));
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('340.00%');
             expect(numerictextbox.value).toEqual(3.4);
         });
@@ -3906,7 +3906,7 @@ describe('Change Event testing', () => {
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '35';
             numerictextbox.isFocused = true;
             numerictextbox.keyDownHandler(extend({}, {}, eventArgs));
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$34.00');
             expect(numerictextbox.value).toEqual(34);
         });
@@ -3918,7 +3918,7 @@ describe('Change Event testing', () => {
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '5';
             numerictextbox.isFocused = true;
             numerictextbox.keyDownHandler(extend({}, {}, eventArgs));
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$10.00');
             expect(numerictextbox.value).toEqual(10);
         });
@@ -3930,7 +3930,7 @@ describe('Change Event testing', () => {
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '';
             numerictextbox.isFocused = true;
             numerictextbox.keyDownHandler(extend({}, {}, eventArgs));
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('10.00');
             expect(numerictextbox.value).toEqual(10);
         });
@@ -3942,7 +3942,7 @@ describe('Change Event testing', () => {
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '';
             numerictextbox.isFocused = true;
             numerictextbox.keyDownHandler(extend({}, {}, eventArgs));
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$10.00');
             expect(numerictextbox.value).toEqual(10);
         });
@@ -3954,7 +3954,7 @@ describe('Change Event testing', () => {
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '';
             numerictextbox.isFocused = true;
             numerictextbox.keyDownHandler(extend({}, {}, eventArgs));
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('100.00%');
             expect(numerictextbox.value).toEqual(1);
         });
@@ -3966,7 +3966,7 @@ describe('Change Event testing', () => {
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '';
             numerictextbox.isFocused = true;
             numerictextbox.keyDownHandler(extend({}, {}, eventArgs));
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('10.00');
             expect(numerictextbox.value).toEqual(10);
         });
@@ -3978,7 +3978,7 @@ describe('Change Event testing', () => {
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '';
             numerictextbox.isFocused = true;
             numerictextbox.keyDownHandler(extend({}, {}, eventArgs));
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$10.00');
             expect(numerictextbox.value).toEqual(10);
         });
@@ -3990,7 +3990,7 @@ describe('Change Event testing', () => {
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '';
             numerictextbox.isFocused = true;
             numerictextbox.keyDownHandler(extend({}, {}, eventArgs));
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('100.00%');
             expect(numerictextbox.value).toEqual(1);
         });
@@ -4056,7 +4056,7 @@ describe('Change Event testing', () => {
             evt.initEvent("change", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
 
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('25.00');
             expect(numerictextbox.value).toEqual(25);
         });
@@ -4074,7 +4074,7 @@ describe('Change Event testing', () => {
             evt.initEvent("change", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
 
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('200.00%');
             expect(numerictextbox.value).toEqual(2);
         });
@@ -4092,7 +4092,7 @@ describe('Change Event testing', () => {
             evt.initEvent("change", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
 
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$25.00');
             expect(numerictextbox.value).toEqual(25);
         });
@@ -4111,7 +4111,7 @@ describe('Change Event testing', () => {
             evt.initEvent("change", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
 
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('30.00');
             expect(numerictextbox.value).toEqual(30);
         });
@@ -4129,7 +4129,7 @@ describe('Change Event testing', () => {
             evt.initEvent("change", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
 
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('300.00%');
             expect(numerictextbox.value).toEqual(3);
         });
@@ -4146,7 +4146,7 @@ describe('Change Event testing', () => {
             let evt = document.createEvent("HTMLEvents");
             evt.initEvent("change", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$30.00');
             expect(numerictextbox.value).toEqual(30);
         });
@@ -4164,7 +4164,7 @@ describe('Change Event testing', () => {
             evt.initEvent("change", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
 
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('10.00');
             expect(numerictextbox.value).toEqual(10);
         });
@@ -4181,7 +4181,7 @@ describe('Change Event testing', () => {
             let evt = document.createEvent("HTMLEvents");
             evt.initEvent("change", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('100.00%');
             expect(numerictextbox.value).toEqual(1);
         });
@@ -4199,7 +4199,7 @@ describe('Change Event testing', () => {
             evt.initEvent("change", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
 
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$10.00');
             expect(numerictextbox.value).toEqual(10);
         });
@@ -4217,7 +4217,7 @@ describe('Change Event testing', () => {
             evt.initEvent("change", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
 
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('35.00');
             expect(document.getElementById('tsNumeric').parentElement.classList.contains('e-error')).toEqual(true);
             expect(numerictextbox.value).toEqual(35);
@@ -4236,7 +4236,7 @@ describe('Change Event testing', () => {
             evt.initEvent("change", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
 
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('350.00%');
             expect(document.getElementById('tsNumeric').parentElement.classList.contains('e-error')).toEqual(true);
             expect(numerictextbox.value).toEqual(3.5);
@@ -4255,7 +4255,7 @@ describe('Change Event testing', () => {
             evt.initEvent("change", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
 
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$35.00');
             expect(document.getElementById('tsNumeric').parentElement.classList.contains('e-error')).toEqual(true);
             expect(numerictextbox.value).toEqual(35);
@@ -4274,7 +4274,7 @@ describe('Change Event testing', () => {
             evt.initEvent("change", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
 
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('');
             expect(numerictextbox.value).toBeNull();
         });
@@ -4292,7 +4292,7 @@ describe('Change Event testing', () => {
             evt.initEvent("change", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
 
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('');
             expect(numerictextbox.value).toBeNull();
         });
@@ -4309,7 +4309,7 @@ describe('Change Event testing', () => {
             let evt = document.createEvent("HTMLEvents");
             evt.initEvent("change", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('');
             expect(numerictextbox.value).toBeNull();
         });
@@ -4319,7 +4319,7 @@ describe('Change Event testing', () => {
             let eventArgs: any = { keyCode: 13, which: 13, altKey: false, ctrlKey: false, shiftKey: false, preventDefault: function () { } };
             numerictextbox = new NumericTextBox({ min: 10, max: 30, value: 25, format: 'n2' }, '#tsNumeric');
             expect(numerictextbox.value).toEqual(25);
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '';
             numerictextbox.isFocused = true;
             numerictextbox.keyDownHandler(extend({}, {}, eventArgs));
@@ -4328,7 +4328,7 @@ describe('Change Event testing', () => {
             let evt = document.createEvent("HTMLEvents");
             evt.initEvent("change", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('');
             expect(numerictextbox.value).toBeNull();
         });
@@ -4337,7 +4337,7 @@ describe('Change Event testing', () => {
             let eventArgs: any = { keyCode: 13, which: 13, altKey: false, ctrlKey: false, shiftKey: false, preventDefault: function () { } };
             numerictextbox = new NumericTextBox({ min: 1, max: 2, value: 1.5, format: 'p2' }, '#tsNumeric');
             expect(numerictextbox.value).toEqual(1.5);
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '';
             numerictextbox.isFocused = true;
             numerictextbox.keyDownHandler(extend({}, {}, eventArgs));
@@ -4346,7 +4346,7 @@ describe('Change Event testing', () => {
             let evt = document.createEvent("HTMLEvents");
             evt.initEvent("change", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('');
             expect(numerictextbox.value).toBeNull();
         });
@@ -4355,7 +4355,7 @@ describe('Change Event testing', () => {
             let eventArgs: any = { keyCode: 13, which: 13, altKey: false, ctrlKey: false, shiftKey: false, preventDefault: function () { } };
             numerictextbox = new NumericTextBox({ min: 10, max: 30, value: 25, format: 'c2' }, '#tsNumeric');
             expect(numerictextbox.value).toEqual(25);
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '';
             numerictextbox.isFocused = true;
             numerictextbox.keyDownHandler(extend({}, {}, eventArgs));
@@ -4364,7 +4364,7 @@ describe('Change Event testing', () => {
             let evt = document.createEvent("HTMLEvents");
             evt.initEvent("change", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('');
             expect(numerictextbox.value).toBeNull();
         });
@@ -4382,7 +4382,7 @@ describe('Change Event testing', () => {
             let evt = document.createEvent("HTMLEvents");
             evt.initEvent("change", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('');
             expect(document.getElementById('tsNumeric').parentElement.classList.contains('e-error')).toEqual(false);
             expect(numerictextbox.value).toBeNull();
@@ -4399,7 +4399,7 @@ describe('Change Event testing', () => {
             let evt = document.createEvent("HTMLEvents");
             evt.initEvent("change", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('');
             expect(document.getElementById('tsNumeric').parentElement.classList.contains('e-error')).toEqual(false);
             expect(numerictextbox.value).toBeNull();
@@ -4417,7 +4417,7 @@ describe('Change Event testing', () => {
             let evt = document.createEvent("HTMLEvents");
             evt.initEvent("change", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('');
             expect(document.getElementById('tsNumeric').parentElement.classList.contains('e-error')).toEqual(false);
             expect(numerictextbox.value).toBeNull();
@@ -4428,7 +4428,7 @@ describe('Change Event testing', () => {
             let eventArgs: any = { keyCode: 13, which: 13, altKey: false, ctrlKey: false, shiftKey: false, preventDefault: function () { } };
             numerictextbox = new NumericTextBox({ min: 10, max: 30, value: 35, strictMode: false, format: 'n2' }, '#tsNumeric');
             expect(numerictextbox.value).toEqual(35);
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '';
             numerictextbox.isFocused = true;
             numerictextbox.keyDownHandler(extend({}, {}, eventArgs));
@@ -4437,7 +4437,7 @@ describe('Change Event testing', () => {
             let evt = document.createEvent("HTMLEvents");
             evt.initEvent("change", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('');
             expect(document.getElementById('tsNumeric').parentElement.classList.contains('e-error')).toEqual(false);
             expect(numerictextbox.value).toBeNull();
@@ -4447,7 +4447,7 @@ describe('Change Event testing', () => {
             let eventArgs: any = { keyCode: 13, which: 13, altKey: false, ctrlKey: false, shiftKey: false, preventDefault: function () { } };
             numerictextbox = new NumericTextBox({ min: 1, max: 2, value: 3.5, strictMode: false, format: 'p2' }, '#tsNumeric');
             expect(numerictextbox.value).toEqual(3.5);
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '';
             numerictextbox.isFocused = true;
             numerictextbox.keyDownHandler(extend({}, {}, eventArgs));
@@ -4456,7 +4456,7 @@ describe('Change Event testing', () => {
             let evt = document.createEvent("HTMLEvents");
             evt.initEvent("change", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('');
             expect(document.getElementById('tsNumeric').parentElement.classList.contains('e-error')).toEqual(false);
             expect(numerictextbox.value).toBeNull();
@@ -4466,7 +4466,7 @@ describe('Change Event testing', () => {
             let eventArgs: any = { keyCode: 13, which: 13, altKey: false, ctrlKey: false, shiftKey: false, preventDefault: function () { } };
             numerictextbox = new NumericTextBox({ min: 10, max: 30, value: 35, strictMode: false, format: 'c2' }, '#tsNumeric');
             expect(numerictextbox.value).toEqual(35);
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '';
             numerictextbox.isFocused = true;
             numerictextbox.keyDownHandler(extend({}, {}, eventArgs));
@@ -4475,7 +4475,7 @@ describe('Change Event testing', () => {
             let evt = document.createEvent("HTMLEvents");
             evt.initEvent("change", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('');
             expect(document.getElementById('tsNumeric').parentElement.classList.contains('e-error')).toEqual(false);
             expect(numerictextbox.value).toBeNull();
@@ -4484,7 +4484,7 @@ describe('Change Event testing', () => {
         it('Call the paste handler method', () => {
             numerictextbox = new NumericTextBox({ value: 35 }, '#tsNumeric');
             expect(numerictextbox.value).toEqual(35);
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             numerictextbox.isFocused = true;
 
             // Manually raise the paste event
@@ -4492,7 +4492,7 @@ describe('Change Event testing', () => {
             evt.initEvent("paste", false, true);
             (document.getElementById('tsNumeric')).dispatchEvent(evt);
 
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('35.00');
         });
 
@@ -4516,7 +4516,7 @@ describe('Change Event testing', () => {
             document.body.appendChild(ele);
             numerictextbox = new NumericTextBox({ value: 5 }, ele);
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('5.00');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             numerictextbox.keyPressHandler(extend({}, {}, eventArgs));
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('5');
             expect(numerictextbox.value).toEqual(5);
@@ -4528,7 +4528,7 @@ describe('Change Event testing', () => {
             document.body.appendChild(ele);
             numerictextbox = new NumericTextBox({ value: 5 }, ele);
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('5.00');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             numerictextbox.keyPressHandler(extend({}, {}, eventArgs));
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('5');
             expect(numerictextbox.value).toEqual(5);
@@ -4540,7 +4540,7 @@ describe('Change Event testing', () => {
             document.body.appendChild(ele);
             numerictextbox = new NumericTextBox({ value: 5 }, ele);
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('5.00');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             numerictextbox.keyPressHandler(extend({}, {}, eventArgs));
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('5');
             expect(numerictextbox.value).toEqual(5);
@@ -4552,7 +4552,7 @@ describe('Change Event testing', () => {
             document.body.appendChild(ele);
             numerictextbox = new NumericTextBox({ value: 5 }, ele);
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('5.00');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             numerictextbox.keyPressHandler(extend({}, {}, eventArgs));
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('5');
             expect(numerictextbox.value).toEqual(5);
@@ -4564,7 +4564,7 @@ describe('Change Event testing', () => {
             document.body.appendChild(ele);
             numerictextbox = new NumericTextBox({ value: 5 }, ele);
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('5.00');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             let result: boolean = numerictextbox.keyPressHandler(extend({}, {}, eventArgs));
             expect(result).toEqual(true);
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = "5."
@@ -4579,7 +4579,7 @@ describe('Change Event testing', () => {
             document.body.appendChild(ele);
             numerictextbox = new NumericTextBox({ value: 5, decimals: 0 , validateDecimalOnType: true}, ele);
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('5.00');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             let result: boolean = numerictextbox.keyPressHandler(extend({}, {}, eventArgs));
             expect(result).toEqual(false);
         });
@@ -4590,13 +4590,13 @@ describe('Change Event testing', () => {
             document.body.appendChild(ele);
             numerictextbox = new NumericTextBox({ value: 5, decimals: 0, validateDecimalOnType: false}, ele);
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('5.00');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             let result: boolean = numerictextbox.keyPressHandler(extend({}, {}, eventArgs));
             expect(result).toEqual(true);
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = "5.45"
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toBe("5");
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toBe("5.00");
         });
 
@@ -4606,7 +4606,7 @@ describe('Change Event testing', () => {
             document.body.appendChild(ele);
             numerictextbox = new NumericTextBox({ value: 5 }, ele);
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('5.00');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             let result: boolean = numerictextbox.keyPressHandler(extend({}, {}, eventArgs));
             expect(result).toEqual(true);
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = "5."
@@ -4621,7 +4621,7 @@ describe('Change Event testing', () => {
             document.body.appendChild(ele);
             numerictextbox = new NumericTextBox({ value: null }, ele);
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             let result: boolean = numerictextbox.keyPressHandler(extend({}, {}, eventArgs));
             expect(result).toEqual(true);
         });
@@ -4632,7 +4632,7 @@ describe('Change Event testing', () => {
             document.body.appendChild(ele);
             numerictextbox = new NumericTextBox({ value: 5 }, ele);
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('5.00');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             numerictextbox.element.selectionStart = 1;
             numerictextbox.element.selectionEnd = 1;
             let result: boolean = numerictextbox.keyPressHandler(extend({}, {}, eventArgs));
@@ -4645,7 +4645,7 @@ describe('Change Event testing', () => {
             document.body.appendChild(ele);
             numerictextbox = new NumericTextBox({ value: 55 }, ele);
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('55.00');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             ele.selectionStart = 0;
             ele.selectionEnd = 2;
             let result: boolean = numerictextbox.keyPressHandler(extend({}, {}, eventArgs));
@@ -4660,7 +4660,7 @@ describe('Change Event testing', () => {
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('55.00');
             ele.selectionStart = 0;
             ele.selectionEnd = 2;
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             let result: boolean = numerictextbox.keyPressHandler(extend({}, {}, eventArgs));
             expect(result).toEqual(false);
         });
@@ -4671,7 +4671,7 @@ describe('Change Event testing', () => {
             document.body.appendChild(ele);
             numerictextbox = new NumericTextBox({ value: 5 }, ele);
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('5.00');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             numerictextbox.keyPressHandler(extend({}, {}, eventArgs));
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('5');
             expect(numerictextbox.value).toEqual(5);
@@ -4685,7 +4685,7 @@ describe('Change Event testing', () => {
             document.body.appendChild(ele);
             numerictextbox = new NumericTextBox({ value: 5.56, decimals: 3, validateDecimalOnType: true }, ele);
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('5.56');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             numerictextbox.keyPressHandler(extend({}, {}, eventArgs));
             let result: boolean = numerictextbox.keyPressHandler(extend({}, {}, eventArgs));
             expect(result).toEqual(true);
@@ -4715,7 +4715,7 @@ describe('Change Event testing', () => {
             document.body.appendChild(ele);
             numerictextbox = new NumericTextBox({ value: 5 }, ele);
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('5.00');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             numerictextbox.mouseWheel(extend({}, {}, eventArgs));
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('6');
             expect(numerictextbox.value).toEqual(6);
@@ -4727,7 +4727,7 @@ describe('Change Event testing', () => {
             document.body.appendChild(ele);
             numerictextbox = new NumericTextBox({ value: 5 }, ele);
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('5.00');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             numerictextbox.mouseWheel(extend({}, {}, eventArgs));
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('4');
             expect(numerictextbox.value).toEqual(4);
@@ -4739,7 +4739,7 @@ describe('Change Event testing', () => {
             document.body.appendChild(ele);
             numerictextbox = new NumericTextBox({ value: 5 }, ele);
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('5.00');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             numerictextbox.mouseWheel(extend({}, {}, eventArgs));
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('6');
             expect(numerictextbox.value).toEqual(6);
@@ -4751,7 +4751,7 @@ describe('Change Event testing', () => {
             document.body.appendChild(ele);
             numerictextbox = new NumericTextBox({ value: 5 }, ele);
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('5.00');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             numerictextbox.mouseWheel(extend({}, {}, eventArgs));
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('4');
             expect(numerictextbox.value).toEqual(4);
@@ -4788,13 +4788,13 @@ describe('Change Event testing', () => {
 
         it('type the value and focus out the control by clicking the spin button', () => {
             numerictextbox = new NumericTextBox({ value: 20 }, '#tsNumeric');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('20');
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '35';
             let eventArgs: any = { button: 2, preventDefault: function () { } };
             numerictextbox.mouseDownOnSpinner(extend({}, {}, eventArgs));
             let eventFocus: any = { preventDefault: function () { } };
-            numerictextbox.focusOut(extend({}, {}, eventFocus));
+            numerictextbox.focusOutHandler(extend({}, {}, eventFocus));
             numerictextbox.mouseUpOnSpinner(extend({}, {}, eventArgs));
         });
 
@@ -4803,13 +4803,13 @@ describe('Change Event testing', () => {
                 'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/30.0.1599.92 Safari/537.36';
             Browser.userAgent = androidUserAgent;
             numerictextbox = new NumericTextBox({ value: 20 }, '#tsNumeric');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('20');
             let eventArgs: any = { button: 2, preventDefault: function () { } };
             numerictextbox.mouseDownOnSpinner(extend({}, {}, eventArgs));
             let eventFocus: any = { preventDefault: function () { } };
             numerictextbox.mouseUpOnSpinner(extend({}, {}, eventArgs));
-            numerictextbox.focusOut(extend({}, {}, eventFocus));
+            numerictextbox.focusOutHandler(extend({}, {}, eventFocus));
             setInterval(function () {
                 expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('20');
             }, 300);
@@ -4818,10 +4818,10 @@ describe('Change Event testing', () => {
 
         it('type the value and focus out the control', () => {
             numerictextbox = new NumericTextBox({ value: 20 }, '#tsNumeric');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('20');
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '35';
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             setInterval(function () {
                 expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('35.00');
                 expect(numerictextbox.value).toEqual(35);
@@ -4831,10 +4831,10 @@ describe('Change Event testing', () => {
 
         it('type the value and focus out the currency control', () => {
             numerictextbox = new NumericTextBox({ value: 20, format: 'c2' }, '#tsNumeric');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('20');
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '35';
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             setInterval(function () {
                 expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$35.00');
                 expect(numerictextbox.value).toEqual(35);
@@ -4844,10 +4844,10 @@ describe('Change Event testing', () => {
 
         it('type the value greater than max and focus out the control', () => {
             numerictextbox = new NumericTextBox({ value: 20, min: 10, max: 30 }, '#tsNumeric');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('20');
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '35';
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             setInterval(function () {
                 expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('30.00');
                 expect(numerictextbox.value).toEqual(30);
@@ -4857,10 +4857,10 @@ describe('Change Event testing', () => {
 
         it('type the value greater than max and focus out the currency control', () => {
             numerictextbox = new NumericTextBox({ value: 20, min: 10, max: 30, format: 'c2' }, '#tsNumeric');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('20');
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '35';
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             setInterval(function () {
                 expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$30.00');
                 expect(numerictextbox.value).toEqual(30);
@@ -4871,10 +4871,10 @@ describe('Change Event testing', () => {
 
         it('type the value less than min and focus out the control', () => {
             numerictextbox = new NumericTextBox({ value: 20, min: 10, max: 30 }, '#tsNumeric');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('20');
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '5';
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             setInterval(function () {
                 expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('10.00');
                 expect(numerictextbox.value).toEqual(10);
@@ -4884,10 +4884,10 @@ describe('Change Event testing', () => {
 
         it('type the value less than min and focus out the currency control', () => {
             numerictextbox = new NumericTextBox({ value: 20, min: 10, max: 30, format: 'c2' }, '#tsNumeric');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('20');
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '5';
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             setInterval(function () {
                 expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$10.00');
                 expect(numerictextbox.value).toEqual(10);
@@ -4897,10 +4897,10 @@ describe('Change Event testing', () => {
 
         it('type the value out of min & max range and focus out the control', () => {
             numerictextbox = new NumericTextBox({ value: 20, min: 10, max: 30, strictMode: false }, '#tsNumeric');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('20');
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '55';
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             setInterval(function () {
                 expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('55.00');
                 expect(document.getElementById('tsNumeric').parentElement.classList.contains('e-error')).toEqual(true);
@@ -4911,10 +4911,10 @@ describe('Change Event testing', () => {
 
         it('type the value out of min & max range and focus out the currency control', () => {
             numerictextbox = new NumericTextBox({ value: 20, min: 10, max: 30, strictMode: false, format: 'c2' }, '#tsNumeric');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('20');
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '55';
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             setInterval(function () {
                 expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$55.00');
                 expect(document.getElementById('tsNumeric').parentElement.classList.contains('e-error')).toEqual(true);
@@ -4928,9 +4928,9 @@ describe('Change Event testing', () => {
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('55.00');
             expect(document.getElementById('tsNumeric').parentElement.classList.contains('e-error')).toEqual(true);
             expect(numerictextbox.value).toEqual(55);
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '20';
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             setInterval(function () {
                 expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('20.00');
             }, 300);
@@ -4942,9 +4942,9 @@ describe('Change Event testing', () => {
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$55.00');
             expect(document.getElementById('tsNumeric').parentElement.classList.contains('e-error')).toEqual(true);
             expect(numerictextbox.value).toEqual(55);
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '20';
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             setInterval(function () {
                 expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('$20.00');
             }, 300);
@@ -4953,11 +4953,11 @@ describe('Change Event testing', () => {
 
         it('floating label-functionality:Auto', () => {
             numerictextbox = new NumericTextBox({ min: 10, max: 30, format: 'c2', floatLabelType: 'Auto', placeholder: 'Enter the numeric value' }, '#tsNumeric');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             setInterval(function () {
                 expect(document.querySelector('.e-float-input').children[3].classList.contains('e-label-top')).toEqual(true);
             }, 300);
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             setInterval(function () {
                 expect(document.querySelector('.e-float-input').children[3].classList.contains('e-label-bottom')).toEqual(true);
             }, 300);
@@ -4975,10 +4975,10 @@ describe('Change Event testing', () => {
 
         it('Remove the existing value and focus out the control', () => {
             numerictextbox = new NumericTextBox({ value: 20 }, '#tsNumeric');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('20');
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '';
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             setInterval(function () {
                 expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('');
                 expect(numerictextbox.value).toBeNull();
@@ -4988,11 +4988,11 @@ describe('Change Event testing', () => {
 
         it('Remove the existing value and focus out the control with strict Mode', () => {
             numerictextbox = new NumericTextBox({ value: 25, min: 10, max: 20, strictMode: false }, '#tsNumeric');
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('25');
             expect(numerictextbox.value).toEqual(25);
             (<HTMLInputElement>document.getElementById('tsNumeric')).value = '';
-            numerictextbox.focusOut();
+            numerictextbox.focusOutHandler();
             setInterval(function () {
                 expect((<HTMLInputElement>document.getElementById('tsNumeric')).value).toEqual('');
                 expect(numerictextbox.value).toBeNull();
@@ -5095,7 +5095,7 @@ describe('Change Event testing', () => {
         });
         it('Keyboard Actions', () => {
             expect(numerictextbox.readonly).toEqual(true);
-            numerictextbox.focusIn();
+            numerictextbox.focusHandler();
             let eventArgs: any = { keyCode: 38, which: 38, altKey: false, ctrlKey: false, shiftKey: false, preventDefault: function () { } };
             numerictextbox.keyDownHandler(extend({}, {}, eventArgs));
             expect(numerictextbox.value).toEqual(30);
