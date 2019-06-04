@@ -19,7 +19,8 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { tooltipData21, tooltipData22, datetimeData21, negativeDataPoint, seriesData1, rotateData1, rotateData2 } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs } from '../../../src/common/model/interface';
+import { IAnimationCompleteEventArgs} from '../../../src/chart/model/chart-interface';
+import { ILoadedEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
 
 Chart.Inject(LineSeries, StackingColumnSeries, DateTime, Category, DataLabel, ColumnSeries);
 let data: any = tooltipData21;

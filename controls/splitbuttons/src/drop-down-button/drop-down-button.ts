@@ -582,6 +582,25 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
             }
         }
     }
+
+    /**
+     * Click the DropDownButton element
+     * its native method
+     * @public
+     */
+    public click(): void {
+        this.element.click();
+   }
+
+   /**
+    * Sets the focus to DropDownButton
+    * its native method
+    * @public
+    */
+   public focusIn(): void {
+       this.element.focus();
+  }
+
 }
 
 interface ClassNames {

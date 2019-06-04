@@ -6,7 +6,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { EmitType } from '@syncfusion/ej2-base';
 import { Chart, MultiLevelLabel, Crosshair } from '../../../src/chart/index';
 import { LineSeries } from '../../../src/chart/series/line-series';
-import { ILoadedEventArgs } from '../../../src/common/model/interface';
+import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
 import { ScrollBar } from '../../../src/common/scrollbar/scrollbar';
 import { load } from '../../../src';
 import { MouseEvents } from '../base/events.spec';

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.50 (2019-06-04)
+
+### Uploader
+
+#### Bug Fixes
+
+- No more script issue occurs, on rendering the preload files as empty.
+
 ## 17.1.49 (2019-05-29)
 
 ### TextBox

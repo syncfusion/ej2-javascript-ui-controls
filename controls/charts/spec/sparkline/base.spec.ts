@@ -3,6 +3,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { removeElement, getIdElement, TextOption } from '../../src/sparkline/utils/helper';
 import { ISparklineLoadedEventArgs, ISparklineResizeEventArgs } from '../../src/sparkline/model/interface';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
+import { DataManager } from '@syncfusion/ej2-data';
 Sparkline.Inject(SparklineTooltip);
 /**
  * Sparkline Test case file
@@ -23,6 +24,9 @@ describe('Sparkline Component Base Spec', () => {
         let id: string = 'spark-container';
         let ele: Element;
         let d: string[];
+        let dataManager: DataManager = new DataManager({
+            url: 'https://ej2services.syncfusion.com/production/web-services/api/Orders'
+        });
         beforeAll(() => {
             element = createElement('div', { id: id });
             (element as HTMLDivElement).style.width = '400px';
@@ -105,6 +109,10 @@ describe('Sparkline Component Base Spec', () => {
             sparkline.sparklineRenderer.processData();
             expect(sparkline.sparklineTooltipModule).not.toBe(null);
             expect(sparkline.sparklineTooltipModule).not.toBe(undefined);
+        });
+        it('Sparkline tooltip module checking', () => {
+            sparkline.dataSource = dataManager;
+            sparkline.sparklineRenderer.processDataManager();
         });
     });
     describe('Sparkline other scenario spec', () => {

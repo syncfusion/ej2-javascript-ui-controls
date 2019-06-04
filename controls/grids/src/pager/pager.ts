@@ -53,8 +53,8 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
      */
     public externalMessageModule: ExternalMessage;
     /**
+     * @hidden 
      * `pagerdropdownModule` is used to manipulate pageSizes of Pager.
-     *  @hidden
      */
     public pagerdropdownModule: PagerDropDown;
 

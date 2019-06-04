@@ -380,6 +380,22 @@ var Button = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    /**
+     * Click the button element
+     * its native method
+     * @public
+     */
+    Button.prototype.click = function () {
+        this.element.click();
+    };
+    /**
+     * Sets the focus to Button
+     * its native method
+     * @public
+     */
+    Button.prototype.focusIn = function () {
+        this.element.focus();
+    };
     __decorate([
         Property('Left')
     ], Button.prototype, "iconPosition", void 0);
@@ -807,6 +823,22 @@ var CheckBox = /** @__PURE__ @class */ (function (_super) {
             EventHandler.add(this.element, 'change', this.changeHandler, this);
         }
     };
+    /**
+     * Click the CheckBox element
+     * its native method
+     * @public
+     */
+    CheckBox.prototype.click = function () {
+        this.element.click();
+    };
+    /**
+     * Sets the focus to CheckBox
+     * its native method
+     * @public
+     */
+    CheckBox.prototype.focusIn = function () {
+        this.element.focus();
+    };
     __decorate$1([
         Event()
     ], CheckBox.prototype, "change", void 0);
@@ -1192,6 +1224,22 @@ var RadioButton = /** @__PURE__ @class */ (function (_super) {
             EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
         }
     };
+    /**
+     * Click the RadioButton element
+     * its native method
+     * @public
+     */
+    RadioButton.prototype.click = function () {
+        this.element.click();
+    };
+    /**
+     * Sets the focus to RadioButton
+     * its native method
+     * @public
+     */
+    RadioButton.prototype.focusIn = function () {
+        this.element.focus();
+    };
     var RadioButton_1;
     __decorate$2([
         Event()
@@ -1566,6 +1614,22 @@ var Switch = /** @__PURE__ @class */ (function (_super) {
         if (this.formElement) {
             EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
         }
+    };
+    /**
+     * Click the switch element
+     * its native method
+     * @public
+     */
+    Switch.prototype.click = function () {
+        this.element.click();
+    };
+    /**
+     * Sets the focus to Switch
+     * its native method
+     * @public
+     */
+    Switch.prototype.focusIn = function () {
+        this.element.focus();
     };
     __decorate$3([
         Event()

@@ -9,7 +9,7 @@ import { textWrap, appendClipElement, getElement, appendChildElement } from '../
 import { valueToCoefficient, textTrim, textElement } from '../../common/utils/helper';
 import { Size, measureText, TextOption, PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { MultiLevelLabels, MultiLevelCategories } from '../model/chart-base';
-import { IAxisMultiLabelRenderEventArgs } from '../../common/model/interface';
+import { IAxisMultiLabelRenderEventArgs } from '../../chart/model/chart-interface';
 import { axisMultiLabelRender } from '../../common/model/constants';
 import { Alignment } from '../../common/utils/enum';
 

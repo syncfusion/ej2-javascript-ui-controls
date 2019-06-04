@@ -867,4 +867,33 @@ describe('CellStyle', () => {
             }
         });
     });
+    it('Rich-Text-Font', (done) => {
+        let book: Workbook = new Workbook({
+            worksheets: [
+                {
+                    name: 'Rich-Text',
+                    rows: [
+                        { index: 1, cells: [{ index: 1, value: '<font color=\'red\' size=\'12\'>McFadden DG</font> Mike' }] },
+                        { index: 2, cells: [{ index: 1, value: 'Hodges E, <b>Rosebrock AP</b>' }] },
+                        { index: 3, cells: [{ index: 1, value: '<i> Chen FK</i>' }] },
+                        { index: 4, cells: [{ index: 1, value: '<u>This is some text!</u> Plain Text' }] },
+                        { index: 5, cells: [{ index: 1, value: '<font face="verdana" color="#CD5C5C" size="12">This is some text!</font> <b>Plain Text</b>' }] },
+                        { index: 6, cells: [{ index: 1, value: '<font size="12" face="Segoe UI" color="blue" >This is some text!</font> <i>Plain Text</i>' }] },
+                    ],
+                }]
+        }, 'xlsx');
+        book.saveAsBlob('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet').then((xlBlob: { blobData: Blob }) => {
+            if (Utils.isDownloadEnabled) {
+                Utils.download(xlBlob.blobData, 'Rich-Text.xlsx');
+            }
+            let reader: FileReader = new FileReader();
+            reader.readAsArrayBuffer(xlBlob.blobData);
+            reader.onload = (): void => {
+                if (reader.readyState == 2) { // DONE == 2
+                    expect((reader.result as ArrayBuffer).byteLength).toBeGreaterThanOrEqual(0);
+                    done();
+                }
+            }
+        });
+    });    
 });

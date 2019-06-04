@@ -138,7 +138,9 @@ export class HeaderRender implements IRenderer {
         this.ariaService = this.serviceLocator.getService<AriaService>('ariaService');
         this.widthService = this.serviceLocator.getService<ColumnWidthService>('widthService');
         if (this.parent.isDestroyed) { return; }
-        this.parent.on(events.columnVisibilityChanged, this.setVisible, this);
+        if (!this.parent.enableColumnVirtualization) {
+            this.parent.on(events.columnVisibilityChanged, this.setVisible, this);
+        }
         this.parent.on(events.columnPositionChanged, this.colPosRefresh, this);
     }
 
@@ -514,33 +516,31 @@ export class HeaderRender implements IRenderer {
      */
     public setVisible(columns?: Column[]): void {
         let gObj: IGrid = this.parent;
-        if (!gObj.enableColumnVirtualization && !gObj.enableVirtualization) {
-            let rows: HTMLTableRowElement[] = [].slice.call(this.getRows()); //NodeList -> Array        
-            let displayVal: string;
-            let idx: number;
-            let className: Function;
-            let element: HTMLTableRowElement;
-            let frzCols: number = gObj.getFrozenColumns();
+        let rows: HTMLTableRowElement[] = [].slice.call(this.getRows()); //NodeList -> Array        
+        let displayVal: string;
+        let idx: number;
+        let className: Function;
+        let element: HTMLTableRowElement;
+        let frzCols: number = gObj.getFrozenColumns();
 
-            for (let c: number = 0, clen: number = columns.length; c < clen; c++) {
-                let column: Column = columns[c];
+        for (let c: number = 0, clen: number = columns.length; c < clen; c++) {
+            let column: Column = columns[c];
 
-                idx = gObj.getNormalizedColumnIndex(column.uid);
+            idx = gObj.getNormalizedColumnIndex(column.uid);
 
-                displayVal = column.visible ? '' : 'none';
-                if (frzCols) {
-                    if (idx < frzCols) {
-                        setStyleAttribute(<HTMLElement>this.getColGroup().children[idx], { 'display': displayVal });
-                    } else {
-                        let mTblColGrp: Element = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('colgroup');
-                        setStyleAttribute(<HTMLElement>mTblColGrp.children[idx - frzCols], { 'display': displayVal });
-                    }
-                } else {
+            displayVal = column.visible ? '' : 'none';
+            if (frzCols) {
+                if (idx < frzCols) {
                     setStyleAttribute(<HTMLElement>this.getColGroup().children[idx], { 'display': displayVal });
+                } else {
+                    let mTblColGrp: Element = gObj.getHeaderContent().querySelector('.e-movableheader').querySelector('colgroup');
+                    setStyleAttribute(<HTMLElement>mTblColGrp.children[idx - frzCols], { 'display': displayVal });
                 }
-
-                this.refreshUI();
+            } else {
+                setStyleAttribute(<HTMLElement>this.getColGroup().children[idx], { 'display': displayVal });
             }
+
+            this.refreshUI();
         }
     }
 

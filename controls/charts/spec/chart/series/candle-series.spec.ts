@@ -22,7 +22,8 @@ import { Selection } from '../../../src/chart/user-interaction/selection';
 import { unbindResizeEvents } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { ILoadedEventArgs, IAnimationCompleteEventArgs, ILegendRenderEventArgs, IPointRenderEventArgs } from '../../../src/common/model/interface';
+import { IAnimationCompleteEventArgs} from '../../../src/chart/model/chart-interface';
+import { ILoadedEventArgs, ILegendRenderEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
 Chart.Inject(ColumnSeries, CandleSeries, DataLabel, Category, DateTime, Legend, Tooltip, Crosshair, Logarithmic, Selection);
 let prevent: Function = (): void => {
     //Prevent Function

@@ -398,6 +398,7 @@ export class MultiLevelLabels extends ChildProperty<MultiLevelLabels[]> {
 
 /**
  * Specifies range for scrollbarSettings property
+ * @public
  */
 export class ScrollbarSettingsRange extends ChildProperty<ScrollbarSettingsRange> {
 

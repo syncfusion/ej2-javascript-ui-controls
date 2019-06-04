@@ -4,9 +4,10 @@ import { KeyboardEvents, BaseEventArgs, KeyboardEventArgs, Event, EmitType, Brow
 import { addClass, createElement, remove, closest, select, prepend, removeClass, attributes, Collection } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, isUndefined, formatUnit, setValue, rippleEffect, merge, extend } from '@syncfusion/ej2-base';
 import { CalendarView, CalendarBase, NavigatedEventArgs, RenderDayCellEventArgs, CalendarType } from '../calendar/calendar';
+import { FocusEventArgs, BlurEventArgs } from '../calendar/calendar';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Button } from '@syncfusion/ej2-buttons';
-import { Input, InputObject, FloatLabelType, FocusEventArgs, BlurEventArgs } from '@syncfusion/ej2-inputs';
+import { Input, InputObject, FloatLabelType } from '@syncfusion/ej2-inputs';
 import { ListBase, cssClass as ListBaseClasses } from '@syncfusion/ej2-lists';
 import { PresetsModel, DateRangePickerModel } from './daterangepicker-model';
 

@@ -28,7 +28,7 @@ export class Search implements IAction {
     /** 
      * Searches Grid records by given key.
      * 
-     * > You can customize the default search action by using [`searchSettings`](./api-grid.html#searchsettings-searchsettingsmodel).
+     * > You can customize the default search action by using [`searchSettings`](grid/#searchsettings/).
      * @param  {string} searchString - Defines the key.
      * @return {void} 
      */

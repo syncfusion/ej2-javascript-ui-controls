@@ -345,11 +345,15 @@ export class ColorCollection {
     }
 }
 /**
- * class used to maintain color and value collection.
+ * Tooltip data for bubble type heatmap
+ * @public
  */
 export class BubbleTooltipData {
+    /** Mapping name relates to the bubbleData */
     public mappingName: string;
+    /** Bubble tooltip data value */
     public bubbleData: number;
+    /** Specifies the type of value in bubbleData */
     public valueType: string;
     constructor(mappingName: string, bubbleData: number, valueType: string) {
         this.mappingName = mappingName;

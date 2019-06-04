@@ -267,6 +267,7 @@ export class FocusStrategy {
         this.parent.on(event.keyPressed, this.onKeyPress, this);
         this.parent.on(event.click, this.onClick, this);
         this.parent.on(event.contentReady, this.refreshMatrix(true), this);
+        this.parent.on(event.partialRefresh, this.refreshMatrix(true), this);
         this.parent.on(event.headerRefreshed, this.refreshMatrix(), this);
         this.parent.on('close-edit', this.restoreFocus, this);
         ['start-edit', 'start-add'].forEach((evt: string) => this.parent.on(evt, this.clearIndicator, this));
@@ -288,6 +289,7 @@ export class FocusStrategy {
         this.parent.off(event.keyPressed, this.onKeyPress);
         this.parent.off(event.click, this.onClick);
         this.parent.off(event.contentReady, this.refreshMatrix(true));
+        this.parent.off(event.partialRefresh, this.refreshMatrix(true));
         this.parent.off(event.headerRefreshed, this.refreshMatrix());
         this.parent.off('close-edit', this.restoreFocus);
         ['start-edit', 'start-add'].forEach((evt: string) => this.parent.off(evt, this.clearOutline));

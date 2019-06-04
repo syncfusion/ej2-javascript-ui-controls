@@ -9256,6 +9256,14 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    /**
+     * Sets the focus to ListBox
+     * its native method
+     * @public
+     */
+    ListBox.prototype.focusIn = function () {
+        this.ulElement.focus();
+    };
     __decorate$5([
         Property('')
     ], ListBox.prototype, "cssClass", void 0);

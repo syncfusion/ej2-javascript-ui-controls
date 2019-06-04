@@ -6,7 +6,8 @@ import { Rect } from '@syncfusion/ej2-svg-base';
 import { RangeIntervalType } from '../utils/enum';
 import { RangeNavigator, RangeSlider } from '../../range-navigator/index';
 import { PeriodsModel } from '../model/base-model';
-import { ISelectorRenderArgs, IPeriodSelectorControl, IRangeSelectorRenderEventArgs } from '../../common/model/interface';
+import { ISelectorRenderArgs, IPeriodSelectorControl } from '../../common/model/interface';
+import { IRangeSelectorRenderEventArgs } from '../../chart/model/chart-interface';
 import { StockChart } from '../../stock-chart/stock-chart';
 
 /**

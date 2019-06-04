@@ -7,7 +7,7 @@ import { Size } from '@syncfusion/ej2-svg-base';
 import { IZoomCompleteEventArgs, Axis, VisibleRangeModel, ILoadedEventArgs, IPointEventArgs } from '../../chart/index';
 import { remove, extend } from '@syncfusion/ej2-base';
 import { StockSeriesModel } from '../model/base-model';
-import { ITooltipRenderEventArgs, IAxisLabelRenderEventArgs, ISeriesRenderEventArgs } from '../../common/model/interface';
+import { ITooltipRenderEventArgs, IAxisLabelRenderEventArgs, ISeriesRenderEventArgs } from '../../chart/model/chart-interface';
 import { MarginModel } from '../../chart';
 
 interface Range {

@@ -36030,10 +36030,8 @@ class TableResizer {
         }
         this.updateCellPreferredWidths(table);
         if (hasTableWidth || table.tableHolder.getTotalWidth(0) > containerWidth) {
-            if (table.tableFormat.allowAutoFit) {
-                table.updateWidth(dragValue);
-            }
             table.tableFormat.allowAutoFit = false;
+            table.updateWidth(dragValue);
             table.tableHolder.tableWidth = table.tableHolder.getTotalWidth(0);
         }
         let dragOffset = dragValue;
@@ -53614,6 +53612,9 @@ class SfdtExport {
         do {
             rowWidget = next;
             next = rowWidget.nextRenderedWidget;
+            if (next && rowWidget.ownerTable.index !== next.ownerTable.index) {
+                next = undefined;
+            }
         } while (next instanceof TableRowWidget && next.index === rowWidget.index);
         return this.writeRow(next, rows);
     }

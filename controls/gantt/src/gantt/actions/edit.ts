@@ -15,7 +15,7 @@ import { DialogEdit } from './dialog-edit';
 import { Dialog } from '@syncfusion/ej2-popups';
 
 /**
- * Gantt Edit Module
+ * The Edit Module is used to handle editing actions.
  */
 export class Edit {
     private parent: Gantt;
@@ -95,7 +95,8 @@ export class Edit {
      */
     public deletedTaskDetails: IGanttData[] = [];
     /**
-     * Method to update task with new values
+     * Method to update record with new values.
+     * @param {Object} data - Defines new data to update.
      */
     public updateRecordByID(data: Object): void {
         let tasks: TaskFieldsModel = this.parent.taskFields;
@@ -1475,7 +1476,10 @@ export class Edit {
     }
 
     /**
-     *
+     * Method to add new record.
+     * @param {Object | IGanttData} data - Defines the new data to add.
+     * @param {RowPosition} rowPosition - Defines the position of row.
+     * @param {number} rowIndex - Defines the row index.
      * @return {void}
      * @private
      */

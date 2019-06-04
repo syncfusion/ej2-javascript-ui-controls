@@ -1,4 +1,4 @@
-import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, addClass, removeClass } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { View, ReturnType } from '../base/type';
 import { EventTooltip } from '../popups/event-tooltip';
@@ -92,6 +92,11 @@ export class Render {
             this.parent.uiStateValues.top = 0;
         }
         if (this.parent.headerModule) {
+            if (this.parent.activeViewOptions.readonly) {
+                addClass([this.parent.element], cls.READ_ONLY);
+            } else if (this.parent.element.classList.contains(cls.READ_ONLY)) {
+                removeClass([this.parent.element], cls.READ_ONLY);
+            }
             this.parent.headerModule.updateDateRange(this.parent.activeView.getDateRangeText());
             this.parent.headerModule.updateHeaderItems('remove');
         }

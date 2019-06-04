@@ -16,7 +16,7 @@ import { Category } from '../../../src/chart/axis/category-axis';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointEventArgs } from '../../../src/common/model/interface';
+import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointEventArgs } from '../../../src/chart/model/chart-interface';
 import { IPointRenderEventArgs, ITooltipRenderEventArgs } from '../../../src/chart/index';
 Chart.Inject(LineSeries, ColumnSeries, DateTime, Category, BarSeries);
 Chart.Inject(Tooltip);

@@ -6,10 +6,10 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DoubleRange } from '../utils/double-range';
 import { Series, Points } from './chart-series';
 import { ColumnBase } from './column-base';
-import { IPointRenderEventArgs } from '../../common/model/interface';
+import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
 import { BoxPlotMode } from '../utils/enum';
 import { getMedian } from '../../common/utils/helper';
-import { IBoxPlotQuartile } from '../../common/model/interface';
+import { IBoxPlotQuartile } from '../../chart/model/chart-interface';
 import { Axis } from '../../chart/axis/axis';
 
 /**

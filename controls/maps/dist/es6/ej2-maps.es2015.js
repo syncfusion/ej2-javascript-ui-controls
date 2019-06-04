@@ -2118,7 +2118,7 @@ __decorate$1([
     Property(false)
 ], SelectionSettings.prototype, "enable", void 0);
 __decorate$1([
-    Property('#D2691E')
+    Property(null)
 ], SelectionSettings.prototype, "fill", void 0);
 __decorate$1([
     Property(1)
@@ -2135,7 +2135,7 @@ __decorate$1([
 class HighlightSettings extends ChildProperty {
 }
 __decorate$1([
-    Property('#6B8E23')
+    Property(null)
 ], HighlightSettings.prototype, "fill", void 0);
 __decorate$1([
     Property(false)
@@ -6352,9 +6352,10 @@ class Legend {
                                         this.pushCollection(targetElement, this.legendHighlightCollection, collection[i], shapeEle.getAttribute('opacity'));
                                     }
                                     length = this.legendHighlightCollection.length;
+                                    let legendHighlightColor = this.legendHighlightCollection[length - 1]['legendOldFill'];
                                     this.legendHighlightCollection[length - 1]['MapShapeCollection']['Elements'].push(shapeEle);
-                                    this.setColor(shapeEle, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
-                                    this.setColor(targetElement, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
+                                    this.setColor(shapeEle, !isNullOrUndefined(module.fill) ? module.fill : legendHighlightColor, module.opacity.toString(), module.border.color, module.border.width.toString());
+                                    this.setColor(targetElement, !isNullOrUndefined(module.fill) ? module.fill : legendHighlightColor, module.opacity.toString(), module.border.color, module.border.width.toString());
                                 }
                                 else if (value === 'selection' && this.shapeSelection) {
                                     this.legendHighlightCollection = [];
@@ -6362,9 +6363,10 @@ class Legend {
                                         this.pushCollection(targetElement, this.legendSelectionCollection, collection[i], shapeEle.getAttribute('opacity'));
                                     }
                                     selectLength = this.legendSelectionCollection.length;
+                                    let legendSelectionColor = this.legendSelectionCollection[selectLength - 1]['legendOldFill'];
                                     this.legendSelectionCollection[selectLength - 1]['MapShapeCollection']['Elements'].push(shapeEle);
-                                    this.setColor(targetElement, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
-                                    this.setColor(shapeEle, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
+                                    this.setColor(targetElement, !isNullOrUndefined(module.fill) ? module.fill : legendSelectionColor, module.opacity.toString(), module.border.color, module.border.width.toString());
+                                    this.setColor(shapeEle, !isNullOrUndefined(module.fill) ? module.fill : legendSelectionColor, module.opacity.toString(), module.border.color, module.border.width.toString());
                                     this.legendElement = targetElement;
                                     if (j === data.length - 1) {
                                         this.legendSelection = false;
@@ -6460,13 +6462,13 @@ class Legend {
                             }
                             else if (j === length - 1) {
                                 this.removeShapeHighlightCollection();
-                                this.setColor(legendShape, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
+                                this.setColor(legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'), module.opacity.toString(), module.border.color, module.border.width.toString());
                             }
                         }
                     }
                     else {
                         this.removeShapeHighlightCollection();
-                        this.setColor(legendShape, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
+                        this.setColor(legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'), module.opacity.toString(), module.border.color, module.border.width.toString());
                     }
                 }
                 else if (getValue === 'selection') {
@@ -6492,7 +6494,7 @@ class Legend {
                         if (selectionEle === undefined || (selectionEle && !selectionEle['IsSelected'])) {
                             this.pushCollection(legendShape, this.shapeSelectionCollection, collection[index]);
                         }
-                        this.setColor(legendShape, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
+                        this.setColor(legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'), module.opacity.toString(), module.border.color, module.border.width.toString());
                         this.shapeElement = shapeElement['LegendEle'];
                         this.shapeSelection = false;
                     }
@@ -7230,7 +7232,8 @@ class Highlight {
         if (this.maps.legendSettings.visible ? (this.maps.legendModule.legendElement !== this.maps.legendModule.oldShapeElement) : true) {
             let eventArgs = {
                 opacity: this.highlightSettings.opacity,
-                fill: targetEle.id.indexOf('NavigationIndex') === -1 ? this.highlightSettings.fill : 'none',
+                fill: targetEle.id.indexOf('NavigationIndex') === -1 ? !isNullOrUndefined(this.highlightSettings.fill)
+                    ? this.highlightSettings.fill : targetEle.getAttribute('fill') : 'none',
                 border: { color: this.highlightSettings.border.color, width: this.highlightSettings.border.width / this.maps.scale },
                 name: itemHighlight,
                 target: targetEle.id,
@@ -7738,6 +7741,7 @@ class Zoom {
      */
     performZooming(position, newZoomFactor, type) {
         let map = this.maps;
+        map.previousProjection = map.projectionType;
         let prevLevel = map.tileZoomLevel;
         let scale = map.previousScale = map.scale;
         let maxZoom = map.zoomSettings.maxZoom;
@@ -7958,6 +7962,7 @@ class Zoom {
                             }
                             else {
                                 changeBorderWidth(currentEle, this.index, scale, this.maps);
+                                this.maps.zoomTranslatePoint = this.maps.translatePoint;
                                 this.animateTransform(currentEle, animate$$1, x, y, scale);
                                 this.shapeZoomLocation = currentEle.childNodes;
                             }

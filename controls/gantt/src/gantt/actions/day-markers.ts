@@ -4,7 +4,7 @@ import { EventMarker } from '../renderer/event-marker';
 import { getValue } from '@syncfusion/ej2-base';
 
 /**
- * 
+ * DayMarkers module is used to render event markers, holidays and to highlight the weekend days.
  */
 export class DayMarkers {
     private parent: Gantt;

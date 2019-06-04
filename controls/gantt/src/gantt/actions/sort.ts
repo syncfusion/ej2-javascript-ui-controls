@@ -3,7 +3,7 @@ import { Gantt } from '../base/gantt';
 import { SortDirection, getActualProperties } from '@syncfusion/ej2-grids';
 
 /**
- * Sort operation in Gantt
+ * The Sort module is used to handle sorting action.
  */
 export class Sort {
     public parent: Gantt;
@@ -49,10 +49,10 @@ export class Sort {
     }
 
     /**
-     * 
-     * @param columnName 
-     * @param direction 
-     * @param isMultiSort 
+     * Sort a column with given options.
+     * @param {string} columnName - Defines the column name to sort.
+     * @param {SortDirection} direction - Defines the direction of sort.
+     * @param {boolean} isMultiSort - Defines whether the previously sorted columns are to be maintained. 
      */
     public sortColumn(columnName: string, direction: SortDirection, isMultiSort?: boolean): void {
         this.parent.treeGrid.sortByColumn(columnName, direction, isMultiSort);
@@ -75,7 +75,7 @@ export class Sort {
     }
     /**
      * To clear sorting for specific column
-     * @param columnName 
+     * @param {string} columnName - Defines the sorted column name to remove. 
      */
     public removeSortColumn(columnName: string): void {
         this.parent.treeGrid.grid.removeSortColumn(columnName);

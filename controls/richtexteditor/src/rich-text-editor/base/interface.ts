@@ -175,8 +175,11 @@ export interface NotifyArgs {
     title?: string;
     target?: string;
     member?: string;
+    /** Defines the notifier name. */
     name?: string;
+    /** Defines the selection range. */
     range?: Range;
+    /** Defines the action. */
     action?: string;
     callBack?(args?: string): void;
     file?: Blob;
@@ -435,8 +438,11 @@ export interface IAdapterProcess {
 }
 
 export interface IFormatter {
+    /** Configure the format tags. */
     formatTags?: { [key: string]: string };
+    /** Configure the list tags. */
     listTags?: { [key: string]: string };
+    /** Configure the key settings. */
     keyConfig?: { [key: string]: string };
     process?: Function;
     onKeyHandler?: Function;
@@ -489,8 +495,11 @@ export interface OffsetPosition {
 }
 
 export interface ResizeArgs {
+    /** Defines the resize event args. */
     event?: MouseEvent | TouchEvent;
+    /** Defines the request type. */
     requestType?: string;
+    /** Defines the prevent action. */
     cancel?: boolean;
 }
 

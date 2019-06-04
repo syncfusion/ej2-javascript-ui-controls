@@ -46,15 +46,21 @@ export function getNearestValue(values: number[], point: number): number {
     });
 }
 
-
-/** @private */
+/**
+ * Data point
+ * @public
+ */
 export class DataPoint {
-
+    /** point x */
     public x: Object;
+    /** point y */
     public y: Object;
+    /** point x value */
     public xValue?: number;
+    /** point y value */
     public yValue?: number;
-    private visible?: boolean;
+    /** point visibility */
+    public visible?: boolean;
 
     constructor(x: Object, y: Object, xValue?: number, yValue?: number, visible: boolean = true) {
         this.x = x;

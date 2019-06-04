@@ -4,7 +4,7 @@
  */
 import { remove, createElement } from '@syncfusion/ej2-base';
 import { Chart } from '../../../src/chart/chart';
-import { IPointEventArgs } from '../../../src/common/model/interface';
+import { IPointEventArgs } from '../../../src/chart/model/chart-interface';
 import { ChartLocation } from '../../../src/common/utils/helper';
 import { ScatterSeries } from '../../../src/chart/series/scatter-series';
 import { ColumnSeries } from '../../../src/chart/series/column-series';
@@ -23,7 +23,8 @@ import { MouseEvents } from '../base/events.spec';
 import { tool1, tool2, datetimeData, categoryData, negativeDataPoint, rotateData1, rotateData2 } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs } from '../../../src/common/model/interface';
+import { IAnimationCompleteEventArgs} from '../../../src/chart/model/chart-interface';
+import { ILoadedEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
 Chart.Inject(ScatterSeries, LineSeries, DateTime, Category, Tooltip, DataLabel, ColumnSeries, AreaSeries, PolarSeries);
 let data: any = tool1;
 let data2: any = tool2;

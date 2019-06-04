@@ -1,7 +1,7 @@
 import { Property, ChildProperty } from '@syncfusion/ej2-base';
 import { DialogFieldType } from '../base/enum';
 /**
- * Defines dialog fields of add dialog and edit dialog
+ * Defines dialog fields of add dialog
  */
 export class AddDialogFieldSettings extends ChildProperty<AddDialogFieldSettings> {
     /**

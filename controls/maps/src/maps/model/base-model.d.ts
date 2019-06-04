@@ -293,7 +293,7 @@ export interface SelectionSettingsModel {
 
     /**
      * To customize the fill color of the Selection.
-     * @default '#D2691E'
+     * @default null
      */
     fill?: string;
 
@@ -323,7 +323,7 @@ export interface HighlightSettingsModel {
 
     /**
      * To customize the fill color of the highlight.
-     * @default '#6B8E23'
+     * @default null
      */
     fill?: string;
 

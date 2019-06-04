@@ -7,8 +7,8 @@ import { RangeNavigator, IThemeStyle, appendChildElement, redrawElement, Series 
 import { Size, Rect, TextOption, measureText, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Axis } from '../chart/index';
 import { Periods } from '../common/model/base';
-import { IRangeSelectorRenderEventArgs, ITooltipRenderEventArgs, IMouseEventArgs, IPointEventArgs } from '../common/model/interface';
-import { IAxisLabelRenderEventArgs, ISeriesRenderEventArgs } from '../common/model/interface';
+import { IRangeSelectorRenderEventArgs, ITooltipRenderEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';
+import { IAxisLabelRenderEventArgs, ISeriesRenderEventArgs } from '../chart/model/chart-interface';
 import { PeriodsModel } from '../common/model/base-model';
 import { ChartTheme } from '../chart/index';
 import { CrosshairSettings, CrosshairSettingsModel, TooltipSettings, TooltipSettingsModel } from '../chart/index';

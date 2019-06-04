@@ -4,7 +4,7 @@
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { getElement } from '../../../src/common/utils/helper';
 import { RangeNavigator } from '../../../src/index';
-import { IPrintEventArgs } from '../../../src/common/model/interface';
+import { IPrintEventArgs } from '../../../src/chart/model/chart-interface';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';

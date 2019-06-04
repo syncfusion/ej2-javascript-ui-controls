@@ -13,7 +13,7 @@ import { seriesData1 } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import { MouseEvents } from '../../chart/base/events.spec';
 import { wheel } from '../../chart/user-interaction/zooming.spec';
-import { ILoadedEventArgs } from '../../../src/common/model/interface';
+import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import {  Legend, Category } from '../../../src/index';
 import { categoryData } from './data.spec';

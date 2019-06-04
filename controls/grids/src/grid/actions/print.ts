@@ -71,7 +71,7 @@ export class Print {
     /**
      * By default, prints all the Grid pages and hides the pager. 
      * > You can customize print options using the 
-     * [`printMode`](./api-grid.html#printmode-string). 
+     * [`printMode`](grid/#printmode-string/). 
      * @return {void}
      */
     public print(): void {

@@ -23,10 +23,11 @@ import { Selection } from '../../../src/chart/user-interaction/selection';
 import { unbindResizeEvents } from '../base/data.spec';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { EmitType } from '@syncfusion/ej2-base';
+import { IAnimationCompleteEventArgs} from '../../../src/chart/model/chart-interface';
 import {
-    ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs,
+    ILoadedEventArgs, IPointRenderEventArgs,
     ILegendRenderEventArgs
-} from '../../../src/common/model/interface';
+} from '../../../src/chart/model/chart-interface';
 Chart.Inject(LineSeries, ColumnSeries, DataLabel, Category, DateTime, RangeColumnSeries, Legend, Tooltip, Crosshair, Logarithmic, Selection,
     HiloSeries);
 

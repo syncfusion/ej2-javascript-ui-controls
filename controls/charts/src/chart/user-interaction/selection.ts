@@ -14,7 +14,7 @@ import { Chart } from '../chart';
 import { Series, Points } from '../series/chart-series';
 import { SeriesModel } from '../series/chart-series-model';
 import { Indexes, Index } from '../../common/model/base';
-import { IDragCompleteEventArgs } from '../../common/model/interface';
+import { IDragCompleteEventArgs } from '../../chart/model/chart-interface';
 import { dragComplete } from '../../common/model/constants';
 import { BaseSelection } from '../../common/user-interaction/selection';
 /**

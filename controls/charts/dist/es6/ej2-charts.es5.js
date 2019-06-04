@@ -433,7 +433,10 @@ var Animation$1 = /** @__PURE__ @class */ (function (_super) {
     ], Animation$$1.prototype, "delay", void 0);
     return Animation$$1;
 }(ChildProperty));
-/** @private */
+/**
+ * Series and point index
+ * @public
+ */
 var Indexes = /** @__PURE__ @class */ (function (_super) {
     __extends$2(Indexes, _super);
     function Indexes() {
@@ -500,6 +503,7 @@ var EmptyPointSettings = /** @__PURE__ @class */ (function (_super) {
 }(ChildProperty));
 /**
  * Configures the ToolTips in the chart.
+ * @public
  */
 var TooltipSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$2(TooltipSettings, _super);
@@ -1198,6 +1202,7 @@ var MultiLevelLabels = /** @__PURE__ @class */ (function (_super) {
 }(ChildProperty));
 /**
  * Specifies range for scrollbarSettings property
+ * @public
  */
 var ScrollbarSettingsRange = /** @__PURE__ @class */ (function (_super) {
     __extends$4(ScrollbarSettingsRange, _super);
@@ -1464,6 +1469,7 @@ var CrosshairTooltip = /** @__PURE__ @class */ (function (_super) {
 }(ChildProperty));
 /**
  * Configures the axes in the chart.
+ * @public
  */
 var Axis = /** @__PURE__ @class */ (function (_super) {
     __extends$3(Axis, _super);
@@ -4014,6 +4020,7 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
         var optionsLine = {};
         var element = getElement(chart.element.id + 'AxisLine_' + index);
         var direction = element ? element.getAttribute('d') : '';
+        element = null;
         optionsLine = {
             'id': chart.element.id + 'AxisLine_' + index,
             'd': 'M ' + (rect.x - plotX) + ' ' + (rect.y - plotY) +
@@ -4047,7 +4054,7 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
         var isTickInside = axis.tickPosition === 'Inside';
         var ticks = isTickInside ? (rect.x - tickSize - axisLineSize) : (rect.x + tickSize + axisLineSize + scrollBarHeight);
         var length = axis.visibleLabels.length;
-        var chart = this.chart;
+        var chartThemeStyle = this.chart.themeStyle;
         if (axis.valueType.indexOf('Category') && axis.labelPlacement === 'BetweenTicks' && length > 0) {
             length += 1;
         }
@@ -4063,15 +4070,15 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
                 if ((inside(tempInterval, axis.visibleRange)) || this.isBorder(axis, i, pointY)) {
                     majorGrid = 'M ' + this.seriesClipRect.x + ' ' + (pointY) +
                         ' L ' + (this.seriesClipRect.x + this.seriesClipRect.width) + ' ' + pointY;
-                    this.renderGridLine(axis, index, majorGrid, axis.majorGridLines, '_MajorGridLine_', i, this.element, chart.themeStyle.majorGridLine, axis.majorGridLines.dashArray);
+                    this.renderGridLine(axis, index, majorGrid, axis.majorGridLines, '_MajorGridLine_', i, this.element, chartThemeStyle.majorGridLine, axis.majorGridLines.dashArray);
                 }
                 majorTick = 'M ' + (rect.x + axisLineSize + (isTickInside ? scrollBarHeight : 0)) + ' ' + pointY +
                     ' L ' + (ticks) + ' ' + pointY;
-                this.renderGridLine(axis, index, majorTick, axis.majorTickLines, '_MajorTickLine_', i, parent, chart.themeStyle.majorTickLine);
+                this.renderGridLine(axis, index, majorTick, axis.majorTickLines, '_MajorTickLine_', i, parent, chartThemeStyle.majorTickLine);
                 if ((minorGridLines.width > 0 || minorTickLines.width > 0) && axis.minorTicksPerInterval > 0) {
                     minorGridDirection = this.drawAxisMinorLine(axis, tempInterval, rect, i);
-                    this.renderGridLine(axis, index, minorGridDirection[0], minorGridLines, '_MinorGridLine_', i, this.element, chart.themeStyle.minorGridLine, minorGridLines.dashArray);
-                    this.renderGridLine(axis, index, minorGridDirection[1], minorTickLines, '_MinorTickLine_', i, parent, chart.themeStyle.minorTickLine);
+                    this.renderGridLine(axis, index, minorGridDirection[0], minorGridLines, '_MinorGridLine_', i, this.element, chartThemeStyle.minorGridLine, minorGridLines.dashArray);
+                    this.renderGridLine(axis, index, minorGridDirection[1], minorTickLines, '_MinorTickLine_', i, parent, chartThemeStyle.minorTickLine);
                 }
             }
         }
@@ -4083,8 +4090,7 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
      * @param value
      */
     CartesianAxisLayoutPanel.prototype.isBorder = function (axis, index, value) {
-        var chart = this.chart;
-        var border = chart.chartArea.border;
+        var border = this.chart.chartArea.border;
         var rect = this.seriesClipRect;
         var orientation = axis.orientation;
         var start = (orientation === 'Horizontal') ? rect.x : rect.y;
@@ -4244,7 +4250,6 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
     CartesianAxisLayoutPanel.prototype.drawYAxisTitle = function (axis, index, parent, rect) {
         var chart = this.chart;
         var labelRotation = (axis.opposedPosition) ? 90 : -90;
-        var elementSize = measureText(axis.title, axis.titleStyle);
         var padding = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + this.padding) +
             (axis.labelPosition === 'Inside' ? 0 :
                 (axis.maxLabelSize.width + axis.multiLevelLabelHeight + this.padding));
@@ -4278,7 +4283,7 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
         var length = axis.visibleLabels.length;
         var isTickInside = axis.tickPosition === 'Inside';
         var ticks = isTickInside ? (rect.y - tickSize - axisLineSize) : (rect.y + tickSize + axisLineSize + scrollBarHeight);
-        var chart = this.chart;
+        var chartThemeStyle = this.chart.themeStyle;
         if (axis.valueType.indexOf('Category') > -1 && length > 0 && axis.labelPlacement === 'BetweenTicks') {
             length += 1;
         }
@@ -4297,15 +4302,15 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
                 if (inside(tempInterval, axis.visibleRange) || this.isBorder(axis, i, pointX)) {
                     majorGrid = 'M ' + pointX + ' ' + (this.seriesClipRect.y + this.seriesClipRect.height) +
                         ' L ' + pointX + ' ' + this.seriesClipRect.y;
-                    this.renderGridLine(axis, index, majorGrid, axis.majorGridLines, '_MajorGridLine_', i, this.element, chart.themeStyle.majorGridLine, axis.majorGridLines.dashArray);
+                    this.renderGridLine(axis, index, majorGrid, axis.majorGridLines, '_MajorGridLine_', i, this.element, chartThemeStyle.majorGridLine, axis.majorGridLines.dashArray);
                 }
                 majorTick = 'M ' + (pointX) + ' ' + (rect.y + axisLineSize + (isTickInside ? scrollBarHeight : 0))
                     + ' L ' + (pointX) + ' ' + ticks;
-                this.renderGridLine(axis, index, majorTick, axis.majorTickLines, '_MajorTickLine_', i, parent, chart.themeStyle.majorTickLine);
+                this.renderGridLine(axis, index, majorTick, axis.majorTickLines, '_MajorTickLine_', i, parent, chartThemeStyle.majorTickLine);
                 if (axis.minorTicksPerInterval > 0 && (axis.minorGridLines.width > 0 || axis.minorTickLines.width > 0)) {
                     minorDirection = this.drawAxisMinorLine(axis, tempInterval, rect, i);
-                    this.renderGridLine(axis, index, minorDirection[0], axis.minorGridLines, '_MinorGridLine_', i, this.element, chart.themeStyle.minorGridLine, axis.minorGridLines.dashArray);
-                    this.renderGridLine(axis, index, minorDirection[1], axis.minorTickLines, '_MinorTickLine_', i, parent, chart.themeStyle.minorTickLine);
+                    this.renderGridLine(axis, index, minorDirection[0], axis.minorGridLines, '_MinorGridLine_', i, this.element, chartThemeStyle.minorGridLine, axis.minorGridLines.dashArray);
+                    this.renderGridLine(axis, index, minorDirection[1], axis.minorTickLines, '_MinorTickLine_', i, parent, chartThemeStyle.minorTickLine);
                 }
             }
         }
@@ -4688,6 +4693,7 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
         if (gridModel.width > 0 && axis.visible && gridDirection) {
             element = getElement(chart.element.id + gridId + index + '_' + gridIndex);
             direction = element ? element.getAttribute('d') : null;
+            element = null;
             this.htmlObject = chart.renderer.drawPath(new PathOption(chart.element.id + gridId + index + '_' + gridIndex, 'transparent', gridModel.width, gridModel.color || themeColor, null, dashArray, gridDirection));
             appendChildElement(parent, this.htmlObject, chart.redraw, true, 'x', 'y', null, direction, true);
         }
@@ -4699,15 +4705,15 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
      * @param axis
      * @param index
      */
-    CartesianAxisLayoutPanel.prototype.findParentNode = function (chart, label, axis, index) {
+    CartesianAxisLayoutPanel.prototype.findParentNode = function (elementId, label, axis, index) {
         if (axis.crossAt === null) {
-            return document.getElementById(chart.element.id + 'AxisGroup' + index + 'Inside');
+            return document.getElementById(elementId + 'AxisGroup' + index + 'Inside');
         }
-        if (document.getElementById(chart.element.id + 'AxisGroup' + index + 'Inside').contains(document.getElementById(label.id))) {
-            return document.getElementById(chart.element.id + 'AxisGroup' + index + 'Inside');
+        if (document.getElementById(elementId + 'AxisGroup' + index + 'Inside').contains(document.getElementById(label.id))) {
+            return document.getElementById(elementId + 'AxisGroup' + index + 'Inside');
         }
         else {
-            return document.getElementById(chart.element.id + 'AxisGroup' + index + 'Outside');
+            return document.getElementById(elementId + 'AxisGroup' + index + 'Outside');
         }
     };
     /**
@@ -4719,7 +4725,7 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
      * @param rect
      */
     CartesianAxisLayoutPanel.prototype.createZoomingLabel = function (chart, labelElement, axis, index, rect) {
-        var parentNode = this.findParentNode(chart, labelElement, axis, index);
+        var parentNode = this.findParentNode(chart.element.id, labelElement, axis, index);
         labelElement.setAttribute('opacity', '0.3');
         var zoomElement = chart.renderer.createGroup({
             id: chart.element.id + 'AxisLabels_Zoom' + index
@@ -4975,14 +4981,19 @@ var MarkerSettings = /** @__PURE__ @class */ (function (_super) {
 }(ChildProperty));
 /**
  * Points model for the series.
- * @private
+ * @public
  */
 var Points = /** @__PURE__ @class */ (function () {
     function Points() {
+        /** point symbol location */
         this.symbolLocations = null;
+        /** point region */
         this.regions = null;
+        /** point percentage value */
         this.percentage = null;
+        /** point region data */
         this.regionData = null;
+        /** point marker */
         this.marker = {
             visible: false
         };
@@ -5088,6 +5099,10 @@ var ChartSegment = /** @__PURE__ @class */ (function (_super) {
     ], ChartSegment.prototype, "dashArray", void 0);
     return ChartSegment;
 }(ChildProperty));
+/**
+ * Error bar settings
+ * @public
+ */
 var ErrorBarSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$5(ErrorBarSettings, _super);
     function ErrorBarSettings() {
@@ -5440,6 +5455,7 @@ var SeriesBase = /** @__PURE__ @class */ (function (_super) {
         this.processJsonData();
         this.recordsCount = e.count;
         this.refreshChart(isRemoteData);
+        this.currentViewData = null;
     };
     SeriesBase.prototype.refreshChart = function (isRemoteData) {
         var chart = this.chart;
@@ -5519,7 +5535,8 @@ var SeriesBase = /** @__PURE__ @class */ (function (_super) {
     return SeriesBase;
 }(ChildProperty));
 /**
- *  Configures the series in charts.
+ * Configures the series in charts.
+ * @public
  */
 var Series = /** @__PURE__ @class */ (function (_super) {
     __extends$5(Series, _super);
@@ -5728,9 +5745,7 @@ var Series = /** @__PURE__ @class */ (function (_super) {
     /** @private */
     Series.prototype.renderSeries = function (chart) {
         var seriesType = firstToLowerCase(this.type);
-        if (seriesType.indexOf('100') !== -1) {
-            seriesType = seriesType.replace('100', '');
-        }
+        seriesType = seriesType.replace('100', '');
         if (chart[seriesType + 'SeriesModule']) {
             if (this.category !== 'Indicator' && this.category !== 'TrendLine') {
                 this.createSeriesElements(chart);
@@ -5756,7 +5771,6 @@ var Series = /** @__PURE__ @class */ (function (_super) {
     Series.prototype.createSeriesElements = function (chart) {
         if (this.category !== 'Indicator') {
             var elementId = chart.element.id;
-            var xAxisRect = this.xAxis.rect;
             // 8 for extend border value 5 for extend size value
             var explodeValue = this.marker.border.width + 8 + 5;
             var render = chart.renderer;
@@ -6044,7 +6058,6 @@ var MarkerExplode = /** @__PURE__ @class */ (function (_super) {
      */
     function MarkerExplode(chart) {
         var _this = _super.call(this, chart) || this;
-        _this.addEventListener();
         _this.elementId = chart.element.id;
         return _this;
     }
@@ -6061,10 +6074,13 @@ var MarkerExplode = /** @__PURE__ @class */ (function (_super) {
     /**
      * @hidden
      */
-    /* public removeEventListener(): void {
-         if (this.chart.isDestroyed) { return; }
-         this.chart.off(Browser.touchMoveEvent, this.mouseMoveHandler);
-    }*/
+    MarkerExplode.prototype.removeEventListener = function () {
+        if (this.chart.isDestroyed) {
+            return;
+        }
+        this.chart.off(Browser.touchMoveEvent, this.mouseMoveHandler);
+        this.chart.off(Browser.touchEndEvent, this.mouseUpHandler);
+    };
     /**
      * @hidden
      */
@@ -7248,6 +7264,7 @@ var ZoomSettings = /** @__PURE__ @class */ (function (_super) {
  *   chartObj.appendTo("#chart");
  * </script>
  * ```
+ * @public
  */
 var Chart = /** @__PURE__ @class */ (function (_super) {
     __extends(Chart, _super);
@@ -7433,14 +7450,15 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
     };
     Chart.prototype.initializeModuleElements = function () {
         this.dataLabelCollections = [];
-        this.seriesElements = this.renderer.createGroup({ id: this.element.id + 'SeriesCollection' });
+        var elementID = this.element.id;
+        this.seriesElements = this.renderer.createGroup({ id: elementID + 'SeriesCollection' });
         if (this.indicators.length) {
-            this.indicatorElements = this.renderer.createGroup({ id: this.element.id + 'IndicatorCollection' });
+            this.indicatorElements = this.renderer.createGroup({ id: elementID + 'IndicatorCollection' });
         }
         if (this.hasTrendlines()) {
-            this.trendLineElements = this.renderer.createGroup({ id: this.element.id + 'TrendLineCollection' });
+            this.trendLineElements = this.renderer.createGroup({ id: elementID + 'TrendLineCollection' });
         }
-        this.dataLabelElements = this.renderer.createGroup({ id: this.element.id + 'DataLabelCollection' });
+        this.dataLabelElements = this.renderer.createGroup({ id: elementID + 'DataLabelCollection' });
     };
     Chart.prototype.hasTrendlines = function () {
         var isTrendline;
@@ -7456,16 +7474,17 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
     Chart.prototype.renderSeriesElements = function (axisElement) {
         // Initialize the series elements values
         this.initializeModuleElements();
+        var elementID = this.element.id;
         if (this.element.tagName !== 'g') {
-            var tooltipDiv = redrawElement(this.redraw, this.element.id + '_Secondary_Element') ||
+            var tooltipDiv = redrawElement(this.redraw, elementID + '_Secondary_Element') ||
                 this.createElement('div');
-            tooltipDiv.id = this.element.id + '_Secondary_Element';
+            tooltipDiv.id = elementID + '_Secondary_Element';
             tooltipDiv.setAttribute('style', 'position: relative');
             appendChildElement(this.element, tooltipDiv, this.redraw);
         }
         // For userInteraction
         if (this.tooltip.enable) {
-            appendChildElement(this.svgObject, this.renderer.createGroup({ id: this.element.id + '_UserInteraction', style: 'pointer-events:none;' }), this.redraw);
+            appendChildElement(this.svgObject, this.renderer.createGroup({ id: elementID + '_UserInteraction', style: 'pointer-events:none;' }), this.redraw);
         }
         if (this.rows.length > 0 && this.columns.length > 0) {
             this.initializeIndicator();
@@ -7574,13 +7593,13 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         this.visibleSeriesCount = 0;
         var check = true;
         for (var _i = 0, _a = this.visibleSeries; _i < _a.length; _i++) {
-            var series_1 = _a[_i];
-            if (!series_1.visible && !this.legendSettings.visible) {
+            var series = _a[_i];
+            if (!series.visible && !this.legendSettings.visible) {
                 this.visibleSeriesCount++;
                 continue;
             }
-            if (series_1.category !== 'Indicator' && series_1.category !== 'TrendLine') {
-                this.initializeDataModule(series_1);
+            if (series.category !== 'Indicator' && series.category !== 'TrendLine') {
+                this.initializeDataModule(series);
             }
         }
         for (var _b = 0, _c = this.indicators; _b < _c.length; _b++) {
@@ -7708,8 +7727,8 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
             axis.series = [];
             axis.labels = [];
             for (var _i = 0, _a = this.visibleSeries; _i < _a.length; _i++) {
-                var series_2 = _a[_i];
-                this.initAxis(series_2, axis, true);
+                var series_1 = _a[_i];
+                this.initAxis(series_1, axis, true);
             }
             for (var _b = 0, _c = this.indicators; _b < _c.length; _b++) {
                 var indicator = _c[_b];
@@ -7832,9 +7851,9 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         if (this.title) {
             var alignment = this.titleStyle.textAlignment;
             var getAnchor = alignment === 'Near' ? 'start' : alignment === 'Far' ? 'end' : 'middle';
-            this.elementSize = measureText(this.title, this.titleStyle);
+            var elementSize = measureText(this.title, this.titleStyle);
             rect = new Rect(margin.left, 0, this.availableSize.width - margin.left - margin.right, 0);
-            var options = new TextOption(this.element.id + '_ChartTitle', titlePositionX(rect, this.titleStyle), this.margin.top + ((this.elementSize.height) * 3 / 4), getAnchor, this.titleCollection, '', 'auto');
+            var options = new TextOption(this.element.id + '_ChartTitle', titlePositionX(rect, this.titleStyle), this.margin.top + ((elementSize.height) * 3 / 4), getAnchor, this.titleCollection, '', 'auto');
             var element = redrawElement(this.redraw, this.element.id + '_ChartTitle', options, this.renderer) ||
                 textElement(options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject);
             element.setAttribute('aria-label', this.description || this.title);
@@ -7887,6 +7906,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
             var rect = new RectOption(this.element.id + '_ChartAreaBorder', this.chartArea.background, { width: this.chartArea.border.width, color: this.chartArea.border.color || this.themeStyle.areaBorder }, this.chartArea.opacity, this.chartAxisLayoutPanel.seriesClipRect);
             this.htmlObject = this.renderer.drawRectangle(rect);
             appendChildElement(this.svgObject, this.htmlObject, this.redraw, true, 'x', 'y', null, null, true, true, previousRect);
+            this.htmlObject = null;
         }
     };
     /**
@@ -7921,10 +7941,25 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         if (this.scrollBarModule) {
             this.scrollBarModule.destroy();
         }
+        if (this.markerRender) {
+            this.markerRender.removeEventListener();
+            this.markerRender = null;
+        }
         this.unWireEvents();
         _super.prototype.destroy.call(this);
         this.removeSvg();
+        this.svgObject = null;
         this.element.classList.remove('e-chart');
+        this.element.innerHTML = '';
+        this.horizontalAxes = [];
+        this.verticalAxes = [];
+        this.visibleSeries = [];
+        this.axisCollections = [];
+        this.chartAxisLayoutPanel = null;
+        this.dataLabelCollections = null;
+        this.dataLabelElements = null;
+        this.renderer = null;
+        this.yAxisElements = null;
     };
     /**
      * Get component name
@@ -7963,12 +7998,13 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         EventHandler.remove(this.element, 'click', this.chartOnMouseClick);
         EventHandler.remove(this.element, 'contextmenu', this.chartRightClick);
         EventHandler.remove(this.element, cancelEvent, this.mouseLeave);
-        window.removeEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.chartResize);
+        window.removeEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.resizeBound);
         /**
          * To fix memory issue
          */
         if (this.touchObject) {
             this.touchObject.destroy();
+            this.touchObject = null;
         }
     };
     Chart.prototype.wireEvents = function () {
@@ -7981,9 +8017,10 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         EventHandler.add(this.element, 'click', this.chartOnMouseClick, this);
         EventHandler.add(this.element, 'contextmenu', this.chartRightClick, this);
         EventHandler.add(this.element, cancelEvent, this.mouseLeave, this);
-        window.addEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.chartResize.bind(this));
-        this.longPress = this.longPress.bind(this);
-        this.touchObject = new Touch(this.element, { tapHold: this.longPress, tapHoldThreshold: 500 });
+        this.resizeBound = this.chartResize.bind(this);
+        window.addEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.resizeBound);
+        this.longPressBound = this.longPress.bind(this);
+        this.touchObject = new Touch(this.element, { tapHold: this.longPressBound, tapHoldThreshold: 500 });
         /*! Apply the style for chart */
         this.setStyle(this.element);
     };
@@ -8624,9 +8661,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         if (this.redraw) {
             return null;
         }
-        if (document.getElementById(this.element.id + '_Secondary_Element')) {
-            remove(document.getElementById(this.element.id + '_Secondary_Element'));
-        }
+        removeElement(this.element.id + '_Secondary_Element');
         var removeLength = 0;
         if (this.zoomModule && this.zoomModule.pinchTarget) {
             this.zoomModule.pinchTarget.id = '';
@@ -22674,10 +22709,13 @@ var PieCenter = /** @__PURE__ @class */ (function (_super) {
 }(ChildProperty));
 /**
  * Points model for the series.
+ * @public
  */
 var AccPoints = /** @__PURE__ @class */ (function () {
     function AccPoints() {
+        /** accumulation point visibility */
         this.visible = true;
+        /** accumulation point symbol location */
         this.symbolLocation = null;
         /** @private */
         this.region = null;
@@ -22812,9 +22850,6 @@ var AccumulationSeries = /** @__PURE__ @class */ (function (_super) {
             this.points = this.points.concat(this.clubbedPoints);
         }
     };
-    /**
-     * Generate club point
-     */
     AccumulationSeries.prototype.generateClubPoint = function () {
         var clubPoint = new AccPoints();
         clubPoint.isClubbed = true;
@@ -23788,6 +23823,7 @@ var __decorate$7 = (undefined && undefined.__decorate) || function (decorators, 
  *   accObj.appendTo("#accumulation");
  * </script>
  * ```
+ * @public
  */
 var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
     __extends$59(AccumulationChart, _super);
@@ -27076,7 +27112,10 @@ function getNearestValue(values, point) {
         return (Math.abs(curr - point) < Math.abs(prev - point) ? curr : prev);
     });
 }
-/** @private */
+/**
+ * Data point
+ * @public
+ */
 var DataPoint = /** @__PURE__ @class */ (function () {
     function DataPoint(x, y, xValue, yValue, visible) {
         if (visible === void 0) { visible = true; }
@@ -36483,19 +36522,35 @@ var SparklineRenderer = /** @__PURE__ @class */ (function () {
     /**
      * To process the sparkline data
      */
-    SparklineRenderer.prototype.processData = function (data) {
-        if (data === void 0) { data = this.sparkline.dataSource; }
-        if (!this.sparkline.dataSource.length) {
+    SparklineRenderer.prototype.processData = function () {
+        var data = this.sparkline.dataSource;
+        if (isNullOrUndefined(data) || !data.length) {
             return;
         }
-        else if (!isNaN(data[0]) || this.sparkline.valueType === 'Numeric') {
-            data = (this.sparkline.enableRtl) ? this.sparkline.dataSource.reverse() : this.sparkline.dataSource;
+        else if (!isNaN(this.sparkline.dataSource[0]) || this.sparkline.valueType === 'Numeric') {
+            data = (this.sparkline.enableRtl) ? data.reverse() : data;
             this.sparkline.sparklineData = data; // extend([], data) as Object[];
         }
         else {
             this['process' + this.sparkline.valueType]();
         }
         this.axisCalculation();
+    };
+    /* tslint:disable:no-string-literal */
+    /* tslint:disable:no-eval */
+    SparklineRenderer.prototype.processDataManager = function () {
+        var _this = this;
+        var dataModule;
+        var queryModule;
+        if (this.sparkline.dataSource instanceof DataManager) {
+            dataModule = this.sparkline.dataSource;
+            queryModule = this.sparkline.query instanceof Query ? this.sparkline.query : new Query();
+            var dataManager = dataModule.executeQuery(queryModule);
+            dataManager.then(function (e) {
+                _this.sparkline.dataSource = e['result'];
+                _this.sparkline.sparklineData = _this.sparkline.dataSource;
+            });
+        }
     };
     /**
      * To process sparkline category data.
@@ -37342,6 +37397,7 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
      */
     Sparkline.prototype.render = function () {
         // Sparkline rendering splitted into rendering and calculations
+        this.sparklineRenderer.processDataManager();
         this.sparklineRenderer.processData();
         this.renderSparkline();
         this.element.appendChild(this.svgObject);
@@ -37687,8 +37743,11 @@ var Sparkline = /** @__PURE__ @class */ (function (_super) {
         Property('Line')
     ], Sparkline.prototype, "type", void 0);
     __decorate$19([
-        Property([])
+        Property(null)
     ], Sparkline.prototype, "dataSource", void 0);
+    __decorate$19([
+        Property(null)
+    ], Sparkline.prototype, "query", void 0);
     __decorate$19([
         Property('Numeric')
     ], Sparkline.prototype, "valueType", void 0);

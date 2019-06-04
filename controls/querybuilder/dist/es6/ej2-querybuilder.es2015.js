@@ -1114,8 +1114,8 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         else {
             let length;
-            if (tempRule.type === 'boolean' && this.selectedColumn.values) {
-                length = this.selectedColumn.values.length;
+            if (tempRule.type === 'boolean') {
+                length = this.selectedColumn.values ? this.selectedColumn.values.length : 2;
             }
             else {
                 length = tempRule.operator && tempRule.operator.toLowerCase().indexOf('between') > -1 ? 2 : 1;
@@ -1149,12 +1149,12 @@ let QueryBuilder = class QueryBuilder extends Component {
                                 let values = itemData.values && itemData.values.length ? itemData.values : ['True', 'False'];
                                 let isCheck = false;
                                 if (rule.type === 'boolean' && rule.value) {
-                                    isCheck = values[i].toString() === rule.value.toString();
+                                    isCheck = values[i].toLowerCase() === rule.value.toString().toLowerCase();
                                 }
                                 else if (itemData.value) {
-                                    isCheck = values[i].toString() === itemData.value.toString();
+                                    isCheck = values[i].toLowerCase() === itemData.value.toString().toLowerCase();
                                 }
-                                else {
+                                else if (i === 0) {
                                     isCheck = true;
                                 }
                                 let radiobutton = new RadioButton({
@@ -1279,8 +1279,8 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         else {
             let inputLen = 1;
-            if (tempRule.type === 'boolean' && this.selectedColumn.values) {
-                inputLen = this.selectedColumn.values.length;
+            if (tempRule.type === 'boolean') {
+                inputLen = this.selectedColumn.values ? this.selectedColumn.values.length : 2;
             }
             else {
                 inputLen = (tempRule.operator && tempRule.operator.toLowerCase().indexOf('between') > -1) ? 2 : 1;

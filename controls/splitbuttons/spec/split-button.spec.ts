@@ -177,6 +177,13 @@ describe('Split Button', () => {
         expect(button.element.nextElementSibling.classList).toContain('e-dropdown-btn');
     });
 
+    it('Native methods Focus', () => {
+        document.body.appendChild(createElement('EJS-SPLITBUTTON', { id: 'angsplitbtn' }));
+        button = new SplitButton({}, '#angsplitbtn');
+        button.focusIn();
+        
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange);

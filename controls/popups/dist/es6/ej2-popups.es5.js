@@ -1725,6 +1725,16 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    Dialog.prototype.getEle = function (list, selector) {
+        var element = undefined;
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].classList.contains(selector)) {
+                element = list[i];
+                break;
+            }
+        }
+        return element;
+    };
     /* istanbul ignore next */
     Dialog.prototype.getMinHeight = function () {
         var computedHeaderHeight = '0px';
@@ -1732,8 +1742,9 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(this.element.querySelector('.' + DLG_HEADER_CONTENT))) {
             computedHeaderHeight = getComputedStyle(this.headerContent).height;
         }
-        if (!isNullOrUndefined(this.element.querySelector('.' + DLG_FOOTER_CONTENT))) {
-            computedFooterHeight = getComputedStyle(this.element.querySelector('.' + DLG_FOOTER_CONTENT)).height;
+        var footerEle = this.getEle(this.element.childNodes, DLG_FOOTER_CONTENT);
+        if (!isNullOrUndefined(footerEle)) {
+            computedFooterHeight = getComputedStyle(footerEle).height;
         }
         var headerHeight = parseInt(computedHeaderHeight.slice(0, computedHeaderHeight.indexOf('p')), 10);
         var footerHeight = parseInt(computedFooterHeight.slice(0, computedFooterHeight.indexOf('p')), 10);
@@ -3937,9 +3948,6 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
     __decorate$2([
         Property()
     ], Tooltip.prototype, "cssClass", void 0);
-    __decorate$2([
-        Property(false)
-    ], Tooltip.prototype, "enableRtl", void 0);
     __decorate$2([
         Event()
     ], Tooltip.prototype, "beforeRender", void 0);

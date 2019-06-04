@@ -20,7 +20,7 @@ import { unbindResizeEvents } from '../base/data.spec';
 import { tooltipData1, tooltipData2, datetimeData, categoryData, categoryData1, negativeDataPoint, rotateData1, rotateData2 } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs } from '../../../src/common/model/interface';
+import { ILoadedEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
 Chart.Inject(LineSeries, StackingBarSeries, ColumnSeries, DateTime, Category, BarSeries, DataLabel);
 let data: any = tooltipData1;
 let data2: any = tooltipData2;

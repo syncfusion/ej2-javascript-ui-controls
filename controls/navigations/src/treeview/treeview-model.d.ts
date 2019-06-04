@@ -147,7 +147,7 @@ export interface TreeViewModel extends ComponentModel{
      * desktop, hold the mouse on the node, drag it to the target node and drop the node by releasing
      * the mouse. For touch devices, drag and drop operation is performed by touch, touch move
      * and touch end. For more information on drag and drop nodes concept, refer to
-     * [Drag and Drop](../treeview/drag-and-drop/).
+     * [Drag and Drop](../../treeview/drag-and-drop/).
      * @default false
      */
     allowDragAndDrop?: boolean;
@@ -156,7 +156,7 @@ export interface TreeViewModel extends ComponentModel{
      * Enables or disables editing of the text in the TreeView node. When `allowEditing` property is set
      * to true, the TreeView allows you to edit the node by double clicking the node or by navigating to
      * the node and pressing **F2** key. For more information on node editing, refer
-     * to [Node Editing](../treeview/node-editing/).
+     * to [Node Editing](../../treeview/node-editing/).
      * @default false
      */
     allowEditing?: boolean;
@@ -168,7 +168,7 @@ export interface TreeViewModel extends ComponentModel{
      * and click the last node to select.
      *
      * For more information on multi-selection, refer to
-     * [Multi-Selection](../treeview/multiple-selection/).
+     * [Multi-Selection](../../treeview/multiple-selection/).
      * @default false
      */
     allowMultiSelection?: boolean;
@@ -206,12 +206,6 @@ export interface TreeViewModel extends ComponentModel{
     enablePersistence?: boolean;
 
     /**
-     * Enables or disables RTL mode on the component that displays the content in the right to left direction.
-     * @default false
-     */
-    enableRtl?: boolean;
-
-    /**
      * Represents the expanded nodes in the TreeView component. We can set the nodes that need to be
      * expanded or get the ID of the nodes that are currently expanded by using this property.
      * @default []
@@ -242,7 +236,7 @@ export interface TreeViewModel extends ComponentModel{
      * On enabling this property, the entire row of the TreeView node gets selected by clicking a node.
      * When disabled only the corresponding node's text gets selected.
      * For more information on Fields concept, refer to
-     * [Fields](../treeview/data-binding#local-data).
+     * [Fields](../../treeview/data-binding#local-data).
      * @default true
      */
     fullRowSelect?: boolean;
@@ -259,7 +253,7 @@ export interface TreeViewModel extends ComponentModel{
      * is set, the template content overrides the displayed node text. The property accepts template string
      * [template string](http://ej2.syncfusion.com/documentation/base/template-engine.html)
      * or HTML element ID holding the content. For more information on template concept, refer to
-     * [Template](../treeview/template/).
+     * [Template](../../treeview/template/).
      * @default null
      */
     nodeTemplate?: string;
@@ -270,7 +264,7 @@ export interface TreeViewModel extends ComponentModel{
      * On enabling `allowMultiSelection` property we can select multiple nodes and on disabling
      * it we can select only a single node.
      * For more information on selectedNodes, refer to
-     * [selectedNodes](../treeview/multiple-selection#selected-nodes).
+     * [selectedNodes](../../treeview/multiple-selection#selected-nodes).
      * @default []
      */
     selectedNodes?: string[];
@@ -288,7 +282,7 @@ export interface TreeViewModel extends ComponentModel{
     /**
      * Indicates that the nodes will display CheckBoxes in the TreeView.
      * The CheckBox will be displayed next to the expand/collapse icon of the node. For more information on CheckBoxes, refer to
-     * [CheckBox](../treeview/check-box/).
+     * [CheckBox](../../treeview/check-box/).
      * @default false
      */
     showCheckBox?: boolean;

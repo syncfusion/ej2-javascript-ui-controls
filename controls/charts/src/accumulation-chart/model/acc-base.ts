@@ -207,22 +207,33 @@ export class PieCenter extends ChildProperty<PieCenter> {
 
 /**
  * Points model for the series.
+ * @public
  */
 
 export class AccPoints {
-
+    /** accumulation point x value */
     public x: Object;
+    /** accumulation point y value */
     public y: number;
+    /** accumulation point visibility */
     public visible: boolean = true;
+    /** accumulation point text */
     public text: string;
+    /** accumulation point tooltip */
     public tooltip: string;
+    /** accumulation point slice radius */
     public sliceRadius: string;
+    /** accumulation point original text */
     public originalText: string;
     /** @private */
     public label: string;
+    /** accumulation point color */
     public color: string;
+    /** accumulation point percentage value */
     public percentage: number;
+    /** accumulation point symbol location */
     public symbolLocation: ChartLocation = null;
+    /** accumulation point index */
     public index: number;
     /** @private */
     public midAngle: number;
@@ -654,9 +665,7 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
             this.points = this.points.concat(this.clubbedPoints);
         }
     }
-    /**
-     * Generate club point
-     */
+
     public generateClubPoint(): AccPoints {
         let clubPoint: AccPoints = new AccPoints();
         clubPoint.isClubbed = true;

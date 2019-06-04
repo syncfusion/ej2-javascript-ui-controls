@@ -594,10 +594,9 @@ export class TableResizer {
         }
         this.updateCellPreferredWidths(table);
         if (hasTableWidth || table.tableHolder.getTotalWidth(0) > containerWidth) {
-            if (table.tableFormat.allowAutoFit) {
-                table.updateWidth(dragValue);
-            }
             table.tableFormat.allowAutoFit = false;
+            table.updateWidth(dragValue);
+
             table.tableHolder.tableWidth = table.tableHolder.getTotalWidth(0);
         }
         let dragOffset: number = dragValue;

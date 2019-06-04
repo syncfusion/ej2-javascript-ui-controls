@@ -721,7 +721,7 @@ export class ChartRows {
             //     getComputedStyle(taskbarElement.querySelector(progressBarClass)).borderColor : null;
             args.baselineColor = trElement.querySelector('.' + cls.baselineBar) ?
                 getComputedStyle(trElement.querySelector('.' + cls.baselineBar)).backgroundColor : null;
-            args.progressLabelColor = taskbarElement.querySelector('.' + cls.taskLabel) ?
+            args.taskLabelColor = taskbarElement.querySelector('.' + cls.taskLabel) ?
                 getComputedStyle(taskbarElement.querySelector('.' + cls.taskLabel)).color : null;
         }
         args.rightLabelColor = trElement.querySelector('.' + cls.rightLabelContainer) &&
@@ -776,8 +776,8 @@ export class ChartRows {
             //     (taskbarElement.querySelector(progressBarClass) as HTMLElement).style.borderColor = args.progressBarBorderColor;
             // }
             if (taskbarElement.querySelector('.' + cls.taskLabel) &&
-                getComputedStyle(taskbarElement.querySelector('.' + cls.taskLabel)).color !== args.progressLabelColor) {
-                (taskbarElement.querySelector('.' + cls.taskLabel) as HTMLElement).style.color = args.progressLabelColor;
+                getComputedStyle(taskbarElement.querySelector('.' + cls.taskLabel)).color !== args.taskLabelColor) {
+                (taskbarElement.querySelector('.' + cls.taskLabel) as HTMLElement).style.color = args.taskLabelColor;
             }
             if (trElement.querySelector('.' + cls.baselineBar) &&
                 getComputedStyle(trElement.querySelector('.' + cls.baselineBar)).backgroundColor !== args.baselineColor) {

@@ -3,7 +3,7 @@
  */
 import { createElement, EmitType, debounce } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { MultiColoredLineSeries, ILoadedEventArgs, DateTime, Category, IAnimationCompleteEventArgs } from '../../../src/index';
+import { MultiColoredLineSeries, ILoadedEventArgs, DateTime, Category } from '../../../src/index';
 import { MultiColoredAreaSeries, Legend, Series, Points, Chart, getElement } from '../../../src/index';
 Chart.Inject(DateTime, Category, MultiColoredLineSeries, MultiColoredAreaSeries, Legend);
 

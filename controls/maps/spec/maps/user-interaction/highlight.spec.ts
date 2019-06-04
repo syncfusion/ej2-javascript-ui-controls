@@ -382,6 +382,80 @@ describe('Highlight Settings', () => {
             highlight.refresh();
         });
     });
+    describe('Highlight Settings', () => {
+        describe('Testing highlight is applied or not', () => {
+            let id: string = 'container';
+            let highlight: Maps;
+            let trigger: MouseEvents = new MouseEvents();
+            let ele: HTMLDivElement;
+            let spec: Element;
+            beforeAll(() => {
+                ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+                document.body.appendChild(ele);
+                highlight = new Maps({
+                    titleSettings: {
+                        text: 'WorldMap',
+                    },
+                    legendSettings: {
+                        visible: true,
+                        position: 'Top',
+                    },
+                    layers: [{
+                        highlightSettings: {
+                            enable: true,
+                        },
+                        selectionSettings: {
+                            enable: true,
+                        },
+                        shapeData: World_Map,
+                        shapeDataPath: 'name',
+                        dataSource: Population_Density,
+                        shapeSettings: {
+                            colorValuePath: 'density',
+                            fill: '#E5E5E5',
+                            colorMapping: [
+                                {
+                                    from: 0.00001, to: 100, color: 'rgb(153,174,214)', label: '<100'
+                                },
+                                {
+                                    from: 100, to: 200, color: 'rgb(115,143,199)', label: '100 - 200'
+                                },
+                                {
+                                    from: 200, to: 300, color: 'rgb(77,112,184)', label: '200 - 300'
+                                },
+                                {
+                                    from: 300, to: 500, color: 'rgb(38,82,168)', label: '300 - 500'
+                                },
+                                {
+                                    from: 500, to: 19000, color: 'rgb(0,51,153)', label: '>500'
+                                }
+                            ]
+                        }
+                    }],
+                });
+            });
+            afterAll(() => {
+                remove(ele);
+                highlight.destroy();
+            });
+            it('Highlight checking if highlight fill color as null', (done: Function) => {
+                highlight.loaded = (args: ILoadedEventArgs) => {
+                    debugger
+                spec = getElement('container_LayerIndex_0_shapeIndex_72_dataIndex_65');
+                trigger.mousemoveEvent(spec, 0 , 0, 0, 0);
+                expect(spec.getAttribute('fill')).toBe('rgb(38,82,168)');
+                done();
+            };
+                highlight.appendTo('#' + id);
+            });
+            it('Selection settings default fill color as null', (done: Function) => {
+                spec = getElement('container_LayerIndex_0_shapeIndex_72_dataIndex_65');
+                trigger.clickEvent(spec);
+                expect(spec.getAttribute('fill')).toBe('rgb(38,82,168)');
+                done();
+            });
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

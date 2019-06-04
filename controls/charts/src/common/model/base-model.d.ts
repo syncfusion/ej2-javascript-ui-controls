@@ -197,7 +197,6 @@ export interface AnimationModel {
 
 /**
  * Interface for a class Indexes
- * @private
  */
 export interface IndexesModel {
 

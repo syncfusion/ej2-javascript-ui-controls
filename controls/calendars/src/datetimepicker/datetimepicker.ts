@@ -5,7 +5,8 @@ import { createElement, remove, addClass, L10n, removeClass, closest, classList,
 import { KeyboardEvents, KeyboardEventArgs, isNullOrUndefined, formatUnit, getValue, rippleEffect } from '@syncfusion/ej2-base';
 import { ModuleDeclaration } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
-import { Input, BlurEventArgs } from '@syncfusion/ej2-inputs';
+import { Input } from '@syncfusion/ej2-inputs';
+import { BlurEventArgs } from '../calendar/calendar';
 import { DatePicker, PopupObjectArgs } from '../datepicker/datepicker';
 import { TimePickerBase } from '../timepicker/timepicker';
 import { DateTimePickerModel } from './datetimepicker-model';

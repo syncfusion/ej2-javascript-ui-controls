@@ -2741,6 +2741,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
      * Update the TreeGrid model
      * @method dataBind
      * @return {void}
+     * @private
      */
     dataBind() {
         super.dataBind();

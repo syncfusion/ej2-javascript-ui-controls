@@ -8,7 +8,14 @@
 
 ## [Unreleased]
 
-## 17.1.49 (2019-05-29)
+## 17.1.50 (2019-06-04)
+
+### Maps
+
+#### Bug Fixes
+
+- #I237138 - The issue with maintaining zoom factor when the mouse wheel and pinch zoom on maps with call "refresh()" method has been fixed.
+- #I237041 - The issue with the re-rendering of the second sub-layer on zoom or panning has been resolved.
 
 ### Maps
 

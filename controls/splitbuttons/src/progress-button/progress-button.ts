@@ -80,6 +80,7 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
     private isPaused: boolean;
     private timerId: number;
     private step: number = 1;
+    private interval: number;
 
     /**
      * Enables or disables the background filler UI in the progress button.
@@ -242,6 +243,15 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
     }
 
     /**
+     * Complete the button progress.
+     * @returns void
+     */
+    public progressComplete(): void {
+        this.isPaused = false;
+        this.finishProgress();
+    }
+
+    /**
      * Get component name.
      * @returns string
      * @private
@@ -379,14 +389,14 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
             }
             if (!this.isPaused) {
                 if (progressTime < this.duration && percent < 100) {
-                    setTimeout(() => {
+                    this.interval = window.setTimeout(() => {
                         this.startAnimate(
                             Date.now(), progressTime, prevTime, percent,
                             prevPercent, args.step, prevProgressTime, isVertical);
                         // tslint:disable-next-line
                     }, (this.duration / 100) - timeDiffBuffer);
                 } else {
-                    setTimeout(() => {
+                    this.interval = window.setTimeout(() => {
                         this.progressTime = this.percent = 0;
                         if (this.enableProgress) {
                             this.getProgress().style[isVertical ? 'height' : 'width'] = '0%';
@@ -424,6 +434,25 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
         } else if (this.spinSettings.position === 'Center') {
             this.setSpinnerSize();
         }
+    }
+
+    private finishProgress(): void {
+        let clsList: DOMTokenList = this.element.classList;
+        let isVertical: boolean = clsList.contains('e-vertical');
+        clsList.add(PROGRESSACTIVE);
+        let args: ProgressEventArgs; let count: number = 100;
+        for (let i: number = this.percent; i < count; i++) {
+            i += 10;
+            if (this.enableProgress) {
+                this.getProgress().style[isVertical ? 'height' : 'width'] = (this.percent < 100) ? (i + '%') : '100%';
+            }
+        }
+        this.element.setAttribute('aria-valuenow', '0');
+        this.hideSpin();
+        args = {step: this.step, currentDuration: this.progressTime, percent: 100};
+        clearTimeout(this.interval);
+        this.trigger('end', args);
+        this.progressTime = this.percent = 0;
     }
 
     private setSpinnerSize(): void {
@@ -523,6 +552,15 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
             }
         }
     }
+
+   /**
+    * Sets the focus to ProgressButton
+    * its native method
+    * @public
+    */
+   public focusIn(): void {
+       this.element.focus();
+  }
 }
 
 export type SpinPosition = 'Left' | 'Right' | 'Top' | 'Bottom' | 'Center';

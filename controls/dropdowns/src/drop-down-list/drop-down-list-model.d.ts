@@ -172,7 +172,7 @@ export interface DropDownListModel extends DropDownBaseModel{
 
     /**
      * Triggers on typing a character in the filter bar when the 
-     * [`allowFiltering`](./api-dropDownList.html#allowfiltering) 
+     * [`allowFiltering`](./allowfiltering) 
      * is enabled.
      * > For more details about the filtering refer to [`Filtering`](../../drop-down-list/filtering) documentation.
      * 

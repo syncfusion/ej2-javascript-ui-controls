@@ -1072,7 +1072,11 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     }
 }
 
+/**
+ * Interface that holds the option on changing the rule in the recurrence editor.
+ */
 export interface RecurrenceEditorChangeEventArgs {
+    /** Returns the current recurrence rule. */
     value: string;
 }
 type DayFormateType = 'wide' | 'narrow';

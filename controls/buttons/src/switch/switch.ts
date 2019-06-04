@@ -394,5 +394,23 @@ export class Switch extends Component<HTMLInputElement> implements INotifyProper
             EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
         }
     }
+
+    /**
+     * Click the switch element
+     * its native method
+     * @public
+     */
+    public click(): void {
+        this.element.click();
+   }
+
+    /**
+     * Sets the focus to Switch
+     * its native method
+     * @public
+     */
+    public focusIn(): void {
+       this.element.focus();
+  }
 }
 

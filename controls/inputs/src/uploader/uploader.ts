@@ -1167,33 +1167,35 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     }
 
     private renderPreLoadFiles(): void {
-        if (isNullOrUndefined(this.files[0].size)) {
-            return;
+        if (this.files.length) {
+            if (isNullOrUndefined(this.files[0].size)) {
+                return;
+            }
+            let files: FilesPropModel[] = [].slice.call(this.files);
+            let filesData: FileInfo[] = [];
+            if (!this.multiple) {
+                this.clearData();
+                files = [files[0]];
+            }
+            for (let data of files) {
+                let fileData: FileInfo = {
+                    name: data.name + '.' + data.type.split('.')[data.type.split('.').length - 1],
+                    rawFile: '',
+                    size: data.size,
+                    status: this.localizedTexts('uploadSuccessMessage'),
+                    type: data.type,
+                    validationMessages: {minSize: '', maxSize: ''},
+                    statusCode: '2'
+                };
+                filesData.push(fileData);
+                this.filesData.push(fileData);
+            }
+            this.createFileList(filesData);
+            if (!this.autoUpload && this.listParent && !this.actionButtons && (!this.isForm || this.allowUpload()) && this.showFileList) {
+                this.renderActionButtons();
+            }
+            this.checkActionButtonStatus();
         }
-        let files: FilesPropModel[] = [].slice.call(this.files);
-        let filesData: FileInfo[] = [];
-        if (!this.multiple) {
-            this.clearData();
-            files = [files[0]];
-        }
-        for (let data of files) {
-            let fileData: FileInfo = {
-                name: data.name + '.' + data.type.split('.')[data.type.split('.').length - 1],
-                rawFile: '',
-                size: data.size,
-                status: this.localizedTexts('uploadSuccessMessage'),
-                type: data.type,
-                validationMessages: {minSize: '', maxSize: ''},
-                statusCode: '2'
-            };
-            filesData.push(fileData);
-            this.filesData.push(fileData);
-        }
-        this.createFileList(filesData);
-        if (!this.autoUpload && this.listParent && !this.actionButtons && (!this.isForm || this.allowUpload()) && this.showFileList) {
-            this.renderActionButtons();
-        }
-        this.checkActionButtonStatus();
     }
 
     private checkActionButtonStatus(): void {

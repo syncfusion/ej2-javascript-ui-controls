@@ -7,7 +7,7 @@ import { DataManager, Query } from '@syncfusion/ej2-data';
 import { AccumulationChart } from '../../../src/accumulation-chart/accumulation';
 import { AccPoints, AccumulationSeries } from '../../../src/accumulation-chart/model/acc-base';
 import { getElement, removeElement } from '../../../src/common/utils/helper';
-import { IAnnotationRenderEventArgs } from '../../../src/common/model/interface';
+import { IAnnotationRenderEventArgs } from '../../../src/chart/model/chart-interface';
 import { AccumulationLegend } from '../../../src/accumulation-chart/renderer/legend';
 import { data, datetimeData1 } from '../../chart/base/data.spec';
 import { MouseEvents } from '../../chart/base/events.spec';

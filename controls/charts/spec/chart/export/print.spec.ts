@@ -8,7 +8,7 @@ import { ColumnSeries } from '../../../src/chart/series/column-series';
 import { ChartAnnotation } from '../../../src/chart/annotation/annotation';
 import { DataLabel } from '../../../src/chart/series/data-label';
 import { unbindResizeEvents } from '../base/data.spec';
-import { IPrintEventArgs } from '../../../src/common/model/interface';
+import { IPrintEventArgs } from '../../../src/chart/model/chart-interface';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { Export} from '../../../src/chart/print-export/export';

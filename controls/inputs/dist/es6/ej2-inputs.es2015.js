@@ -5645,9 +5645,6 @@ __decorate$2([
     Property(true)
 ], Slider.prototype, "enabled", void 0);
 __decorate$2([
-    Property(false)
-], Slider.prototype, "enableRtl", void 0);
-__decorate$2([
     Complex({}, TooltipData)
 ], Slider.prototype, "tooltip", void 0);
 __decorate$2([
@@ -6903,33 +6900,35 @@ let Uploader = class Uploader extends Component {
         this.setDropArea();
     }
     renderPreLoadFiles() {
-        if (isNullOrUndefined(this.files[0].size)) {
-            return;
+        if (this.files.length) {
+            if (isNullOrUndefined(this.files[0].size)) {
+                return;
+            }
+            let files = [].slice.call(this.files);
+            let filesData = [];
+            if (!this.multiple) {
+                this.clearData();
+                files = [files[0]];
+            }
+            for (let data of files) {
+                let fileData = {
+                    name: data.name + '.' + data.type.split('.')[data.type.split('.').length - 1],
+                    rawFile: '',
+                    size: data.size,
+                    status: this.localizedTexts('uploadSuccessMessage'),
+                    type: data.type,
+                    validationMessages: { minSize: '', maxSize: '' },
+                    statusCode: '2'
+                };
+                filesData.push(fileData);
+                this.filesData.push(fileData);
+            }
+            this.createFileList(filesData);
+            if (!this.autoUpload && this.listParent && !this.actionButtons && (!this.isForm || this.allowUpload()) && this.showFileList) {
+                this.renderActionButtons();
+            }
+            this.checkActionButtonStatus();
         }
-        let files = [].slice.call(this.files);
-        let filesData = [];
-        if (!this.multiple) {
-            this.clearData();
-            files = [files[0]];
-        }
-        for (let data of files) {
-            let fileData = {
-                name: data.name + '.' + data.type.split('.')[data.type.split('.').length - 1],
-                rawFile: '',
-                size: data.size,
-                status: this.localizedTexts('uploadSuccessMessage'),
-                type: data.type,
-                validationMessages: { minSize: '', maxSize: '' },
-                statusCode: '2'
-            };
-            filesData.push(fileData);
-            this.filesData.push(fileData);
-        }
-        this.createFileList(filesData);
-        if (!this.autoUpload && this.listParent && !this.actionButtons && (!this.isForm || this.allowUpload()) && this.showFileList) {
-            this.renderActionButtons();
-        }
-        this.checkActionButtonStatus();
     }
     checkActionButtonStatus() {
         if (this.actionButtons) {
@@ -10737,6 +10736,14 @@ let ColorPicker = class ColorPicker extends Component {
                     break;
             }
         }
+    }
+    /**
+     * Sets the focus to Colorpicker
+     * its native method
+     * @public
+     */
+    focusIn() {
+        this.element.parentElement.focus();
     }
 };
 __decorate$5([

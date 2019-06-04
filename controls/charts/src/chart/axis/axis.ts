@@ -15,7 +15,7 @@ import { DateTime } from '../axis/date-time-axis';
 import { Category } from '../axis/category-axis';
 import { DateTimeCategory } from '../axis/date-time-category-axis';
 import { Theme } from '../../common/model/theme';
-import { IAxisRangeCalculatedEventArgs } from '../../common/model/interface';
+import { IAxisRangeCalculatedEventArgs } from '../../chart/model/chart-interface';
 import { axisRangeCalculated } from '../../common/model/constants';
 import { StripLineSettings, MultiLevelLabels, LabelBorder, ScrollbarSettings } from '../model/chart-base';
 import { StripLineSettingsModel, MultiLevelLabelsModel, LabelBorderModel, ScrollbarSettingsModel  } from '../model/chart-base-model';
@@ -307,6 +307,7 @@ export class CrosshairTooltip extends ChildProperty<CrosshairTooltip> {
 
 /**
  * Configures the axes in the chart.
+ * @public
  */
 
 export class Axis extends ChildProperty<Axis> {
@@ -1163,15 +1164,18 @@ export class Axis extends ChildProperty<Axis> {
         }
     }
 }
-/** @private */
+/**
+ * Axis visible range
+ * @public
+ */
 export interface VisibleRangeModel {
-
+    /** axis minimum value */
     min?: number;
-
+    /** axis maximum value */
     max?: number;
-
+    /** axis interval value */
     interval?: number;
-
+    /** axis delta value */
     delta?: number;
 }
 /** @private */

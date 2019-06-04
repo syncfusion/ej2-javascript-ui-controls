@@ -282,12 +282,6 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
     @Property()
     public cssClass: string;
     /**
-     * It is used to display the Tooltip and content of Tooltip from right to left direction.
-     * @default false
-     */
-    @Property(false)
-    public enableRtl: boolean;
-    /**
      * We can trigger `beforeRender` event before the Tooltip and its contents are added to the DOM.
      * When one of its arguments `cancel` is set to true, the Tooltip can be prevented from rendering on the page.
      * This event is mainly used for the purpose of customizing the Tooltip before it shows up on the screen.

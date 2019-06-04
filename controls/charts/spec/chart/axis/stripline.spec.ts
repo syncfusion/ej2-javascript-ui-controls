@@ -4,7 +4,7 @@
 import { EmitType } from '@syncfusion/ej2-base';
 import { createElement } from '@syncfusion/ej2-base';
 import { Chart } from '../../../src/chart/chart';
-import { ILoadedEventArgs } from '../../../src/common/model/interface';
+import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
 import { Series } from '../../../src/chart/series/chart-series';
 import { StripLine } from '../../../src/chart/axis/strip-line';
 import { DateTime } from '../../../src/chart/axis/date-time-axis';

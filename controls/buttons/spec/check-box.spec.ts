@@ -368,6 +368,12 @@ describe('CheckBox', () => {
             expect(checkbox.element.id).toContain('e-checkbox');
             expect(checkbox.element.type).toEqual('checkbox');
         });
+        it('Native methods - Click and Focus ', () => {
+            document.body.appendChild(createElement('EJS-CHECKBOX', { id: 'ngcheckbox', attrs: { label: 'Checkbox' } }));
+            checkbox = new CheckBox({}, '#ngcheckbox');
+            checkbox.click();
+            checkbox.focusIn();
+        });
     });
 
     describe('creation by util function', () => {

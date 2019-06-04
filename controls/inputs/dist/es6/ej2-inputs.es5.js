@@ -5737,9 +5737,6 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         Property(true)
     ], Slider.prototype, "enabled", void 0);
     __decorate$2([
-        Property(false)
-    ], Slider.prototype, "enableRtl", void 0);
-    __decorate$2([
         Complex({}, TooltipData)
     ], Slider.prototype, "tooltip", void 0);
     __decorate$2([
@@ -7056,34 +7053,36 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         this.setDropArea();
     };
     Uploader.prototype.renderPreLoadFiles = function () {
-        if (isNullOrUndefined(this.files[0].size)) {
-            return;
+        if (this.files.length) {
+            if (isNullOrUndefined(this.files[0].size)) {
+                return;
+            }
+            var files = [].slice.call(this.files);
+            var filesData = [];
+            if (!this.multiple) {
+                this.clearData();
+                files = [files[0]];
+            }
+            for (var _i = 0, files_1 = files; _i < files_1.length; _i++) {
+                var data = files_1[_i];
+                var fileData = {
+                    name: data.name + '.' + data.type.split('.')[data.type.split('.').length - 1],
+                    rawFile: '',
+                    size: data.size,
+                    status: this.localizedTexts('uploadSuccessMessage'),
+                    type: data.type,
+                    validationMessages: { minSize: '', maxSize: '' },
+                    statusCode: '2'
+                };
+                filesData.push(fileData);
+                this.filesData.push(fileData);
+            }
+            this.createFileList(filesData);
+            if (!this.autoUpload && this.listParent && !this.actionButtons && (!this.isForm || this.allowUpload()) && this.showFileList) {
+                this.renderActionButtons();
+            }
+            this.checkActionButtonStatus();
         }
-        var files = [].slice.call(this.files);
-        var filesData = [];
-        if (!this.multiple) {
-            this.clearData();
-            files = [files[0]];
-        }
-        for (var _i = 0, files_1 = files; _i < files_1.length; _i++) {
-            var data = files_1[_i];
-            var fileData = {
-                name: data.name + '.' + data.type.split('.')[data.type.split('.').length - 1],
-                rawFile: '',
-                size: data.size,
-                status: this.localizedTexts('uploadSuccessMessage'),
-                type: data.type,
-                validationMessages: { minSize: '', maxSize: '' },
-                statusCode: '2'
-            };
-            filesData.push(fileData);
-            this.filesData.push(fileData);
-        }
-        this.createFileList(filesData);
-        if (!this.autoUpload && this.listParent && !this.actionButtons && (!this.isForm || this.allowUpload()) && this.showFileList) {
-            this.renderActionButtons();
-        }
-        this.checkActionButtonStatus();
     };
     Uploader.prototype.checkActionButtonStatus = function () {
         if (this.actionButtons) {
@@ -10955,6 +10954,14 @@ var ColorPicker = /** @__PURE__ @class */ (function (_super) {
             var prop = _a[_i];
             _loop_1(prop);
         }
+    };
+    /**
+     * Sets the focus to Colorpicker
+     * its native method
+     * @public
+     */
+    ColorPicker.prototype.focusIn = function () {
+        this.element.parentElement.focus();
     };
     __decorate$5([
         Property('#008000ff')

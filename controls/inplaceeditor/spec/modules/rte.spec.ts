@@ -414,6 +414,91 @@ describe('Rte module', () => {
         });
     });
 
+    describe('I237441 - In-place Editor RTE value not updated properly', () => {
+        let editorObj: any;
+        let ele: HTMLElement;
+        let valueEle: HTMLElement;
+        let valueWrapper: HTMLElement;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('HTMLEditor - Value testing', () => {
+            editorObj = renderEditor({
+                type: 'RTE',
+                mode: 'Inline'
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-richtexteditor', document.body).length === 1).toEqual(true);
+            expect((<HTMLElement>select('.e-content', document.body)).innerText.trim()).toEqual('');
+            expect(editorObj.rteModule.compObj.value).toEqual(null);
+            editorObj.rteModule.compObj.value = 'Welcome';
+            editorObj.rteModule.compObj.dataBind();
+            editorObj.save();
+            expect(editorObj.value).toEqual('<p>Welcome</p>');
+            expect(valueEle.innerHTML).toEqual('<p>Welcome</p>');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-richtexteditor', document.body).length === 1).toEqual(true);
+            expect(editorObj.rteModule.compObj.value).toEqual('<p>Welcome</p>');
+            expect((<HTMLElement>select('.e-content', document.body)).innerText.trim()).toEqual('Welcome');
+            editorObj.rteModule.compObj.value = '';
+            editorObj.rteModule.compObj.dataBind();
+            editorObj.save();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Empty');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-richtexteditor', document.body).length === 1).toEqual(true);
+            expect(editorObj.rteModule.compObj.value).toEqual('');
+            expect((<HTMLElement>select('.e-content', document.body)).innerText.trim()).toEqual('');
+        });
+        it('Markdown - Value testing', () => {
+            editorObj = renderEditor({
+                type: 'RTE',
+                mode: 'Inline',
+                model: {
+                    editorMode: 'Markdown'
+                }
+            });
+            ele = editorObj.element;
+            valueWrapper = <HTMLElement>select('.' + classes.VALUE_WRAPPER, ele);
+            valueEle = <HTMLElement>select('.' + classes.VALUE, valueWrapper);
+            expect(editorObj.value).toEqual(null);
+            expect(valueEle.innerHTML).toEqual('Empty');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-richtexteditor', document.body).length === 1).toEqual(true);
+            expect((<HTMLTextAreaElement>select('.e-content', document.body)).value.trim()).toEqual('');
+            expect(editorObj.rteModule.compObj.value).toEqual(null);
+            editorObj.rteModule.compObj.value = 'Welcome';
+            editorObj.rteModule.compObj.dataBind();
+            editorObj.save();
+            expect(editorObj.value).toEqual('Welcome');
+            expect(valueEle.innerHTML).toEqual('Welcome');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-richtexteditor', document.body).length === 1).toEqual(true);
+            expect(editorObj.rteModule.compObj.value).toEqual('Welcome');
+            expect((<HTMLTextAreaElement>select('.e-content', document.body)).value.trim()).toEqual('Welcome');
+            editorObj.rteModule.compObj.value = '';
+            editorObj.rteModule.compObj.dataBind();
+            editorObj.save();
+            expect(editorObj.value).toEqual('');
+            expect(valueEle.innerHTML).toEqual('Empty');
+            valueEle.click();
+            expect(valueWrapper.classList.contains(classes.OPEN)).toEqual(true);
+            expect(selectAll('.e-richtexteditor', document.body).length === 1).toEqual(true);
+            expect(editorObj.rteModule.compObj.value).toEqual('');
+            expect((<HTMLTextAreaElement>select('.e-content', document.body)).value.trim()).toEqual('');
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

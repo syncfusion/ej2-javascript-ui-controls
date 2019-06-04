@@ -315,9 +315,9 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
     public enable: boolean;
     /**
      * To customize the fill color of the Selection.
-     * @default '#D2691E'
+     * @default null
      */
-    @Property('#D2691E')
+    @Property(null)
     public fill: string;
     /**
      * To customize the opacity of the Selection.
@@ -344,9 +344,9 @@ export class HighlightSettings extends ChildProperty<HighlightSettings> {
 
     /**
      * To customize the fill color of the highlight.
-     * @default '#6B8E23'
+     * @default null
      */
-    @Property('#6B8E23')
+    @Property(null)
     public fill: string;
     /**
      * Toggle the highlight settings.

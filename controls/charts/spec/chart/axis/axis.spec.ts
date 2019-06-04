@@ -13,7 +13,7 @@ import { unbindResizeEvents } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import { DateTime } from '../../../src/index' ;
 import { Logarithmic } from '../../../src/index';
-import { ILoadedEventArgs, IAxisLabelRenderEventArgs } from '../../../src/common/model/interface';
+import { ILoadedEventArgs, IAxisLabelRenderEventArgs } from '../../../src/chart/model/chart-interface';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 Chart.Inject(LineSeries, Category, ColumnSeries, DateTime, Logarithmic);
 

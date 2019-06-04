@@ -53,7 +53,7 @@ export interface FilterSettingsModel {
     /**
      * If ignoreAccent set to true, then filter ignores the diacritic characters or accents while filtering.
      *
-     * > Check the [`Diacritics`](../../../treegrid/filtering/#diacritics) filtering.
+     * > Check the [`Diacritics`](../filtering/#diacritics) filtering.
      * @default false
      */
     ignoreAccent?: boolean;

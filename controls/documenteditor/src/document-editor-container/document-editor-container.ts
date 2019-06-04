@@ -72,6 +72,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
 
     /**
      * Document editor container's toolbar module
+     * @private
      */
     public toolbarModule: Toolbar;
     /**

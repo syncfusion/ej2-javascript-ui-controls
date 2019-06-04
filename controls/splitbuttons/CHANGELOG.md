@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.50 (2019-06-04)
+
+### ProgressButton
+
+#### Bug Fixes
+
+- Provided public method 'progressComplete' to complete the progress.
+
 ## 16.4.53 (2019-02-13)
 
 ### DropDownButton

@@ -3739,4 +3739,35 @@ describe('Uploader Control', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(inMB(profile.samples[profile.samples.length - 1]) + 0.25);
     }); 
+
+    describe('Render preload files as empty', () => {
+        let uploadObj: any;       
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('input', {id: 'upload'});            
+            document.body.appendChild(element);
+            element.setAttribute('type', 'file');
+            let preLoadFiles: any = [];
+            uploadObj = new Uploader({  
+              files: preLoadFiles
+            });
+            uploadObj.appendTo(document.getElementById('upload'));
+        })
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+        it('Checkx LI Count', (done) => {
+            setTimeout(() => {
+                expect(uploadObj.uploadWrapper.querySelectorAll('li').length).toBe(0);
+                done();
+            }, 3000);
+        });
+
+        it('Check LI Count', () => {
+            uploadObj.files = [{name: 'books', size: 500, type: '.png'},
+            {name: 'movies', size: 12000, type: '.pdf'},
+            {name: 'study materials', size: 500000, type: '.docx'} ];
+            uploadObj.dataBind();
+            expect(uploadObj.uploadWrapper.querySelectorAll('li').length).toBe(3);
+        });
+    })
 });

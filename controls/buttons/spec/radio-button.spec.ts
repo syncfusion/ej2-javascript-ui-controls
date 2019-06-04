@@ -285,6 +285,13 @@ describe('RadioButton', () => {
             expect(radio.getSelectedValue()).toEqual('2');
             radio2.destroy();
         });
+        it('Native methods - Click and Focus ', () => {
+            document.body.appendChild(createElement('input', { id: 'group1', attrs: { 'type': 'radio' } }));
+            document.body.appendChild(createElement('input', { id: 'group2', attrs: { 'type': 'radio' } }));
+            radio = new RadioButton({ name: 'group', value: '1' }, '#group1');
+            radio.click();
+            radio.focusIn();
+        });
     });
 
     describe('RadioButton in HTML5 forms', () => {

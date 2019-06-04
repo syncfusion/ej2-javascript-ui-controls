@@ -497,6 +497,22 @@ let DropDownButton = class DropDownButton extends Component {
             }
         }
     }
+    /**
+     * Click the DropDownButton element
+     * its native method
+     * @public
+     */
+    click() {
+        this.element.click();
+    }
+    /**
+     * Sets the focus to DropDownButton
+     * its native method
+     * @public
+     */
+    focusIn() {
+        this.element.focus();
+    }
 };
 __decorate$1([
     Property('')
@@ -789,6 +805,14 @@ let SplitButton = class SplitButton extends DropDownButton {
             }
         }
     }
+    /**
+     * Sets the focus to SplitButton
+     * its native method
+     * @public
+     */
+    focusIn() {
+        this.element.focus();
+    }
 };
 __decorate$2([
     Property('')
@@ -1003,6 +1027,14 @@ let ProgressButton = class ProgressButton extends Button {
         cancelAnimationFrame(this.timerId);
     }
     /**
+     * Complete the button progress.
+     * @returns void
+     */
+    progressComplete() {
+        this.isPaused = false;
+        this.finishProgress();
+    }
+    /**
      * Get component name.
      * @returns string
      * @private
@@ -1126,13 +1158,13 @@ let ProgressButton = class ProgressButton extends Button {
             }
             if (!this.isPaused) {
                 if (progressTime < this.duration && percent < 100) {
-                    setTimeout(() => {
+                    this.interval = window.setTimeout(() => {
                         this.startAnimate(Date.now(), progressTime, prevTime, percent, prevPercent, args.step, prevProgressTime, isVertical);
                         // tslint:disable-next-line
                     }, (this.duration / 100) - timeDiffBuffer);
                 }
                 else {
-                    setTimeout(() => {
+                    this.interval = window.setTimeout(() => {
                         this.progressTime = this.percent = 0;
                         if (this.enableProgress) {
                             this.getProgress().style[isVertical ? 'height' : 'width'] = '0%';
@@ -1169,6 +1201,25 @@ let ProgressButton = class ProgressButton extends Button {
         else if (this.spinSettings.position === 'Center') {
             this.setSpinnerSize();
         }
+    }
+    finishProgress() {
+        let clsList = this.element.classList;
+        let isVertical = clsList.contains('e-vertical');
+        clsList.add(PROGRESSACTIVE);
+        let args;
+        let count = 100;
+        for (let i = this.percent; i < count; i++) {
+            i += 10;
+            if (this.enableProgress) {
+                this.getProgress().style[isVertical ? 'height' : 'width'] = (this.percent < 100) ? (i + '%') : '100%';
+            }
+        }
+        this.element.setAttribute('aria-valuenow', '0');
+        this.hideSpin();
+        args = { step: this.step, currentDuration: this.progressTime, percent: 100 };
+        clearTimeout(this.interval);
+        this.trigger('end', args);
+        this.progressTime = this.percent = 0;
     }
     setSpinnerSize() {
         let ele = this.element.getElementsByClassName(CONTENTCLS)[0];
@@ -1262,6 +1313,14 @@ let ProgressButton = class ProgressButton extends Button {
                     break;
             }
         }
+    }
+    /**
+     * Sets the focus to ProgressButton
+     * its native method
+     * @public
+     */
+    focusIn() {
+        this.element.focus();
     }
 };
 __decorate$3([

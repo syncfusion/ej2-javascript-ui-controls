@@ -171,7 +171,7 @@ export class Gantt extends Component<HTMLElement>
      */
     public sortModule: Sort;
     /**
-     * The `filterModule` is used to manipulate sorting operation in Gantt.
+     * The `filterModule` is used to manipulate filtering operation in Gantt.
      */
     public filterModule: Filter;
     /** @hidden */
@@ -183,15 +183,15 @@ export class Gantt extends Component<HTMLElement>
     /** @hidden */
     public customColumns: string[];
     /**
-     * The `editModule` is used to manipulate sorting operation in Gantt.
+     * The `editModule` is used to handle Gantt record manipulation.
      */
     public editModule: Edit;
     /**
-     * The `selectionModule` is used to manipulate sorting operation in Gantt.
+     * The `selectionModule` is used to manipulate selection operation in Gantt.
      */
     public selectionModule: Selection;
     /**
-     * The `dayMarkersModule` is used to manipulate sorting operation in Gantt.
+     * The `dayMarkersModule` is used to manipulate event markers operation in Gantt.
      */
     public dayMarkersModule: DayMarkers;
     /** @hidden */
@@ -203,7 +203,7 @@ export class Gantt extends Component<HTMLElement>
     /** @hidden */
     public keyConfig: { [key: string]: string };
     /** 
-     * The `keyboardModule` is used to manipulate sorting operation in Gantt.
+     * The `keyboardModule` is used to manipulate keyboard interactions in Gantt.
      */
     public keyboardModule: KeyboardEvents;
     /** @hidden */
@@ -1246,7 +1246,7 @@ export class Gantt extends Component<HTMLElement>
     }
     /**
      * Get expanded records from given record collection
-     * @param records 
+     * @param {IGanttData[]} records - Defines record collection.
      */
     public getExpandedRecords(records: IGanttData[]): IGanttData[] {
         let expandedRecords: IGanttData[] = records.filter((record: IGanttData) => {
@@ -1270,6 +1270,8 @@ export class Gantt extends Component<HTMLElement>
     }
     /**
      * Get duration value as string combined with duration and unit values
+     * @param {number} duration - Defines the duration.
+     * @param {string} durationUnit - Defines the duration unit.
      */
     public getDurationString(duration: number, durationUnit: string): string {
         let value: string = this.dateValidationModule.getDurationString(duration, durationUnit);
@@ -1428,7 +1430,7 @@ export class Gantt extends Component<HTMLElement>
         this.isTreeGridRendered = false;
     }
     /**
-     * public method to get taskbarHeight.
+     * Method to get taskbarHeight.
      * @return {number}
      * @public
      */
@@ -1625,7 +1627,7 @@ export class Gantt extends Component<HTMLElement>
     }
 
     /**  
-     * Remove sorted columns of the Gantt.  
+     * Method to get default property of the Gantt.  
      * @return {void} 
      */
     public getDefaultLocale(): Object {
@@ -1699,7 +1701,7 @@ export class Gantt extends Component<HTMLElement>
     }
     /**
      * To clear sorted records with specific to particular column
-     * @param columnName 
+     * @param {string} columnName - Defines the sorted column name. 
      */
     public removeSortColumn(columnName: string): void {
         this.sortModule.removeSortColumn(columnName);
@@ -1715,6 +1717,7 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * To move horizontal scroll bar of Gantt to specific date
+     * @param  {string} date - Defines the task date of data.
      */
     public scrollToDate(date: string): void {
         let tempDate: Date = this.dateValidationModule.getDateFromFormat(date);
@@ -1723,7 +1726,8 @@ export class Gantt extends Component<HTMLElement>
 
     }
     /**
-     * To move horizontal scroll bar of Gantt to specific date
+     * To move horizontal scroll bar of Gantt to specific task id.
+     * @param  {string} taskId - Defines the task id of data.
      */
     public scrollToTask(taskId: string): void {
         if (this.ids.indexOf(taskId) !== -1) {
@@ -1733,8 +1737,8 @@ export class Gantt extends Component<HTMLElement>
     }
     /**
      * To set scroll left and top in chart side
-     * @param left 
-     * @param top 
+     * @param  {number} left - Defines the scroll left value of chart side.
+     * @param  {number} top - Defines the scroll top value of chart side.
      */
     public updateChartScrollOffset(left: number, top: number): void {
         if (!isNullOrUndefined(left)) {
@@ -1749,7 +1753,7 @@ export class Gantt extends Component<HTMLElement>
     }
     /**
      * Get parent task by clone parent item
-     * @param cloneParent 
+     * @param {IParent} cloneParent - Defines the clone parent item. 
      */
     public getParentTask(cloneParent: IParent): IGanttData {
         if (!isNullOrUndefined(cloneParent)) {
@@ -1845,6 +1849,9 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * To validate project start date and end date.
+     * @param  {Date} startDate - Defines start date of project.
+     * @param  {Date} endDate - Defines end date of project.
+     * @param  {boolean} isTimelineRoundOff - Defines project start date and end date need to be round off or not.
      * @return {void}
      * @public
      */
@@ -1869,6 +1876,8 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Changes the TreeGrid column positions by field names.
+     * @param  {string} fromFName - Defines origin field name.
+     * @param  {string} toFName - Defines destination field name.
      * @return {void}
      * @public
      */
@@ -1954,7 +1963,7 @@ export class Gantt extends Component<HTMLElement>
     }
     /**
      * Method to get task by uniqueId value
-     * @param id 
+     * @param {string} id - Defines the task id. 
      */
     public getTaskByUniqueID(id: string): IGanttData {
         let value: IGanttData[] = this.flatData.filter((val: IGanttData) => {
@@ -1967,8 +1976,8 @@ export class Gantt extends Component<HTMLElement>
         }
     }
     /**
-     * Method to get task by id value
-     * @param id 
+     * Method to get record by id value.
+     * @param {string} id - Defines the id of record. 
      */
     public getRecordByID(id: string): IGanttData {
         if (isNullOrUndefined(id)) {
@@ -1978,8 +1987,8 @@ export class Gantt extends Component<HTMLElement>
     }
     /**
      * Method to set splitter position
-     * @param {string|number} value - value of the property.
-     * @param {string} type - property of SplitterSettings.
+     * @param {string|number} value - Define value to splitter settings property.
+     * @param {string} type - Defines name of internal splitter settings property.
      */
     public setSplitterPosition(value: string | number, type: string): void {
         let tempSplitterSettings: Object = {};
@@ -1995,6 +2004,7 @@ export class Gantt extends Component<HTMLElement>
     }
     /**
      * Expand the record by index value.
+     * @param {number} index - Defines the index of row.
      * @return {void}
      * @public
      */
@@ -2005,6 +2015,7 @@ export class Gantt extends Component<HTMLElement>
     }
     /**
      * Expand the record by task id.
+     * @param {string | number} id - Defines the id of task.
      * @return {void}
      * @public
      */
@@ -2015,6 +2026,7 @@ export class Gantt extends Component<HTMLElement>
     }
     /**
      * Collapse the record by index value.
+     * @param {number} index - Defines the index of row.
      * @return {void}
      * @public
      */
@@ -2024,7 +2036,8 @@ export class Gantt extends Component<HTMLElement>
         this.ganttChartModule.collapseGanttRow(args);
     }
     /**
-     * Collapse the record by ud value.
+     * Collapse the record by id value.
+     * @param {string | number} id - Defines the id of task.
      * @return {void}
      * @public
      */
@@ -2035,7 +2048,10 @@ export class Gantt extends Component<HTMLElement>
     }
 
     /**
-     * Add record public method.
+     * Method to add record.
+     * @param {Object | IGanttData} data - Defines record to add.
+     * @param {RowPosition} rowPosition - Defines the position of row.
+     * @param {number} rowIndex - Defines the row index.
      * @return {void}
      * @public
      */
@@ -2117,7 +2133,7 @@ export class Gantt extends Component<HTMLElement>
     }
 
     /**
-     * Public method to open Add dialog.
+     * Method to open Add dialog.
      * @return {void}
      * @public
      */
@@ -2128,7 +2144,8 @@ export class Gantt extends Component<HTMLElement>
     }
 
     /**
-     * Public method to open Edit dialog.
+     * Method to open Edit dialog.
+     * @param {number | string | Object} taskId - Defines the id of task.
      * @return {void}
      * @public
      */
@@ -2163,6 +2180,7 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * Method to get chart row value by index.
+     * @param {number} index - Defines the index of row.
      * @return {HTMLElement}
      */
     public getRowByIndex(index: number): HTMLElement {
@@ -2179,6 +2197,7 @@ export class Gantt extends Component<HTMLElement>
     }
     /**
      * Method to get the row element by task id.
+     * @param {string | number} id - Defines the id of task.
      * @return {HTMLElement}
      */
     public getRowByID(id: string | number): HTMLElement {
@@ -2240,7 +2259,7 @@ export class Gantt extends Component<HTMLElement>
     }
     /**
      * Method to perform search action in Gantt
-     * @param keyVal  - Search key string
+     * @param {string} keyVal - Defines key value to search.
      */
     public search(keyVal: string): void {
         this.searchSettings.key = keyVal;
@@ -2266,7 +2285,7 @@ export class Gantt extends Component<HTMLElement>
     }
 
     /**
-     * Public method to update data source.
+     * Method to update data source.
      * @return {void}
      * @public
      */
@@ -2284,7 +2303,7 @@ export class Gantt extends Component<HTMLElement>
         this.dataSource = dataSource;
     }
     /**
-     * Public method to expand all the rows of Gantt
+     * Method to expand all the rows of Gantt
      * @return {void}
      * @public
      */
@@ -2293,7 +2312,7 @@ export class Gantt extends Component<HTMLElement>
     }
 
     /**
-     * Public method to collapse all the rows of Gantt
+     * Method to collapse all the rows of Gantt
      * @return {void}
      * @public
      */
@@ -2343,7 +2362,7 @@ export class Gantt extends Component<HTMLElement>
 
     /**
      * To set scroll top for chart scroll container
-     * @param scrollTop - To set scroll top for scroll container
+     * @param {number} scrollTop - Defines scroll top value for scroll container.
      * @return {void}
      * @public
      */
@@ -2356,7 +2375,7 @@ export class Gantt extends Component<HTMLElement>
      * @return {void}
      * @public
      */
-    public cancelEdit(scrollTop: number): void {
+    public cancelEdit(): void {
         this.closeGanttActions();
     }
 

@@ -4,7 +4,7 @@ import { PathOption, Rect, Size } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
 import { MarkerSettingsModel } from '../series/chart-series-model';
-import { IPointRenderEventArgs } from '../../common/model/interface';
+import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
 import { pointRender } from '../../common/model/constants';
 import { Axis } from '../../chart/axis/axis';
 

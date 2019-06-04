@@ -12,8 +12,9 @@ import { Tooltip } from '../../../src/chart/user-interaction/tooltip';
 import { Crosshair } from '../../../src/chart/user-interaction/crosshair';
 import { MouseEvents } from '../base/events.spec';
 import { EmitType } from '@syncfusion/ej2-base';
-import { ILoadedEventArgs, IAnimationCompleteEventArgs } from '../../../src/common/model/interface';
+import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
 import { Category } from '../../../src/chart/axis/category-axis';
+import { IAnimationCompleteEventArgs} from '../../../src/chart/model/chart-interface';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 Chart.Inject(Legend, SmaIndicator, LineSeries, CandleSeries, Category, Tooltip, Crosshair);
 

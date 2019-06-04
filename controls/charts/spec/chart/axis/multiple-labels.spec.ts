@@ -16,7 +16,7 @@ import { Legend } from '../../../src/chart/legend/legend';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { seriesData1, datetimeData, categoryData } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
-import { ILoadedEventArgs } from '../../../src/common/model/interface';
+import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
 import { categoryData1 } from '../polar-radar/polar-radar-series.spec';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 Chart.Inject(LineSeries, Logarithmic, ColumnSeries, AreaSeries, BarSeries, DateTime, Category, Legend, MultiLevelLabel);

@@ -16,7 +16,7 @@ import { piedata} from '../../chart/base/data.spec';
 import { MouseEvents } from '../../chart/base/events.spec';
 import { getPosition, addTooltipStyles } from '../base/util.spec';
 import { IAccLoadedEventArgs, } from '../../../src/accumulation-chart/model/pie-interface';
-import { ITooltipRenderEventArgs, IPointEventArgs } from '../../../src/common/model/interface';
+import { ITooltipRenderEventArgs, IPointEventArgs } from '../../../src/chart/model/chart-interface';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 AccumulationChart.Inject(PieSeries, PyramidSeries,FunnelSeries,  AccumulationLegend, AccumulationDataLabel, AccumulationTooltip);

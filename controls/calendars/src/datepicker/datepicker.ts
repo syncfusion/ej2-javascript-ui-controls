@@ -4,8 +4,8 @@ import { KeyboardEvents, KeyboardEventArgs, Animation, EmitType, Event, L10n, Br
 import { createElement, detach, addClass, removeClass, closest, classList, attributes } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, setValue, getUniqueID, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
-import { Input, InputObject, IInput, FloatLabelType, BlurEventArgs, FocusEventArgs } from '@syncfusion/ej2-inputs';
-import { ChangedEventArgs, CalendarView, Calendar } from '../calendar/calendar';
+import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';
+import { ChangedEventArgs, CalendarView, Calendar, FocusEventArgs, BlurEventArgs } from '../calendar/calendar';
 import { DatePickerModel } from './datepicker-model';
 
 

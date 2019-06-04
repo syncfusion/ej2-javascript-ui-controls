@@ -68,7 +68,6 @@ export class ParetoSeries extends ColumnBase {
         let data: Object[] = <Object[]>json;
         let sum: number = 0;
         let count: number = 0;
-        let max: number = 0;
         let length: number = data.length;
         for (let i: number = 0; i < length; i++) {
             sum += data[i][series.yName];

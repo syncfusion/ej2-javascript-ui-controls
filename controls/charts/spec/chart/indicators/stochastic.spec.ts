@@ -10,7 +10,7 @@ import { CandleSeries } from '../../../src/chart/series/candle-series';
 import { StochasticIndicator } from '../../../src/chart/technical-indicators/stochastic-indicator';
 import { MouseEvents } from '../base/events.spec';
 import { EmitType } from '@syncfusion/ej2-base';
-import { ILoadedEventArgs } from '../../../src/common/model/interface';
+import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
 import { Category } from '../../../src/chart/axis/category-axis';
 import { Series } from '../../../src/chart/series/chart-series';
 import { Tooltip } from '../../../src/chart/user-interaction/tooltip';

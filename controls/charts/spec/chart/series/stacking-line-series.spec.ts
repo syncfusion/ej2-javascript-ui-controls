@@ -10,7 +10,7 @@ import { Category } from '../../../src/chart/axis/category-axis';
 import { DataLabel } from '../../../src/chart/series/data-label';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { EmitType } from '@syncfusion/ej2-base';
-import { ILoadedEventArgs } from '../../../src/common/model/interface';
+import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
 import { PolarSeries } from '../../../src/chart/index';
 Chart.Inject(StackingLineSeries, PolarSeries, DateTime, Category, DataLabel);
 export interface Arg {

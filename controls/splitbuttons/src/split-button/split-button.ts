@@ -371,6 +371,15 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
             }
         }
     }
+
+    /**
+     * Sets the focus to SplitButton
+     * its native method
+     * @public
+     */
+    public focusIn(): void {
+        this.element.focus();
+    }
 }
 
 export interface ClickEventArgs extends BaseEventArgs {

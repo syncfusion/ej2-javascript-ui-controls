@@ -7,7 +7,7 @@ import { AccumulationLegend } from '../../../src/accumulation-chart/renderer/leg
 import { AccumulationDataLabel } from '../../../src/accumulation-chart/renderer/dataLabel';
 import { AccumulationAnnotation } from '../../../src/accumulation-chart/annotation/annotation';
 import '../../../node_modules/es6-promise/dist/es6-promise';
-import { IPrintEventArgs } from '../../../src/common/model/interface';
+import { IPrintEventArgs } from '../../../src/chart/model/chart-interface';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { Export } from '../../../src/chart/print-export/export';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';

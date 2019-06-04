@@ -66,6 +66,7 @@ describe('Month Event Render Module', () => {
             Browser.userAgent = androidUserAgent;
             document.body.appendChild(elem);
             schObj = new Schedule({
+                views: [{ option: 'Day', readonly: true }, { option: 'Week' }, { option: 'WorkWeek', readonly: true }, { option: 'Month' }],
                 currentView: 'Month',
                 height: '550px',
                 width: '500px',
@@ -83,7 +84,8 @@ describe('Month Event Render Module', () => {
             Browser.userAgent = uA;
         });
 
-        it('More event click testing', () => {
+        it('More event click testing and read only for add icon testing', () => {
+            expect((schObj.element.querySelector('.e-icon-add') as HTMLElement).offsetHeight).toEqual(25);
             let eventElementList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment'));
             expect(eventElementList.length).toEqual(9);
             let eventWrapperList: Element[] = [].slice.call(schObj.element.querySelectorAll('.e-appointment-wrapper'));
@@ -93,6 +95,7 @@ describe('Month Event Render Module', () => {
             expect(moreIndicatorList.length).toEqual(2);
             let element: HTMLElement = moreIndicatorList[0] as HTMLElement;
             element.click();
+            expect((schObj.element.querySelector('.e-icon-add') as HTMLElement).offsetHeight).toEqual(0);
             expect(schObj.element.querySelector('.e-active-view').classList).toContain('e-day');
         });
     });

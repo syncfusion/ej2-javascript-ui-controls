@@ -200,7 +200,7 @@ export class EventWindow {
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             if (args) {
                 this.destroyComponents();
-                form.childNodes.forEach((node: HTMLElement) => remove(node));
+                [].slice.call(form.childNodes).forEach((node: HTMLElement) => remove(node));
             }
             append(this.parent.getEditorTemplate()(args), form);
         } else {

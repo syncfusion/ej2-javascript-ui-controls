@@ -5,7 +5,7 @@
 import { RangeNavigator } from '../index';
 import { DataPoint } from '../utils/helper';
 import { FontModel } from '../../chart/index';
-import { Rect } from '@syncfusion/ej2-svg-base';
+import { Rect, Size } from '@syncfusion/ej2-svg-base';
 
 /**
  * interface for load event
@@ -98,4 +98,15 @@ export interface IChangedEventArgs extends IRangeEventArgs {
     zoomPosition: number;
     /** Defined the zoomFactor of the range navigator */
     zoomFactor: number;
+}
+
+export interface IResizeRangeNavigatorEventArgs  {
+    /** Defines the name of the Event */
+    name: string;
+    /** Defines the previous size of the accumulation chart */
+    previousSize: Size;
+    /** Defines the current size of the accumulation chart */
+    currentSize: Size;
+    /** Defines the range navigator instance */
+    rangeNavigator: RangeNavigator;
 }

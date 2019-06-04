@@ -3,7 +3,8 @@
  */
 import { AccumulationSeries, AccPoints } from './acc-base';
 import { AccumulationSeriesModel } from './acc-base-model';
-import { IChartEventArgs } from '../../common/model/interface';
+import { IChartEventArgs } from '../../chart/model/chart-interface';
+import { LegendShape } from '../../chart/utils/enum';
 import { Size } from '@syncfusion/ej2-svg-base';
 import { BorderModel, FontModel } from '../../common/model/base-model';
 import { AccumulationChart } from '../accumulation';
@@ -101,4 +102,12 @@ export interface IAccLoadedEventArgs extends IChartEventArgs {
     accumulation: AccumulationChart;
     /** Defines the accumulation chart instance */
     chart: AccumulationChart;
+}
+export interface IAccLegendRenderEventArgs extends IChartEventArgs {
+    /** Defines the current legend shape */
+    shape: LegendShape;
+    /** Defines the current legend fill color */
+    fill: string;
+    /** Defines the current legend text */
+    text: string;
 }

@@ -32,7 +32,8 @@ import { Axis } from '../../../src/chart/axis/axis';
 import { tooltipData1, tooltipData2, tool1, datetimeData, categoryData, negativeDataPoint, categoryData1,tooltipData21,tooltipData22 } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs } from '../../../src/common/model/interface';
+import { IAnimationCompleteEventArgs} from '../../../src/chart/model/chart-interface';
+import { ILoadedEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
 
 Chart.Inject(LineSeries, Zoom, ColumnSeries,PolarSeries,StackingColumnSeries, BarSeries, Category, DateTime, ErrorBar, Tooltip, Crosshair, DataLabel);
 let data: any = tooltipData1;

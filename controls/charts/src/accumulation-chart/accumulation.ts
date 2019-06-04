@@ -11,8 +11,8 @@ import { AccumulationType, AccumulationSelectionMode } from './model/enum';
 import { IAccSeriesRenderEventArgs, IAccTextRenderEventArgs, IAccTooltipRenderEventArgs } from './model/pie-interface';
 import { IAccAnimationCompleteEventArgs, IAccPointRenderEventArgs, IAccLoadedEventArgs } from './model/pie-interface';
 import { Theme, getThemeColor } from '../common/model/theme';
-import { ILegendRenderEventArgs, IMouseEventArgs, IPointEventArgs } from '../common/model/interface';
-import {  IAnnotationRenderEventArgs } from '../common/model/interface';
+import { ILegendRenderEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';
+import {  IAnnotationRenderEventArgs } from '../chart/model/chart-interface';
 import { load, seriesRender, legendRender, textRender, tooltipRender, pointClick } from '../common/model/constants';
 import { pointMove, chartMouseClick, chartMouseDown } from '../common/model/constants';
 import { chartMouseLeave, chartMouseMove, chartMouseUp, resized } from '../common/model/constants';
@@ -38,7 +38,7 @@ import { AccumulationTheme } from './model/enum';
 import { AccumulationAnnotationSettingsModel } from './model/acc-base-model';
 import { AccumulationAnnotationSettings } from './model/acc-base';
 import { AccumulationAnnotation } from './annotation/annotation';
-import { IPrintEventArgs } from '../common/model/interface';
+import { IPrintEventArgs } from '../chart/model/chart-interface';
 import { Alignment } from '../common/utils/enum';
 import { getTitle } from '../common/utils/helper';
 import {Index} from '../common/model/base';
@@ -56,6 +56,7 @@ import { ExportUtils } from '../common/utils/export';
  *   accObj.appendTo("#accumulation");
  * </script>
  * ```
+ * @public
  */
 @NotifyPropertyChanges
 export class AccumulationChart extends Component<HTMLElement> implements INotifyPropertyChanged {

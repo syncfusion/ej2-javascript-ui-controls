@@ -3,7 +3,7 @@ import { Chart } from '../chart';
 import { DoubleRange } from '../utils/double-range';
 import { Series, Points } from './chart-series';
 import { ColumnBase } from './column-base';
-import { IPointRenderEventArgs } from '../../common/model/interface';
+import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
 import { BorderModel } from '../../common/model/base-model';
 import { Rect } from '@syncfusion/ej2-svg-base';
 

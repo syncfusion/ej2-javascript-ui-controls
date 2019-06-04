@@ -14,7 +14,7 @@ export interface SearchSettingsModel {
     /**
      * If ignoreCase set to true, then search ignores the diacritic characters or accents while filtering.
      *
-     * > Check the [`Diacritics`](../../../treegrid/filtering/#diacritics) filtering.
+     * > Check the [`Diacritics`](../filtering/#diacritics) filtering.
      * @default false
      */
     ignoreCase?: boolean;
@@ -22,8 +22,6 @@ export interface SearchSettingsModel {
     /**
      * The `operators` is used to override the default operators in filter menu. This should be defined by type wise
      * (string, number, date and boolean). Based on the column type, this customize operator list will render in filter menu.
-     *
-     * > Check the [`Filter Menu Operator`](./how-to.html#customizing-filter-menu-operators-list) customization.
      * @default null
      */
     operators?: ICustomOptr;

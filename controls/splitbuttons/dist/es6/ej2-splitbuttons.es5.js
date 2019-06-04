@@ -533,6 +533,22 @@ var DropDownButton = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    /**
+     * Click the DropDownButton element
+     * its native method
+     * @public
+     */
+    DropDownButton.prototype.click = function () {
+        this.element.click();
+    };
+    /**
+     * Sets the focus to DropDownButton
+     * its native method
+     * @public
+     */
+    DropDownButton.prototype.focusIn = function () {
+        this.element.focus();
+    };
     __decorate$1([
         Property('')
     ], DropDownButton.prototype, "content", void 0);
@@ -843,6 +859,14 @@ var SplitButton = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    /**
+     * Sets the focus to SplitButton
+     * its native method
+     * @public
+     */
+    SplitButton.prototype.focusIn = function () {
+        this.element.focus();
+    };
     __decorate$2([
         Property('')
     ], SplitButton.prototype, "content", void 0);
@@ -1084,6 +1108,14 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
         cancelAnimationFrame(this.timerId);
     };
     /**
+     * Complete the button progress.
+     * @returns void
+     */
+    ProgressButton.prototype.progressComplete = function () {
+        this.isPaused = false;
+        this.finishProgress();
+    };
+    /**
      * Get component name.
      * @returns string
      * @private
@@ -1209,13 +1241,13 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
             }
             if (!this.isPaused) {
                 if (progressTime < this.duration && percent < 100) {
-                    setTimeout(function () {
+                    this.interval = window.setTimeout(function () {
                         _this.startAnimate(Date.now(), progressTime, prevTime, percent, prevPercent, args_1.step, prevProgressTime, isVertical);
                         // tslint:disable-next-line
                     }, (this.duration / 100) - timeDiffBuffer);
                 }
                 else {
-                    setTimeout(function () {
+                    this.interval = window.setTimeout(function () {
                         _this.progressTime = _this.percent = 0;
                         if (_this.enableProgress) {
                             _this.getProgress().style[isVertical ? 'height' : 'width'] = '0%';
@@ -1253,6 +1285,25 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
         else if (this.spinSettings.position === 'Center') {
             this.setSpinnerSize();
         }
+    };
+    ProgressButton.prototype.finishProgress = function () {
+        var clsList = this.element.classList;
+        var isVertical = clsList.contains('e-vertical');
+        clsList.add(PROGRESSACTIVE);
+        var args;
+        var count = 100;
+        for (var i = this.percent; i < count; i++) {
+            i += 10;
+            if (this.enableProgress) {
+                this.getProgress().style[isVertical ? 'height' : 'width'] = (this.percent < 100) ? (i + '%') : '100%';
+            }
+        }
+        this.element.setAttribute('aria-valuenow', '0');
+        this.hideSpin();
+        args = { step: this.step, currentDuration: this.progressTime, percent: 100 };
+        clearTimeout(this.interval);
+        this.trigger('end', args);
+        this.progressTime = this.percent = 0;
     };
     ProgressButton.prototype.setSpinnerSize = function () {
         var ele = this.element.getElementsByClassName(CONTENTCLS)[0];
@@ -1347,6 +1398,14 @@ var ProgressButton = /** @__PURE__ @class */ (function (_super) {
                     break;
             }
         }
+    };
+    /**
+     * Sets the focus to ProgressButton
+     * its native method
+     * @public
+     */
+    ProgressButton.prototype.focusIn = function () {
+        this.element.focus();
     };
     __decorate$3([
         Property(false)

@@ -29,7 +29,8 @@ import { Selection } from '../../../src/chart/user-interaction/selection';
 import { tooltipData1, tooltipData2, datetimeData, categoryData1, negativeDataPoint, spline1, rotateData1 } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { ILoadedEventArgs, IPointRenderEventArgs, ILegendRenderEventArgs, IDragCompleteEventArgs, IAnimationCompleteEventArgs } from '../../../src/common/model/interface';
+import { IAnimationCompleteEventArgs} from '../../../src/chart/model/chart-interface';
+import { ILoadedEventArgs, IPointRenderEventArgs, ILegendRenderEventArgs, IDragCompleteEventArgs } from '../../../src/chart/model/chart-interface';
 import { getElement, removeElement } from '../../../src/chart/index';
 
 export interface Series1 {

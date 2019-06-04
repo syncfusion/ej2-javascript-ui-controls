@@ -48,6 +48,7 @@ export class Workbook {
     private currency: string;
     private intl: Internationalization;
     private globalStyles: Map<string, any>;
+    private rgbColors: Map<string, string>;
     /* tslint:disable:no-any */
     public constructor(json: any, saveType: SaveType, culture?: string, currencyString?: string) {
         if (culture !== undefined) {
@@ -528,6 +529,107 @@ export class Workbook {
         }
         row.spans = (spanMin) + ':' + (spanMax);
     }
+    private GetColors(): Map<string, string> {
+        let colors: Map<string, string>;
+        colors = new Map<string, string>();
+        /* tslint:disable */
+        colors.set('WHITE', 'FFFFFFFF');
+        /* tslint:disable */
+        colors.set('SILVER', 'FFC0C0C0');
+        /* tslint:disable */
+        colors.set('GRAY', 'FF808080');
+        /* tslint:disable */
+        colors.set('BLACK', 'FF000000');
+        /* tslint:disable */
+        colors.set('RED', 'FFFF0000');
+        /* tslint:disable */
+        colors.set('MAROON', 'FF800000');
+        /* tslint:disable */
+        colors.set('YELLOW', 'FFFFFF00');
+        /* tslint:disable */
+        colors.set('OLIVE', 'FF808000');
+        /* tslint:disable */
+        colors.set('LIME', 'FF00FF00');
+        /* tslint:disable */
+        colors.set('GREEN', 'FF008000');
+        /* tslint:disable */
+        colors.set('AQUA', 'FF00FFFF');
+        /* tslint:disable */
+        colors.set('TEAL', 'FF008080');
+        /* tslint:disable */
+        colors.set('BLUE', 'FF0000FF');
+        /* tslint:disable */
+        colors.set('NAVY', 'FF000080');
+        /* tslint:disable */
+        colors.set('FUCHSIA', 'FFFF00FF');
+        /* tslint:disable */
+        colors.set('PURPLE', 'FF800080');
+        return colors;
+    }
+    private processColor(colorVal: string): string {
+        if (colorVal.startsWith('#')) {
+           return colorVal.replace('#', 'FF');
+        }
+        colorVal = colorVal.toUpperCase();
+        this.rgbColors = this.GetColors();
+        if (this.rgbColors.has(colorVal)) {
+          colorVal = this.rgbColors.get(colorVal);
+        } else {
+          colorVal = 'FF000000';
+        }
+        return colorVal;
+    }
+    private processCellValue(value: string): string {
+        let cellValue : string = value;
+        let processedVal: string = '';
+        let startindex: number = value.indexOf('<', 0);
+        if (startindex >= 0) {
+        if (startindex !== 0) {
+            processedVal += '<r><t xml:space="preserve">' + value.substring(0, startindex) + '</t></r>';
+        }
+        let endIndex: number = value.indexOf('>', startindex + 1);
+        while (startindex >= 0 && endIndex >= 0 ) {
+           endIndex = value.indexOf('>', startindex + 1);
+           if (endIndex >= 0) {
+           let subString: string = value.substring(startindex + 1, endIndex);
+           let subSplit: string[]  = subString.split(' ');
+           if (subSplit.length > 0) {
+              processedVal += '<r><rPr>';
+           }
+           if (subSplit.length > 1) {
+                for (let element of subSplit) {
+                    if (element.trim().startsWith('size=')) {
+                    processedVal += '<sz val="' + element.substring(6, element.length - 1) + '"/>';
+                    } else if (element.trim().startsWith('face=')) {
+                    processedVal += '<rFont val="' + element.substring(6, element.length - 1) + '"/>';
+                    } else if (element.trim().startsWith('color=')) {
+                    processedVal += '<color rgb="' + this.processColor(element.substring(7, element.length - 1)) + '"/>';
+                    }
+                }
+           } else if (subSplit.length === 1) {
+                if (subSplit[0].trim() === 'b') {
+                  processedVal += '<b/>';
+                } else if (subSplit[0].trim() === 'i') {
+                  processedVal += '<i/>';
+                } else if (subSplit[0].trim() === 'u') {
+                  processedVal += '<u/>';
+                }
+           }
+            startindex = value.indexOf('<', endIndex + 1);
+            if (startindex < 0) {
+               startindex = cellValue.length;
+            }
+             processedVal += '</rPr><t xml:space="preserve">' + cellValue.substring(endIndex + 1, startindex) + '</t></r>';
+           }
+        }
+        if (processedVal === '') {
+           return cellValue;
+        }
+        return processedVal;
+    } else {
+        return cellValue;
+    }
+    }
     private applyGlobalStyle(json: any, cellStyle: CellStyle): void {
         let index: number = 0;
         if (this.cellStyles.has(json.name)) {
@@ -877,10 +979,11 @@ export class Workbook {
             case 'string':
                 this.sharedStringCount++;
                 saveType = 's';
-                if (!this.contains(this.sharedString, value)) {
-                    this.sharedString.push(value);
+                let sstvalue = this.processCellValue(value);
+                if (!this.contains(this.sharedString, sstvalue)) {
+                    this.sharedString.push(sstvalue);
                 }
-                value = this.sharedString.indexOf(value);
+                value = this.sharedString.indexOf(sstvalue);
                 break;
             default:
                 break;
@@ -1118,9 +1221,15 @@ export class Workbook {
             let sstStart: string = '<?xml version="1.0" encoding="utf-8"?><sst uniqueCount="' + length + '" count="' + this.sharedStringCount + '" xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">';
             let si: string = '';
             for (let i: number = 0; i < length; i++) {
-                si += '<si><t>';
-                si += this.processString(this.sharedString[i]);
-                si += '</t></si>';
+                if (!this.sharedString[i].startsWith('<r>')) {
+                 si += '<si><t>';
+                 si += this.processString(this.sharedString[i]);
+                 si += '</t></si>';
+                } else {
+                 si += '<si>';
+                 si += this.sharedString[i];
+                 si += '</si>';
+                }
             }
             si += '</sst>';
             this.addToArchive(sstStart + si, 'xl/sharedStrings.xml');

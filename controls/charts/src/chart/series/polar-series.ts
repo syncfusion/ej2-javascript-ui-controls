@@ -7,7 +7,7 @@ import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
 import { PolarRadarPanel } from '../axis/polar-radar-panel';
 import { RectPosition } from './column-base';
-import { IPointRenderEventArgs } from '../../common/model/interface';
+import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
 import { AnimationModel } from '../../common/model/base-model';
 import { pointRender } from '../../common/model/constants';
 import { Animation, AnimationOptions } from '@syncfusion/ej2-base';

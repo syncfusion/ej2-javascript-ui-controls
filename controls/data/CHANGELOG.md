@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.50 (2019-06-04)
+
+### DataManager
+
+#### Bug Fixes
+
+- #233040- Provided support to get the service root url from `odata` context field to use during batch operation.
+
 ## 17.1.41 (2019-04-16)
 
 ### DataManager

@@ -7,7 +7,7 @@ import { Chart } from '../chart';
 import { Column, Row } from '../axis/axis';
 import { Series, Points } from './chart-series';
 import { AnimationModel, BorderModel } from '../../common/model/base-model';
-import { IPointRenderEventArgs } from '../../common/model/interface';
+import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
 import { pointRender } from '../../common/model/constants';
 
 

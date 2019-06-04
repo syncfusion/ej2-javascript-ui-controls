@@ -17,7 +17,8 @@ import { unbindResizeEvents } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import { MouseEvents } from '../base/events.spec';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { ILoadedEventArgs, IPointRenderEventArgs, IAnimationCompleteEventArgs, ISeriesRenderEventArgs } from '../../../src/common/model/interface';
+import { IAnimationCompleteEventArgs} from '../../../src/chart/model/chart-interface';
+import { ILoadedEventArgs, IPointRenderEventArgs, ISeriesRenderEventArgs } from '../../../src/chart/model/chart-interface';
 Chart.Inject(LineSeries, Tooltip, ColumnSeries, BarSeries, DataLabel);
 
 describe('Chart Control', () => {

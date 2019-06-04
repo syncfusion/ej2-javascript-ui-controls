@@ -1,6 +1,3 @@
-/** 
- * Filter action related code goes here
- */
 import { TreeGrid, Filter as TreeGridFilter, FilterSettingsModel as TreeFilterSettingsModel  } from '@syncfusion/ej2-treegrid';
 import { FilterEventArgs, filterAfterOpen, GroupEventArgs, getFilterMenuPostion, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';
 import { getActualProperties } from '@syncfusion/ej2-grids';
@@ -10,6 +7,9 @@ import { getValue, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 
+/** 
+ * The Filter module is used to handle filter action.
+ */
 export class Filter {
     public parent: Gantt;
     private filterMenuElement: HTMLElement;

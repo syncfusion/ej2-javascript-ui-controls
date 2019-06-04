@@ -4728,22 +4728,28 @@ var DataManager = /** @__PURE__ @class */ (function () {
             key: key || this.dataSource.key
         };
         var req = this.adaptor.batchRequest(this, changes, args, query || new Query(), original);
+        var doAjaxRequest = 'doAjaxRequest';
         if (this.dataSource.offline) {
             return req;
         }
-        var deff = new Deferred();
-        var ajax = new Ajax(req);
-        ajax.beforeSend = function () {
-            _this.beforeSend(ajax.httpRequest, ajax);
-        };
-        ajax.onSuccess = function (data, request) {
-            deff.resolve(_this.adaptor.processResponse(data, _this, null, request.httpRequest, request, changes, args));
-        };
-        ajax.onFailure = function (e) {
-            deff.reject([{ error: e }]);
-        };
-        ajax.send().catch(function (e) { return true; }); // to handle the failure requests.        
-        return deff.promise;
+        if (!isNullOrUndefined(this.adaptor[doAjaxRequest])) {
+            return this.adaptor[doAjaxRequest](req);
+        }
+        else {
+            var deff_1 = new Deferred();
+            var ajax_1 = new Ajax(req);
+            ajax_1.beforeSend = function () {
+                _this.beforeSend(ajax_1.httpRequest, ajax_1);
+            };
+            ajax_1.onSuccess = function (data, request) {
+                deff_1.resolve(_this.adaptor.processResponse(data, _this, null, request.httpRequest, request, changes, args));
+            };
+            ajax_1.onFailure = function (e) {
+                deff_1.reject([{ error: e }]);
+            };
+            ajax_1.send().catch(function (e) { return true; }); // to handle the failure requests.        
+            return deff_1.promise;
+        }
     };
     /**
      * Inserts new record in the given table.

@@ -5,6 +5,7 @@ import { IGrid, IRenderer, NotifyArgs, VirtualInfo, IModelGenerator, InterSectio
 import { Column } from '../models/column';
 import { Row } from '../models/row';
 import { dataReady, modelChanged, refreshVirtualBlock, contentReady } from '../base/constant';
+import * as events from '../base/constant';
 import { SentinelType, Offsets } from '../base/type';
 import { RenderType } from '../base/enum';
 import { ContentRender } from './content-renderer';
@@ -43,6 +44,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         super(parent, locator);
         this.locator = locator;
         this.eventListener('on');
+        this.parent.on(events.columnVisibilityChanged, this.setVisible, this);
         this.vgenerator = <VirtualRowModelGenerator>this.generator;
     }
 
@@ -408,44 +410,45 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
 
     public setVisible(columns?: Column[]): void {
         let gObj: IGrid = this.parent;
-        if (gObj.enableColumnVirtualization || gObj.enableVirtualization) {
-            let rows: Row<Column>[] = [];
-            rows = <Row<Column>[]>this.getRows();
-            let testRow: Row<Column>;
-            rows.some((r: Row<Column>) => { if (r.isDataRow) { testRow = r; } return r.isDataRow; });
+        let rows: Row<Column>[] = [];
+        rows = <Row<Column>[]>this.getRows();
+        let testRow: Row<Column>;
+        rows.some((r: Row<Column>) => { if (r.isDataRow) { testRow = r; } return r.isDataRow; });
 
-            let needFullRefresh: boolean = true;
-            if (!gObj.groupSettings.columns.length && testRow) {
-                needFullRefresh = false;
-            }
-            let tr: Object = this.getTable().querySelectorAll('tr');
-            for (let c: number = 0, clen: number = columns.length; c < clen; c++) {
-                let column: Column = columns[c];
-                let idx: number = gObj.getNormalizedColumnIndex(column.uid);
-                let displayVal: string = column.visible === true ? '' : 'none';
+        let needFullRefresh: boolean = true;
+        if (!gObj.groupSettings.columns.length && testRow) {
+            needFullRefresh = false;
+        }
+        let tr: Object = this.getTable().querySelectorAll('tr');
+        for (let c: number = 0, clen: number = columns.length; c < clen; c++) {
+            let column: Column = columns[c];
+            let idx: number = gObj.getNormalizedColumnIndex(column.uid);
+            let displayVal: string = column.visible === true ? '' : 'none';
 
-                if (idx !== -1 && testRow && idx < testRow.cells.length) {
-                    setStyleAttribute(<HTMLElement>this.getColGroup().childNodes[idx], { 'display': displayVal });
+            if (idx !== -1 && testRow && idx < testRow.cells.length) {
+                setStyleAttribute(<HTMLElement>this.getColGroup().childNodes[idx], { 'display': displayVal });
+            }
+            if (!needFullRefresh) {
+                let width: number;
+                if (column.visible) {
+                    width = this.virtualEle.wrapper.offsetWidth + parseInt(column.width.toString(), 10);
+                } else {
+                    width = this.virtualEle.wrapper.offsetWidth - parseInt(column.width.toString(), 10);
                 }
-                if (!needFullRefresh) {
-                    let width: number;
-                    if (column.visible) {
-                        width = this.virtualEle.wrapper.offsetWidth + parseInt(column.width.toString(), 10);
-                    } else {
-                        width = this.virtualEle.wrapper.offsetWidth - parseInt(column.width.toString(), 10);
-                    }
-                    if (width > gObj.width) {
-                        this.setDisplayNone(tr, idx, displayVal);
-                        this.virtualEle.setWrapperWidth(width + '');
-                        this.vgenerator.refreshColOffsets();
-                    } else {
-                        this.refreshContentRows({ requestType: 'refresh' });
-                    }
+                if (width > gObj.width) {
+                    this.setDisplayNone(tr, idx, displayVal, rows);
+                    this.virtualEle.setWrapperWidth(width + '');
+                    this.vgenerator.refreshColOffsets();
+                    this.refreshVirtualElement();
+                } else {
+                    this.refreshContentRows({ requestType: 'refresh' });
                 }
             }
-            if (needFullRefresh) {
-                this.refreshContentRows({ requestType: 'refresh' });
-            }
+        }
+        if (needFullRefresh) {
+            this.refreshContentRows({ requestType: 'refresh' });
+        } else {
+            this.parent.notify(events.partialRefresh, { rows: rows, args: { isFrozen: false, rows: rows } });
         }
     }
 }
@@ -459,6 +462,7 @@ export class VirtualHeaderRenderer extends HeaderRender implements IRenderer {
     constructor(parent: IGrid, locator: ServiceLocator) {
         super(parent, locator);
         this.gen = new VirtualRowModelGenerator(this.parent);
+        this.parent.on(events.columnVisibilityChanged, this.setVisible, this);
         this.parent.on(refreshVirtualBlock, (e?: NotifyArgs) => e.virtualInfo.sentinelInfo.axis === 'X' ? this.refreshUI() : null, this);
     }
 
@@ -485,33 +489,31 @@ export class VirtualHeaderRenderer extends HeaderRender implements IRenderer {
 
     public setVisible(columns?: Column[]): void {
         let gObj: IGrid = this.parent;
-        if (gObj.enableColumnVirtualization || gObj.enableVirtualization) {
-            let displayVal: string;
-            let idx: number;
+        let displayVal: string;
+        let idx: number;
 
-            for (let c: number = 0, clen: number = columns.length; c < clen; c++) {
-                let column: Column = columns[c];
-                idx = gObj.getNormalizedColumnIndex(column.uid);
-                displayVal = column.visible ? '' : 'none';
+        for (let c: number = 0, clen: number = columns.length; c < clen; c++) {
+            let column: Column = columns[c];
+            idx = gObj.getNormalizedColumnIndex(column.uid);
+            displayVal = column.visible ? '' : 'none';
 
-                setStyleAttribute(<HTMLElement>this.getColGroup().children[idx], { 'display': displayVal });
-                if (gObj.enableColumnVirtualization && !gObj.groupSettings.columns.length) {
-                    let tablewidth: number;
-                    if (column.visible) {
-                        tablewidth = this.virtualEle.wrapper.offsetWidth + parseInt(column.width.toString(), 10);
-                    } else {
-                        tablewidth = this.virtualEle.wrapper.offsetWidth - parseInt(column.width.toString(), 10);
-                    }
-                    if (tablewidth > gObj.width) {
-                        this.setDisplayNone(column, displayVal);
-                        this.virtualEle.setWrapperWidth(tablewidth + '');
-                        this.gen.refreshColOffsets();
-                    } else {
-                        this.refreshUI();
-                    }
+            setStyleAttribute(<HTMLElement>this.getColGroup().children[idx], { 'display': displayVal });
+            if (gObj.enableColumnVirtualization && !gObj.groupSettings.columns.length) {
+                let tablewidth: number;
+                if (column.visible) {
+                    tablewidth = this.virtualEle.wrapper.offsetWidth + parseInt(column.width.toString(), 10);
+                } else {
+                    tablewidth = this.virtualEle.wrapper.offsetWidth - parseInt(column.width.toString(), 10);
+                }
+                if (tablewidth > gObj.width) {
+                    this.setDisplayNone(column, displayVal);
+                    this.virtualEle.setWrapperWidth(tablewidth + '');
+                    this.gen.refreshColOffsets();
                 } else {
                     this.refreshUI();
                 }
+            } else {
+                this.refreshUI();
             }
         }
     }

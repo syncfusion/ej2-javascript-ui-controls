@@ -4,7 +4,8 @@ import { EmitType, cldrData, L10n, Component, getDefaultDateObject, rippleEffect
 import { createElement, remove, addClass, detach, removeClass, closest, append, attributes, setStyleAttribute } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, formatUnit, getValue, setValue, getUniqueID } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
-import { Input, InputObject, IInput, FloatLabelType, FocusEventArgs, BlurEventArgs } from '@syncfusion/ej2-inputs';
+import { FocusEventArgs, BlurEventArgs } from '../calendar/calendar';
+import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';
 import { ListBase, cssClass as ListBaseClasses, ListBaseOptions, createElementParams } from '@syncfusion/ej2-lists';
 import { TimePickerModel } from './timepicker-model';
 

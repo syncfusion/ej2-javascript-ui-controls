@@ -6,7 +6,7 @@ import {
     PyramidSeries, AccumulationAnnotation, AccumulationLegend
 } from '../../../src/accumulation-chart/index';
 import { IAccTextRenderEventArgs, IAccPointRenderEventArgs, IAccSeriesRenderEventArgs } from '../../../src/accumulation-chart/index';
-import { IAnnotationRenderEventArgs } from '../../../src/common/model/interface';
+import { IAnnotationRenderEventArgs } from '../../../src/chart/model/chart-interface';
     AccumulationChart.Inject(AccumulationDataLabel, FunnelSeries, PieSeries, PyramidSeries);
     AccumulationChart.Inject(AccumulationLegend, AccumulationAnnotation);
 

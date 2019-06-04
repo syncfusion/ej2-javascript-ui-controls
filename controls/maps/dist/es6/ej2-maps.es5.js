@@ -2230,7 +2230,7 @@ var SelectionSettings = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], SelectionSettings.prototype, "enable", void 0);
     __decorate$1([
-        Property('#D2691E')
+        Property(null)
     ], SelectionSettings.prototype, "fill", void 0);
     __decorate$1([
         Property(1)
@@ -2252,7 +2252,7 @@ var HighlightSettings = /** @__PURE__ @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate$1([
-        Property('#6B8E23')
+        Property(null)
     ], HighlightSettings.prototype, "fill", void 0);
     __decorate$1([
         Property(false)
@@ -6602,9 +6602,10 @@ var Legend = /** @__PURE__ @class */ (function () {
                                         this.pushCollection(targetElement, this.legendHighlightCollection, collection[i], shapeEle.getAttribute('opacity'));
                                     }
                                     length = this.legendHighlightCollection.length;
+                                    var legendHighlightColor = this.legendHighlightCollection[length - 1]['legendOldFill'];
                                     this.legendHighlightCollection[length - 1]['MapShapeCollection']['Elements'].push(shapeEle);
-                                    this.setColor(shapeEle, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
-                                    this.setColor(targetElement, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
+                                    this.setColor(shapeEle, !isNullOrUndefined(module.fill) ? module.fill : legendHighlightColor, module.opacity.toString(), module.border.color, module.border.width.toString());
+                                    this.setColor(targetElement, !isNullOrUndefined(module.fill) ? module.fill : legendHighlightColor, module.opacity.toString(), module.border.color, module.border.width.toString());
                                 }
                                 else if (value === 'selection' && this.shapeSelection) {
                                     this.legendHighlightCollection = [];
@@ -6612,9 +6613,10 @@ var Legend = /** @__PURE__ @class */ (function () {
                                         this.pushCollection(targetElement, this.legendSelectionCollection, collection[i], shapeEle.getAttribute('opacity'));
                                     }
                                     selectLength = this.legendSelectionCollection.length;
+                                    var legendSelectionColor = this.legendSelectionCollection[selectLength - 1]['legendOldFill'];
                                     this.legendSelectionCollection[selectLength - 1]['MapShapeCollection']['Elements'].push(shapeEle);
-                                    this.setColor(targetElement, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
-                                    this.setColor(shapeEle, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
+                                    this.setColor(targetElement, !isNullOrUndefined(module.fill) ? module.fill : legendSelectionColor, module.opacity.toString(), module.border.color, module.border.width.toString());
+                                    this.setColor(shapeEle, !isNullOrUndefined(module.fill) ? module.fill : legendSelectionColor, module.opacity.toString(), module.border.color, module.border.width.toString());
                                     this.legendElement = targetElement;
                                     if (j === data.length - 1) {
                                         this.legendSelection = false;
@@ -6710,13 +6712,13 @@ var Legend = /** @__PURE__ @class */ (function () {
                             }
                             else if (j === length_1 - 1) {
                                 this.removeShapeHighlightCollection();
-                                this.setColor(legendShape, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
+                                this.setColor(legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'), module.opacity.toString(), module.border.color, module.border.width.toString());
                             }
                         }
                     }
                     else {
                         this.removeShapeHighlightCollection();
-                        this.setColor(legendShape, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
+                        this.setColor(legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'), module.opacity.toString(), module.border.color, module.border.width.toString());
                     }
                 }
                 else if (getValue === 'selection') {
@@ -6742,7 +6744,7 @@ var Legend = /** @__PURE__ @class */ (function () {
                         if (selectionEle === undefined || (selectionEle && !selectionEle['IsSelected'])) {
                             this.pushCollection(legendShape, this.shapeSelectionCollection, collection[index]);
                         }
-                        this.setColor(legendShape, module.fill, module.opacity.toString(), module.border.color, module.border.width.toString());
+                        this.setColor(legendShape, !isNullOrUndefined(module.fill) ? module.fill : legendShape.getAttribute('fill'), module.opacity.toString(), module.border.color, module.border.width.toString());
                         this.shapeElement = shapeElement['LegendEle'];
                         this.shapeSelection = false;
                     }
@@ -7495,7 +7497,8 @@ var Highlight = /** @__PURE__ @class */ (function () {
         if (this.maps.legendSettings.visible ? (this.maps.legendModule.legendElement !== this.maps.legendModule.oldShapeElement) : true) {
             var eventArgs = {
                 opacity: this.highlightSettings.opacity,
-                fill: targetEle.id.indexOf('NavigationIndex') === -1 ? this.highlightSettings.fill : 'none',
+                fill: targetEle.id.indexOf('NavigationIndex') === -1 ? !isNullOrUndefined(this.highlightSettings.fill)
+                    ? this.highlightSettings.fill : targetEle.getAttribute('fill') : 'none',
                 border: { color: this.highlightSettings.border.color, width: this.highlightSettings.border.width / this.maps.scale },
                 name: itemHighlight,
                 target: targetEle.id,
@@ -8008,6 +8011,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
      */
     Zoom.prototype.performZooming = function (position, newZoomFactor, type) {
         var map = this.maps;
+        map.previousProjection = map.projectionType;
         var prevLevel = map.tileZoomLevel;
         var scale = map.previousScale = map.scale;
         var maxZoom = map.zoomSettings.maxZoom;
@@ -8228,6 +8232,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
                             }
                             else {
                                 changeBorderWidth(currentEle, this.index, scale, this.maps);
+                                this.maps.zoomTranslatePoint = this.maps.translatePoint;
                                 this.animateTransform(currentEle, animate$$1, x, y, scale);
                                 this.shapeZoomLocation = currentEle.childNodes;
                             }

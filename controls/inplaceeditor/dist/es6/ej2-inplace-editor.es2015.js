@@ -1471,10 +1471,19 @@ class Rte {
     }
     updateValue(e) {
         if (this.compObj && e.type === 'RTE') {
-            let rteValue = this.compObj.contentModule.getEditPanel().innerHTML === '<p><br></p>' ?
-                '' : this.compObj.contentModule.getEditPanel().innerHTML;
-            this.parent.setProperties({ value: rteValue }, true);
+            this.parent.setProperties({ value: this.getRteValue() }, true);
             this.parent.extendModelValue(this.compObj.value);
+        }
+    }
+    getRteValue() {
+        let rteVal;
+        if (this.compObj.editorMode === 'Markdown') {
+            rteVal = this.compObj.contentModule.getEditPanel().value;
+            return (rteVal === '') ? '' : rteVal;
+        }
+        else {
+            rteVal = this.compObj.contentModule.getEditPanel().innerHTML;
+            return (rteVal === '<p><br></p>' || rteVal === '&lt;p&gt;&lt;br&gt;&lt;/p&gt;' || rteVal === '') ? '' : rteVal;
         }
     }
     refresh() {

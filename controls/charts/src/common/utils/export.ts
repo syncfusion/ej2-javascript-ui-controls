@@ -4,7 +4,7 @@ import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { AccumulationChart } from '../../accumulation-chart/accumulation';
 import { getElement } from '../utils/helper';
 import { ExportType } from '../utils/enum';
-import { IPrintEventArgs } from '../model/interface';
+import { IPrintEventArgs } from '../../chart/model/chart-interface';
 import { beforePrint } from '../model/constants';
 import { PdfPageOrientation, PdfDocument, PdfBitmap, SizeF, PdfMargins } from '@syncfusion/ej2-pdf-export';
 import { RangeNavigator } from '../..';

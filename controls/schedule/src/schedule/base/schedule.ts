@@ -862,6 +862,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (navArgs.cancel) {
             return;
         }
+        this.uiStateValues.isInitial = this.activeView.isTimelineView() ? true : this.uiStateValues.isInitial;
         this.setProperties({ selectedDate: selectedDate }, true);
         if (this.headerModule) {
             this.headerModule.setCalendarDate(selectedDate);

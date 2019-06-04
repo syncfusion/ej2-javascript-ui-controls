@@ -5,7 +5,7 @@ import { Splitter as SplitterLayout, ResizeEventArgs, ResizingEventArgs } from '
 import { SplitterSettingsModel } from '../models/models';
 import { ISplitterResizedEventArgs } from '../base/interface';
 /**
- * Splitter related goes here
+ * Splitter module is used to define the splitter position in Gantt layout.
  */
 export class Splitter {
     private parent: Gantt;

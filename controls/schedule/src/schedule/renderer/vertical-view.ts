@@ -181,7 +181,10 @@ export class VerticalView extends ViewBase implements IRenderer {
         if (this.parent.showTimeIndicator && this.isWorkHourRange(new Date())) {
             let currentDateIndex: number[] = this.getCurrentTimeIndicatorIndex();
             if (currentDateIndex.length > 0) {
-                this.changeCurrentTimePosition();
+                let workCells: HTMLElement[] = [].slice.call(this.element.querySelectorAll('.' + cls.WORK_CELLS_CLASS));
+                if (workCells.length > 0) {
+                    this.changeCurrentTimePosition();
+                }
                 if (isNullOrUndefined(this.currentTimeIndicatorTimer)) {
                     this.currentTimeIndicatorTimer = window.setInterval(() => { this.changeCurrentTimePosition(); }, util.MS_PER_MINUTE);
                 }

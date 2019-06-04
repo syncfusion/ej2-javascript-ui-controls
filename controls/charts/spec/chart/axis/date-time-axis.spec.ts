@@ -11,7 +11,7 @@ import { DateTime } from '../../../src/chart/axis/date-time-axis';
 import { Series } from '../../../src/chart/series/chart-series';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { EmitType } from '@syncfusion/ej2-base';
-import { ILoadedEventArgs, IAxisLabelRenderEventArgs } from '../../../src/common/model/interface';
+import { ILoadedEventArgs, IAxisLabelRenderEventArgs } from '../../../src/chart/model/chart-interface';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 Chart.Inject(LineSeries, DateTime, BarSeries, ColumnSeries);
 export interface Arg {

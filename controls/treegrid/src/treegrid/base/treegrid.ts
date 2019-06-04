@@ -205,7 +205,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
   @Property([])
   public dataSource: Object | DataManager;
   /**    
-   * Defines the external [`Query`](../../data/api-query.html) 
+   * Defines the external [`Query`](../../data/query/) 
    * that will be executed along with data processing.    
    * @default null    
    */
@@ -1840,6 +1840,7 @@ private getGridEditSettings(): GridEditModel {
      * Update the TreeGrid model
      * @method dataBind
      * @return {void}
+     * @private
      */
     public dataBind(): void {
       super.dataBind();

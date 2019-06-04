@@ -314,7 +314,8 @@ class ColorCollection {
     }
 }
 /**
- * class used to maintain color and value collection.
+ * Tooltip data for bubble type heatmap
+ * @public
  */
 class BubbleTooltipData {
     constructor(mappingName, bubbleData, valueType) {
@@ -654,8 +655,8 @@ function titlePositionX(width, leftPadding, rightPadding, titleStyle) {
     return positionX;
 }
 /**
- * Internal class size for height and width
- * @private
+ * Height and width of heatmap
+ * @public
  */
 class Size {
     constructor(width, height) {
@@ -705,8 +706,8 @@ class CurrentRect {
     }
 }
 /**
- * Class to define the details of selected cell.
- * @private
+ * Selected cell details in heatmap.
+ * @public
  */
 class SelectedCellDetails {
     constructor(value, xLabel, yLabel, xValue, yValue, cellElement, xPosition, yPosition, width, height, x, y) {

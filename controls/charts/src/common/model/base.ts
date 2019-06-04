@@ -220,7 +220,10 @@ export class Animation extends ChildProperty<Animation> {
     @Property(0)
     public delay: number;
 }
-/** @private */
+/** 
+ * Series and point index
+ * @public
+ */
 export class Indexes extends ChildProperty<Indexes> {
     /**
      * Specifies the series index
@@ -309,6 +312,7 @@ export class EmptyPointSettings extends ChildProperty<EmptyPointSettings> {
 
 /**
  * Configures the ToolTips in the chart.
+ * @public
  */
 
 export class TooltipSettings extends ChildProperty<TooltipSettings> {

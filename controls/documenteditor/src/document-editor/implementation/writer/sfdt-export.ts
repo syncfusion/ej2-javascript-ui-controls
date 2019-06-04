@@ -449,6 +449,9 @@ export class SfdtExport {
         do {
             rowWidget = next;
             next = rowWidget.nextRenderedWidget as TableRowWidget;
+            if (next && rowWidget.ownerTable.index !== next.ownerTable.index) {
+                next = undefined;
+            }
         } while (next instanceof TableRowWidget && next.index === rowWidget.index);
         return this.writeRow(next, rows);
     }

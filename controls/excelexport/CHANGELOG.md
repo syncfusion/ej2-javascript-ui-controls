@@ -12,6 +12,8 @@
 
 - Added formula property to set formulas on export.
 
+- Added rich-text support on export.
+
 #### Bug Fixes
 
 - Updated Readme and GitHub URL.

@@ -11905,9 +11905,6 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         Property(false)
     ], TreeView.prototype, "enablePersistence", void 0);
     __decorate$8([
-        Property(false)
-    ], TreeView.prototype, "enableRtl", void 0);
-    __decorate$8([
         Property()
     ], TreeView.prototype, "expandedNodes", void 0);
     __decorate$8([

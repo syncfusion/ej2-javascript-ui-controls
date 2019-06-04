@@ -10,6 +10,7 @@ import { Size, Rect, measureText, TextOption, PathOption } from '@syncfusion/ej2
 import { textElement, textTrim } from '../../common/utils/helper';
 import { BorderModel } from '../../common/model/base-model';
 import { MajorGridLinesModel, MinorGridLinesModel, MajorTickLinesModel, MinorTickLinesModel } from './axis-model';
+import { IThemeStyle } from '../model/chart-interface';
 /**
  * Specifies the Cartesian Axis Layout.
  */
@@ -605,6 +606,7 @@ export class CartesianAxisLayoutPanel {
         let optionsLine: Object = {};
         let element: Element = getElement(chart.element.id + 'AxisLine_' + index);
         let direction: string = element ? element.getAttribute('d') : '';
+        element = null;
         optionsLine = {
             'id': chart.element.id + 'AxisLine_' + index,
             'd': 'M ' + (rect.x - plotX) + ' ' + (rect.y - plotY) +
@@ -641,7 +643,7 @@ export class CartesianAxisLayoutPanel {
         let isTickInside: boolean = axis.tickPosition === 'Inside';
         let ticks: number = isTickInside ? (rect.x - tickSize - axisLineSize) : (rect.x + tickSize + axisLineSize + scrollBarHeight);
         let length: number = axis.visibleLabels.length;
-        let chart: Chart = this.chart;
+        let chartThemeStyle: IThemeStyle = this.chart.themeStyle;
         if (axis.valueType.indexOf('Category') && axis.labelPlacement === 'BetweenTicks' && length > 0) {
             length += 1;
         }
@@ -662,24 +664,24 @@ export class CartesianAxisLayoutPanel {
                         ' L ' + (this.seriesClipRect.x + this.seriesClipRect.width) + ' ' + pointY;
                     this.renderGridLine(
                         axis, index, majorGrid, axis.majorGridLines, '_MajorGridLine_', i, this.element,
-                        chart.themeStyle.majorGridLine, axis.majorGridLines.dashArray
+                        chartThemeStyle.majorGridLine, axis.majorGridLines.dashArray
                     );
                 }
                 majorTick = 'M ' + (rect.x + axisLineSize + (isTickInside ? scrollBarHeight : 0)) + ' ' + pointY +
                     ' L ' + (ticks) + ' ' + pointY;
                 this.renderGridLine(
                     axis, index, majorTick, axis.majorTickLines,
-                    '_MajorTickLine_', i, parent, chart.themeStyle.majorTickLine
+                    '_MajorTickLine_', i, parent, chartThemeStyle.majorTickLine
                 );
                 if ((minorGridLines.width > 0 || minorTickLines.width > 0) && axis.minorTicksPerInterval > 0) {
                     minorGridDirection = this.drawAxisMinorLine(axis, tempInterval, rect, i);
                     this.renderGridLine(
                         axis, index, minorGridDirection[0], minorGridLines, '_MinorGridLine_', i, this.element,
-                        chart.themeStyle.minorGridLine, minorGridLines.dashArray
+                        chartThemeStyle.minorGridLine, minorGridLines.dashArray
                     );
                     this.renderGridLine(
                         axis, index, minorGridDirection[1], minorTickLines, '_MinorTickLine_', i,
-                        parent, chart.themeStyle.minorTickLine
+                        parent, chartThemeStyle.minorTickLine
                     );
                 }
             }
@@ -693,8 +695,7 @@ export class CartesianAxisLayoutPanel {
      * @param value 
      */
     private isBorder(axis: Axis, index: number, value: number): boolean {
-        let chart: Chart = this.chart;
-        let border: BorderModel = chart.chartArea.border;
+        let border: BorderModel = this.chart.chartArea.border;
         let rect: Rect = this.seriesClipRect;
         let orientation: Orientation = axis.orientation;
         let start: number = (orientation === 'Horizontal') ? rect.x : rect.y;
@@ -855,8 +856,6 @@ export class CartesianAxisLayoutPanel {
 
         let labelRotation: number = (axis.opposedPosition) ? 90 : -90;
 
-        let elementSize: Size = measureText(axis.title, axis.titleStyle);
-
         let padding: number = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + this.padding) +
             (axis.labelPosition === 'Inside' ? 0 :
                 (axis.maxLabelSize.width + axis.multiLevelLabelHeight + this.padding));
@@ -902,7 +901,7 @@ export class CartesianAxisLayoutPanel {
         let length: number = axis.visibleLabels.length;
         let isTickInside: boolean = axis.tickPosition === 'Inside';
         let ticks: number = isTickInside ? (rect.y - tickSize - axisLineSize) : (rect.y + tickSize + axisLineSize + scrollBarHeight);
-        let chart: Chart = this.chart;
+        let chartThemeStyle: IThemeStyle = this.chart.themeStyle;
         if (axis.valueType.indexOf('Category') > -1 && length > 0 && axis.labelPlacement === 'BetweenTicks') {
             length += 1;
         }
@@ -924,24 +923,24 @@ export class CartesianAxisLayoutPanel {
                         ' L ' + pointX + ' ' + this.seriesClipRect.y ;
                     this.renderGridLine(
                         axis, index, majorGrid, axis.majorGridLines, '_MajorGridLine_', i,
-                        this.element, chart.themeStyle.majorGridLine, axis.majorGridLines.dashArray
+                        this.element, chartThemeStyle.majorGridLine, axis.majorGridLines.dashArray
                     );
                 }
                 majorTick = 'M ' + (pointX) + ' ' + (rect.y + axisLineSize + (isTickInside ? scrollBarHeight : 0))
                     + ' L ' + (pointX) + ' ' + ticks;
                 this.renderGridLine(
                     axis, index, majorTick, axis.majorTickLines, '_MajorTickLine_', i,
-                    parent, chart.themeStyle.majorTickLine
+                    parent, chartThemeStyle.majorTickLine
                 );
                 if (axis.minorTicksPerInterval > 0 && (axis.minorGridLines.width > 0 || axis.minorTickLines.width > 0)) {
                     minorDirection = this.drawAxisMinorLine(axis, tempInterval, rect, i);
                     this.renderGridLine(
                         axis, index, minorDirection[0], axis.minorGridLines, '_MinorGridLine_', i,
-                        this.element, chart.themeStyle.minorGridLine, axis.minorGridLines.dashArray
+                        this.element, chartThemeStyle.minorGridLine, axis.minorGridLines.dashArray
                     );
                     this.renderGridLine(
                         axis, index, minorDirection[1], axis.minorTickLines, '_MinorTickLine_',
-                        i, parent, chart.themeStyle.minorTickLine
+                        i, parent, chartThemeStyle.minorTickLine
                     );
                 }
             }
@@ -1315,14 +1314,13 @@ export class CartesianAxisLayoutPanel {
         gridModel: MajorTickLinesModel | MinorTickLinesModel | MajorGridLinesModel | MinorGridLinesModel,
         gridId: string, gridIndex: number, parent: Element, themeColor: string, dashArray: string = null
     ): void {
-        let options: PathOption;
         let chart: Chart = this.chart;
         let direction: string;
         let element: Element;
         if (gridModel.width > 0 && axis.visible && gridDirection) {
             element = getElement(chart.element.id + gridId + index + '_' + gridIndex);
             direction = element ? element.getAttribute('d') : null;
-
+            element = null;
             this.htmlObject = chart.renderer.drawPath(new PathOption(
                 chart.element.id + gridId + index + '_' + gridIndex, 'transparent', gridModel.width,
                 gridModel.color || themeColor,
@@ -1339,14 +1337,14 @@ export class CartesianAxisLayoutPanel {
      * @param axis 
      * @param index 
      */
-    private findParentNode(chart: Chart, label: Element, axis: Axis, index: number): Element {
+    private findParentNode(elementId: string, label: Element, axis: Axis, index: number): Element {
         if (axis.crossAt === null) {
-            return document.getElementById(chart.element.id + 'AxisGroup' + index + 'Inside');
+            return document.getElementById(elementId + 'AxisGroup' + index + 'Inside');
         }
-        if (document.getElementById(chart.element.id + 'AxisGroup' + index + 'Inside').contains(document.getElementById(label.id))) {
-            return document.getElementById(chart.element.id + 'AxisGroup' + index + 'Inside');
+        if (document.getElementById(elementId + 'AxisGroup' + index + 'Inside').contains(document.getElementById(label.id))) {
+            return document.getElementById(elementId + 'AxisGroup' + index + 'Inside');
         } else {
-            return document.getElementById(chart.element.id + 'AxisGroup' + index + 'Outside');
+            return document.getElementById(elementId + 'AxisGroup' + index + 'Outside');
         }
     }
 
@@ -1359,7 +1357,7 @@ export class CartesianAxisLayoutPanel {
      * @param rect 
      */
     private createZoomingLabel(chart: Chart, labelElement: Element, axis: Axis, index: number, rect: Rect): void {
-        let parentNode: Element = this.findParentNode(chart, labelElement, axis, index);
+        let parentNode: Element = this.findParentNode(chart.element.id, labelElement, axis, index);
         labelElement.setAttribute('opacity', '0.3');
         let zoomElement: Element = chart.renderer.createGroup({
             id: chart.element.id + 'AxisLabels_Zoom' + index

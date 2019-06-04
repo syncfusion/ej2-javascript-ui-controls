@@ -20,7 +20,8 @@ import { tooltipData11, tooltipData12, datetimeData11, negativeDataPoint, series
 import { firstSeries, secondSeries, thirdSeries, fourthSeries } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs, ITextRenderEventArgs } from '../../../src/common/model/interface';
+import { IAnimationCompleteEventArgs} from '../../../src/chart/model/chart-interface';
+import { ILoadedEventArgs, IPointRenderEventArgs, ITextRenderEventArgs } from '../../../src/chart/model/chart-interface';
 
 Chart.Inject(LineSeries, ColumnSeries, AreaSeries, DateTime, Category, DataLabel, StepLineSeries);
 

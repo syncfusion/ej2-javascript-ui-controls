@@ -414,6 +414,24 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
             EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
         }
     }
+
+    /**
+     * Click the RadioButton element
+     * its native method
+     * @public
+     */
+    public click(): void {
+        this.element.click();
+   }
+
+   /**
+    * Sets the focus to RadioButton
+    * its native method
+    * @public
+    */
+   public focusIn(): void {
+       this.element.focus();
+  }
 }
 
 export interface ChangeArgs extends BaseEventArgs {

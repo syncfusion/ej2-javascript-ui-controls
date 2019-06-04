@@ -340,6 +340,11 @@ describe('Switch', () => {
             specSwitch.toggle();
             expect(specSwitch.checked).toEqual(false);
         })
+        it('Native methods - Click and Focus ', () => {
+            specSwitch = new Switch({}, '#specSwitch');
+            specSwitch.click();
+            specSwitch.focusIn();
+        });
     });
 
     describe('Switch in HTML5 forms', () => {

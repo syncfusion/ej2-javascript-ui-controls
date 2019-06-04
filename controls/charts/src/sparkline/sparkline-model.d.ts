@@ -1,4 +1,4 @@
-import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, Complex } from '@syncfusion/ej2-base';import { SvgRenderer } from '@syncfusion/ej2-svg-base';import { remove, L10n, Internationalization, Event, EmitType, ModuleDeclaration, isNullOrUndefined } from '@syncfusion/ej2-base';import { Browser, EventHandler, Touch, Collection } from '@syncfusion/ej2-base';import { SparklineBorder, SparklineTooltipSettings, ContainerArea, AxisSettings, Padding, SparklineMarkerSettings } from './model/base';import { SparklineDataLabelSettings, RangeBandSettings } from './model/base';import { SparklineBorderModel, SparklineTooltipSettingsModel, ContainerAreaModel, AxisSettingsModel } from './model/base-model';import { SparklineMarkerSettingsModel, SparklineDataLabelSettingsModel, RangeBandSettingsModel, PaddingModel } from './model/base-model';import { SparklineType, SparklineValueType, SparklineTheme } from './model/enum';import { Size, createSvg, RectOption, Rect, drawRectangle, getIdElement, SparkValues, withInBounds, removeElement } from './utils/helper';import { ISparklineLoadedEventArgs, ISparklineLoadEventArgs, IDataLabelRenderingEventArgs, IPointRegionEventArgs } from './model/interface';import { IMarkerRenderingEventArgs, ISparklinePointEventArgs, ISparklineMouseEventArgs } from './model/interface';import { IAxisRenderingEventArgs, ISparklineResizeEventArgs, ITooltipRenderingEventArgs } from './model/interface';import { ISeriesRenderingEventArgs, IThemes } from './model/interface';import { SparklineRenderer } from './rendering/sparkline-renderer';import { SparklineTooltip } from './rendering/sparkline-tooltip';import { getThemeColor } from './utils/helper';
+import { Component, NotifyPropertyChanges, INotifyPropertyChanged, Property, Complex } from '@syncfusion/ej2-base';import { SvgRenderer } from '@syncfusion/ej2-svg-base';import { remove, L10n, Internationalization, Event, EmitType, ModuleDeclaration, isNullOrUndefined } from '@syncfusion/ej2-base';import { Browser, EventHandler, Touch, Collection } from '@syncfusion/ej2-base';import { SparklineBorder, SparklineTooltipSettings, ContainerArea, AxisSettings, Padding, SparklineMarkerSettings } from './model/base';import { SparklineDataLabelSettings, RangeBandSettings } from './model/base';import { SparklineBorderModel, SparklineTooltipSettingsModel, ContainerAreaModel, AxisSettingsModel } from './model/base-model';import { SparklineMarkerSettingsModel, SparklineDataLabelSettingsModel, RangeBandSettingsModel, PaddingModel } from './model/base-model';import { SparklineType, SparklineValueType, SparklineTheme } from './model/enum';import { Size, createSvg, RectOption, Rect, drawRectangle, getIdElement, SparkValues, withInBounds, removeElement } from './utils/helper';import { ISparklineLoadedEventArgs, ISparklineLoadEventArgs, IDataLabelRenderingEventArgs, IPointRegionEventArgs } from './model/interface';import { IMarkerRenderingEventArgs, ISparklinePointEventArgs, ISparklineMouseEventArgs } from './model/interface';import { IAxisRenderingEventArgs, ISparklineResizeEventArgs, ITooltipRenderingEventArgs } from './model/interface';import { ISeriesRenderingEventArgs, IThemes } from './model/interface';import { SparklineRenderer } from './rendering/sparkline-renderer';import { SparklineTooltip } from './rendering/sparkline-tooltip';import { getThemeColor } from './utils/helper';import { DataManager, Query } from '@syncfusion/ej2-data';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -29,9 +29,15 @@ export interface SparklineModel extends ComponentModel{
 
     /**
      * To configure sparkline data source.
-     * @default []
+     * @default null
      */
-    dataSource?: Object[];
+    dataSource?: DataManager | Object[];
+
+    /**
+     * Specifies the query for filter the data.
+     * @default null
+     */
+    query?: Query;
 
     /**
      * To configure sparkline series value type.

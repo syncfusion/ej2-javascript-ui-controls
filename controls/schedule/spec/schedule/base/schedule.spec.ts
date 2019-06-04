@@ -4,13 +4,13 @@
 import { createElement, remove, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
 import { Query } from '@syncfusion/ej2-data';
 import { VerticalView } from '../../../src/schedule/renderer/vertical-view';
-import { Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, ScheduleModel } from '../../../src/schedule/index';
-import { triggerScrollEvent, loadCultureFiles, createSchedule, destroy } from '../util.spec';
+import { Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, ScheduleModel, TimelineViews } from '../../../src/schedule/index';
+import { triggerScrollEvent, loadCultureFiles, createSchedule, destroy, triggerMouseEvent } from '../util.spec';
 import * as cls from '../../../src/schedule/base/css-constant';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 import { readonlyEventsData } from './datasource.spec';
 
-Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda);
+Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews);
 
 describe('Schedule base module', () => {
     beforeAll(() => {
@@ -384,6 +384,36 @@ describe('Schedule base module', () => {
             schObj.selectedDate = new Date(2018, 3, 1);
             schObj.dataBind();
             expect(schObj.element.querySelectorAll('.e-schedule-toolbar').length).toEqual(0);
+        });
+
+        it('Test visibility of selected date from calendar', () => {
+            schObj = new Schedule({ selectedDate: new Date(2017, 9, 4), currentView: 'TimelineWeek', views: ['TimelineDay', 'TimelineWeek', 'TimelineWorkWeek'] }, '#Schedule');
+            schObj.dataBind();
+            (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
+            let popupEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-popup');
+            let calendarEle: Element = schObj.element.querySelector('.e-schedule-toolbar-container .e-header-calendar');
+            (calendarEle.querySelector('.e-day') as HTMLElement).click();
+            expect(popupEle.classList.contains('e-popup-open')).toEqual(true);
+            (calendarEle.querySelector('.e-selected') as HTMLElement).click();
+            expect(popupEle.classList.contains('e-popup-open')).toEqual(true);
+            expect(calendarEle.querySelector('.e-header').classList.contains('e-month')).toEqual(true);
+            triggerMouseEvent(calendarEle.querySelector('.e-next') as HTMLElement, 'mousedown');
+            (schObj.element.querySelectorAll('.e-content.e-month tr:last-child td')[2] as HTMLElement).click();
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-content.e-month tr:last-child td:nth-last-child(5) span').innerHTML).toEqual('31');
+            expect(schObj.selectedDate).toEqual(new Date(2017, 9, 31));
+            expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollLeft).toEqual(5700);
+            (schObj.element.querySelectorAll('.e-schedule-toolbar .e-date-range')[0] as HTMLElement).click();
+            (calendarEle.querySelector('.e-day') as HTMLElement).click();
+            expect(popupEle.classList.contains('e-popup-open')).toEqual(true);
+            (calendarEle.querySelector('.e-selected').nextSibling as HTMLElement).click();
+            expect(popupEle.classList.contains('e-popup-open')).toEqual(true);
+            expect(calendarEle.querySelector('.e-header').classList.contains('e-month')).toEqual(true);
+            (schObj.element.querySelectorAll('.e-content.e-month tr:nth-last-child(4) td')[5] as HTMLElement).click();
+            schObj.dataBind();
+            expect(schObj.element.querySelector('.e-content.e-month tr:nth-last-child(4) td:nth-last-child(2) span').innerHTML).toEqual('17');
+            expect(schObj.selectedDate).toEqual(new Date(2017, 10, 17));
+            expect((schObj.element.querySelector('.e-content-wrap') as HTMLElement).scrollLeft).toEqual(12900);
         });
     });
 

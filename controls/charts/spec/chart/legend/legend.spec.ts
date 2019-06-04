@@ -17,11 +17,11 @@ import { SplineSeries } from '../../../src/chart/series/spline-series';
 import { Legend } from '../../../src/chart/legend/legend';
 import { Selection } from '../../../src/chart/user-interaction/selection';
 import { MouseEvents } from '../base/events.spec';
-import { ILegendRenderEventArgs } from '../../../src/common/model/interface';
+import { ILegendRenderEventArgs } from '../../../src/chart/model/chart-interface';
 import { unbindResizeEvents } from '../base/data.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { EmitType } from '@syncfusion/ej2-base';
-import { ILoadedEventArgs } from '../../../src/common/model/interface';
+import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 Chart.Inject(LineSeries, SplineSeries, Legend, StepLineSeries, AreaSeries, StackingAreaSeries, StackingColumnSeries, ColumnSeries,
     ScatterSeries, BarSeries, Selection);

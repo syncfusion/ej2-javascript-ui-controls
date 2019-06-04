@@ -7,7 +7,7 @@ import { BorderModel, MarginModel, FontModel } from '../../common/model/base-mod
 import { DataLabelSettingsModel, MarkerSettingsModel } from '../series/chart-series-model';
 import { LabelPosition, ErrorBarDirection } from '../utils/enum';
 import { Series, Points } from './chart-series';
-import { ITextRenderEventArgs } from '../../common/model/interface';
+import { ITextRenderEventArgs } from '../../chart/model/chart-interface';
 import { textRender } from '../../common/model/constants';
 import {
     createTemplate, getFontStyle, getElement, measureElementRect, templateAnimate, withIn

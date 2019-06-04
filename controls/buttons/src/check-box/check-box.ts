@@ -469,4 +469,22 @@ export class CheckBox extends Component<HTMLInputElement> implements INotifyProp
             EventHandler.add(this.element, 'change', this.changeHandler, this);
         }
     }
+
+    /**
+     * Click the CheckBox element
+     * its native method
+     * @public
+     */
+    public click(): void {
+        this.element.click();
+   }
+
+   /**
+    * Sets the focus to CheckBox
+    * its native method
+    * @public
+    */
+   public focusIn(): void {
+       this.element.focus();
+  }
 }

@@ -24,7 +24,8 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { tooltipData1, tooltipData2, datetimeData, categoryData, negativeDataPoint, spline1, rotateData1, rotateData2 } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { ILoadedEventArgs, IAnimationCompleteEventArgs } from '../../../src/common/model/interface';
+import { IAnimationCompleteEventArgs} from '../../../src/chart/model/chart-interface';
+import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
 export interface Series1 {
     series: Series
 }

@@ -480,14 +480,6 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     @Property(true)
     public enabled: boolean;
 
-
-    /**
-     * It is used to render the Slider component from right to left direction.
-     * @default false
-     */
-    @Property(false)
-    public enableRtl: boolean;
-
     /**
      * It is used to denote the slider tooltip and it's position.
      *
@@ -546,7 +538,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
      * @event
      */
     @Event()
-    public change: EmitType<Object>;
+    public change: EmitType<SliderChangeEventArgs>;
 
     /**
      * We can trigger changed event when Slider component action is completed while we change the Slider value.
@@ -554,7 +546,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
      * @event
      */
     @Event()
-    public changed: EmitType<Object>;
+    public changed: EmitType<SliderChangeEventArgs>;
 
     /**
      * We can trigger renderingTicks event when the ticks rendered on Slider,
@@ -562,14 +554,14 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
      * @event
      */
     @Event()
-    public renderingTicks: EmitType<Object>;
+    public renderingTicks: EmitType<SliderTickEventArgs>;
 
     /**
      * We can trigger renderedTicks event when the ticks are rendered on the Slider.
      * @event
      */
     @Event()
-    public renderedTicks: EmitType<Object>;
+    public renderedTicks: EmitType<SliderTickRenderedEventArgs>;
 
     /**
      * We can trigger tooltipChange event when we change the Sider tooltip value.

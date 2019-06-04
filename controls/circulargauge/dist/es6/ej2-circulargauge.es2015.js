@@ -507,7 +507,9 @@ class Size {
         this.height = height;
     }
 }
-/** @private */
+/**
+ * Internal use of circular gauge location
+ */
 class GaugeLocation {
     constructor(x, y) {
         this.x = x;
@@ -1860,12 +1862,12 @@ class PointerRenderer {
         let endAngle;
         let oldStart;
         let minRadius = (radius * 0.25);
-        if (end <= minRadius) {
-            radius = end === 1 || 2 ? 8 : radius;
-            radius /= 2;
-            minRadius = radius * 0.25;
-        }
         if (roundRadius) {
+            if (end <= minRadius) {
+                radius = end === 1 || 2 ? 8 : radius;
+                radius /= 2;
+                minRadius = radius * 0.25;
+            }
             minAngle = ((((pointer.currentRadius) * ((minAngle * Math.PI) / 180) +
                 roundRadius) / (pointer.currentRadius)) * 180) / Math.PI;
             pointAngle = ((((pointer.currentRadius) * ((pointAngle * Math.PI) / 180) -

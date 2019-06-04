@@ -2022,7 +2022,7 @@ let ListView = class ListView extends Component {
         return parentId;
     }
     /**
-     * It is used to get the currently [here](./api-selectedItem)
+     * It is used to get the currently [here](./selectedItem)
      *  item details from the list items.
      */
     getSelectedItems() {

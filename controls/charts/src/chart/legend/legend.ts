@@ -11,7 +11,7 @@ import { Chart } from '../../chart';
 import { LegendSettingsModel } from '../../common/legend/legend-model';
 import { textTrim, ChartLocation, removeElement, getElement } from '../../common/utils/helper';
 import { Size, measureText, Rect } from '@syncfusion/ej2-svg-base';
-import { ILegendRenderEventArgs } from '../../common/model/interface';
+import { ILegendRenderEventArgs } from '../../chart/model/chart-interface';
 import { legendRender } from '../../common/model/constants';
 /**
  * `Legend` module is used to render legend for the chart.

@@ -313,6 +313,12 @@ describe('DropDownButton', () => {
             expect(drpButton.getULElement().children[1].classList.contains('e-selected')).toBeTruthy();
             drpButton.element.click();
         });
+        it('Native methods click,Focus', () => {
+            drpButton = new DropDownButton();
+            drpButton.appendTo('#drp-button');
+            drpButton.focusIn();
+            drpButton.click();
+        });
     });
 
     describe('Events', () => {

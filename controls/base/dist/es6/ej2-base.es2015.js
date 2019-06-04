@@ -6209,7 +6209,6 @@ var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, 
 };
 /**
  * SwipeSettings is a framework module that provides support to handle swipe event like swipe up, swipe right, etc..,
- * @private
  */
 class SwipeSettings extends ChildProperty {
 }

@@ -19,7 +19,7 @@ import { unbindResizeEvents } from '../base/data.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { ILoadedEventArgs, IDragCompleteEventArgs } from '../../../src/common/model/interface';
+import { ILoadedEventArgs, IDragCompleteEventArgs } from '../../../src/chart/model/chart-interface';
 Chart.Inject(LineSeries, StepLineSeries, ColumnSeries, AreaSeries, StackingAreaSeries, Selection, StackingColumnSeries, Legend,
     Zoom);
 let seriesCollection: SeriesModel[] = [];

@@ -13,7 +13,7 @@ import { ColumnSeries } from '../../../src/chart/series/column-series';
 import { MouseEvents } from '../base/events.spec';
 import { Logarithmic } from '../../../src/chart/axis/logarithmic-axis';
 import { Legend } from '../../../src/chart/legend/legend';
-import { ILegendRenderEventArgs } from '../../../src/common/model/interface';
+import { ILegendRenderEventArgs } from '../../../src/chart/model/chart-interface';
 import { Tooltip } from '../../../src/chart/user-interaction/tooltip';
 import { Crosshair } from '../../../src/chart/user-interaction/crosshair';
 import { Selection } from '../../../src/chart/user-interaction/selection';
@@ -21,7 +21,8 @@ import '../../../node_modules/es6-promise/dist/es6-promise';
 import { unbindResizeEvents, tooltipData1 } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs } from '../../../src/common/model/interface';
+import { IAnimationCompleteEventArgs} from '../../../src/chart/model/chart-interface';
+import { ILoadedEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
 Chart.Inject(LineSeries, ColumnSeries, DataLabel, Category, DateTime, Legend, HiloOpenCloseSeries, Tooltip, Crosshair, Logarithmic, Selection);
 
 export let doubleData: any[] = [

@@ -324,6 +324,24 @@ export class Button extends Component<HTMLButtonElement> implements INotifyPrope
             }
         }
     }
+
+    /**
+     * Click the button element
+     * its native method
+     * @public
+     */
+    public click(): void {
+         this.element.click();
+    }
+
+    /**
+     * Sets the focus to Button
+     * its native method
+     * @public
+     */
+    public focusIn(): void {
+        this.element.focus();
+   }
 }
 
 interface CssClassNameT {

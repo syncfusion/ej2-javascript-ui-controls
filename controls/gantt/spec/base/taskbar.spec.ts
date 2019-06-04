@@ -111,7 +111,7 @@ describe('Gantt taskbar rendering', () => {
                     //args.progressBarBorderColor = "gray";
                     args.leftLabelColor = "yellow";
                     args.rightLabelColor = "brown";
-                    args.progressLabelColor = "white";
+                    args.taskLabelColor = "white";
                     args.baselineColor = "Brown";
                 }
             };

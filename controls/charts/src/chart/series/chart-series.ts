@@ -16,7 +16,7 @@ import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';
 import { Chart } from '../chart';
 import { Axis, Column, Row } from '../axis/axis';
 import { Data } from '../../common/model/data';
-import { ISeriesRenderEventArgs } from '../../common/model/interface';
+import { ISeriesRenderEventArgs } from '../../chart/model/chart-interface';
 import { seriesRender } from '../../common/model/constants';
 import { Alignment, SeriesCategories } from '../../common/utils/enum';
 import { BoxPlotMode, Segment } from '../utils/enum';
@@ -221,38 +221,68 @@ export class MarkerSettings extends ChildProperty<MarkerSettings> {
 
 /**
  * Points model for the series.
- * @private
+ * @public
  */
 export class Points {
+    /** point x */
     public x: Object;
+    /** point y */
     public y: Object;
+    /** point visibility */
     public visible: boolean;
+    /** point text */
     public text: string;
+    /** point tooltip */
     public tooltip: string;
+    /** point color */
     public color: string;
+    /** point open value */
     public open: Object;
+    /** point close value */
     public close: Object;
+    /** point symbol location */
     public symbolLocations: ChartLocation[] = null;
+    /** point x value */
     public xValue: number;
+    /** point y value */
     public yValue: number;
+    /** point index value */
     public index: number;
+    /** point region */
     public regions: Rect[] = null;
+    /** point percentage value */
     public percentage: number = null;
+    /** point high value */
     public high: Object;
+    /** point low value */
     public low: Object;
+    /** point volume value */
     public volume: Object;
+    /** point size value */
     public size: Object;
+    /** point empty checking */
     public isEmpty: boolean;
+    /** point region data */
     public regionData: PolarArc = null;
+    /** point minimum value */
     public minimum: number;
+    /** point maximum value */
     public maximum: number;
+    /** point upper quartile value */
     public upperQuartile: number;
+    /** point lower quartile value */
     public lowerQuartile: number;
+    /** point median value */
     public median: number;
+    /** point outliers value */
     public outliers: number[];
+    /** point average value */
     public average: number;
+    /** point error value */
     public error: number;
+    /** point interior value */
     public interior: string;
+    /** point marker */
     public marker: MarkerSettingsModel = {
         visible: false
     };
@@ -465,7 +495,10 @@ export class ChartSegment extends ChildProperty<ChartSegment> {
 
 }
 
-
+/**
+ * Error bar settings
+ * @public
+ */
 export class ErrorBarSettings extends ChildProperty<ErrorBarSettings> {
 
     /**
@@ -1083,6 +1116,7 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
         this.processJsonData();
         this.recordsCount = e.count;
         this.refreshChart(isRemoteData);
+        this.currentViewData = null;
     }
 
     private refreshChart(isRemoteData: boolean): void {
@@ -1143,7 +1177,8 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
 }
 
 /**
- *  Configures the series in charts.
+ * Configures the series in charts.
+ * @public
  */
 
 export class Series extends SeriesBase {
@@ -1701,9 +1736,7 @@ export class Series extends SeriesBase {
     /** @private */
     public renderSeries(chart: Chart): void {
         let seriesType: string = firstToLowerCase(this.type);
-        if (seriesType.indexOf('100') !== -1) {
-            seriesType = seriesType.replace('100', '');
-        }
+        seriesType = seriesType.replace('100', '');
         if (chart[seriesType + 'SeriesModule']) {
             if (this.category !== 'Indicator' && this.category !== 'TrendLine') {
                 this.createSeriesElements(chart);
@@ -1730,7 +1763,6 @@ export class Series extends SeriesBase {
     public createSeriesElements(chart: Chart): void {
         if (this.category !== 'Indicator') {
             let elementId: string = chart.element.id;
-            let xAxisRect: Rect = this.xAxis.rect;
             // 8 for extend border value 5 for extend size value
             let explodeValue: number = this.marker.border.width + 8 + 5;
             let render: SvgRenderer = chart.renderer;

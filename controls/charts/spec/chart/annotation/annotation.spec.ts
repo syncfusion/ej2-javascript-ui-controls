@@ -14,7 +14,7 @@ import { DateTime } from '../../../src/chart/axis/date-time-axis';
 import { Logarithmic } from '../../../src/chart/axis/logarithmic-axis';
 import { unbindResizeEvents } from '../base/data.spec';
 import { bar, barData, datetimeData, categoryData, categoryData1, negativeDataPoint } from '../base/data.spec';
-import { ILoadedEventArgs, IAnnotationRenderEventArgs } from '../../../src/common/model/interface';
+import { ILoadedEventArgs, IAnnotationRenderEventArgs } from '../../../src/chart/model/chart-interface';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 Chart.Inject(LineSeries, BarSeries, ColumnSeries, Category, DateTime, Logarithmic, ChartAnnotation);

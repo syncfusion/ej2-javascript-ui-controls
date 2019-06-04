@@ -40,7 +40,7 @@ export interface FieldSettingsModel {
 
     /**
      * This property used for nested navigation of list-items.
-     * Refer the documentation [here](./listview/nested-list)
+     * Refer the documentation [here](../../listview/nested-list/)
      *  to know more about this property with demo.
      */
     child?: string;
@@ -52,7 +52,7 @@ export interface FieldSettingsModel {
 
     /**
      * It wraps the list view element into a group based on the value of groupBy property.
-     * Refer the documentation [here](./listview/grouping)
+     * Refer the documentation [here](../../listview/grouping/)
      *  to know more about this property with demo.
      */
     groupBy?: string;
@@ -203,7 +203,7 @@ export interface ListViewModel extends ComponentModel{
 
     /**
      * The ListView supports to customize the content of each list items with the help of template property.
-     * Refer the documentation [here](./listview/customizing-templates)
+     * Refer the documentation [here](../../listview/customizing-templates/)
      *  to know more about this property with demo.
      *
      * {% codeBlock src="listview/template-api/index.ts" %}{% endcodeBlock %}

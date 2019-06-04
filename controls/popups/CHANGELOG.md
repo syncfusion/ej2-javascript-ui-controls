@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.50 (2019-06-04)
+
+### Dialog
+
+#### Bug Fixes
+
+- #144624 - Resolved the issue with resizing when rendering a grid inside a dialog.
+
 ## 17.1.47 (2019-05-14)
 
 ### Tooltip

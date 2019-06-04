@@ -1857,6 +1857,15 @@ export class ColorPicker extends Component<HTMLInputElement> implements INotifyP
             }
         }
     }
+
+    /**
+     * Sets the focus to Colorpicker
+     * its native method
+     * @public
+     */
+    public focusIn(): void {
+        this.element.parentElement.focus();
+}
 }
 
 /**

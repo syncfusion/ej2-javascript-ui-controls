@@ -57,6 +57,7 @@ export * from './series/data-label';
 export * from './series/error-bar';
 export * from './series/chart-series';
 export * from '../common/model/interface';
+export * from './model/chart-interface';
 export * from './axis/axis-model';
 export * from './legend/legend';
 export * from './series/chart-series-model';

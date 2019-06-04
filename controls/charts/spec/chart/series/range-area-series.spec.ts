@@ -21,8 +21,9 @@ import { Selection } from '../../../src/chart/user-interaction/selection';
 import { unbindResizeEvents } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { ILegendRenderEventArgs } from '../../../src/common/model/interface';
-import { ILoadedEventArgs, IAnimationCompleteEventArgs, IDragCompleteEventArgs } from '../../../src/common/model/interface';
+import { ILegendRenderEventArgs } from '../../../src/chart/model/chart-interface';
+import { IAnimationCompleteEventArgs} from '../../../src/chart/model/chart-interface';
+import { ILoadedEventArgs, IDragCompleteEventArgs } from '../../../src/chart/model/chart-interface';
 Chart.Inject(
     LineSeries, DataLabel, Category, DateTime, RangeAreaSeries,
     RangeColumnSeries, Legend, Tooltip, Crosshair, Logarithmic, Selection);

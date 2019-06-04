@@ -10,7 +10,7 @@ import { Tooltip } from '../../chart/user-interaction/tooltip';
 import { AccumulationTooltip } from '../../accumulation-chart/user-interaction/tooltip';
 import { Series, Points } from '../../chart/series/chart-series';
 import { FontModel } from '../../common/model/base-model';
-import { ITooltipRenderEventArgs } from '../../common/model/interface';
+import { ITooltipRenderEventArgs } from '../../chart/model/chart-interface';
 import { tooltipRender } from '../../common/model/constants';
 import { Tooltip as SVGTooltip, ITooltipAnimationCompleteArgs } from '@syncfusion/ej2-svg-base';
 import { ChartShape } from '../../chart/utils/enum';

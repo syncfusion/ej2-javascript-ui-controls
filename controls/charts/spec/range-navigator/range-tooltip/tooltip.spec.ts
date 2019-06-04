@@ -1,5 +1,5 @@
 import { RangeNavigator, RangeTooltip } from '../../../src/range-navigator/index';
-import { Logarithmic, DateTime, LineSeries, AreaSeries, getElement, IResizeEventArgs, IResizeRangeNavigatorEventArgs } from '../../../src/chart/index';
+import { Logarithmic, DateTime, LineSeries, AreaSeries, getElement } from '../../../src/chart/index';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { IChangedEventArgs, IRangeEventArgs, IRangeTooltipRenderEventArgs } from '../../../src/range-navigator/model/range-navigator-interface';
 import { MouseEvents } from '../../../spec/chart/base/events.spec';

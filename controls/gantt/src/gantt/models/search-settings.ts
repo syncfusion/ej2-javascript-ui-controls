@@ -1,7 +1,7 @@
 import { Property, ChildProperty } from '@syncfusion/ej2-base';
 import { SearchHierarchyMode } from '../base/enum';
 /**
- * Configures the filtering behavior of the Grid.
+ * Configures the searching behavior of the Gantt.
  */
 export class SearchSettings extends ChildProperty<SearchSettings> {
     /**

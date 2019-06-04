@@ -26,7 +26,6 @@ export class MarkerExplode extends ChartData {
 
     constructor(chart: Chart) {
         super(chart);
-        this.addEventListener();
         this.elementId = chart.element.id;
     }
 
@@ -42,10 +41,11 @@ export class MarkerExplode extends ChartData {
     /**
      * @hidden
      */
-    /* public removeEventListener(): void {
+    public removeEventListener(): void {
          if (this.chart.isDestroyed) { return; }
          this.chart.off(Browser.touchMoveEvent, this.mouseMoveHandler);
-    }*/
+         this.chart.off(Browser.touchEndEvent, this.mouseUpHandler);
+    }
 
     /**
      * @hidden

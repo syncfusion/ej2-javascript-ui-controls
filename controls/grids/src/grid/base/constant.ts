@@ -340,3 +340,5 @@ export const beforeStartEdit: string = 'edit-form';
 export const beforeBatchCancel: string = 'before-batch-cancel';
 /** @hidden */
 export const batchEditFormRendered: string = 'batcheditform-rendered';
+/** @hidden */
+export const partialRefresh: string = 'partial-refresh';

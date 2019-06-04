@@ -2339,3 +2339,16 @@ export interface IslamicObject {
     month: number;
 }
 
+/**
+ * Defines the argument for the focus event.
+ */
+export interface FocusEventArgs {
+    model?: Object;
+}
+
+/**
+ * Defines the argument for the blur event.
+ */
+export interface BlurEventArgs {
+    model?: Object;
+}

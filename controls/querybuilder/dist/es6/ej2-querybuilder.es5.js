@@ -1144,8 +1144,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             var length_1;
-            if (tempRule.type === 'boolean' && this.selectedColumn.values) {
-                length_1 = this.selectedColumn.values.length;
+            if (tempRule.type === 'boolean') {
+                length_1 = this.selectedColumn.values ? this.selectedColumn.values.length : 2;
             }
             else {
                 length_1 = tempRule.operator && tempRule.operator.toLowerCase().indexOf('between') > -1 ? 2 : 1;
@@ -1179,12 +1179,12 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                                 var values = itemData.values && itemData.values.length ? itemData.values : ['True', 'False'];
                                 var isCheck = false;
                                 if (rule.type === 'boolean' && rule.value) {
-                                    isCheck = values[i].toString() === rule.value.toString();
+                                    isCheck = values[i].toLowerCase() === rule.value.toString().toLowerCase();
                                 }
                                 else if (itemData.value) {
-                                    isCheck = values[i].toString() === itemData.value.toString();
+                                    isCheck = values[i].toLowerCase() === itemData.value.toString().toLowerCase();
                                 }
-                                else {
+                                else if (i === 0) {
                                     isCheck = true;
                                 }
                                 var radiobutton = new RadioButton({
@@ -1309,8 +1309,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             var inputLen = 1;
-            if (tempRule.type === 'boolean' && this.selectedColumn.values) {
-                inputLen = this.selectedColumn.values.length;
+            if (tempRule.type === 'boolean') {
+                inputLen = this.selectedColumn.values ? this.selectedColumn.values.length : 2;
             }
             else {
                 inputLen = (tempRule.operator && tempRule.operator.toLowerCase().indexOf('between') > -1) ? 2 : 1;

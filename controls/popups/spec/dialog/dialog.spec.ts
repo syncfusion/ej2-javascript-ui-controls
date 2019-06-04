@@ -68,6 +68,7 @@ afterAll(() => {
     document.body.innerHTML = '';
 });
 });
+
 // utility dialog without modal
 describe('default alert utility dialog without modal', () => {
     beforeAll(() => {
@@ -154,6 +155,7 @@ afterAll(() => {
     document.body.innerHTML = '';
 });
 });
+
 // utility dialog without modal
 describe('create alert utility dialog', () => {
     beforeAll(() => {
@@ -2345,6 +2347,7 @@ describe('Testing args.cancel', () => {
         done()
     });
 });
+
 describe('Testing resizing option', () => {
     let dialog: any;
     let computedHeaderHeight: string;
@@ -2438,4 +2441,79 @@ describe('Testing resizing option', () => {
             }, 500);
     })
     });
-})
+    describe('F144624 - Issue with resizing when renders Grid inside the Dialog', () => {
+        let dialog: any;
+        beforeAll(() => {
+            let ele: HTMLElement = createElement('div', { id: 'dialog1' });
+            document.body.appendChild(ele);
+            let resizeTarget = createElement('div', { id: 'resizeTarget' });
+            document.body.appendChild(resizeTarget);
+            resizeTarget.style.width = '500px';
+            resizeTarget.style.height = '500px';
+            resizeTarget.style.position = 'relative';
+        });
+        afterAll(() => {
+            document.body.innerHTML = '';
+        });
+        afterEach(() => {
+            dialog.destroy();
+        });
+        it('Without footer element to getMinHeight testing', (done: Function) => {
+            dialog = new Dialog({
+                header: 'Delete Multiple Items',
+                showCloseIcon: true,
+                content: 'Test',
+                enableResize: true,
+                height: '400px',
+                width: '300px',
+                resizeStart: function () {
+                    expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(true)
+                }, 
+                resizing: function () {
+                    expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(true)
+                },
+                resizeStop : function () {
+                    expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(false)
+                }
+             });
+            dialog.appendTo('#dialog1');
+            let mouseEvent = document.createEvent ('MouseEvents');
+            mouseEvent.initEvent ('mousedown', true, true);
+            (document.querySelector('.e-south-east') as HTMLElement).dispatchEvent (mouseEvent);
+            mouseEvent.initEvent ('mousemove', true, true);
+            (document.querySelector('.e-south-east') as HTMLElement).dispatchEvent(mouseEvent);
+            mouseEvent.initEvent ('mouseup', true, true);
+            document.dispatchEvent(mouseEvent);
+            done();
+        });
+        it('With footer element to getMinHeight testing', (done: Function) => {
+            dialog = new Dialog({
+                header: 'Delete Multiple Items',
+                showCloseIcon: true,
+                content: 'Test',
+                enableResize: true,
+                height: '400px',
+                width: '300px',
+                buttons: [{ buttonModel: { content: "Ok" } }],
+                resizeStart: function () {
+                    expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(true)
+                }, 
+                resizing: function () {
+                    expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(true)
+                },
+                resizeStop : function () {
+                    expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(false)
+                }
+             });
+            dialog.appendTo('#dialog1');
+            let mouseEvent = document.createEvent ('MouseEvents');
+            mouseEvent.initEvent ('mousedown', true, true);
+            (document.querySelector('.e-south-east') as HTMLElement).dispatchEvent (mouseEvent);
+            mouseEvent.initEvent ('mousemove', true, true);
+            (document.querySelector('.e-south-east') as HTMLElement).dispatchEvent(mouseEvent);
+            mouseEvent.initEvent ('mouseup', true, true);
+            document.dispatchEvent(mouseEvent);
+            done();
+        });
+    });
+});

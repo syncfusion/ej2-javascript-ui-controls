@@ -518,6 +518,17 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
     }
 
+    private getEle(list: NodeList, selector: string): Element {
+        let element: Element = undefined;
+        for (let i: number = 0; i < list.length; i++) {
+            if ((list[i] as Element).classList.contains(selector)) {
+                element = list[i] as Element;
+                break;
+            }
+        }
+        return element;
+    }
+
     /* istanbul ignore next */
     private getMinHeight(): void {
         let computedHeaderHeight: string = '0px';
@@ -525,15 +536,14 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         if (!isNullOrUndefined(this.element.querySelector('.' + DLG_HEADER_CONTENT))) {
             computedHeaderHeight = getComputedStyle(this.headerContent).height;
         }
-        if (!isNullOrUndefined(this.element.querySelector('.' + DLG_FOOTER_CONTENT))) {
-            computedFooterHeight = getComputedStyle(this.element.querySelector('.' + DLG_FOOTER_CONTENT)).height;
-        }
+        let footerEle: Element = this.getEle(this.element.childNodes, DLG_FOOTER_CONTENT);
+        if (!isNullOrUndefined(footerEle)) { computedFooterHeight = getComputedStyle(footerEle).height; }
         let headerHeight: number = parseInt(computedHeaderHeight.slice(0, computedHeaderHeight.indexOf('p')), 10);
         let footerHeight: number = parseInt(computedFooterHeight.slice(0, computedFooterHeight.indexOf('p')), 10);
         setMinHeight(headerHeight + 30 + footerHeight);
     }
 
-   private onResizeStart(args: ResizeMouseEventArgs | ResizeTouchEventArgs): boolean {
+    private onResizeStart(args: ResizeMouseEventArgs | ResizeTouchEventArgs): boolean {
         this.trigger('resizeStart', args);
         return args.cancel;
     }

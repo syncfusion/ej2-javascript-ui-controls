@@ -171,8 +171,8 @@ export class Column {
     /**    
      * It is used to change display value with the given format and does not affect the original data.  
      * Gets the format from the user which can be standard or custom 
-     * [`number`](../../../common/internationalization/#custom-number-formatting-and-parsing) 
-     * and [`date`](../../../common/internationalization/#manipulating-datetime) formats.  
+     * [`number`](../../../common/internationalization/#supported-format-string) 
+     * and [`date`](../../../common/internationalization/#supported-format-string-1) formats.  
      * @default null  
      * @aspType string  
      */
@@ -448,8 +448,8 @@ export interface ColumnModel {
   /**    
    * It is used to change display value with the given format and does not affect the original data.  
    * Gets the format from the user which can be standard or custom 
-   * [`number`](../base/intl.html#number-formatter-and-parser) 
-   * and [`date`](../base/intl.html#date-formatter-and-parser) formats.  
+   * [`number`](../../../common/internationalization/#supported-format-string) 
+   * and [`date`](../../../common/internationalization/#supported-format-string-1) formats.  
    * @default null  
    * @aspType string  
    */

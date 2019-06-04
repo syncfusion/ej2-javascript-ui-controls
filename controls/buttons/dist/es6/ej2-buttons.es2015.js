@@ -363,6 +363,22 @@ let Button = class Button extends Component {
             }
         }
     }
+    /**
+     * Click the button element
+     * its native method
+     * @public
+     */
+    click() {
+        this.element.click();
+    }
+    /**
+     * Sets the focus to Button
+     * its native method
+     * @public
+     */
+    focusIn() {
+        this.element.focus();
+    }
 };
 __decorate([
     Property('Left')
@@ -772,6 +788,22 @@ let CheckBox = class CheckBox extends Component {
             EventHandler.add(this.element, 'change', this.changeHandler, this);
         }
     }
+    /**
+     * Click the CheckBox element
+     * its native method
+     * @public
+     */
+    click() {
+        this.element.click();
+    }
+    /**
+     * Sets the focus to CheckBox
+     * its native method
+     * @public
+     */
+    focusIn() {
+        this.element.focus();
+    }
 };
 __decorate$1([
     Event()
@@ -1139,6 +1171,22 @@ let RadioButton = RadioButton_1 = class RadioButton extends Component {
             EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
         }
     }
+    /**
+     * Click the RadioButton element
+     * its native method
+     * @public
+     */
+    click() {
+        this.element.click();
+    }
+    /**
+     * Sets the focus to RadioButton
+     * its native method
+     * @public
+     */
+    focusIn() {
+        this.element.focus();
+    }
 };
 __decorate$2([
     Event()
@@ -1495,6 +1543,22 @@ let Switch = class Switch extends Component {
         if (this.formElement) {
             EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
         }
+    }
+    /**
+     * Click the switch element
+     * its native method
+     * @public
+     */
+    click() {
+        this.element.click();
+    }
+    /**
+     * Sets the focus to Switch
+     * its native method
+     * @public
+     */
+    focusIn() {
+        this.element.focus();
     }
 };
 __decorate$3([

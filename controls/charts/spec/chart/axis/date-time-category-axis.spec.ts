@@ -9,7 +9,7 @@ import {
     Series, ColumnSeries, ChartAnnotation, getElement, StripLine
 } from '../../../src/chart/index';
 import { datetimeData, datetimeCategoryYearData1, datetimeCategoryYearData2, datetimeCategoryYearData, dateTimedataInterval } from '../base/data.spec';
-import { ILoadedEventArgs, IAxisLabelRenderEventArgs } from '../../../src/common/model/interface';
+import { ILoadedEventArgs, IAxisLabelRenderEventArgs } from '../../../src/chart/model/chart-interface';
 
 Chart.Inject(LineSeries, DateTime, BarSeries, DateTimeCategory, ColumnSeries, ChartAnnotation, StripLine);
 export interface Arg {

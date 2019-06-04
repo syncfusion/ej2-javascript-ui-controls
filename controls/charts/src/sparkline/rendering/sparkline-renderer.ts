@@ -7,6 +7,7 @@ import { PaddingModel, AxisSettingsModel, SparklineMarkerSettingsModel, Sparklin
 import { SparklineDataLabelSettingsModel, SparklineBorderModel } from '../model/base-model';
 import { RangeBandSettingsModel } from '../model/base-model';
 import { EdgeLabelMode } from '../model/enum';
+import { DataManager, Query } from '@syncfusion/ej2-data';
 
 /**
  * Sparkline rendering calculation file
@@ -67,22 +68,38 @@ export class SparklineRenderer {
     /**
      * To process the sparkline data
      */
-    public processData(data: Object[] = this.sparkline.dataSource): void {
-        if (!this.sparkline.dataSource.length) {
+    public processData(): void {
+        let data: object[] = <object[]>this.sparkline.dataSource;
+        if (isNullOrUndefined(data) || !data.length) {
             return;
-        } else if (!isNaN(data[0] as number) || this.sparkline.valueType === 'Numeric') {
-            data = (this.sparkline.enableRtl) ? this.sparkline.dataSource.reverse() : this.sparkline.dataSource;
+        } else if (!isNaN(this.sparkline.dataSource[0] as number) || this.sparkline.valueType === 'Numeric') {
+            data = (this.sparkline.enableRtl) ? data.reverse() : data;
             this.sparkline.sparklineData = data; // extend([], data) as Object[];
         } else {
             this['process' + this.sparkline.valueType]();
         }
         this.axisCalculation();
     }
+
+    /* tslint:disable:no-string-literal */
+    /* tslint:disable:no-eval */
+    public processDataManager(): void {
+        let dataModule: DataManager; let queryModule: Query;
+        if (this.sparkline.dataSource instanceof DataManager) {
+            dataModule = this.sparkline.dataSource;
+            queryModule = this.sparkline.query instanceof Query ? this.sparkline.query : new Query();
+            let dataManager: Promise<Object> = dataModule.executeQuery(queryModule);
+            dataManager.then((e: Object) => {
+                this.sparkline.dataSource = e['result'];
+                this.sparkline.sparklineData = this.sparkline.dataSource;
+            });
+        }
+    }
     /**
      * To process sparkline category data.
      */
     private processCategory(
-        data: Object[] = this.sparkline.dataSource, x: string = this.sparkline.xName, y: string = this.sparkline.yName): void {
+        data: Object[] = <object[]>this.sparkline.dataSource, x: string = this.sparkline.xName, y: string = this.sparkline.yName): void {
         let temp: Object[] = [];
         let xValues: string[] = [];
         data.forEach((value: object, index: number) => {
@@ -100,7 +117,7 @@ export class SparklineRenderer {
      * To process sparkline DateTime data.
      */
     private processDateTime(
-        data: Object[] = this.sparkline.dataSource, x: string = this.sparkline.xName, y: string = this.sparkline.yName): void {
+        data: Object[] = <object[]>this.sparkline.dataSource, x: string = this.sparkline.xName, y: string = this.sparkline.yName): void {
         let temp: Object[] = [];
         data.forEach((value: object, index: number) => {
             let currentData: object = {};
@@ -610,7 +627,7 @@ export class SparklineRenderer {
      * To calculate min max for x and y axis
      */
     private axisCalculation(): void {
-        this.findRanges(this.sparkline.sparklineData);
+        this.findRanges(<object[]>this.sparkline.sparklineData);
     }
     /**
      * To find x axis interval.

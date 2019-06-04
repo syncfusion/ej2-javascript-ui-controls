@@ -15,7 +15,7 @@ import { EmitType } from '@syncfusion/ej2-base';
 import { StackingColumnSeries } from '../../../src/chart/series/stacking-column-series';
 import { sort } from '../../../src/common/utils/helper';
 import '../../../node_modules/es6-promise/dist/es6-promise';
-import { ILoadedEventArgs } from '../../../src/common/model/interface';
+import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 Chart.Inject(LineSeries, Category, DataLabel, StackingColumnSeries, ColumnSeries);
 

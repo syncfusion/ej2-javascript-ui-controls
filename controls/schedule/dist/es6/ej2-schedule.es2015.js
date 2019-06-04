@@ -633,6 +633,8 @@ const ICON_DISABLE_CLASS = 'e-icon-disable';
 const AUTO_HEIGHT = 'e-auto-height';
 /** @hidden */
 const EVENT_TEMPLATE = 'e-template';
+/** @hidden */
+const READ_ONLY = 'e-read-only';
 
 /**
  * Header module
@@ -7253,7 +7255,7 @@ class EventWindow {
         if (!isNullOrUndefined(this.parent.editorTemplate)) {
             if (args) {
                 this.destroyComponents();
-                form.childNodes.forEach((node) => remove(node));
+                [].slice.call(form.childNodes).forEach((node) => remove(node));
             }
             append(this.parent.getEditorTemplate()(args), form);
         }
@@ -8821,6 +8823,12 @@ class Render {
             this.parent.uiStateValues.top = 0;
         }
         if (this.parent.headerModule) {
+            if (this.parent.activeViewOptions.readonly) {
+                addClass([this.parent.element], READ_ONLY);
+            }
+            else if (this.parent.element.classList.contains(READ_ONLY)) {
+                removeClass([this.parent.element], READ_ONLY);
+            }
             this.parent.headerModule.updateDateRange(this.parent.activeView.getDateRangeText());
             this.parent.headerModule.updateHeaderItems('remove');
         }
@@ -10265,6 +10273,7 @@ let Schedule = class Schedule extends Component {
         if (navArgs.cancel) {
             return;
         }
+        this.uiStateValues.isInitial = this.activeView.isTimelineView() ? true : this.uiStateValues.isInitial;
         this.setProperties({ selectedDate: selectedDate }, true);
         if (this.headerModule) {
             this.headerModule.setCalendarDate(selectedDate);
@@ -14567,7 +14576,10 @@ class VerticalView extends ViewBase {
         if (this.parent.showTimeIndicator && this.isWorkHourRange(new Date())) {
             let currentDateIndex = this.getCurrentTimeIndicatorIndex();
             if (currentDateIndex.length > 0) {
-                this.changeCurrentTimePosition();
+                let workCells = [].slice.call(this.element.querySelectorAll('.' + WORK_CELLS_CLASS));
+                if (workCells.length > 0) {
+                    this.changeCurrentTimePosition();
+                }
                 if (isNullOrUndefined(this.currentTimeIndicatorTimer)) {
                     this.currentTimeIndicatorTimer = window.setInterval(() => { this.changeCurrentTimePosition(); }, MS_PER_MINUTE);
                 }

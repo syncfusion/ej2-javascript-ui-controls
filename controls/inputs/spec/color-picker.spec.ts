@@ -267,6 +267,10 @@ describe('ColorPicker', () => {
             expect(colorPicker.container.querySelector('.e-apply').innerHTML).toEqual('Sich bewerben');
             expect(colorPicker.container.querySelector('.e-cancel').innerHTML).toEqual('Stornieren');
         });
+        it('Native methods - Focus', () => {
+            colorPicker = new ColorPicker({}, '#color-picker');
+            colorPicker.focusIn();
+        });
     });
 
     describe('On property changes', () => {

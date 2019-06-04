@@ -89,7 +89,7 @@ export class Scroll implements IAction {
     /**
      * Refresh makes the Grid adoptable with the height of parent container.
      *  
-     * > The [`height`](./api-grid.html#height) must be set to 100%. 
+     * > The [`height`](grid/#height/) must be set to 100%. 
      * @return
      */
     public refresh(): void {

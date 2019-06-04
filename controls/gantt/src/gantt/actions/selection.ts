@@ -6,7 +6,7 @@ import { isNullOrUndefined, removeClass, getValue, addClass, closest, setValue, 
 import { IGanttData } from '../base/interface';
 
 /** 
- * Column reorder action related code goes here
+ * The Selection module is used to handle cell and row selection.
  */
 export class Selection {
     public parent: Gantt;
@@ -126,7 +126,7 @@ export class Selection {
         }
     }
     /**
-     * Selects a cell by the given index.
+     * Selects a cell by given index.
      * @param  {IIndex} cellIndex - Defines the row and column indexes. 
      * @param  {boolean} isToggle - If set to true, then it toggles the selection.
      * @return {void}
@@ -174,7 +174,7 @@ export class Selection {
 
     /**
      * Selects a collection of rows by indexes. 
-     * @param  {number[]} rowIndexes - Specifies the row indexes.
+     * @param  {number[]} records - Defines the collection of row indexes.
      * @return {void}
      */
     public selectRows(records: number[]): void {
@@ -280,7 +280,8 @@ export class Selection {
         }
     }
     /** 
-     * Select rows with existing row selection by passing row indexes. 
+     * Select rows with existing row selection by passing row indexes.
+     * @param {number} index - Defines the row index. 
      * @return {void} 
      * @hidden
      */
@@ -429,7 +430,7 @@ export class Selection {
     }
 
     /**
-     * To destroy the column-resizer.
+     * To destroy the selection.
      * @return {void}
      * @private
      */

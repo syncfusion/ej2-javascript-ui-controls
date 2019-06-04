@@ -4205,15 +4205,15 @@ class GanttTreeGrid {
     }
 }
 
-/**
- * Defines working time of day in project
- */
 var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+/**
+ * Defines working time of day in project
+ */
 class DayWorkingTime extends ChildProperty {
 }
 __decorate$1([
@@ -4230,7 +4230,7 @@ var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /**
- * Defines dialog fields of add dialog and edit dialog
+ * Defines dialog fields of add dialog
  */
 class AddDialogFieldSettings extends ChildProperty {
 }
@@ -4251,7 +4251,7 @@ var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /**
- * Defines dialog fields of add dialog and edit dialog
+ * Defines dialog fields of edit dialog
  */
 class EditDialogFieldSettings extends ChildProperty {
 }
@@ -4353,7 +4353,7 @@ var __decorate$7 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /**
- * Configures the filtering behavior of the Grid.
+ * Configures the searching behavior of the Gantt.
  */
 class SearchSettings extends ChildProperty {
 }
@@ -4469,15 +4469,15 @@ __decorate$11([
     Property('Default')
 ], SplitterSettings.prototype, "view", void 0);
 
-/**
- * Defines mapping property to get task details from data source
- */
 var __decorate$12 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+/**
+ * Defines mapping property to get task details from data source
+ */
 class TaskFields extends ChildProperty {
 }
 __decorate$12([
@@ -5296,7 +5296,7 @@ class ChartRows {
             //     getComputedStyle(taskbarElement.querySelector(progressBarClass)).borderColor : null;
             args.baselineColor = trElement.querySelector('.' + baselineBar) ?
                 getComputedStyle(trElement.querySelector('.' + baselineBar)).backgroundColor : null;
-            args.progressLabelColor = taskbarElement.querySelector('.' + taskLabel) ?
+            args.taskLabelColor = taskbarElement.querySelector('.' + taskLabel) ?
                 getComputedStyle(taskbarElement.querySelector('.' + taskLabel)).color : null;
         }
         args.rightLabelColor = trElement.querySelector('.' + rightLabelContainer) &&
@@ -5350,8 +5350,8 @@ class ChartRows {
             //     (taskbarElement.querySelector(progressBarClass) as HTMLElement).style.borderColor = args.progressBarBorderColor;
             // }
             if (taskbarElement.querySelector('.' + taskLabel) &&
-                getComputedStyle(taskbarElement.querySelector('.' + taskLabel)).color !== args.progressLabelColor) {
-                taskbarElement.querySelector('.' + taskLabel).style.color = args.progressLabelColor;
+                getComputedStyle(taskbarElement.querySelector('.' + taskLabel)).color !== args.taskLabelColor) {
+                taskbarElement.querySelector('.' + taskLabel).style.color = args.taskLabelColor;
             }
             if (trElement.querySelector('.' + baselineBar) &&
                 getComputedStyle(trElement.querySelector('.' + baselineBar)).backgroundColor !== args.baselineColor) {
@@ -7538,7 +7538,7 @@ class ConnectorLineEdit {
 }
 
 /**
- * Splitter related goes here
+ * Splitter module is used to define the splitter position in Gantt layout.
  */
 class Splitter$1 {
     constructor(ganttObj) {
@@ -8391,7 +8391,7 @@ let Gantt = class Gantt extends Component {
     }
     /**
      * Get expanded records from given record collection
-     * @param records
+     * @param {IGanttData[]} records - Defines record collection.
      */
     getExpandedRecords(records) {
         let expandedRecords = records.filter((record) => {
@@ -8415,6 +8415,8 @@ let Gantt = class Gantt extends Component {
     }
     /**
      * Get duration value as string combined with duration and unit values
+     * @param {number} duration - Defines the duration.
+     * @param {string} durationUnit - Defines the duration unit.
      */
     getDurationString(duration, durationUnit) {
         let value = this.dateValidationModule.getDurationString(duration, durationUnit);
@@ -8572,7 +8574,7 @@ let Gantt = class Gantt extends Component {
         this.isTreeGridRendered = false;
     }
     /**
-     * public method to get taskbarHeight.
+     * Method to get taskbarHeight.
      * @return {number}
      * @public
      */
@@ -8768,7 +8770,7 @@ let Gantt = class Gantt extends Component {
         this.chartVerticalLineContainer.innerHTML = containerDiv.innerHTML;
     }
     /**
-     * Remove sorted columns of the Gantt.
+     * Method to get default property of the Gantt.
      * @return {void}
      */
     getDefaultLocale() {
@@ -8842,7 +8844,7 @@ let Gantt = class Gantt extends Component {
     }
     /**
      * To clear sorted records with specific to particular column
-     * @param columnName
+     * @param {string} columnName - Defines the sorted column name.
      */
     removeSortColumn(columnName) {
         this.sortModule.removeSortColumn(columnName);
@@ -8857,6 +8859,7 @@ let Gantt = class Gantt extends Component {
     }
     /**
      * To move horizontal scroll bar of Gantt to specific date
+     * @param  {string} date - Defines the task date of data.
      */
     scrollToDate(date) {
         let tempDate = this.dateValidationModule.getDateFromFormat(date);
@@ -8864,7 +8867,8 @@ let Gantt = class Gantt extends Component {
         this.ganttChartModule.updateScrollLeft(left);
     }
     /**
-     * To move horizontal scroll bar of Gantt to specific date
+     * To move horizontal scroll bar of Gantt to specific task id.
+     * @param  {string} taskId - Defines the task id of data.
      */
     scrollToTask(taskId) {
         if (this.ids.indexOf(taskId) !== -1) {
@@ -8874,8 +8878,8 @@ let Gantt = class Gantt extends Component {
     }
     /**
      * To set scroll left and top in chart side
-     * @param left
-     * @param top
+     * @param  {number} left - Defines the scroll left value of chart side.
+     * @param  {number} top - Defines the scroll top value of chart side.
      */
     updateChartScrollOffset(left, top) {
         if (!isNullOrUndefined(left)) {
@@ -8890,7 +8894,7 @@ let Gantt = class Gantt extends Component {
     }
     /**
      * Get parent task by clone parent item
-     * @param cloneParent
+     * @param {IParent} cloneParent - Defines the clone parent item.
      */
     getParentTask(cloneParent) {
         if (!isNullOrUndefined(cloneParent)) {
@@ -8978,6 +8982,9 @@ let Gantt = class Gantt extends Component {
     }
     /**
      * To validate project start date and end date.
+     * @param  {Date} startDate - Defines start date of project.
+     * @param  {Date} endDate - Defines end date of project.
+     * @param  {boolean} isTimelineRoundOff - Defines project start date and end date need to be round off or not.
      * @return {void}
      * @public
      */
@@ -9001,6 +9008,8 @@ let Gantt = class Gantt extends Component {
     }
     /**
      * Changes the TreeGrid column positions by field names.
+     * @param  {string} fromFName - Defines origin field name.
+     * @param  {string} toFName - Defines destination field name.
      * @return {void}
      * @public
      */
@@ -9091,7 +9100,7 @@ let Gantt = class Gantt extends Component {
     }
     /**
      * Method to get task by uniqueId value
-     * @param id
+     * @param {string} id - Defines the task id.
      */
     getTaskByUniqueID(id) {
         let value = this.flatData.filter((val) => {
@@ -9105,8 +9114,8 @@ let Gantt = class Gantt extends Component {
         }
     }
     /**
-     * Method to get task by id value
-     * @param id
+     * Method to get record by id value.
+     * @param {string} id - Defines the id of record.
      */
     getRecordByID(id) {
         if (isNullOrUndefined(id)) {
@@ -9116,8 +9125,8 @@ let Gantt = class Gantt extends Component {
     }
     /**
      * Method to set splitter position
-     * @param {string|number} value - value of the property.
-     * @param {string} type - property of SplitterSettings.
+     * @param {string|number} value - Define value to splitter settings property.
+     * @param {string} type - Defines name of internal splitter settings property.
      */
     setSplitterPosition(value, type) {
         let tempSplitterSettings = {};
@@ -9132,6 +9141,7 @@ let Gantt = class Gantt extends Component {
     }
     /**
      * Expand the record by index value.
+     * @param {number} index - Defines the index of row.
      * @return {void}
      * @public
      */
@@ -9142,6 +9152,7 @@ let Gantt = class Gantt extends Component {
     }
     /**
      * Expand the record by task id.
+     * @param {string | number} id - Defines the id of task.
      * @return {void}
      * @public
      */
@@ -9152,6 +9163,7 @@ let Gantt = class Gantt extends Component {
     }
     /**
      * Collapse the record by index value.
+     * @param {number} index - Defines the index of row.
      * @return {void}
      * @public
      */
@@ -9161,7 +9173,8 @@ let Gantt = class Gantt extends Component {
         this.ganttChartModule.collapseGanttRow(args);
     }
     /**
-     * Collapse the record by ud value.
+     * Collapse the record by id value.
+     * @param {string | number} id - Defines the id of task.
      * @return {void}
      * @public
      */
@@ -9171,7 +9184,10 @@ let Gantt = class Gantt extends Component {
         this.ganttChartModule.collapseGanttRow(args);
     }
     /**
-     * Add record public method.
+     * Method to add record.
+     * @param {Object | IGanttData} data - Defines record to add.
+     * @param {RowPosition} rowPosition - Defines the position of row.
+     * @param {number} rowIndex - Defines the row index.
      * @return {void}
      * @public
      */
@@ -9249,7 +9265,7 @@ let Gantt = class Gantt extends Component {
         }
     }
     /**
-     * Public method to open Add dialog.
+     * Method to open Add dialog.
      * @return {void}
      * @public
      */
@@ -9259,7 +9275,8 @@ let Gantt = class Gantt extends Component {
         }
     }
     /**
-     * Public method to open Edit dialog.
+     * Method to open Edit dialog.
+     * @param {number | string | Object} taskId - Defines the id of task.
      * @return {void}
      * @public
      */
@@ -9293,6 +9310,7 @@ let Gantt = class Gantt extends Component {
     }
     /**
      * Method to get chart row value by index.
+     * @param {number} index - Defines the index of row.
      * @return {HTMLElement}
      */
     getRowByIndex(index) {
@@ -9311,6 +9329,7 @@ let Gantt = class Gantt extends Component {
     }
     /**
      * Method to get the row element by task id.
+     * @param {string | number} id - Defines the id of task.
      * @return {HTMLElement}
      */
     getRowByID(id) {
@@ -9374,7 +9393,7 @@ let Gantt = class Gantt extends Component {
     }
     /**
      * Method to perform search action in Gantt
-     * @param keyVal  - Search key string
+     * @param {string} keyVal - Defines key value to search.
      */
     search(keyVal) {
         this.searchSettings.key = keyVal;
@@ -9398,7 +9417,7 @@ let Gantt = class Gantt extends Component {
         return { top: Math.round(top), left: Math.round(left) };
     }
     /**
-     * Public method to update data source.
+     * Method to update data source.
      * @return {void}
      * @public
      */
@@ -9416,7 +9435,7 @@ let Gantt = class Gantt extends Component {
         this.dataSource = dataSource;
     }
     /**
-     * Public method to expand all the rows of Gantt
+     * Method to expand all the rows of Gantt
      * @return {void}
      * @public
      */
@@ -9424,7 +9443,7 @@ let Gantt = class Gantt extends Component {
         this.ganttChartModule.expandCollapseAll('expand');
     }
     /**
-     * Public method to collapse all the rows of Gantt
+     * Method to collapse all the rows of Gantt
      * @return {void}
      * @public
      */
@@ -9469,7 +9488,7 @@ let Gantt = class Gantt extends Component {
     }
     /**
      * To set scroll top for chart scroll container
-     * @param scrollTop - To set scroll top for scroll container
+     * @param {number} scrollTop - Defines scroll top value for scroll container.
      * @return {void}
      * @public
      */
@@ -9481,7 +9500,7 @@ let Gantt = class Gantt extends Component {
      * @return {void}
      * @public
      */
-    cancelEdit(scrollTop) {
+    cancelEdit() {
         this.closeGanttActions();
     }
     /**
@@ -12635,7 +12654,7 @@ class DialogEdit {
 }
 
 /**
- * Gantt Edit Module
+ * The Edit Module is used to handle editing actions.
  */
 class Edit$2 {
     constructor(parent) {
@@ -12706,7 +12725,8 @@ class Edit$2 {
         }
     }
     /**
-     * Method to update task with new values
+     * Method to update record with new values.
+     * @param {Object} data - Defines new data to update.
      */
     updateRecordByID(data) {
         let tasks = this.parent.taskFields;
@@ -14062,7 +14082,10 @@ class Edit$2 {
         }
     }
     /**
-     *
+     * Method to add new record.
+     * @param {Object | IGanttData} data - Defines the new data to add.
+     * @param {RowPosition} rowPosition - Defines the position of row.
+     * @param {number} rowIndex - Defines the row index.
      * @return {void}
      * @private
      */
@@ -14292,7 +14315,7 @@ class Resize$1 {
 }
 
 /**
- * Filter action related code goes here
+ * The Filter module is used to handle filter action.
  */
 class Filter$2 {
     constructor(gantt) {
@@ -14408,7 +14431,7 @@ class Filter$2 {
 }
 
 /**
- * Sort operation in Gantt
+ * The Sort module is used to handle sorting action.
  */
 class Sort$1 {
     constructor(gantt) {
@@ -14448,10 +14471,10 @@ class Sort$1 {
         this.removeEventListener();
     }
     /**
-     *
-     * @param columnName
-     * @param direction
-     * @param isMultiSort
+     * Sort a column with given options.
+     * @param {string} columnName - Defines the column name to sort.
+     * @param {SortDirection} direction - Defines the direction of sort.
+     * @param {boolean} isMultiSort - Defines whether the previously sorted columns are to be maintained.
      */
     sortColumn(columnName, direction, isMultiSort) {
         this.parent.treeGrid.sortByColumn(columnName, direction, isMultiSort);
@@ -14472,7 +14495,7 @@ class Sort$1 {
     }
     /**
      * To clear sorting for specific column
-     * @param columnName
+     * @param {string} columnName - Defines the sorted column name to remove.
      */
     removeSortColumn(columnName) {
         this.parent.treeGrid.grid.removeSortColumn(columnName);
@@ -14480,7 +14503,7 @@ class Sort$1 {
 }
 
 /**
- * Column reorder action related code goes here
+ * The Selection module is used to handle cell and row selection.
  */
 class Selection$1 {
     constructor(gantt) {
@@ -14588,7 +14611,7 @@ class Selection$1 {
         }
     }
     /**
-     * Selects a cell by the given index.
+     * Selects a cell by given index.
      * @param  {IIndex} cellIndex - Defines the row and column indexes.
      * @param  {boolean} isToggle - If set to true, then it toggles the selection.
      * @return {void}
@@ -14635,7 +14658,7 @@ class Selection$1 {
     }
     /**
      * Selects a collection of rows by indexes.
-     * @param  {number[]} rowIndexes - Specifies the row indexes.
+     * @param  {number[]} records - Defines the collection of row indexes.
      * @return {void}
      */
     selectRows(records) {
@@ -14737,6 +14760,7 @@ class Selection$1 {
     }
     /**
      * Select rows with existing row selection by passing row indexes.
+     * @param {number} index - Defines the row index.
      * @return {void}
      * @hidden
      */
@@ -14879,7 +14903,7 @@ class Selection$1 {
         }
     }
     /**
-     * To destroy the column-resizer.
+     * To destroy the selection.
      * @return {void}
      * @private
      */
@@ -15449,7 +15473,7 @@ class EventMarker$1 {
 }
 
 /**
- *
+ * DayMarkers module is used to render event markers, holidays and to highlight the weekend days.
  */
 class DayMarkers {
     constructor(parent) {

@@ -1235,6 +1235,15 @@ export class ListBox extends DropDownBase {
             }
         }
     }
+
+    /**
+     * Sets the focus to ListBox
+     * its native method
+     * @public
+     */
+    public focusIn(): void {
+        this.ulElement.focus();
+    }
 }
 
 interface DropEventArgs {

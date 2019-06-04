@@ -9,7 +9,7 @@ import { AccPoints, AccumulationSeries, AccumulationAnnotationSettings } from '.
 import { getPoint } from '../utils/helper';
 import { Axis } from '../../chart/axis/axis';
 import { DateFormatOptions, createElement } from '@syncfusion/ej2-base';
-import { IAnnotationRenderEventArgs } from '../model/interface';
+import { IAnnotationRenderEventArgs } from '../../chart/model/chart-interface';
 import { annotationRender } from '../model/constants';
 import { DataUtil } from '@syncfusion/ej2-data';
 

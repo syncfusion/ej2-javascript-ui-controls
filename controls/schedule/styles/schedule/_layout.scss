@@ -2241,6 +2241,10 @@
     }
   }
 
+  .e-schedule.e-read-only .e-tbar-btn.e-btn .e-icons.e-btn-icon.e-icon-add {
+    display: none;
+  }
+
   .e-bigger #{&}.e-schedule,
   .e-bigger#{&}.e-schedule {
     .e-schedule-toolbar {

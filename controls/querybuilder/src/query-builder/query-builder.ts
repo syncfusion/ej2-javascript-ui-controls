@@ -1253,8 +1253,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             this.processTemplate(target, itemData, rule, tempRule);
         } else {
             let length: number;
-            if (tempRule.type === 'boolean' && this.selectedColumn.values) {
-                length = this.selectedColumn.values.length;
+            if (tempRule.type === 'boolean') {
+                length = this.selectedColumn.values ? this.selectedColumn.values.length : 2;
             } else {
                 length = tempRule.operator && tempRule.operator.toLowerCase().indexOf('between') > -1 ? 2 : 1;
             }
@@ -1283,10 +1283,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                                 itemData.values && itemData.values.length ? itemData.values as string[] : ['True', 'False'];
                             let isCheck: boolean = false;
                             if (rule.type === 'boolean' && rule.value) {
-                                isCheck = values[i].toString() === rule.value.toString();
+                                isCheck = values[i].toLowerCase() === rule.value.toString().toLowerCase();
                             } else if (itemData.value) {
-                                isCheck = values[i].toString() === itemData.value.toString();
-                            } else {
+                                isCheck = values[i].toLowerCase() === itemData.value.toString().toLowerCase();
+                            } else if (i === 0) {
                                 isCheck = true;
                             }
                             let radiobutton: RadioButton = new RadioButton({
@@ -1401,8 +1401,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
         } else {
             let inputLen: number = 1;
-            if (tempRule.type === 'boolean' && this.selectedColumn.values) {
-                inputLen = this.selectedColumn.values.length;
+            if (tempRule.type === 'boolean') {
+                inputLen = this.selectedColumn.values ? this.selectedColumn.values.length : 2;
             } else {
                 inputLen = (tempRule.operator && tempRule.operator.toLowerCase().indexOf('between') > -1) ? 2 : 1;
             }

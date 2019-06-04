@@ -15,7 +15,7 @@ import { ThumbSettingsModel, RangeTooltipSettingsModel } from './model/range-bas
 import { RangeSlider } from './renderer/slider';
 import { AxisPosition, StepLineSeries, ExportType, IPrintEventArgs, RectOption } from '../chart/index';
 import { Chart, getElement, ChartTheme, LineSeries, AreaSeries } from '../chart/index';
-import { DateTime, Logarithmic, IResizeRangeNavigatorEventArgs } from '../chart/index';
+import { DateTime, Logarithmic, IResizeRangeNavigatorEventArgs } from '../range-navigator/index';
 import { ILabelRenderEventsArgs, IRangeTooltipRenderEventArgs } from './model/range-navigator-interface';
 import { IRangeLoadedEventArgs, IRangeStyle, IChangedEventArgs } from './model/range-navigator-interface';
 import { getRangeThemeColor } from './utils/theme';
@@ -34,7 +34,7 @@ import { RangeIntervalType } from '../common/utils/enum';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { PeriodSelector } from '../common/period-selector/period-selector';
 import { AccumulationChart } from '../accumulation-chart/index';
-import { IRangeSelectorRenderEventArgs } from '../common/model/interface';
+import { IRangeSelectorRenderEventArgs } from '../chart/model/chart-interface';
 import { StockChart } from '../stock-chart/stock-chart';
 
 /**

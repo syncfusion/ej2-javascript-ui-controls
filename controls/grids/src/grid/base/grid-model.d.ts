@@ -211,7 +211,7 @@ export interface FilterSettingsModel {
      * The `operators` is used to override the default operators in filter menu. This should be defined by type wise
      * (string, number, date and boolean). Based on the column type, this customize operator list will render in filter menu.
      * 
-     * > Check the [`Filter Menu Operator`](./how-to.html#customizing-filter-menu-operators-list) customization.
+     * > Check the [`Filter Menu Operator`](../../grid/how-to/#customizing-filter-menu-operators-list/) customization.
      * @default null
      */
     operators?: ICustomOptr;
@@ -219,7 +219,7 @@ export interface FilterSettingsModel {
     /**
      * If ignoreAccent set to true, then filter ignores the diacritic characters or accents while filtering.
      * 
-     * > Check the [`Diacritics`](./filtering.html/#diacritics) filtering.
+     * > Check the [`Diacritics`](../../grid/filtering/#diacritics/) filtering.
      * @default false
      */
     ignoreAccent?: boolean;
@@ -239,7 +239,7 @@ export interface SelectionSettingsModel {
 
     /**
      * The cell selection modes are flow and box. It requires the selection 
-     * [`mode`](./api-selectionSettings.html#mode-selectionmode) to be either cell or both.
+     * [`mode`](grid/#mode-selectionmode/) to be either cell or both.
      * * `Flow`: Selects the range of cells between start index and end index that also includes the other cells of the selected rows.
      * * `Box`: Selects the range of cells within the start and end column indexes that includes in between cells of rows within the range.
      * * `BoxWithBorder`: Selects the range of cells as like Box mode with borders.
@@ -353,7 +353,7 @@ export interface SearchSettingsModel {
     /**
      * If ignoreAccent set to true, then filter ignores the diacritic characters or accents while filtering.
      * 
-     * > Check the [`Diacritics`](./filtering.html/#diacritics) filtering.
+     * > Check the [`Diacritics`](../../grid/filtering/#diacritics/) filtering.
      * @default false
      */
     ignoreAccent?: boolean;
@@ -537,7 +537,7 @@ export interface GridModel extends ComponentModel{
 
     /**
      * If `enableAltRow` is set to true, the grid will render with `e-altrow` CSS class to the alternative tr elements.    
-     * > Check the [`AltRow`](./row.html#styling-alternate-rows) to customize the styles of alternative rows.
+     * > Check the [`AltRow`](../../grid/row/#styling-alternate-rows/) to customize the styles of alternative rows.
      * @default true 
      */
     enableAltRow?: boolean;
@@ -578,7 +578,7 @@ export interface GridModel extends ComponentModel{
     /**
      * If `allowPaging` is set to true, the pager renders at the footer of the Grid. It is used to handle page navigation in the Grid.
      * 
-     * > Check the [`Paging`](./paging.html) to configure the grid pager.
+     * > Check the [`Paging`](../../grid/paging/) to configure the grid pager.
      * @default false     
      */
     allowPaging?: boolean;
@@ -612,7 +612,7 @@ export interface GridModel extends ComponentModel{
     /**
      * If `allowSorting` is set to true, it allows sorting of grid records when column header is clicked.  
      * 
-     * > Check the [`Sorting`](./sorting.html) to customize its default behavior.
+     * > Check the [`Sorting`](../../grid/sorting/) to customize its default behavior.
      * @default false    
      */
     allowSorting?: boolean;
@@ -627,7 +627,7 @@ export interface GridModel extends ComponentModel{
     /**
      * If `allowExcelExport` set to true, then it will allow the user to export grid to Excel file.
      * 
-     * > Check the [`ExcelExport`](./excel-exporting.html) to configure exporting document.
+     * > Check the [`ExcelExport`](../../grid/excel-exporting/) to configure exporting document.
      * @default false    
      */
     allowExcelExport?: boolean;
@@ -635,7 +635,7 @@ export interface GridModel extends ComponentModel{
     /**
      * If `allowPdfExport` set to true, then it will allow the user to export grid to Pdf file.
      * 
-     * > Check the [`Pdfexport`](./pdf-export.html) to configure the exporting document.
+     * > Check the [`Pdfexport`](../../grid/pdf-export/) to configure the exporting document.
      * @default false    
      */
     allowPdfExport?: boolean;
@@ -670,7 +670,7 @@ export interface GridModel extends ComponentModel{
      * If set to false the filter bar will not be displayed. 
      * Filter bar allows the user to filter grid records with required criteria.   
      * 
-     * > Check the [`Filtering`](./filtering.html) to customize its default behavior.     
+     * > Check the [`Filtering`](../../grid/filtering/) to customize its default behavior.     
      * @default false    
      */
     allowFiltering?: boolean;
@@ -711,7 +711,7 @@ export interface GridModel extends ComponentModel{
      * If `allowGrouping` set to true, then it will allow the user to dynamically group or ungroup columns.  
      * Grouping can be done by drag and drop columns from column header to group drop area. 
      * 
-     * > Check the [`Grouping`](./grouping.html) to customize its default behavior.
+     * > Check the [`Grouping`](../../grid/grouping/) to customize its default behavior.
      * @default false    
      */
     allowGrouping?: boolean;
@@ -719,7 +719,7 @@ export interface GridModel extends ComponentModel{
     /**
      * If `showColumnMenu` set to true, then it will enable the column menu options in each columns.
      * 
-     * > Check the [`Column menu`](./columns.html#column-menu) for its configuration.
+     * > Check the [`Column menu`](../../grid/columns/#column-menu/) for its configuration.
      * @default false    
      */
     showColumnMenu?: boolean;
@@ -739,7 +739,7 @@ export interface GridModel extends ComponentModel{
 
     /**
      * Configures the Grid aggregate rows.
-     * > Check the [`Aggregates`](./aggregates.html) for its configuration.
+     * > Check the [`Aggregates`](../../grid/aggregates/) for its configuration.
      * @default []
      */
     aggregates?: AggregateRowModel[];
@@ -747,7 +747,7 @@ export interface GridModel extends ComponentModel{
     /**
      * If `showColumnChooser` is set to true, it allows you to dynamically show or hide columns.  
      * 
-     * > Check the [`ColumnChooser`](./columns.html#column-chooser) for its configuration.
+     * > Check the [`ColumnChooser`](../../grid/columns/#column-chooser/) for its configuration.
      * @default false    
      */
     showColumnChooser?: boolean;
@@ -778,17 +778,17 @@ export interface GridModel extends ComponentModel{
     /**
      * The row template that renders customized rows from the given template. 
      * By default, Grid renders a table row for every data source item.
-     * > * It accepts either [template string](../common/template-engine.html) or HTML element ID.   
+     * > * It accepts either [template string](../../common/template-engine/) or HTML element ID.   
      * > * The row template must be a table row.  
      * 
-     * > Check the [`Row Template`](./row.html) customization.
+     * > Check the [`Row Template`](grid/row/) customization.
      */
     rowTemplate?: string;
 
     /**
      * The detail template allows you to show or hide additional information about a particular row.
      *  
-     * > It accepts either the [template string](../common/template-engine.html) or the HTML element ID.
+     * > It accepts either the [template string](../../common/template-engine/) or the HTML element ID.
      * 
      * {% codeBlock src="grid/detail-template-api/index.ts" %}{% endcodeBlock %}
      */
@@ -796,10 +796,10 @@ export interface GridModel extends ComponentModel{
 
     /**
      * Defines Grid options to render child Grid. 
-     * It requires the [`queryString`](./api-grid.html#querystring-string) for parent 
+     * It requires the [`queryString`](grid/#querystring-string) for parent 
      * and child relationship. 
      * 
-     * > Check the [`Child Grid`](./hierarchy-grid.html) for its configuration.
+     * > Check the [`Child Grid`](../../grid/hierarchy-grid/) for its configuration.
      */
     childGrid?: GridModel;
 
@@ -833,7 +833,7 @@ export interface GridModel extends ComponentModel{
      * If the `dataSource` is an existing [`DataManager`](https://ej2.syncfusion.com/documentation/data/api-dataManager.html),
      *  the Grid will not initialize a new one. 
      * 
-     * > Check the available [`Adaptors`](../data/adaptors.html) to customize the data operation.
+     * > Check the available [`Adaptors`](../../data/adaptors/) to customize the data operation.
      * @default []    
      */
     dataSource?: Object | DataManager | DataResult;
@@ -876,7 +876,7 @@ export interface GridModel extends ComponentModel{
      * * CsvExport - Export the Grid to CSV(csvExport() method manually to make export.)<br><br>
      * The following code example implements the custom toolbar items.
      * 
-     *  > Check the [`Toolbar`](./tool-bar.html#custom-toolbar-items) to customize its default items.
+     *  > Check the [`Toolbar`](../../grid/tool-bar/#custom-toolbar-items/) to customize its default items.
      * 
      * {% codeBlock src="grid/toolbar-api/index.ts" %}{% endcodeBlock %}
      * @default null

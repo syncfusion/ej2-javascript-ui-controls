@@ -390,7 +390,10 @@ __decorate$1([
 __decorate$1([
     Property(0)
 ], Animation$1.prototype, "delay", void 0);
-/** @private */
+/**
+ * Series and point index
+ * @public
+ */
 class Indexes extends ChildProperty {
 }
 __decorate$1([
@@ -441,6 +444,7 @@ __decorate$1([
 ], EmptyPointSettings.prototype, "mode", void 0);
 /**
  * Configures the ToolTips in the chart.
+ * @public
  */
 class TooltipSettings extends ChildProperty {
 }
@@ -1066,6 +1070,7 @@ __decorate$3([
 ], MultiLevelLabels.prototype, "categories", void 0);
 /**
  * Specifies range for scrollbarSettings property
+ * @public
  */
 class ScrollbarSettingsRange extends ChildProperty {
 }
@@ -1273,6 +1278,7 @@ __decorate$2([
 ], CrosshairTooltip.prototype, "textStyle", void 0);
 /**
  * Configures the axes in the chart.
+ * @public
  */
 class Axis extends ChildProperty {
     // tslint:disable-next-line:no-any
@@ -3758,6 +3764,7 @@ class CartesianAxisLayoutPanel {
         let optionsLine = {};
         let element = getElement(chart.element.id + 'AxisLine_' + index);
         let direction = element ? element.getAttribute('d') : '';
+        element = null;
         optionsLine = {
             'id': chart.element.id + 'AxisLine_' + index,
             'd': 'M ' + (rect.x - plotX) + ' ' + (rect.y - plotY) +
@@ -3791,7 +3798,7 @@ class CartesianAxisLayoutPanel {
         let isTickInside = axis.tickPosition === 'Inside';
         let ticks = isTickInside ? (rect.x - tickSize - axisLineSize) : (rect.x + tickSize + axisLineSize + scrollBarHeight);
         let length = axis.visibleLabels.length;
-        let chart = this.chart;
+        let chartThemeStyle = this.chart.themeStyle;
         if (axis.valueType.indexOf('Category') && axis.labelPlacement === 'BetweenTicks' && length > 0) {
             length += 1;
         }
@@ -3807,15 +3814,15 @@ class CartesianAxisLayoutPanel {
                 if ((inside(tempInterval, axis.visibleRange)) || this.isBorder(axis, i, pointY)) {
                     majorGrid = 'M ' + this.seriesClipRect.x + ' ' + (pointY) +
                         ' L ' + (this.seriesClipRect.x + this.seriesClipRect.width) + ' ' + pointY;
-                    this.renderGridLine(axis, index, majorGrid, axis.majorGridLines, '_MajorGridLine_', i, this.element, chart.themeStyle.majorGridLine, axis.majorGridLines.dashArray);
+                    this.renderGridLine(axis, index, majorGrid, axis.majorGridLines, '_MajorGridLine_', i, this.element, chartThemeStyle.majorGridLine, axis.majorGridLines.dashArray);
                 }
                 majorTick = 'M ' + (rect.x + axisLineSize + (isTickInside ? scrollBarHeight : 0)) + ' ' + pointY +
                     ' L ' + (ticks) + ' ' + pointY;
-                this.renderGridLine(axis, index, majorTick, axis.majorTickLines, '_MajorTickLine_', i, parent, chart.themeStyle.majorTickLine);
+                this.renderGridLine(axis, index, majorTick, axis.majorTickLines, '_MajorTickLine_', i, parent, chartThemeStyle.majorTickLine);
                 if ((minorGridLines.width > 0 || minorTickLines.width > 0) && axis.minorTicksPerInterval > 0) {
                     minorGridDirection = this.drawAxisMinorLine(axis, tempInterval, rect, i);
-                    this.renderGridLine(axis, index, minorGridDirection[0], minorGridLines, '_MinorGridLine_', i, this.element, chart.themeStyle.minorGridLine, minorGridLines.dashArray);
-                    this.renderGridLine(axis, index, minorGridDirection[1], minorTickLines, '_MinorTickLine_', i, parent, chart.themeStyle.minorTickLine);
+                    this.renderGridLine(axis, index, minorGridDirection[0], minorGridLines, '_MinorGridLine_', i, this.element, chartThemeStyle.minorGridLine, minorGridLines.dashArray);
+                    this.renderGridLine(axis, index, minorGridDirection[1], minorTickLines, '_MinorTickLine_', i, parent, chartThemeStyle.minorTickLine);
                 }
             }
         }
@@ -3827,8 +3834,7 @@ class CartesianAxisLayoutPanel {
      * @param value
      */
     isBorder(axis, index, value) {
-        let chart = this.chart;
-        let border = chart.chartArea.border;
+        let border = this.chart.chartArea.border;
         let rect = this.seriesClipRect;
         let orientation = axis.orientation;
         let start = (orientation === 'Horizontal') ? rect.x : rect.y;
@@ -3988,7 +3994,6 @@ class CartesianAxisLayoutPanel {
     drawYAxisTitle(axis, index, parent, rect) {
         let chart = this.chart;
         let labelRotation = (axis.opposedPosition) ? 90 : -90;
-        let elementSize = measureText(axis.title, axis.titleStyle);
         let padding = (axis.tickPosition === 'Inside' ? 0 : axis.majorTickLines.height + this.padding) +
             (axis.labelPosition === 'Inside' ? 0 :
                 (axis.maxLabelSize.width + axis.multiLevelLabelHeight + this.padding));
@@ -4022,7 +4027,7 @@ class CartesianAxisLayoutPanel {
         let length = axis.visibleLabels.length;
         let isTickInside = axis.tickPosition === 'Inside';
         let ticks = isTickInside ? (rect.y - tickSize - axisLineSize) : (rect.y + tickSize + axisLineSize + scrollBarHeight);
-        let chart = this.chart;
+        let chartThemeStyle = this.chart.themeStyle;
         if (axis.valueType.indexOf('Category') > -1 && length > 0 && axis.labelPlacement === 'BetweenTicks') {
             length += 1;
         }
@@ -4041,15 +4046,15 @@ class CartesianAxisLayoutPanel {
                 if (inside(tempInterval, axis.visibleRange) || this.isBorder(axis, i, pointX)) {
                     majorGrid = 'M ' + pointX + ' ' + (this.seriesClipRect.y + this.seriesClipRect.height) +
                         ' L ' + pointX + ' ' + this.seriesClipRect.y;
-                    this.renderGridLine(axis, index, majorGrid, axis.majorGridLines, '_MajorGridLine_', i, this.element, chart.themeStyle.majorGridLine, axis.majorGridLines.dashArray);
+                    this.renderGridLine(axis, index, majorGrid, axis.majorGridLines, '_MajorGridLine_', i, this.element, chartThemeStyle.majorGridLine, axis.majorGridLines.dashArray);
                 }
                 majorTick = 'M ' + (pointX) + ' ' + (rect.y + axisLineSize + (isTickInside ? scrollBarHeight : 0))
                     + ' L ' + (pointX) + ' ' + ticks;
-                this.renderGridLine(axis, index, majorTick, axis.majorTickLines, '_MajorTickLine_', i, parent, chart.themeStyle.majorTickLine);
+                this.renderGridLine(axis, index, majorTick, axis.majorTickLines, '_MajorTickLine_', i, parent, chartThemeStyle.majorTickLine);
                 if (axis.minorTicksPerInterval > 0 && (axis.minorGridLines.width > 0 || axis.minorTickLines.width > 0)) {
                     minorDirection = this.drawAxisMinorLine(axis, tempInterval, rect, i);
-                    this.renderGridLine(axis, index, minorDirection[0], axis.minorGridLines, '_MinorGridLine_', i, this.element, chart.themeStyle.minorGridLine, axis.minorGridLines.dashArray);
-                    this.renderGridLine(axis, index, minorDirection[1], axis.minorTickLines, '_MinorTickLine_', i, parent, chart.themeStyle.minorTickLine);
+                    this.renderGridLine(axis, index, minorDirection[0], axis.minorGridLines, '_MinorGridLine_', i, this.element, chartThemeStyle.minorGridLine, axis.minorGridLines.dashArray);
+                    this.renderGridLine(axis, index, minorDirection[1], axis.minorTickLines, '_MinorTickLine_', i, parent, chartThemeStyle.minorTickLine);
                 }
             }
         }
@@ -4431,6 +4436,7 @@ class CartesianAxisLayoutPanel {
         if (gridModel.width > 0 && axis.visible && gridDirection) {
             element = getElement(chart.element.id + gridId + index + '_' + gridIndex);
             direction = element ? element.getAttribute('d') : null;
+            element = null;
             this.htmlObject = chart.renderer.drawPath(new PathOption(chart.element.id + gridId + index + '_' + gridIndex, 'transparent', gridModel.width, gridModel.color || themeColor, null, dashArray, gridDirection));
             appendChildElement(parent, this.htmlObject, chart.redraw, true, 'x', 'y', null, direction, true);
         }
@@ -4442,15 +4448,15 @@ class CartesianAxisLayoutPanel {
      * @param axis
      * @param index
      */
-    findParentNode(chart, label, axis, index) {
+    findParentNode(elementId, label, axis, index) {
         if (axis.crossAt === null) {
-            return document.getElementById(chart.element.id + 'AxisGroup' + index + 'Inside');
+            return document.getElementById(elementId + 'AxisGroup' + index + 'Inside');
         }
-        if (document.getElementById(chart.element.id + 'AxisGroup' + index + 'Inside').contains(document.getElementById(label.id))) {
-            return document.getElementById(chart.element.id + 'AxisGroup' + index + 'Inside');
+        if (document.getElementById(elementId + 'AxisGroup' + index + 'Inside').contains(document.getElementById(label.id))) {
+            return document.getElementById(elementId + 'AxisGroup' + index + 'Inside');
         }
         else {
-            return document.getElementById(chart.element.id + 'AxisGroup' + index + 'Outside');
+            return document.getElementById(elementId + 'AxisGroup' + index + 'Outside');
         }
     }
     /**
@@ -4462,7 +4468,7 @@ class CartesianAxisLayoutPanel {
      * @param rect
      */
     createZoomingLabel(chart, labelElement, axis, index, rect) {
-        let parentNode = this.findParentNode(chart, labelElement, axis, index);
+        let parentNode = this.findParentNode(chart.element.id, labelElement, axis, index);
         labelElement.setAttribute('opacity', '0.3');
         let zoomElement = chart.renderer.createGroup({
             id: chart.element.id + 'AxisLabels_Zoom' + index
@@ -4689,14 +4695,19 @@ __decorate$4([
 ], MarkerSettings.prototype, "dataLabel", void 0);
 /**
  * Points model for the series.
- * @private
+ * @public
  */
 class Points {
     constructor() {
+        /** point symbol location */
         this.symbolLocations = null;
+        /** point region */
         this.regions = null;
+        /** point percentage value */
         this.percentage = null;
+        /** point region data */
         this.regionData = null;
+        /** point marker */
         this.marker = {
             visible: false
         };
@@ -4788,6 +4799,10 @@ __decorate$4([
 __decorate$4([
     Property('0')
 ], ChartSegment.prototype, "dashArray", void 0);
+/**
+ * Error bar settings
+ * @public
+ */
 class ErrorBarSettings extends ChildProperty {
 }
 __decorate$4([
@@ -5130,6 +5145,7 @@ class SeriesBase extends ChildProperty {
         this.processJsonData();
         this.recordsCount = e.count;
         this.refreshChart(isRemoteData);
+        this.currentViewData = null;
     }
     refreshChart(isRemoteData) {
         let chart = this.chart;
@@ -5207,7 +5223,8 @@ __decorate$4([
     Property(false)
 ], SeriesBase.prototype, "enableComplexProperty", void 0);
 /**
- *  Configures the series in charts.
+ * Configures the series in charts.
+ * @public
  */
 class Series extends SeriesBase {
     // tslint:disable-next-line:no-any
@@ -5402,9 +5419,7 @@ class Series extends SeriesBase {
     /** @private */
     renderSeries(chart) {
         let seriesType = firstToLowerCase(this.type);
-        if (seriesType.indexOf('100') !== -1) {
-            seriesType = seriesType.replace('100', '');
-        }
+        seriesType = seriesType.replace('100', '');
         if (chart[seriesType + 'SeriesModule']) {
             if (this.category !== 'Indicator' && this.category !== 'TrendLine') {
                 this.createSeriesElements(chart);
@@ -5430,7 +5445,6 @@ class Series extends SeriesBase {
     createSeriesElements(chart) {
         if (this.category !== 'Indicator') {
             let elementId = chart.element.id;
-            let xAxisRect = this.xAxis.rect;
             // 8 for extend border value 5 for extend size value
             let explodeValue = this.marker.border.width + 8 + 5;
             let render = chart.renderer;
@@ -5702,7 +5716,6 @@ class MarkerExplode extends ChartData {
      */
     constructor(chart) {
         super(chart);
-        this.addEventListener();
         this.elementId = chart.element.id;
     }
     /**
@@ -5718,10 +5731,13 @@ class MarkerExplode extends ChartData {
     /**
      * @hidden
      */
-    /* public removeEventListener(): void {
-         if (this.chart.isDestroyed) { return; }
-         this.chart.off(Browser.touchMoveEvent, this.mouseMoveHandler);
-    }*/
+    removeEventListener() {
+        if (this.chart.isDestroyed) {
+            return;
+        }
+        this.chart.off(Browser.touchMoveEvent, this.mouseMoveHandler);
+        this.chart.off(Browser.touchEndEvent, this.mouseUpHandler);
+    }
     /**
      * @hidden
      */
@@ -6807,6 +6823,7 @@ __decorate([
  *   chartObj.appendTo("#chart");
  * </script>
  * ```
+ * @public
  */
 let Chart = class Chart extends Component {
     /**
@@ -6989,14 +7006,15 @@ let Chart = class Chart extends Component {
     }
     initializeModuleElements() {
         this.dataLabelCollections = [];
-        this.seriesElements = this.renderer.createGroup({ id: this.element.id + 'SeriesCollection' });
+        let elementID = this.element.id;
+        this.seriesElements = this.renderer.createGroup({ id: elementID + 'SeriesCollection' });
         if (this.indicators.length) {
-            this.indicatorElements = this.renderer.createGroup({ id: this.element.id + 'IndicatorCollection' });
+            this.indicatorElements = this.renderer.createGroup({ id: elementID + 'IndicatorCollection' });
         }
         if (this.hasTrendlines()) {
-            this.trendLineElements = this.renderer.createGroup({ id: this.element.id + 'TrendLineCollection' });
+            this.trendLineElements = this.renderer.createGroup({ id: elementID + 'TrendLineCollection' });
         }
-        this.dataLabelElements = this.renderer.createGroup({ id: this.element.id + 'DataLabelCollection' });
+        this.dataLabelElements = this.renderer.createGroup({ id: elementID + 'DataLabelCollection' });
     }
     hasTrendlines() {
         let isTrendline;
@@ -7011,16 +7029,17 @@ let Chart = class Chart extends Component {
     renderSeriesElements(axisElement) {
         // Initialize the series elements values
         this.initializeModuleElements();
+        let elementID = this.element.id;
         if (this.element.tagName !== 'g') {
-            let tooltipDiv = redrawElement(this.redraw, this.element.id + '_Secondary_Element') ||
+            let tooltipDiv = redrawElement(this.redraw, elementID + '_Secondary_Element') ||
                 this.createElement('div');
-            tooltipDiv.id = this.element.id + '_Secondary_Element';
+            tooltipDiv.id = elementID + '_Secondary_Element';
             tooltipDiv.setAttribute('style', 'position: relative');
             appendChildElement(this.element, tooltipDiv, this.redraw);
         }
         // For userInteraction
         if (this.tooltip.enable) {
-            appendChildElement(this.svgObject, this.renderer.createGroup({ id: this.element.id + '_UserInteraction', style: 'pointer-events:none;' }), this.redraw);
+            appendChildElement(this.svgObject, this.renderer.createGroup({ id: elementID + '_UserInteraction', style: 'pointer-events:none;' }), this.redraw);
         }
         if (this.rows.length > 0 && this.columns.length > 0) {
             this.initializeIndicator();
@@ -7373,9 +7392,9 @@ let Chart = class Chart extends Component {
         if (this.title) {
             let alignment = this.titleStyle.textAlignment;
             let getAnchor = alignment === 'Near' ? 'start' : alignment === 'Far' ? 'end' : 'middle';
-            this.elementSize = measureText(this.title, this.titleStyle);
+            let elementSize = measureText(this.title, this.titleStyle);
             rect = new Rect(margin.left, 0, this.availableSize.width - margin.left - margin.right, 0);
-            let options = new TextOption(this.element.id + '_ChartTitle', titlePositionX(rect, this.titleStyle), this.margin.top + ((this.elementSize.height) * 3 / 4), getAnchor, this.titleCollection, '', 'auto');
+            let options = new TextOption(this.element.id + '_ChartTitle', titlePositionX(rect, this.titleStyle), this.margin.top + ((elementSize.height) * 3 / 4), getAnchor, this.titleCollection, '', 'auto');
             let element = redrawElement(this.redraw, this.element.id + '_ChartTitle', options, this.renderer) ||
                 textElement(options, this.titleStyle, this.titleStyle.color || this.themeStyle.chartTitle, this.svgObject);
             element.setAttribute('aria-label', this.description || this.title);
@@ -7427,6 +7446,7 @@ let Chart = class Chart extends Component {
             let rect = new RectOption(this.element.id + '_ChartAreaBorder', this.chartArea.background, { width: this.chartArea.border.width, color: this.chartArea.border.color || this.themeStyle.areaBorder }, this.chartArea.opacity, this.chartAxisLayoutPanel.seriesClipRect);
             this.htmlObject = this.renderer.drawRectangle(rect);
             appendChildElement(this.svgObject, this.htmlObject, this.redraw, true, 'x', 'y', null, null, true, true, previousRect);
+            this.htmlObject = null;
         }
     }
     /**
@@ -7460,10 +7480,25 @@ let Chart = class Chart extends Component {
         if (this.scrollBarModule) {
             this.scrollBarModule.destroy();
         }
+        if (this.markerRender) {
+            this.markerRender.removeEventListener();
+            this.markerRender = null;
+        }
         this.unWireEvents();
         super.destroy();
         this.removeSvg();
+        this.svgObject = null;
         this.element.classList.remove('e-chart');
+        this.element.innerHTML = '';
+        this.horizontalAxes = [];
+        this.verticalAxes = [];
+        this.visibleSeries = [];
+        this.axisCollections = [];
+        this.chartAxisLayoutPanel = null;
+        this.dataLabelCollections = null;
+        this.dataLabelElements = null;
+        this.renderer = null;
+        this.yAxisElements = null;
     }
     /**
      * Get component name
@@ -7502,12 +7537,13 @@ let Chart = class Chart extends Component {
         EventHandler.remove(this.element, 'click', this.chartOnMouseClick);
         EventHandler.remove(this.element, 'contextmenu', this.chartRightClick);
         EventHandler.remove(this.element, cancelEvent, this.mouseLeave);
-        window.removeEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.chartResize);
+        window.removeEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.resizeBound);
         /**
          * To fix memory issue
          */
         if (this.touchObject) {
             this.touchObject.destroy();
+            this.touchObject = null;
         }
     }
     wireEvents() {
@@ -7520,9 +7556,10 @@ let Chart = class Chart extends Component {
         EventHandler.add(this.element, 'click', this.chartOnMouseClick, this);
         EventHandler.add(this.element, 'contextmenu', this.chartRightClick, this);
         EventHandler.add(this.element, cancelEvent, this.mouseLeave, this);
-        window.addEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.chartResize.bind(this));
-        this.longPress = this.longPress.bind(this);
-        this.touchObject = new Touch(this.element, { tapHold: this.longPress, tapHoldThreshold: 500 });
+        this.resizeBound = this.chartResize.bind(this);
+        window.addEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.resizeBound);
+        this.longPressBound = this.longPress.bind(this);
+        this.touchObject = new Touch(this.element, { tapHold: this.longPressBound, tapHoldThreshold: 500 });
         /*! Apply the style for chart */
         this.setStyle(this.element);
     }
@@ -8153,9 +8190,7 @@ let Chart = class Chart extends Component {
         if (this.redraw) {
             return null;
         }
-        if (document.getElementById(this.element.id + '_Secondary_Element')) {
-            remove(document.getElementById(this.element.id + '_Secondary_Element'));
-        }
+        removeElement(this.element.id + '_Secondary_Element');
         let removeLength = 0;
         if (this.zoomModule && this.zoomModule.pinchTarget) {
             this.zoomModule.pinchTarget.id = '';
@@ -21190,10 +21225,13 @@ __decorate$8([
 ], PieCenter.prototype, "y", void 0);
 /**
  * Points model for the series.
+ * @public
  */
 class AccPoints {
     constructor() {
+        /** accumulation point visibility */
         this.visible = true;
+        /** accumulation point symbol location */
         this.symbolLocation = null;
         /** @private */
         this.region = null;
@@ -21324,9 +21362,6 @@ class AccumulationSeries extends ChildProperty {
             this.points = this.points.concat(this.clubbedPoints);
         }
     }
-    /**
-     * Generate club point
-     */
     generateClubPoint() {
         let clubPoint = new AccPoints();
         clubPoint.isClubbed = true;
@@ -22224,6 +22259,7 @@ var __decorate$7 = (undefined && undefined.__decorate) || function (decorators, 
  *   accObj.appendTo("#accumulation");
  * </script>
  * ```
+ * @public
  */
 let AccumulationChart = class AccumulationChart extends Component {
     /**
@@ -25311,7 +25347,10 @@ function getNearestValue(values, point) {
         return (Math.abs(curr - point) < Math.abs(prev - point) ? curr : prev);
     });
 }
-/** @private */
+/**
+ * Data point
+ * @public
+ */
 class DataPoint {
     constructor(x, y, xValue, yValue, visible = true) {
         this.x = x;
@@ -34122,18 +34161,34 @@ class SparklineRenderer {
     /**
      * To process the sparkline data
      */
-    processData(data = this.sparkline.dataSource) {
-        if (!this.sparkline.dataSource.length) {
+    processData() {
+        let data = this.sparkline.dataSource;
+        if (isNullOrUndefined(data) || !data.length) {
             return;
         }
-        else if (!isNaN(data[0]) || this.sparkline.valueType === 'Numeric') {
-            data = (this.sparkline.enableRtl) ? this.sparkline.dataSource.reverse() : this.sparkline.dataSource;
+        else if (!isNaN(this.sparkline.dataSource[0]) || this.sparkline.valueType === 'Numeric') {
+            data = (this.sparkline.enableRtl) ? data.reverse() : data;
             this.sparkline.sparklineData = data; // extend([], data) as Object[];
         }
         else {
             this['process' + this.sparkline.valueType]();
         }
         this.axisCalculation();
+    }
+    /* tslint:disable:no-string-literal */
+    /* tslint:disable:no-eval */
+    processDataManager() {
+        let dataModule;
+        let queryModule;
+        if (this.sparkline.dataSource instanceof DataManager) {
+            dataModule = this.sparkline.dataSource;
+            queryModule = this.sparkline.query instanceof Query ? this.sparkline.query : new Query();
+            let dataManager = dataModule.executeQuery(queryModule);
+            dataManager.then((e) => {
+                this.sparkline.dataSource = e['result'];
+                this.sparkline.sparklineData = this.sparkline.dataSource;
+            });
+        }
     }
     /**
      * To process sparkline category data.
@@ -34955,6 +35010,7 @@ let Sparkline = class Sparkline extends Component {
      */
     render() {
         // Sparkline rendering splitted into rendering and calculations
+        this.sparklineRenderer.processDataManager();
         this.sparklineRenderer.processData();
         this.renderSparkline();
         this.element.appendChild(this.svgObject);
@@ -35298,8 +35354,11 @@ __decorate$19([
     Property('Line')
 ], Sparkline.prototype, "type", void 0);
 __decorate$19([
-    Property([])
+    Property(null)
 ], Sparkline.prototype, "dataSource", void 0);
+__decorate$19([
+    Property(null)
+], Sparkline.prototype, "query", void 0);
 __decorate$19([
     Property('Numeric')
 ], Sparkline.prototype, "valueType", void 0);

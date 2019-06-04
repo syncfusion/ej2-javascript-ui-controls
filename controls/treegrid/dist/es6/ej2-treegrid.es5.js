@@ -2909,6 +2909,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      * Update the TreeGrid model
      * @method dataBind
      * @return {void}
+     * @private
      */
     TreeGrid.prototype.dataBind = function () {
         _super.prototype.dataBind.call(this);

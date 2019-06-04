@@ -1,9 +1,8 @@
+import { Property, ChildProperty } from '@syncfusion/ej2-base';
+
 /**
  * Defines mapping property to get task details from data source
  */
-
-import { Property, ChildProperty } from '@syncfusion/ej2-base';
-
 export class TaskFields extends ChildProperty<TaskFields> {
     /**
      * Defines mapping property to get task id value from data source.

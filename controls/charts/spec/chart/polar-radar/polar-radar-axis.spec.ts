@@ -21,7 +21,7 @@ import { MouseEvents } from '../base/events.spec';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { tool1, tool2, datetimeData, categoryData, negativeDataPoint } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
-import { ILoadedEventArgs, IAnimationCompleteEventArgs, IPointRenderEventArgs } from '../../../src/common/model/interface';
+import { ILoadedEventArgs, IPointRenderEventArgs } from '../../../src/chart/model/chart-interface';
 Chart.Inject(DateTime, Category, Tooltip, Logarithmic, PolarSeries, RadarSeries, DataLabel, Legend);
 let data: any = tool1;
 let data2: any = tool2;

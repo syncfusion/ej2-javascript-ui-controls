@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 17.1.50 (2019-06-04)
+
+### Document Editor
+
+#### Bug Fixes
+
+- #236930 - Table exported properly when document contains continuous table.
+- #236502 - Table last column resizing is now working properly.
+
 ## 17.1.49 (2019-05-29)
 
 ### Document Editor

@@ -9091,6 +9091,14 @@ let ListBox = class ListBox extends DropDownBase {
             }
         }
     }
+    /**
+     * Sets the focus to ListBox
+     * its native method
+     * @public
+     */
+    focusIn() {
+        this.ulElement.focus();
+    }
 };
 __decorate$5([
     Property('')

@@ -2056,7 +2056,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         return parentId;
     };
     /**
-     * It is used to get the currently [here](./api-selectedItem)
+     * It is used to get the currently [here](./selectedItem)
      *  item details from the list items.
      */
     ListView.prototype.getSelectedItems = function () {

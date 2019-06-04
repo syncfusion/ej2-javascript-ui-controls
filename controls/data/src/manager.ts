@@ -20,8 +20,6 @@ export class DataManager {
     private isDataAvailable: boolean;
     private requests: Ajax[] = [];
 
-    protected dotnetInstance: object;
-
     /**
      * Constructor for DataManager class
      * @param  {DataOptions|JSON[]} dataSource?
@@ -372,24 +370,31 @@ export class DataManager {
 
         let req: Object = this.adaptor.batchRequest(this, changes, args, query || new Query(), original);
 
+        let doAjaxRequest: string = 'doAjaxRequest';
+
         if (this.dataSource.offline) {
             return req;
         }
 
-        let deff: Deferred = new Deferred();
-        let ajax: Ajax = new Ajax(req);
-        ajax.beforeSend = () => {
-            this.beforeSend(ajax.httpRequest, ajax);
-        };
-        ajax.onSuccess = (data: string | Object, request: Ajax) => {
-            deff.resolve(this.adaptor.processResponse(
-                data, this, null, request.httpRequest, request, changes, args));
-        };
-        ajax.onFailure = (e: string) => {
-            deff.reject([{ error: e }]);
-        };
-        (<Promise<Ajax>>ajax.send()).catch((e: Error) => true); // to handle the failure requests.        
-        return deff.promise;
+        if (!isNullOrUndefined(this.adaptor[doAjaxRequest])) {
+            return this.adaptor[doAjaxRequest](req);
+        } else {
+            let deff: Deferred = new Deferred();
+            let ajax: Ajax = new Ajax(req);
+            ajax.beforeSend = () => {
+                this.beforeSend(ajax.httpRequest, ajax);
+            };
+            ajax.onSuccess = (data: string | Object, request: Ajax) => {
+                deff.resolve(this.adaptor.processResponse(
+                    data, this, null, request.httpRequest, request, changes, args));
+            };
+            ajax.onFailure = (e: string) => {
+                deff.reject([{ error: e }]);
+            };
+            (<Promise<Ajax>>ajax.send()).catch((e: Error) => true); // to handle the failure requests.        
+            return deff.promise;
+        }
+
     }
 
     /**

@@ -1,5 +1,5 @@
 import { Component, EventHandler, Property, Event, EmitType, Complex } from '@syncfusion/ej2-base';import { L10n, Internationalization, NumberFormatOptions } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, setStyleAttribute, detach, closest } from '@syncfusion/ej2-base';import { isNullOrUndefined, formatUnit, Browser } from '@syncfusion/ej2-base';import { Tooltip, Position, TooltipEventArgs } from '@syncfusion/ej2-popups';
-import {Placement,TooltipPlacement,TooltipShowOn,SliderType,SliderOrientation,SliderTooltipEventArgs} from "./slider";
+import {Placement,TooltipPlacement,TooltipShowOn,SliderType,SliderOrientation,SliderChangeEventArgs,SliderTickEventArgs,SliderTickRenderedEventArgs,SliderTooltipEventArgs} from "./slider";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -224,12 +224,6 @@ export interface SliderModel extends ComponentModel{
     enabled?: boolean;
 
     /**
-     * It is used to render the Slider component from right to left direction.
-     * @default false
-     */
-    enableRtl?: boolean;
-
-    /**
      * It is used to denote the slider tooltip and it's position.
      *
      * {% codeBlock src="slider/tooltip-api/index.ts" %}{% endcodeBlock %}
@@ -280,27 +274,27 @@ export interface SliderModel extends ComponentModel{
      *  In other term, this event will be triggered while drag the slider thumb.
      * @event
      */
-    change?: EmitType<Object>;
+    change?: EmitType<SliderChangeEventArgs>;
 
     /**
      * We can trigger changed event when Slider component action is completed while we change the Slider value.
      *  In other term, this event will be triggered, while drag the slider thumb completed.
      * @event
      */
-    changed?: EmitType<Object>;
+    changed?: EmitType<SliderChangeEventArgs>;
 
     /**
      * We can trigger renderingTicks event when the ticks rendered on Slider,
      *  which is used to customize the ticks labels dynamically.
      * @event
      */
-    renderingTicks?: EmitType<Object>;
+    renderingTicks?: EmitType<SliderTickEventArgs>;
 
     /**
      * We can trigger renderedTicks event when the ticks are rendered on the Slider.
      * @event
      */
-    renderedTicks?: EmitType<Object>;
+    renderedTicks?: EmitType<SliderTickRenderedEventArgs>;
 
     /**
      * We can trigger tooltipChange event when we change the Sider tooltip value.

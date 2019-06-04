@@ -83,7 +83,9 @@ export class ContentRender implements IRenderer {
         this.ariaService = this.serviceLocator.getService<AriaService>('ariaService');
         this.generator = this.getModelGenerator();
         if (this.parent.isDestroyed) { return; }
-        this.parent.on(events.columnVisibilityChanged, this.setVisible, this);
+        if (!this.parent.enableColumnVirtualization && !this.parent.enableVirtualization) {
+            this.parent.on(events.columnVisibilityChanged, this.setVisible, this);
+        }
         this.parent.on(events.colGroupRefresh, this.colGroupRefresh, this);
         this.parent.on(events.uiUpdate, this.enableAfterRender, this);
     }
@@ -428,74 +430,83 @@ export class ContentRender implements IRenderer {
      */
     public setVisible(columns?: Column[]): void {
         let gObj: IGrid = this.parent;
-        if (!gObj.enableColumnVirtualization && !gObj.enableVirtualization) {
-            let frzCols: number = gObj.getFrozenColumns();
-            let rows: Row<Column>[] = [];
-            if (frzCols) {
-                let fRows: Row<Column>[] = this.freezeRows;
-                let mRows: Row<Column>[] = this.movableRows;
-                let rowLen: number = fRows.length;
-                let cellLen: number;
-                for (let i: number = 0, row: Row<Column>; i < rowLen; i++) {
-                    cellLen = mRows[i].cells.length;
-                    row = fRows[i].clone();
-                    for (let j: number = 0; j < cellLen; j++) {
-                        row.cells.push(mRows[i].cells[j]);
-                    }
-                    rows.push(row);
+        let frzCols: number = gObj.getFrozenColumns();
+        let rows: Row<Column>[] = [];
+        if (frzCols) {
+            let fRows: Row<Column>[] = this.freezeRows;
+            let mRows: Row<Column>[] = this.movableRows;
+            let rowLen: number = fRows.length;
+            let cellLen: number;
+            for (let i: number = 0, row: Row<Column>; i < rowLen; i++) {
+                cellLen = mRows[i].cells.length;
+                row = fRows[i].clone();
+                for (let j: number = 0; j < cellLen; j++) {
+                    row.cells.push(mRows[i].cells[j]);
                 }
-            } else {
-                rows = <Row<Column>[]>this.getRows();
+                rows.push(row);
             }
-            let element: Row<Column>;
-            let testRow: Row<Column>;
-            rows.some((r: Row<Column>) => { if (r.isDataRow) { testRow = r; } return r.isDataRow; });
-            let tasks: Function[] = [];
+        } else {
+            rows = <Row<Column>[]>this.getRows();
+        }
+        let element: Row<Column>;
+        let testRow: Row<Column>;
+        rows.some((r: Row<Column>) => { if (r.isDataRow) { testRow = r; } return r.isDataRow; });
+        let tasks: Function[] = [];
 
-            let needFullRefresh: boolean = true;
-            if (!gObj.groupSettings.columns.length && testRow) {
-                needFullRefresh = false;
-            }
-            let tr: Object = (<Grid>gObj).contentModule.getTable().querySelectorAll('tr');
-            let frozenRows: Object = [];
-            for (let c: number = 0, clen: number = columns.length; c < clen; c++) {
-                let column: Column = columns[c];
-                let idx: number = this.parent.getNormalizedColumnIndex(column.uid);
-                let displayVal: string = column.visible === true ? '' : 'none';
-                let idxLessThanFrozenCol: boolean;
-                if (idx !== -1 && testRow && idx < testRow.cells.length) {
-                    if (frzCols) {
-                        if (idx < frzCols) {
-                            setStyleAttribute(<HTMLElement>this.getColGroup().childNodes[idx], { 'display': displayVal });
-                            idxLessThanFrozenCol = true;
-                        } else {
-                            let mTable: Element = gObj.getContent().querySelector('.e-movablecontent').querySelector('colgroup');
-                            idx = idx - frzCols;
-                            setStyleAttribute(<HTMLElement>mTable.childNodes[idx], { 'display': displayVal });
-                            tr = (<Grid>gObj).contentModule.getMovableContent().querySelectorAll('tr');
-                        }
-                    } else {
+        let needFullRefresh: boolean = true;
+        if (!gObj.groupSettings.columns.length && testRow) {
+            needFullRefresh = false;
+        }
+        let tr: Object = (<Grid>gObj).contentModule.getTable().querySelectorAll('tr');
+        let args: NotifyArgs = {};
+        let contentrows: Row<Column>[] = this.rows.slice(0);
+        let frozenRows: Object = [];
+        for (let c: number = 0, clen: number = columns.length; c < clen; c++) {
+            let column: Column = columns[c];
+            let idx: number = this.parent.getNormalizedColumnIndex(column.uid);
+            let displayVal: string = column.visible === true ? '' : 'none';
+            let idxLessThanFrozenCol: boolean;
+            if (idx !== -1 && testRow && idx < testRow.cells.length) {
+                if (frzCols) {
+                    if (idx < frzCols) {
                         setStyleAttribute(<HTMLElement>this.getColGroup().childNodes[idx], { 'display': displayVal });
+                        idxLessThanFrozenCol = true;
+                        contentrows = this.freezeRows;
+                    } else {
+                        let mTable: Element = gObj.getContent().querySelector('.e-movablecontent').querySelector('colgroup');
+                        idx = idx - frzCols;
+                        setStyleAttribute(<HTMLElement>mTable.childNodes[idx], { 'display': displayVal });
+                        tr = (<Grid>gObj).contentModule.getMovableContent().querySelectorAll('tr');
+                        contentrows = this.movableRows;
                     }
-                }
-                idx = gObj.isDetail() ? idx - 1 : idx;
-                if (!needFullRefresh) {
-                    if (gObj.frozenRows) {
-                        if (idxLessThanFrozenCol || !frzCols) {
-                            frozenRows = gObj.getHeaderTable().querySelector('tbody').querySelectorAll('tr');
-                        } else {
-                            let frozenContent: Element = gObj.getHeaderContent().querySelector('.e-movableheader');
-                            if (frozenContent) {
-                                frozenRows = frozenContent.querySelector('tbody').querySelectorAll('tr');
-                            }
-                        }
-                        this.setDisplayNone(frozenRows, idx, displayVal);
-                    }
-                    this.setDisplayNone(tr, idx, displayVal);
+                } else {
+                    setStyleAttribute(<HTMLElement>this.getColGroup().childNodes[idx], { 'display': displayVal });
                 }
             }
-            if (needFullRefresh) {
-                this.refreshContentRows({ requestType: 'refresh' });
+            idx = gObj.isDetail() ? idx - 1 : idx;
+            if (!needFullRefresh) {
+                if (gObj.frozenRows) {
+                    if (idxLessThanFrozenCol || !frzCols) {
+                        frozenRows = gObj.getHeaderTable().querySelector('tbody').querySelectorAll('tr');
+                    } else {
+                        let frozenContent: Element = gObj.getHeaderContent().querySelector('.e-movableheader');
+                        if (frozenContent) {
+                            frozenRows = frozenContent.querySelector('tbody').querySelectorAll('tr');
+                        }
+                    }
+                    this.setDisplayNone(frozenRows, idx, displayVal, contentrows);
+                }
+                this.setDisplayNone(tr, idx, displayVal, contentrows);
+            }
+        }
+        if (needFullRefresh) {
+            this.refreshContentRows({ requestType: 'refresh' });
+        } else {
+            if (!this.parent.getFrozenColumns()) {
+                this.parent.notify(events.partialRefresh, { rows: contentrows, args: args });
+            } else {
+                this.parent.notify(events.partialRefresh, { rows: this.freezeRows, args: { isFrozen: true, rows: this.freezeRows } });
+                this.parent.notify(events.partialRefresh, { rows: this.movableRows, args: { isFrozen: false, rows: this.movableRows } });
             }
         }
     }
@@ -503,13 +514,14 @@ export class ContentRender implements IRenderer {
     /** 
      * @hidden
      */
-    public setDisplayNone(tr: Object, idx: number, displayVal: string): void {
+    public setDisplayNone(tr: Object, idx: number, displayVal: string, rows: Row<Column>[]): void {
         Object.keys(tr).forEach((i: string) => {
             if (tr[i].querySelectorAll('td.e-rowcell').length) {
                 setStyleAttribute(<HTMLElement>tr[i].querySelectorAll('td.e-rowcell')[idx], { 'display': displayVal });
                 if (tr[i].querySelectorAll('td.e-rowcell')[idx].classList.contains('e-hide')) {
                     removeClass([tr[i].querySelectorAll('td.e-rowcell')[idx]], ['e-hide']);
                 }
+                rows[i].cells[idx].visible = displayVal === '' ? true : false;
             }
         });
     }

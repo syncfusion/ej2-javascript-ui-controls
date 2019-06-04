@@ -18,7 +18,7 @@ import { MouseEvents } from '../base/events.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { EmitType } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { ILoadedEventArgs } from '../../../src/common/model/interface';
+import { ILoadedEventArgs } from '../../../src/chart/model/chart-interface';
 Chart.Inject(LineSeries, DataLabel, AreaSeries, Category, DateTime, ColumnSeries, Legend, BarSeries, Zoom);
 
 let data: any = tooltipData1;

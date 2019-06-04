@@ -9,7 +9,7 @@ import { textElement,  } from '../../common/utils/helper';
 import { PathOption, Rect, measureText, TextOption, Size, SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Zoom } from './zooming';
 import { zoomComplete } from '../../common/model/constants';
-import { IZoomCompleteEventArgs } from '../../common/model/interface';
+import { IZoomCompleteEventArgs } from '../../chart/model/chart-interface';
 
 /**
  * Zooming Toolkit created here

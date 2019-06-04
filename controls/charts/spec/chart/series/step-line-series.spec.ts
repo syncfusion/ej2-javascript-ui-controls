@@ -23,7 +23,7 @@ import { Axis } from '../../../src/chart/axis/axis';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
 import { tooltipData1, tooltipData2, datetimeData, categoryData, negativeDataPoint, rotateData1, rotateData2 } from '../base/data.spec';
 import { EmitType } from '@syncfusion/ej2-base';
-import { ILoadedEventArgs, IAnimationCompleteEventArgs } from '../../../src/common/model/interface';
+import { ILoadedEventArgs, IAnimationCompleteEventArgs } from '../../../src/chart/model/chart-interface';
 
 Chart.Inject(StepLineSeries, StackingAreaSeries, StackingColumnSeries, LineSeries, Category, DateTime, DataLabel);
 let data: any = tooltipData1;

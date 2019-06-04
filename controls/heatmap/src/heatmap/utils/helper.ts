@@ -74,16 +74,16 @@ export function titlePositionX(width: number, leftPadding: number, rightPadding:
 }
 
 /**
- * Internal class size for height and width
- * @private
+ * Height and width of heatmap
+ * @public
  */
 export class Size {
     /**
-     * height of the size
+     * height of the heatmap
      */
     public height: number;
     /**
-     * width of the size
+     * width of the heatmap
      */
     public width: number;
     constructor(width: number, height: number) {
@@ -165,15 +165,21 @@ export class CurrentRect {
 
 
 /**
- * Class to define the details of selected cell.
- * @private
+ * Selected cell details in heatmap.
+ * @public
  */
 export class SelectedCellDetails {
+    /** Selected heatmap cell value */
     public value: number | BubbleTooltipData[];
+    /** Defines x-axis label for selected cell */
     public xLabel: string;
+    /** Defines y-axis label for selected cell */
     public yLabel: string;
+    /** Defines x-axis value for selected cell */
     public xValue: string | number | Date;
+    /** Defines y-axis value for selected cell */
     public yValue: string | number | Date;
+    /** Element of selected heatmap cell */
     public cellElement: Element;
     /** @private */
     public xPosition: number;

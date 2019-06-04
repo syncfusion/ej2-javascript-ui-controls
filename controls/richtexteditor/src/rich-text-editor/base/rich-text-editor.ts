@@ -10,7 +10,7 @@ import * as classes from '../base/classes';
 import { Render } from '../renderer/render';
 import { ViewSource } from '../renderer/view-source';
 import { IRenderer, IFormatter, PrintEventArgs, ActionCompleteEventArgs, ActionBeginEventArgs } from './interface';
-import { IFontProperties, IFormatProperties, IColorProperties, IExecutionGroup, executeGroup, CommandName, ResizeArgs } from './interface';
+import { IExecutionGroup, executeGroup, CommandName, ResizeArgs } from './interface';
 import { ServiceLocator } from '../services/service-locator';
 import { RendererFactory } from '../services/renderer-factory';
 import { RenderType, ToolbarType } from './enum';
@@ -18,6 +18,7 @@ import { EditorMode } from './../../common/types';
 import { Toolbar } from '../actions/toolbar';
 import { ExecCommandCallBack } from '../actions/execute-command-callback';
 import { KeyboardEvents, KeyboardEventArgs } from '../actions/keyboard';
+import { FontFamilyModel, FontSizeModel, FontColorModel, FormatModel, BackgroundColorModel } from '../models/models';
 import { ToolbarSettingsModel, IFrameSettingsModel, ImageSettingsModel, TableSettingsModel } from '../models/models';
 import { QuickToolbarSettingsModel, InlineModeModel, PasteCleanupSettingsModel } from '../models/models';
 import { ToolbarSettings, ImageSettings, QuickToolbarSettings, FontFamily, FontSize, Format } from '../models/toolbar-settings';
@@ -427,8 +428,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      *  ]
      * }
      */
-    @Complex<IFormatProperties>({}, Format)
-    public format: IFormatProperties;
+    @Complex<FormatModel>({}, Format)
+    public format: FormatModel;
     /**     
      * Predefine the font families that populate in font family dropdown list from the toolbar.
      * @default 
@@ -449,8 +450,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      *     ]
      * }
      */
-    @Complex<IFontProperties>({}, FontFamily)
-    public fontFamily: IFontProperties;
+    @Complex<FontFamilyModel>({}, FontFamily)
+    public fontFamily: FontFamilyModel;
     /**     
      * Predefine the font sizes that populate in font size dropdown list from the toolbar.
      * @default 
@@ -468,8 +469,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      *    ]
      * }
      */
-    @Complex<IFontProperties>({}, FontSize)
-    public fontSize: IFontProperties;
+    @Complex<FontSizeModel>({}, FontSize)
+    public fontSize: FontSizeModel;
     /**     
      * Predefine the color palette that can be rendered for font color toolbar command .
      * @default 
@@ -486,8 +487,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      *    }
      *  }
      */
-    @Complex<IColorProperties>({}, FontColor)
-    public fontColor: IColorProperties;
+    @Complex<FontColorModel>({}, FontColor)
+    public fontColor: FontColorModel;
     /**     
      * Predefine the color palette that can be rendered for background color (text highlighted color) toolbar command.
      * @default 
@@ -500,8 +501,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      *   }
      * }
      */
-    @Complex<IColorProperties>({}, BackgroundColor)
-    public backgroundColor: IColorProperties;
+    @Complex<BackgroundColorModel>({}, BackgroundColor)
+    public backgroundColor: BackgroundColorModel;
     /**
      * Accepts the template design and assigns it as RichTextEditor’s content.
      * The built-in template engine which provides options to compile template string into a executable function. 
@@ -587,8 +588,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Event()
     public resizeStop: EmitType<ResizeArgs>;
-    /**     
-     * Customize keyCode to change the key value. 
+    /**
+     * Customize keyCode to change the key value.
      * @default null 
      */
     @Property(null)

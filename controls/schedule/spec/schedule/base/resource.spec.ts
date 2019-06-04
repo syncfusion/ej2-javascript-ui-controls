@@ -2,13 +2,17 @@
  * Schedule resource base spec 
  */
 import { createElement, isNullOrUndefined, remove, EmitType, Browser } from '@syncfusion/ej2-base';
-import { Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, ResourceDetails, EJ2Instance } from '../../../src/schedule/index';
+import {
+    Schedule, Day, Week, WorkWeek, Month, Agenda, MonthAgenda,
+    ResourceDetails, EJ2Instance, ScheduleModel, TimelineViews
+} from '../../../src/schedule/index';
 import { triggerMouseEvent, disableScheduleAnimation } from '../util.spec';
 import { resourceData } from '../base/datasource.spec';
 import { Popup } from '@syncfusion/ej2-popups';
+import * as util from '../util.spec';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
 
-Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda);
+Schedule.Inject(Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews);
 
 describe('Schedule Resources', () => {
     beforeAll(() => {
@@ -445,6 +449,44 @@ describe('Schedule Resources', () => {
             expect(schObj.element.querySelectorAll('.e-work-hours[data-group-index="1"]').length).toEqual(0);
             schObj.setWorkHours(schObj.activeView.renderDates, '07:00', '09:00', 1);
             expect(schObj.element.querySelectorAll('.e-work-hours[data-group-index="1"]').length).toEqual(28);
+        });
+    });
+
+    describe('Add resources dynamically', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = {
+                width: '100%', height: '550px',
+                selectedDate: new Date(),
+                group: {
+                    resources: ['Rooms']
+                },
+                resources: [{
+                    field: 'RoomId', title: 'Room',
+                    name: 'Rooms', allowMultiple: true,
+                    dataSource: [],
+                    textField: 'Text', idField: 'Id', colorField: 'Color'
+                }],
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('Test eventwindow and datasource length', (done: Function) => {
+            schObj.dataBound = (args: Object) => {
+                expect(!isNullOrUndefined(schObj.eventWindow)).toEqual(true);
+                expect((schObj.resourceCollection[0].dataSource as Object[]).length).toEqual(1);
+                done();
+            }
+            let roomDetails: Object = {
+                Id: 1,
+                Text: "Meeting Room",
+                Color: "#000",
+            };
+            schObj.addResource(roomDetails, 'Rooms', 0);
+            schObj.dataBind();
         });
     });
 

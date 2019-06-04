@@ -78,14 +78,15 @@ import { StochasticIndicator } from './technical-indicators/stochastic-indicator
 import { MacdIndicator } from './technical-indicators/macd-indicator';
 import { RsiIndicator } from './technical-indicators/rsi-indicator';
 import { TechnicalIndicatorModel } from './technical-indicators/technical-indicator-model';
-import { ILegendRenderEventArgs, IAxisLabelRenderEventArgs, ITextRenderEventArgs, IResizeEventArgs } from '../common/model/interface';
-import { IAnnotationRenderEventArgs, IAxisMultiLabelRenderEventArgs, IThemeStyle, IScrollEventArgs } from '../common/model/interface';
-import { IPointRenderEventArgs, ISeriesRenderEventArgs, IDragCompleteEventArgs, ITooltipRenderEventArgs } from '../common/model/interface';
-import { IZoomCompleteEventArgs, ILoadedEventArgs } from '../common/model/interface';
-import { IAnimationCompleteEventArgs, IMouseEventArgs, IPointEventArgs } from '../common/model/interface';
+import { ILegendRenderEventArgs, IAxisLabelRenderEventArgs, ITextRenderEventArgs } from '../chart/model/chart-interface';
+import { IResizeEventArgs } from '../chart/model/chart-interface';
+import { IAnnotationRenderEventArgs, IAxisMultiLabelRenderEventArgs, IThemeStyle, IScrollEventArgs } from '../chart/model/chart-interface';
+import { IPointRenderEventArgs, ISeriesRenderEventArgs, IDragCompleteEventArgs } from '../chart/model/chart-interface';
+import { IZoomCompleteEventArgs, ILoadedEventArgs, ITooltipRenderEventArgs } from '../chart/model/chart-interface';
+import { IAnimationCompleteEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';
 import { chartMouseClick, pointClick, pointMove, chartMouseLeave, resized } from '../common/model/constants';
 import { chartMouseDown, chartMouseMove, chartMouseUp, load } from '../common/model/constants';
-import { IPrintEventArgs, IAxisRangeCalculatedEventArgs } from '../common/model/interface';
+import { IPrintEventArgs, IAxisRangeCalculatedEventArgs } from '../chart/model/chart-interface';
 import { ChartAnnotationSettingsModel } from './model/chart-base-model';
 import { ChartAnnotationSettings } from './model/chart-base';
 import { ChartAnnotation } from './annotation/annotation';
@@ -251,6 +252,7 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
  *   chartObj.appendTo("#chart");
  * </script>
  * ```
+ * @public
  */
 @NotifyPropertyChanges
 export class Chart extends Component<HTMLElement> implements INotifyPropertyChanged {
@@ -982,8 +984,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     // Internal variables
     private htmlObject: HTMLElement;
-    private getElement: MethodDecorator;
-    private elementSize: Size;
     private isLegend: boolean;
     /** @private */
     public stockChart: StockChart;
@@ -1111,7 +1111,12 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      * Touch object to unwire the touch event from element
      */
     private touchObject: Touch;
-
+    /** @private */
+    // tslint:disable-next-line
+    public resizeBound: any;
+    /** @private */
+    // tslint:disable-next-line
+    public longPressBound: any;
     /**
      * Constructor for creating the widget
      * @hidden
@@ -1323,14 +1328,15 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     }
     private initializeModuleElements(): void {
         this.dataLabelCollections = [];
-        this.seriesElements = this.renderer.createGroup({ id: this.element.id + 'SeriesCollection' });
+        let elementID: string = this.element.id;
+        this.seriesElements = this.renderer.createGroup({ id: elementID + 'SeriesCollection' });
         if (this.indicators.length) {
-            this.indicatorElements = this.renderer.createGroup({ id: this.element.id + 'IndicatorCollection' });
+            this.indicatorElements = this.renderer.createGroup({ id: elementID + 'IndicatorCollection' });
         }
         if (this.hasTrendlines()) {
-            this.trendLineElements = this.renderer.createGroup({ id: this.element.id + 'TrendLineCollection' });
+            this.trendLineElements = this.renderer.createGroup({ id: elementID + 'TrendLineCollection' });
         }
-        this.dataLabelElements = this.renderer.createGroup({ id: this.element.id + 'DataLabelCollection' });
+        this.dataLabelElements = this.renderer.createGroup({ id: elementID + 'DataLabelCollection' });
     }
 
     private hasTrendlines(): boolean {
@@ -1346,10 +1352,11 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     private renderSeriesElements(axisElement: Element): void {
         // Initialize the series elements values
         this.initializeModuleElements();
+        let elementID: string = this.element.id;
         if (this.element.tagName !== 'g') {
-            let tooltipDiv: Element = redrawElement(this.redraw, this.element.id + '_Secondary_Element') ||
+            let tooltipDiv: Element = redrawElement(this.redraw, elementID + '_Secondary_Element') ||
                 this.createElement('div');
-            tooltipDiv.id = this.element.id + '_Secondary_Element';
+            tooltipDiv.id = elementID + '_Secondary_Element';
             tooltipDiv.setAttribute('style', 'position: relative');
             appendChildElement(this.element, tooltipDiv, this.redraw);
         }
@@ -1357,7 +1364,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.tooltip.enable) {
             appendChildElement(
                 this.svgObject, this.renderer.createGroup(
-                    { id: this.element.id + '_UserInteraction', style: 'pointer-events:none;' }
+                    { id: elementID + '_UserInteraction', style: 'pointer-events:none;' }
                 ),
                 this.redraw
             );
@@ -1486,7 +1493,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         }
     }
     private processData(render: boolean = true): void {
-        let series: Series;
         this.visibleSeriesCount = 0;
         let check: boolean = true;
         for (let series of this.visibleSeries) {
@@ -1741,14 +1747,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.title) {
             let alignment: Alignment = this.titleStyle.textAlignment;
             let getAnchor: string = alignment === 'Near' ? 'start' : alignment === 'Far' ? 'end' : 'middle';
-            this.elementSize = measureText(this.title, this.titleStyle);
+            let elementSize: Size = measureText(this.title, this.titleStyle);
             rect = new Rect(
                 margin.left, 0, this.availableSize.width - margin.left - margin.right, 0
             );
             let options: TextOption = new TextOption(
                 this.element.id + '_ChartTitle',
                 titlePositionX(rect, this.titleStyle),
-                this.margin.top + ((this.elementSize.height) * 3 / 4),
+                this.margin.top + ((elementSize.height) * 3 / 4),
                 getAnchor, this.titleCollection, '', 'auto'
             );
             let element: Element = redrawElement(this.redraw, this.element.id + '_ChartTitle', options, this.renderer) ||
@@ -1829,6 +1835,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 this.svgObject, this.htmlObject, this.redraw, true, 'x', 'y',
                 null, null, true, true, previousRect
             );
+            this.htmlObject = null;
         }
     }
 
@@ -1867,10 +1874,25 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.scrollBarModule) {
             this.scrollBarModule.destroy();
         }
+        if (this.markerRender) {
+            this.markerRender.removeEventListener();
+            this.markerRender = null;
+        }
         this.unWireEvents();
         super.destroy();
         this.removeSvg();
+        this.svgObject = null;
         this.element.classList.remove('e-chart');
+        this.element.innerHTML = '';
+        this.horizontalAxes = [];
+        this.verticalAxes = [];
+        this.visibleSeries = [];
+        this.axisCollections = [];
+        this.chartAxisLayoutPanel = null;
+        this.dataLabelCollections = null;
+        this.dataLabelElements = null;
+        this.renderer = null;
+        this.yAxisElements = null;
     }
 
     /**
@@ -1920,7 +1942,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
         window.removeEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
-            this.chartResize
+            this.resizeBound
         );
 
         /**
@@ -1928,6 +1950,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
          */
         if (this.touchObject) {
             this.touchObject.destroy();
+            this.touchObject = null;
         }
 
     }
@@ -1945,14 +1968,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         EventHandler.add(this.element, 'click', this.chartOnMouseClick, this);
         EventHandler.add(this.element, 'contextmenu', this.chartRightClick, this);
         EventHandler.add(this.element, cancelEvent, this.mouseLeave, this);
-
+        this.resizeBound = this.chartResize.bind(this);
         window.addEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
-            this.chartResize.bind(this)
+            this.resizeBound
         );
-
-        this.longPress = this.longPress.bind(this);
-        this.touchObject = new Touch(this.element, { tapHold: this.longPress, tapHoldThreshold: 500 });
+        this.longPressBound = this.longPress.bind(this);
+        this.touchObject = new Touch(this.element, { tapHold: this.longPressBound, tapHoldThreshold: 500 });
 
         /*! Apply the style for chart */
         this.setStyle(<HTMLElement>this.element);
@@ -2619,9 +2641,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         if (this.redraw) {
             return null;
         }
-        if (document.getElementById(this.element.id + '_Secondary_Element')) {
-            remove(document.getElementById(this.element.id + '_Secondary_Element'));
-        }
+        removeElement(this.element.id + '_Secondary_Element');
         let removeLength: number = 0;
         if (this.zoomModule && this.zoomModule.pinchTarget) {
             this.zoomModule.pinchTarget.id = '';
@@ -2634,7 +2654,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 this.svgObject.removeChild(this.svgObject.firstChild);
             }
             if (!this.svgObject.hasChildNodes() && this.svgObject.parentNode && !(this.stockChart)) {
-                 remove(this.svgObject);
+                remove(this.svgObject);
             }
         }
     }

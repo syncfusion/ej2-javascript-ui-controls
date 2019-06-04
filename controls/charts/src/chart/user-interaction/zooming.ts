@@ -10,8 +10,9 @@ import { Series } from '../series/chart-series';
 import { ZoomMode, ToolbarItems } from '../utils/enum';
 import { ZoomSettingsModel } from '../chart-model';
 import { CartesianAxisLayoutPanel } from '../axis/cartesian-panel';
-import { IZoomCompleteEventArgs, ITouches, IZoomAxisRange } from '../../common/model/interface';
+import { ITouches, IZoomAxisRange } from '../../chart/model/chart-interface';
 import { zoomComplete } from '../../common/model/constants';
+import { IZoomCompleteEventArgs } from '../../chart/model/chart-interface';
 import { withInBounds } from '../../common/utils/helper';
 
 /**

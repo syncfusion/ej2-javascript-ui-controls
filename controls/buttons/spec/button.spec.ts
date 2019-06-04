@@ -339,6 +339,12 @@ describe('Button', () => {
             expect(button.getPersistData()).toEqual('{}');
             Button.Inject();
         });
+        it('Native methods - Click and Focus ', () => {
+            button = new Button();
+            button.appendTo('#button');
+            button.click();
+            button.focusIn();
+        });
     });
 
     it('memory leak', () => {

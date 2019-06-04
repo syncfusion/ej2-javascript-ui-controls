@@ -4637,22 +4637,28 @@ class DataManager {
             key: key || this.dataSource.key
         };
         let req = this.adaptor.batchRequest(this, changes, args, query || new Query(), original);
+        let doAjaxRequest = 'doAjaxRequest';
         if (this.dataSource.offline) {
             return req;
         }
-        let deff = new Deferred();
-        let ajax = new Ajax(req);
-        ajax.beforeSend = () => {
-            this.beforeSend(ajax.httpRequest, ajax);
-        };
-        ajax.onSuccess = (data, request) => {
-            deff.resolve(this.adaptor.processResponse(data, this, null, request.httpRequest, request, changes, args));
-        };
-        ajax.onFailure = (e) => {
-            deff.reject([{ error: e }]);
-        };
-        ajax.send().catch((e) => true); // to handle the failure requests.        
-        return deff.promise;
+        if (!isNullOrUndefined(this.adaptor[doAjaxRequest])) {
+            return this.adaptor[doAjaxRequest](req);
+        }
+        else {
+            let deff = new Deferred();
+            let ajax = new Ajax(req);
+            ajax.beforeSend = () => {
+                this.beforeSend(ajax.httpRequest, ajax);
+            };
+            ajax.onSuccess = (data, request) => {
+                deff.resolve(this.adaptor.processResponse(data, this, null, request.httpRequest, request, changes, args));
+            };
+            ajax.onFailure = (e) => {
+                deff.reject([{ error: e }]);
+            };
+            ajax.send().catch((e) => true); // to handle the failure requests.        
+            return deff.promise;
+        }
     }
     /**
      * Inserts new record in the given table.

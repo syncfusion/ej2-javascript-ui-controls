@@ -28,7 +28,7 @@ import { tooltipData11, tooltipData12, datetimeData11, negativeDataPoint, catego
 import { EmitType } from '@syncfusion/ej2-base';
 import { Legend } from '../../../src/chart/legend/legend';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';
-import { ILoadedEventArgs, IDragCompleteEventArgs } from '../../../src/common/model/interface';
+import { ILoadedEventArgs, IDragCompleteEventArgs } from '../../../src/chart/model/chart-interface';
 Chart.Inject(DateTime, Category, DataLabel, StackingColumnSeries, StackingBarSeries, ColumnSeries, Legend,
     StackingAreaSeries, Logarithmic, BarSeries, AreaSeries, LineSeries, Tooltip, Crosshair, Zoom, Selection);
 

@@ -383,7 +383,8 @@ var ColorCollection = /** @__PURE__ @class */ (function () {
     return ColorCollection;
 }());
 /**
- * class used to maintain color and value collection.
+ * Tooltip data for bubble type heatmap
+ * @public
  */
 var BubbleTooltipData = /** @__PURE__ @class */ (function () {
     function BubbleTooltipData(mappingName, bubbleData, valueType) {
@@ -759,8 +760,8 @@ function titlePositionX(width, leftPadding, rightPadding, titleStyle) {
     return positionX;
 }
 /**
- * Internal class size for height and width
- * @private
+ * Height and width of heatmap
+ * @public
  */
 var Size = /** @__PURE__ @class */ (function () {
     function Size(width, height) {
@@ -816,8 +817,8 @@ var CurrentRect = /** @__PURE__ @class */ (function () {
     return CurrentRect;
 }());
 /**
- * Class to define the details of selected cell.
- * @private
+ * Selected cell details in heatmap.
+ * @public
  */
 var SelectedCellDetails = /** @__PURE__ @class */ (function () {
     function SelectedCellDetails(value, xLabel, yLabel, xValue, yValue, cellElement, xPosition, yPosition, width, height, x, y) {

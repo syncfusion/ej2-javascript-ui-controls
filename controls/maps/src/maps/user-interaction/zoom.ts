@@ -80,6 +80,7 @@ export class Zoom {
      */
     public performZooming(position: Point, newZoomFactor: number, type: string): void {
         let map: Maps = this.maps;
+        map.previousProjection = map.projectionType;
         let prevLevel: number = map.tileZoomLevel;
         let scale: number = map.previousScale = map.scale;
         let maxZoom: number = map.zoomSettings.maxZoom;
@@ -310,6 +311,7 @@ export class Zoom {
                                 }
                             } else {
                                 changeBorderWidth(currentEle, this.index, scale, this.maps);
+                                this.maps.zoomTranslatePoint = this.maps.translatePoint;
                                 this.animateTransform(currentEle, animate, x, y, scale);
                                 this.shapeZoomLocation = currentEle.childNodes;
                             }

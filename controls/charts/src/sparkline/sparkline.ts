@@ -16,6 +16,7 @@ import { SparklineRenderer } from './rendering/sparkline-renderer';
 import { SparklineTooltip } from './rendering/sparkline-tooltip';
 import { SparklineModel } from './sparkline-model';
 import { getThemeColor } from './utils/helper';
+import { DataManager, Query } from '@syncfusion/ej2-data';
 
 //tslint:disable: no-duplicate-lines
 /**
@@ -59,10 +60,16 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
     public type: SparklineType;
     /**
      * To configure sparkline data source.
-     * @default []
+     * @default null
      */
-    @Property([])
-    public dataSource: Object[];
+    @Property(null)
+    public dataSource: DataManager | Object[];
+    /**
+     * Specifies the query for filter the data.
+     * @default null
+     */
+    @Property(null)
+    public query: Query;
     /**
      * To configure sparkline series value type.
      * @default 'Numeric'
@@ -338,7 +345,7 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
      * To process sparkline data internally.
      * @private
      */
-    public sparklineData: Object[];
+    public sparklineData: Object[] | DataManager;
     /**
      * It contains default values of localization values
      */
@@ -382,6 +389,8 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
      */
     protected render(): void {
         // Sparkline rendering splitted into rendering and calculations
+
+        this.sparklineRenderer.processDataManager();
 
         this.sparklineRenderer.processData();
 

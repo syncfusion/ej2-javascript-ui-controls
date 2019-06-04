@@ -530,7 +530,9 @@ var Size = /** @__PURE__ @class */ (function () {
     }
     return Size;
 }());
-/** @private */
+/**
+ * Internal use of circular gauge location
+ */
 var GaugeLocation = /** @__PURE__ @class */ (function () {
     function GaugeLocation(x, y) {
         this.x = x;
@@ -1994,12 +1996,12 @@ var PointerRenderer = /** @__PURE__ @class */ (function () {
         var endAngle;
         var oldStart;
         var minRadius = (radius * 0.25);
-        if (end <= minRadius) {
-            radius = end === 1 || 2 ? 8 : radius;
-            radius /= 2;
-            minRadius = radius * 0.25;
-        }
         if (roundRadius) {
+            if (end <= minRadius) {
+                radius = end === 1 || 2 ? 8 : radius;
+                radius /= 2;
+                minRadius = radius * 0.25;
+            }
             minAngle = ((((pointer.currentRadius) * ((minAngle * Math.PI) / 180) +
                 roundRadius) / (pointer.currentRadius)) * 180) / Math.PI;
             pointAngle = ((((pointer.currentRadius) * ((pointAngle * Math.PI) / 180) -
