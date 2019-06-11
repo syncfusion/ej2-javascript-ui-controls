@@ -153,6 +153,13 @@ let CalendarBase = class CalendarBase extends Component {
             this.currentDate = new Date(this.checkValue(value));
         }
     }
+    setOverlayIndex(popupWrapper, popupElement, modal, isDevice) {
+        if (isDevice && !isNullOrUndefined(popupElement) && !isNullOrUndefined(modal) && !isNullOrUndefined(popupWrapper)) {
+            let index = parseInt(popupElement.style.zIndex, 10) ? parseInt(popupElement.style.zIndex, 10) : 1000;
+            modal.style.zIndex = (index - 1).toString();
+            popupWrapper.style.zIndex = index.toString();
+        }
+    }
     minMaxUpdate(value) {
         if (!(+this.min <= +this.max)) {
             this.setProperties({ min: this.min }, true);
@@ -3576,6 +3583,10 @@ let DatePicker = class DatePicker extends Calendar {
                 this.previousDate = outOfRange;
                 this.createCalendar();
             }
+            if (Browser.isDevice) {
+                this.mobilePopupWrapper = this.createElement('div', { className: 'e-datepick-mob-popup-wrap' });
+                document.body.appendChild(this.mobilePopupWrapper);
+            }
             this.preventArgs = {
                 preventDefault: () => {
                     prevent = false;
@@ -3583,7 +3594,7 @@ let DatePicker = class DatePicker extends Calendar {
                 popup: this.popupObj,
                 event: e || null,
                 cancel: false,
-                appendTo: document.body
+                appendTo: Browser.isDevice ? this.mobilePopupWrapper : document.body
             };
             this.trigger('open', this.preventArgs);
             if (prevent && !this.preventArgs.cancel) {
@@ -3600,6 +3611,7 @@ let DatePicker = class DatePicker extends Calendar {
                 else {
                     this.popupObj.show(new Animation(openAnimation), null);
                 }
+                super.setOverlayIndex(this.mobilePopupWrapper, this.popupObj.element, this.modal, Browser.isDevice);
                 this.setAriaAttributes();
             }
             else {
@@ -3640,6 +3652,10 @@ let DatePicker = class DatePicker extends Calendar {
                 this.modal.style.display = 'none';
                 this.modal.outerHTML = '';
                 this.modal = null;
+                if (!isNullOrUndefined(this.mobilePopupWrapper)) {
+                    this.mobilePopupWrapper.remove();
+                    this.mobilePopupWrapper = null;
+                }
             }
             EventHandler.remove(document, 'mousedown touchstart', this.documentHandler);
         }
@@ -7821,13 +7837,17 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                     this.targetElement = element;
                 }
                 this.createPopup();
+                if (this.isMobile || Browser.isDevice) {
+                    this.mobileRangePopupWrap = this.createElement('div', { className: 'e-daterangepick-mob-popup-wrap' });
+                    document.body.appendChild(this.mobileRangePopupWrap);
+                }
                 this.openEventArgs = {
                     popup: this.popupObj || null,
                     cancel: false,
                     date: this.inputElement.value,
                     model: this,
                     event: event ? event : null,
-                    appendTo: document.body
+                    appendTo: this.isMobile || Browser.isDevice ? this.mobileRangePopupWrap : document.body
                 };
                 this.trigger('open', this.openEventArgs);
                 if (!this.openEventArgs.cancel) {
@@ -7844,6 +7864,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                         this.endButton.element.removeAttribute('disabled');
                         this.selectableDates();
                     }
+                    super.setOverlayIndex(this.mobileRangePopupWrap, this.popupObj.element, this.modal, this.isMobile || Browser.isDevice);
                 }
             }
         }
@@ -7918,6 +7939,10 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                         this.modal.style.display = 'none';
                         this.modal.outerHTML = '';
                         this.modal = null;
+                        if (!isNullOrUndefined(this.mobileRangePopupWrap)) {
+                            this.mobileRangePopupWrap.remove();
+                            this.mobileRangePopupWrap = null;
+                        }
                     }
                     this.isKeyPopup = this.dateDisabled = false;
                 }

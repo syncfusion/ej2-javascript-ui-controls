@@ -1073,7 +1073,7 @@ describe('Schedule Month view', () => {
             schObj.dataBound = (args: Object) => {
                 expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
                 let addedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_15"]') as HTMLElement;
-                expect(addedEvent.offsetWidth).toEqual(68);
+                expect(addedEvent.offsetWidth).toEqual(66);
                 expect(addedEvent.offsetHeight).toEqual(22);
                 done();
             };
@@ -1109,7 +1109,7 @@ describe('Schedule Month view', () => {
             schObj.dataBound = (args: Object) => {
                 expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
                 let editedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_15"]') as HTMLElement;
-                expect(editedEvent.offsetWidth).toEqual(68);
+                expect(editedEvent.offsetWidth).toEqual(66);
                 expect(editedEvent.offsetHeight).toEqual(22);
                 done();
             };
@@ -1205,7 +1205,7 @@ describe('Schedule Month view', () => {
             schObj.dataBound = (args: Object) => {
                 expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
                 let addedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_22"]') as HTMLElement;
-                expect(addedEvent.offsetWidth).toEqual(33);
+                expect(addedEvent.offsetWidth).toEqual(31);
                 expect(addedEvent.offsetHeight).toEqual(22);
                 done();
             };
@@ -1241,7 +1241,7 @@ describe('Schedule Month view', () => {
             schObj.dataBound = (args: Object) => {
                 expect(schObj.eventWindow.dialogObject.visible).toEqual(false);
                 let editedEvent: HTMLElement = schObj.element.querySelector('[data-id="Appointment_22"]') as HTMLElement;
-                expect(editedEvent.offsetWidth).toEqual(33);
+                expect(editedEvent.offsetWidth).toEqual(31);
                 expect(editedEvent.offsetHeight).toEqual(22);
                 done();
             };

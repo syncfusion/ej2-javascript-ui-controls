@@ -534,14 +534,6 @@ var DropDownButton = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * Click the DropDownButton element
-     * its native method
-     * @public
-     */
-    DropDownButton.prototype.click = function () {
-        this.element.click();
-    };
-    /**
      * Sets the focus to DropDownButton
      * its native method
      * @public

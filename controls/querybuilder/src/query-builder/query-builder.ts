@@ -1085,7 +1085,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 this.createSpinner(closest(element, '.e-multi-select-wrapper').parentElement);
                 showSpinner(closest(element, '.e-multi-select-wrapper').parentElement as HTMLElement);
                 data.then((e: {actual: {result: Object[], count: number}, result: Object[]}) => {
-                   if (e.actual.result) {
+                   if (e.actual && e.actual.result) {
                        dummyData = e.actual.result;
                    } else {
                        dummyData = e.result;
@@ -1974,7 +1974,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         let data: Promise<Object> = this.dataManager.executeQuery(query) as Promise<Object>;
         let deferred: Deferred = new Deferred();
         data.then((e: {actual: {result: Object[], count: number}, result: Object[]}) => {
-            if (e.actual.result) {
+            if (e.actual && e.actual.result) {
                 this.dataColl = e.actual.result;
             } else {
                 this.dataColl = e.result;

@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## 17.1.50 (2019-06-04)
+
+### Diagram
+
+#### Bug Fixes
+
+- #237131 - The issue "Layout is messed up when diagram have disconnected nodes" has been resolved using complex hierarchical tree layout.
+- #237533 - The issue "min-height and min-width properties of node does not updated properly at run time" has been resolved.
+
+## 17.1.49 (2019-05-29)
+
+### Diagram
+
+#### Breaking Changes
+
+- The `data` property is removed from the DataSource property of the diagram.
+
 ## 17.1.48 (2019-05-21)
 
 ### Diagram

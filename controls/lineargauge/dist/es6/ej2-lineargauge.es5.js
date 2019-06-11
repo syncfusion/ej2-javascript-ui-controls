@@ -640,7 +640,9 @@ var VisibleRange = /** @__PURE__ @class */ (function () {
     }
     return VisibleRange;
 }());
-/** @private */
+/**
+ * Internal use of gauge location
+ */
 var GaugeLocation = /** @__PURE__ @class */ (function () {
     function GaugeLocation(x, y) {
         this.x = x;

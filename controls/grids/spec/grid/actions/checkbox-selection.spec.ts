@@ -631,8 +631,9 @@ describe('Grid checkbox selection functionality', () => {
         });
 
         it('EJ2-23166 - selecting all records and checking selected records in rowSelected event', (done: Function) => {
-            let rowSelected = (): void => {
+            let rowSelected = (args: any): void => {
                 expect(gridObj.selectionModule.getSelectedRecords().length).toBe(9);
+                expect(args.rowIndexes.length).toBe(5);
                 done();
             }
             gridObj.rowSelected = rowSelected;

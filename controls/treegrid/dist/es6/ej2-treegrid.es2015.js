@@ -980,7 +980,9 @@ class Render {
             args.cell.querySelector('.e-treecell') != null ?
                 args.cell.querySelector('.e-treecell').innerHTML = summaryData : args.cell.innerHTML = summaryData;
         }
-        this.parent.trigger(queryCellInfo, args);
+        if (isNullOrUndefined(this.parent.rowTemplate)) {
+            this.parent.trigger(queryCellInfo, args);
+        }
     }
 }
 
@@ -1151,15 +1153,22 @@ class DataManipulation {
     convertToFlatData(data) {
         this.parent.flatData = (Object.keys(data).length === 0 ? this.parent.dataSource : []);
         this.parent.parentData = [];
-        if ((isRemoteData(this.parent) && !isOffline(this.parent)) && data instanceof DataManager) {
+        let adaptorName = 'adaptorName';
+        if ((isRemoteData(this.parent) && !isOffline(this.parent)) && data instanceof DataManager && !(data instanceof Array)) {
             let dm = this.parent.dataSource;
             if (this.parent.parentIdMapping) {
                 this.parent.query = isNullOrUndefined(this.parent.query) ?
                     new Query() : this.parent.query;
                 if (this.parent.parentIdMapping) {
                     this.parent.query.where(this.parent.parentIdMapping, 'equal', null);
+                    let key = !this.parent.query.params.length ? [] : this.parent.query.params.filter((e) => {
+                        return e.key === 'IdMapping';
+                    });
+                    if (!key.length) {
+                        this.parent.query.addParams('IdMapping', this.parent.idMapping);
+                    }
                 }
-                if (!this.parent.hasChildMapping) {
+                if (!this.parent.hasChildMapping && !(this.parent.dataSource[adaptorName] === 'BlazorAdaptor')) {
                     let qry = this.parent.query.clone();
                     qry.queries = [];
                     qry = qry.select([this.parent.parentIdMapping]);
@@ -1253,21 +1262,27 @@ class DataManipulation {
      */
     updateParentRemoteData(args) {
         let records = args.result;
-        if (!this.parent.hasChildMapping && !this.parentItems.length) {
+        let adaptorName = 'adaptorName';
+        if (!this.parent.hasChildMapping && !this.parentItems.length && !(this.parent.dataSource[adaptorName] === 'BlazorAdaptor')) {
             this.zerothLevelData = args;
             setValue('cancel', true, args);
         }
         else {
-            for (let rec = 0; rec < records.length; rec++) {
-                if ((records[rec][this.parent.hasChildMapping] || this.parentItems.indexOf(records[rec][this.parent.idMapping]) !== -1)
-                    && (isNullOrUndefined(records[rec].index))) {
-                    records[rec].level = 0;
-                    records[rec].index = Math.ceil(Math.random() * 1000);
-                    records[rec].hasChildRecords = true;
+            if (!(this.parent.dataSource[adaptorName] === 'BlazorAdaptor')) {
+                for (let rec = 0; rec < records.length; rec++) {
+                    if ((records[rec][this.parent.hasChildMapping] || this.parentItems.indexOf(records[rec][this.parent.idMapping]) !== -1)
+                        && (isNullOrUndefined(records[rec].index))) {
+                        records[rec].level = 0;
+                        records[rec].index = Math.ceil(Math.random() * 1000);
+                        records[rec].hasChildRecords = true;
+                    }
                 }
             }
+            else {
+                this.convertToFlatData(records);
+            }
         }
-        args.result = records;
+        args.result = this.parent.dataSource[adaptorName] === 'BlazorAdaptor' ? this.parent.flatData : records;
         this.parent.notify('updateResults', args);
     }
     /**
@@ -2262,6 +2277,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         this.grid.cellEdit = this.triggerEvents.bind(this);
         this.grid.actionFailure = this.triggerEvents.bind(this);
         this.grid.dataBound = (args) => {
+            this.treeColumnRowTemplate(args);
             this.updateColumnModel();
             this.updateAltRow(this.getRows());
             this.notify('headerCheckbox', {});
@@ -2275,7 +2291,8 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             this.initialRender = false;
         };
         this.grid.beforeDataBound = function (args) {
-            if (isRemoteData(treeGrid) && !isOffline(treeGrid)) {
+            let requestType = getObject('action', args);
+            if (isRemoteData(treeGrid) && !isOffline(treeGrid) && requestType !== 'edit') {
                 treeGrid.notify('updateRemoteLevel', args);
                 args = (treeGrid.dataResults);
             }
@@ -2286,8 +2303,8 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             }
             if (!isRemoteData(treeGrid)) {
                 treeGrid.notify('dataProcessor', args);
-                //args = this.dataModule.dataProcessor(args);
             }
+            //args = this.dataModule.dataProcessor(args);
             extend(args, treeGrid.dataResults);
             // this.notify(events.beforeDataBound, args);
             if (!this.isPrinting) {
@@ -2370,15 +2387,13 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             if (args.requestType === 'reorder') {
                 this.notify('setColumnIndex', {});
             }
-            if (this.isLocalData) {
-                if (args.requestType === 'add' && (this.editSettings.newRowPosition !== 'Top' && this.editSettings.newRowPosition !== 'Bottom')) {
-                    this.notify(beginAdd, args);
-                }
-                if (args.requestType === 'batchsave') {
-                    this.notify(batchSave, args);
-                }
-                this.notify('updateGridActions', args);
+            if (args.requestType === 'add' && (this.editSettings.newRowPosition !== 'Top' && this.editSettings.newRowPosition !== 'Bottom')) {
+                this.notify(beginAdd, args);
             }
+            if (args.requestType === 'batchsave') {
+                this.notify(batchSave, args);
+            }
+            this.notify('updateGridActions', args);
             this.trigger(actionComplete, args);
         };
         this.grid.rowDataBound = function (args) {
@@ -2389,11 +2404,6 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                 setValue('isPrinting', this.isPrinting, args);
             }
             treeGrid.renderModule.RowModifier(args);
-            if (treeGrid.rowTemplate) {
-                let rcell = args.row.cells[treeGrid.treeColumnIndex];
-                let arg = { data: args.data, row: args.row, cell: rcell, column: this.getColumns()[treeGrid.treeColumnIndex] };
-                this.queryCellInfo(arg);
-            }
         };
         this.grid.queryCellInfo = function (args) {
             if (isNullOrUndefined(this.isPrinting)) {
@@ -3392,7 +3402,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     updateAltRow(rows) {
         if (this.enableAltRow && !this.rowTemplate) {
             let visibleRowCount = 0;
-            for (let i = 0; i < rows.length; i++) {
+            for (let i = 0; rows && i < rows.length; i++) {
                 let gridRow = rows[i];
                 if (gridRow.style.display !== 'none') {
                     if (gridRow.classList.contains('e-altrow')) {
@@ -3405,6 +3415,19 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                         visibleRowCount++;
                     }
                 }
+            }
+        }
+    }
+    treeColumnRowTemplate(args) {
+        if (this.rowTemplate) {
+            let rows = this.getContentTable().rows;
+            rows = [].slice.call(rows);
+            for (let i = 0; i < rows.length; i++) {
+                let rcell = this.grid.getContentTable().rows[i].cells[this.treeColumnIndex];
+                let row = rows[i];
+                let rowData = this.grid.getRowsObject()[i].data;
+                let arg = { data: rowData, row: row, cell: rcell, column: this.getColumns()[this.treeColumnIndex] };
+                this.renderModule.cellRender(arg);
             }
         }
     }

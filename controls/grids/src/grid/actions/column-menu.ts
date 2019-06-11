@@ -544,6 +544,9 @@ export class ColumnMenu implements IAction {
     }
 
     private getFilterPop(): HTMLElement {
+        if (Browser.isDevice  && this.targetColumn !== null) {
+            return document.getElementById(this.targetColumn.uid + '-flmdlg');
+        }
         return this.parent.element.querySelector('.' + this.POP) as HTMLElement;
     }
 

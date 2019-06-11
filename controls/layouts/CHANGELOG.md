@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 17.1.50 (2019-06-04)
+## 17.1.51 (2019-06-11)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- #237417 - Click event of button is not triggering when it is placed inside the panel element of DashboardLayout.
+
+## 17.1.49 (2019-05-29)
 
 ### Dashboard Layout
 

@@ -1185,7 +1185,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                         this.countModule.destroy(); }
                     break;
                 case 'enableHtmlEncode':
-                    this.updateValueData();
+                    this.updateValueData(); this.updatePanelValue(); this.setPlaceHolder();
+                    if (this.showCharCount) { this.countModule.refresh(); }
                     break;
                 case 'undoRedoSteps':
                 case 'undoRedoTimer':
@@ -1206,7 +1207,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     public updateValueData(): void {
         if (this.enableHtmlEncode) {
-            this.setProperties({ value: this.encode(decode(this.inputElement.innerHTML)) });
+            this.setProperties({ value: this.encode(decode(this.inputElement.innerHTML)) }, true);
         } else {
             this.setProperties({
                 value: /<[a-z][\s\S]*>/i.test(this.inputElement.innerHTML) ? this.inputElement.innerHTML :

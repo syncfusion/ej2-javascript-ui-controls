@@ -222,10 +222,14 @@ export class Render {
             remove(tbody);
         }
         tbody = this.parent.createElement('tbody');
+        let spanCount: number = 0;
+        if (gObj.detailTemplate || gObj.childGrid) {
+            ++spanCount;
+        }
         tr = this.parent.createElement('tr', { className: 'e-emptyrow' });
         tr.appendChild(this.parent.createElement('td', {
             innerHTML: this.l10n.getConstant('EmptyRecord'),
-            attrs: { colspan: gObj.getColumns().length.toString() }
+            attrs: { colspan: (gObj.getColumns().length + spanCount).toString() }
         }));
         tbody.appendChild(tr);
         this.contentRenderer.renderEmpty(<HTMLElement>tbody);

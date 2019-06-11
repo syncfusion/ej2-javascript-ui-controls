@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 17.1.51 (2019-06-11)
+
+### DatePicker
+
+#### Bug Fixes
+
+- #231616, #234495 - In mobile device, DatePicker popup displays in the center of the viewport.
+
+### DateRangePicker
+
+#### Bug Fixes
+
+- #231616, #234495 - In mobile device, DateRangePicker popup displays in the center of the viewport.
+
 ## 17.1.49 (2019-05-29)
 
 ### DatePicker

@@ -53,7 +53,7 @@ export class DayMarkers {
         this.eventMarkerRender.updateContainerHeight();
     }
     /**
-     * @private
+     * To get module name
      */
     public getModuleName(): string {
         return 'dayMarkers';

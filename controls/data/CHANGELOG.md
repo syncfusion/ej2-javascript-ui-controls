@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.51 (2019-06-11)
+
+### DataManager
+
+#### Bug Fixes
+
+- #237039 - Delete operation is working properly when date column is assigned as primary key field.
+
 ## 17.1.50 (2019-06-04)
 
 ### DataManager

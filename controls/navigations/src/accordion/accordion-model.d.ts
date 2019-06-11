@@ -167,7 +167,7 @@ export interface AccordionModel extends ComponentModel{
     animation?: AccordionAnimationSettingsModel;
 
     /**
-     * The event will be fired while clicking on the Accordion headers.
+     * The event will be fired while clicking anywhere within the Accordion.
      * @event
      */
     clicked?: EmitType<AccordionClickArgs>;

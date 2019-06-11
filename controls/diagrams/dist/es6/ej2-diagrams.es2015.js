@@ -19051,9 +19051,6 @@ __decorate$16([
 ], DataSource.prototype, "parentId", void 0);
 __decorate$16([
     Property()
-], DataSource.prototype, "data", void 0);
-__decorate$16([
-    Property()
 ], DataSource.prototype, "doBinding", void 0);
 __decorate$16([
     Complex({}, CrudAction)
@@ -28893,7 +28890,7 @@ class Diagram extends Component {
                 args: []
             });
         }
-        if (this.dataSourceSettings.dataManager || this.dataSourceSettings.data ||
+        if (this.dataSourceSettings.dataManager ||
             this.dataSourceSettings.crudAction.read || this.dataSourceSettings.connectionDataSource.crudAction.read) {
             modules.push({
                 member: 'DataBinding',
@@ -30337,7 +30334,8 @@ class Diagram extends Component {
             update = true;
         }
         else if (this.complexHierarchicalTreeModule) {
-            this.complexHierarchicalTreeModule.doLayout(this.nodes, this.nameTable, this.layout, viewPort);
+            let nodes = this.complexHierarchicalTreeModule.getLayoutNodesCollection(this.nodes);
+            this.complexHierarchicalTreeModule.doLayout(nodes, this.nameTable, this.layout, viewPort);
             update = true;
         }
         if (update) {
@@ -33010,12 +33008,12 @@ class Diagram extends Component {
             update = true;
         }
         if (node.minWidth !== undefined) {
-            actualObject.wrapper.minWidth = node.minWidth;
+            actualObject.wrapper.minWidth = actualObject.wrapper.children[0].minWidth = node.minWidth;
             update = true;
             updateConnector$$1 = true;
         }
         if (node.minHeight !== undefined) {
-            actualObject.wrapper.minHeight = node.minHeight;
+            actualObject.wrapper.minHeight = actualObject.wrapper.children[0].minHeight = node.minHeight;
             update = true;
             updateConnector$$1 = true;
         }
@@ -35480,7 +35478,7 @@ class DataBinding {
         let dataProp = 'data';
         let jsonProp = 'json';
         let dataManager = data.dataManager || {};
-        dataSource = data.data || dataManager[dataProp] || dataManager[jsonProp] ||
+        dataSource = dataManager[dataProp] || dataManager[jsonProp] ||
             (dataManager.dataSource ? dataManager.dataSource.json : undefined);
         if (dataSource && dataSource.length) {
             this.applyDataSource(data, dataSource, diagram);
@@ -44080,6 +44078,17 @@ class ComplexHierarchicalTree {
     /**   @private  */
     doLayout(nodes, nameTable, layout, viewPort) {
         new HierarchicalLayoutUtil().doLayout(nodes, nameTable, layout, viewPort);
+    }
+    getLayoutNodesCollection(nodes) {
+        let nodesCollection = [];
+        let node;
+        for (let i = 0; i < nodes.length; i++) {
+            node = nodes[i];
+            if (node.inEdges.length + node.outEdges.length > 0) {
+                nodesCollection.push(node);
+            }
+        }
+        return nodesCollection;
     }
 }
 /**

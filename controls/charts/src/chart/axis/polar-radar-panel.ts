@@ -1,5 +1,5 @@
 import { Chart } from '../chart';
-import { Axis, Row, Column, VisibleRangeModel } from '../axis/axis';
+import { Axis, Row, Column, VisibleRangeModel, VisibleLabels } from '../axis/axis';
 import { valueToCoefficient, inside } from '../../common/utils/helper';
 import { appendChildElement } from '../../common/utils/helper';
 import { CircleOption } from '../../common/utils/helper';
@@ -401,6 +401,7 @@ export class PolarRadarPanel extends LineBase {
         let islabelInside: boolean = axis.labelPosition === 'Inside';
         let padding: number = 5;
         let lastLabelX: number;
+        let label: VisibleLabels;
         let textAnchor: string = '';
         let ticksbwtLabel: number = axis.valueType === 'Category' && axis.labelPlacement === 'BetweenTicks'
                   && chart.visibleSeries[0].type !== 'Radar' ? 0.5 : 0;
@@ -417,6 +418,8 @@ export class PolarRadarPanel extends LineBase {
                 ((pointX < this.centerX && !islabelInside) || (pointX > this.centerX && islabelInside)) ? 'end' : 'start';
             }
             labelText = <string>axis.visibleLabels[i].text;
+            // fix for label style not working in axisLabelRender event issue
+            label = axis.visibleLabels[i];
             if (i === 0) {
                 firstLabelX = pointX;
             } else if (i === axis.visibleLabels.length - 1 && axis.valueType !== 'Category') {
@@ -427,7 +430,7 @@ export class PolarRadarPanel extends LineBase {
 
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, textAnchor, labelText, '', 'central');
             textElement(
-                options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel, labelElement,
+                options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement,
                 false, chart.redraw, true, true
             );
         }

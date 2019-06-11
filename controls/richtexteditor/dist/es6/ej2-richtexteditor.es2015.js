@@ -15393,6 +15393,11 @@ let RichTextEditor = class RichTextEditor extends Component {
                     break;
                 case 'enableHtmlEncode':
                     this.updateValueData();
+                    this.updatePanelValue();
+                    this.setPlaceHolder();
+                    if (this.showCharCount) {
+                        this.countModule.refresh();
+                    }
                     break;
                 case 'undoRedoSteps':
                 case 'undoRedoTimer':
@@ -15413,7 +15418,7 @@ let RichTextEditor = class RichTextEditor extends Component {
      */
     updateValueData() {
         if (this.enableHtmlEncode) {
-            this.setProperties({ value: this.encode(decode(this.inputElement.innerHTML)) });
+            this.setProperties({ value: this.encode(decode(this.inputElement.innerHTML)) }, true);
         }
         else {
             this.setProperties({

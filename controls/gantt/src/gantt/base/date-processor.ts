@@ -4,7 +4,7 @@ import { HolidayModel, DayWorkingTimeModel, EventMarkerModel } from '../models/m
 import { DurationUnits } from './enum';
 import { Gantt } from './gantt';
 /**
- *  
+ *  Date processor is used to handle date of task data.
  */
 export class DateProcessor {
     protected parent: Gantt;
@@ -240,7 +240,7 @@ export class DateProcessor {
     }
     /**
      * To calculate duration from start date and end date
-     * @param ganttData 
+     * @param {IGanttData} ganttData - Defines the gantt data.
      */
     public calculateDuration(ganttData: IGanttData): void {
         let ganttProperties: ITaskData = ganttData.ganttProperties;

@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 17.1.51 (2019-06-11)
+
+### Maps
+
+#### Bug Fixes
+
+- #I237116 - The issue with default highlight and selection fill color has been resolved.
+
 ## 17.1.50 (2019-06-04)
 
 ### Maps

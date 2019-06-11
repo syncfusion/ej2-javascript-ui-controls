@@ -1607,6 +1607,18 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
         var target = (targetCell instanceof Array) ? targetCell.slice(-1)[0] : targetCell;
         if (isMultiple) {
             var initialId = void 0;
+            var args = {
+                element: targetCell,
+                allowMultipleRow: true,
+                requestType: 'mousemove'
+            };
+            this.parent.trigger(select, args);
+            if (!args.allowMultipleRow) {
+                var currentView = this.parent.currentView;
+                if (currentView === 'Day' || currentView === 'Week' || currentView === 'WorkWeek') {
+                    target = target.parentElement.children[this.initialTarget.cellIndex];
+                }
+            }
             var selectedCells = this.getCells(this.isInverseTableSelect(), this.initialTarget, target);
             if (this.parent.activeViewOptions.group.resources.length > 0) {
                 initialId = this.initialTarget.getAttribute('data-group-index');
@@ -14716,7 +14728,7 @@ var MonthEvent = /** @__PURE__ @class */ (function (_super) {
         this.renderedEvents.push(extend({}, event, null, true));
         var diffInDays = event.data.count;
         if (startTime.getTime() <= endTime.getTime()) {
-            var appWidth = (diffInDays * this.cellWidth) - 3;
+            var appWidth = (diffInDays * this.cellWidth) - 5;
             var cellTd = this.workCells[day];
             var appTop = (overlapCount * (appHeight + EVENT_GAP));
             var height = this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;

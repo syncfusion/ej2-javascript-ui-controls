@@ -197,10 +197,12 @@ export interface DragAndDropEventArgs {
     draggedNodeData: { [key: string]: Object };
     /**
      * Returns the dragged/dropped element's target index position
+     * @blazorType nullable
      */
     dropIndex: number;
     /**
      * Returns the dragged/dropped element's target level
+     * @blazorType nullable
      */
     dropLevel: number;
     /**

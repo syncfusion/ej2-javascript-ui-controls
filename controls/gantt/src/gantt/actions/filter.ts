@@ -117,7 +117,7 @@ export class Filter {
         this.parent.off('columnMenuOpen', this.columnMenuOpen);
     }
     /**
-     * @private
+     * To destroy module
      */
     public destroy(): void {
         this.removeEventListener();

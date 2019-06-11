@@ -498,14 +498,6 @@ let DropDownButton = class DropDownButton extends Component {
         }
     }
     /**
-     * Click the DropDownButton element
-     * its native method
-     * @public
-     */
-    click() {
-        this.element.click();
-    }
-    /**
      * Sets the focus to DropDownButton
      * its native method
      * @public

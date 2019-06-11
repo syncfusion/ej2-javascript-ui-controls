@@ -1676,7 +1676,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             });
         }
 
-        if (this.dataSourceSettings.dataManager || this.dataSourceSettings.data ||
+        if (this.dataSourceSettings.dataManager ||
             this.dataSourceSettings.crudAction.read || this.dataSourceSettings.connectionDataSource.crudAction.read) {
             modules.push({
                 member: 'DataBinding',
@@ -3187,8 +3187,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.symmetricalLayoutModule, this.nameTable, this.layout as Layout, viewPort);
             update = true;
         } else if (this.complexHierarchicalTreeModule) {
+            let nodes: INode[] = this.complexHierarchicalTreeModule.getLayoutNodesCollection(this.nodes as INode[]);
             this.complexHierarchicalTreeModule.doLayout(
-                this.nodes as INode[], this.nameTable, this.layout as Layout, viewPort);
+                nodes, this.nameTable, this.layout as Layout, viewPort);
             update = true;
         }
         if (update) {
@@ -3954,9 +3955,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         let dataSourceSettings: IDataSource = {} as IDataSource;
         if (this.dataBindingModule && !(this.realActions & RealAction.PreventDataInit)) {
             if (this.dataSourceSettings.dataManager && this.dataSourceSettings.connectionDataSource.dataManager) {
-                this.nodes = this.generateData(this.dataSourceSettings.dataManager as DataSourceModel, true) as NodeModel[];
+                this.nodes = this.generateData(this.dataSourceSettings.dataManager, true) as NodeModel[];
                 this.connectors = this.generateData(
-                    this.dataSourceSettings.connectionDataSource.dataManager as DataSourceModel, false) as ConnectorModel[];
+                    this.dataSourceSettings.connectionDataSource.dataManager, false) as ConnectorModel[];
             } else if (this.dataSourceSettings.dataManager && this.dataSourceSettings.dataManager.dataSource &&
                 this.dataSourceSettings.dataManager.dataSource.url !== undefined) {
                 this.dataBindingModule.initSource(this.dataSourceSettings, this);
@@ -3966,7 +3967,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
-    private generateData(dataSource: DataSourceModel, isNode: boolean): (NodeModel | ConnectorModel)[] {
+    private generateData(dataSource: DataManager | DataSourceModel, isNode: boolean): (NodeModel | ConnectorModel)[] {
         let nodes: (NodeModel | ConnectorModel)[] = [];
         let i: number;
         for (i = 0; i < (dataSource as object[]).length; i++) {
@@ -4132,7 +4133,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 let targetNode: NodeModel = this.nameTable[obj.targetID];
                 let port: PointPortModel = this.getConnectedPort(sourceNode, obj);
                 let targetPort: PointPortModel = this.getConnectedPort(targetNode, obj);
-                let outPort: PointPortModel  = this.findInOutConnectPorts(sourceNode, false);
+                let outPort: PointPortModel = this.findInOutConnectPorts(sourceNode, false);
                 let inPort: PointPortModel = this.findInOutConnectPorts(targetNode, true);
                 if ((sourceNode !== undefined && canOutConnect(sourceNode)) || (obj.sourcePortID !== '' && canPortOutConnect(outPort))) {
                     (obj as Connector).sourceWrapper = this.getEndNodeWrapper(sourceNode, obj, true);
@@ -5930,11 +5931,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             actualObject.wrapper.pivot = node.pivot; update = true;
         }
         if (node.minWidth !== undefined) {
-            actualObject.wrapper.minWidth = node.minWidth; update = true;
+            actualObject.wrapper.minWidth = actualObject.wrapper.children[0].minWidth = node.minWidth; update = true;
             updateConnector = true;
         }
         if (node.minHeight !== undefined) {
-            actualObject.wrapper.minHeight = node.minHeight; update = true;
+            actualObject.wrapper.minHeight = actualObject.wrapper.children[0].minHeight = node.minHeight; update = true;
             updateConnector = true;
         }
         if (node.maxWidth !== undefined) {
@@ -6239,7 +6240,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (actualObject.sourceID && this.nameTable[actualObject.sourceID]) {
                     source = this.nameTable[actualObject.sourceID].wrapper;
                 }
-                let sourceNode: Node =  this.nameTable[actualObject.sourceID];
+                let sourceNode: Node = this.nameTable[actualObject.sourceID];
                 if (!sourceNode || (canOutConnect(sourceNode) || (actualObject.sourcePortID !== '' && canPortOutConnect(outPort)))) {
                     actualObject.sourcePortWrapper = source ? this.getWrapper(source, newProp.sourcePortID) : undefined;
                 }
@@ -6249,7 +6250,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (actualObject.targetID && this.nameTable[actualObject.targetID]) {
                     target = this.nameTable[actualObject.targetID].wrapper;
                 }
-                let targetNode: Node =  this.nameTable[actualObject.targetID];
+                let targetNode: Node = this.nameTable[actualObject.targetID];
                 if (!targetNode || (canInConnect(targetNode) || (actualObject.targetPortID !== '' && canPortInConnect(inPort)))) {
                     actualObject.targetPortWrapper = target ?
                         this.getWrapper(target, newProp.targetPortID) : undefined;
@@ -7004,7 +7005,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                     this.findChild((newObj as Node), entryTable);
                                 }
                                 this.preventUpdate = true;
-                                if(newObj.zIndex !== -1) {
+                                if (newObj.zIndex !== -1) {
                                     newObj.zIndex = -1;
                                 }
                                 this.initObject(newObj as IElement, undefined, undefined, true);

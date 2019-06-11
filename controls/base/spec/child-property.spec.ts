@@ -276,6 +276,42 @@ describe('ChildProperty', () => {
                     expect(spi).toHaveBeenCalled();
                 });
             });
+
+            describe('promise event', () => {
+                let obj: Object = { bookID: '123', name: 'Collections' };
+                let colAr: any = [];
+                colAr.push(obj);
+                it("success", (done: Function) => {
+                    demoClass3.subjectArray[0].subClick =  ()=> {
+                        let promise = new Promise(function(resolve, reject) {                    
+                            setTimeout(() => resolve("done"), 0);
+                        });
+                        return promise;
+                    }
+                    demoClass3.trigger('subjectArray[0].subClick', {}, () => {
+                        done();
+                    });
+                   
+                });
+
+                it("error", (done: Function) => {
+                    demoClass3.subjectArray[0].subClick =  ()=> {
+                        return Promise.reject({data: {message: 'Error message'}});
+                    }
+                    demoClass3.trigger('subjectArray[0].subClick', {}, ()=> {}, () => {
+                        done();
+                    });
+                   
+                });
+
+                it("success - non promise ", (done: Function) => {
+                    demoClass3.subjectArray[0].subClick =  ()=> {};
+                    demoClass3.trigger('subjectArray[0].subClick', {}, ()=> {
+                        done();
+                    });                   
+                });
+                
+            });
         });
     });
 });

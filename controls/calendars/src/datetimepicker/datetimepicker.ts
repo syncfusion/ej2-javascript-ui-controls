@@ -102,6 +102,7 @@ export class DateTimePicker extends DatePicker {
      * Specifies the scroll bar position if there is no value is selected in the timepicker popup list or
      * the given value is not present in the timepicker popup list.
      * @default null
+     * @blazorType nullable
      */
     @Property(null)
     public scrollTo: Date;

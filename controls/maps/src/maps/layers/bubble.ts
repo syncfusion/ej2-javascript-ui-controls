@@ -3,7 +3,7 @@ import { BubbleSettingsModel, ColorMapping, IBubbleRenderingEventArgs, bubbleRen
 import { IBubbleClickEventArgs, bubbleClick, LayerSettings, IBubbleMoveEventArgs, bubbleMouseMove } from '../index';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { CircleOption, MapLocation, findMidPointOfPolygon, Point, drawCircle, elementAnimate, getTranslate } from '../utils/helper';
-import { RectOption, Rect, drawRectangle, checkPropertyPath } from '../utils/helper';
+import { RectOption, Rect, drawRectangle, checkPropertyPath, getZoomTranslate } from '../utils/helper';
 
 /**
  * Bubble module class
@@ -23,6 +23,7 @@ export class Bubble {
      * To render bubble
      */
     /* tslint:disable:no-string-literal */
+    /* tslint:disable-next-line:max-func-body-length */
     public renderBubble(
         bubbleSettings: BubbleSettingsModel, shapeData: object, color: string, range: { min: number, max: number },
         bubbleIndex: number, dataIndex: number, layerIndex: number, layer: LayerSettings, group: Element
@@ -106,8 +107,13 @@ export class Bubble {
                 element: bubbleElement,
                 center: { x: eventArgs.cx, y: eventArgs.cy }
             });
+            let translate: Object;
             let animate: boolean = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
-            let translate: Object = getTranslate(this.maps, layer, animate);
+            if (this.maps.zoomSettings.zoomFactor > 1 && !isNullOrUndefined(this.maps.zoomModule)) {
+                translate = getZoomTranslate(this.maps, layer, animate);
+            } else {
+                translate = getTranslate(this.maps, layer, animate);
+            }
             let scale: number = translate['scale']; let transPoint: Point = translate['location'] as Point;
             let position: MapLocation = new MapLocation(
                 (this.maps.isTileMap ? (eventArgs.cx) : ((eventArgs.cx + transPoint.x) * scale)),

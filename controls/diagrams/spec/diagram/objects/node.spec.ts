@@ -96,7 +96,14 @@ describe('Diagram Control', () => {
                     content: 'Shape', style: { color: 'red' },
                 }]
             }
-            diagram = new Diagram({ width: 1000, height: 1000, nodes: [node, node2, node3, node4] });
+            let node5: NodeModel = {
+                id: 'node5', minWidth: 100, minHeight: 100, offsetX: 350, offsetY: 350,
+                annotations: [{
+                    id: 'label1',
+                    content: 'Shape', style: { color: 'red' },
+                }]
+            }
+            diagram = new Diagram({ width: 1000, height: 1000, nodes: [node, node2, node3, node4, node5] });
             diagram.appendTo('#diagram97');
         });
 
@@ -130,6 +137,18 @@ describe('Diagram Control', () => {
                 wrapper && wrapper.children && wrapper.children.length &&
                 wrapper.children[0] instanceof DiagramElement && wrapper.offsetX === 300 &&
                 wrapper.offsetY === 100 && wrapper.actualSize.width === 50 && wrapper.actualSize.height === 50).toBe(true);
+            done();
+        });
+        it('Checking min width and min height at run time', (done: Function) => {
+            diagram.nodes[4].minWidth = 60;
+            diagram.nodes[4].minHeight = 60;
+            diagram.dataBind();
+            let node = diagram.nodes[4];
+            node.width = 50;
+            node.height = 50;
+            diagram.dataBind();
+            expect(node.wrapper.minWidth == 60 && node.wrapper.children[0].minWidth == 60 &&
+                node.wrapper.minHeight == 60 && node.wrapper.children[0].minHeight == 60).toBe(true);
             done();
         });
     });

@@ -231,13 +231,9 @@ export class NormalEdit {
     }
 
     private editSuccess(e: Object, args: EditArgs): void {
-        if (!isNullOrUndefined(e)) {
-            let adaptor: string = 'adaptor';
+        if (!isNullOrUndefined(e) && !(e instanceof Array)) {
             let rowData: string = 'rowData';
-            let isAdaptor: {getModuleName: Function} = this.parent.dataSource[adaptor];
-            args.data = (isAdaptor && isAdaptor.getModuleName && (isAdaptor.getModuleName() === 'ODataAdaptor' ||
-                        isAdaptor.getModuleName() === 'ODataV4Adaptor' || isAdaptor.getModuleName() === 'WebApiAdaptor')) ?
-                        extend({}, args[rowData], e) : e;
+            args.data = extend({}, extend({}, args[rowData], args.data), e);
         }
         this.requestSuccess(args);
         this.parent.trigger(events.beforeDataBound, args);

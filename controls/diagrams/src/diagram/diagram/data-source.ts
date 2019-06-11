@@ -169,14 +169,6 @@ export class DataSource extends ChildProperty<DataSource> {
     public parentId: string;
 
     /**
-     * Binds the custom data with the node model
-     * @aspDefaultValueIgnore
-     * @default undefined
-     */
-    @Property()
-    public data: Object[];
-
-    /**
      * Binds the custom data with node model
      * @aspDefaultValueIgnore
      * @default undefined

@@ -1603,6 +1603,18 @@ class KeyboardInteraction {
         let target = (targetCell instanceof Array) ? targetCell.slice(-1)[0] : targetCell;
         if (isMultiple) {
             let initialId;
+            let args = {
+                element: targetCell,
+                allowMultipleRow: true,
+                requestType: 'mousemove'
+            };
+            this.parent.trigger(select, args);
+            if (!args.allowMultipleRow) {
+                let currentView = this.parent.currentView;
+                if (currentView === 'Day' || currentView === 'Week' || currentView === 'WorkWeek') {
+                    target = target.parentElement.children[this.initialTarget.cellIndex];
+                }
+            }
             let selectedCells = this.getCells(this.isInverseTableSelect(), this.initialTarget, target);
             if (this.parent.activeViewOptions.group.resources.length > 0) {
                 initialId = this.initialTarget.getAttribute('data-group-index');
@@ -14264,7 +14276,7 @@ class MonthEvent extends EventBase {
         this.renderedEvents.push(extend({}, event, null, true));
         let diffInDays = event.data.count;
         if (startTime.getTime() <= endTime.getTime()) {
-            let appWidth = (diffInDays * this.cellWidth) - 3;
+            let appWidth = (diffInDays * this.cellWidth) - 5;
             let cellTd = this.workCells[day];
             let appTop = (overlapCount * (appHeight + EVENT_GAP));
             let height = this.monthHeaderHeight + ((overlapCount + 1) * (appHeight + EVENT_GAP)) + this.moreIndicatorHeight;

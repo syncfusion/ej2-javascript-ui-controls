@@ -91,18 +91,18 @@ export class Resize implements IAction {
             if (index < frzCols) {
                 headerTable = gObj.getHeaderTable();
                 contentTable = gObj.getContentTable();
-                headerTextClone = (<HTMLElement>headerTable.querySelectorAll('th')[columnIndex].cloneNode(true));
+                headerTextClone = (<HTMLElement>headerTable.querySelector('[e-mappinguid="' + uid + '"]').parentElement.cloneNode(true));
                 contentTextClone = contentTable.querySelectorAll(`td:nth-child(${columnIndex + 1})`);
             } else {
                 headerTable = gObj.getHeaderContent().querySelector('.e-movableheader').children[0];
                 contentTable = gObj.getContent().querySelector('.e-movablecontent').children[0];
-                headerTextClone = (<HTMLElement>headerTable.querySelectorAll('th')[columnIndex - frzCols].cloneNode(true));
+                headerTextClone = (<HTMLElement>headerTable.querySelector('[e-mappinguid="' + uid + '"]').parentElement.cloneNode(true));
                 contentTextClone = contentTable.querySelectorAll(`td:nth-child(${(columnIndex - frzCols) + 1})`);
             }
         } else {
             headerTable = gObj.getHeaderTable();
             contentTable = gObj.getContentTable();
-            headerTextClone = (<HTMLElement>headerTable.querySelectorAll('th')[columnIndex].cloneNode(true));
+            headerTextClone = (<HTMLElement>headerTable.querySelector('[e-mappinguid="' + uid + '"]').parentElement.cloneNode(true));
             contentTextClone = contentTable.querySelectorAll(`td:nth-child(${columnIndex + 1}):not(.e-groupcaption)`);
         }
         let indentWidthClone: NodeListOf<Element> = headerTable.querySelector('tr').querySelectorAll('.e-grouptopleftcell');

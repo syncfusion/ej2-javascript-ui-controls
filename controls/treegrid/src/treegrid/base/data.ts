@@ -1,5 +1,5 @@
 import { extend, isNullOrUndefined, setValue, getValue, Ajax } from '@syncfusion/ej2-base';
-import { DataManager, Query, Group, DataUtil, QueryOptions, ReturnOption } from '@syncfusion/ej2-data';
+import { DataManager, Query, Group, DataUtil, QueryOptions, ReturnOption, ParamOption } from '@syncfusion/ej2-data';
 import { ITreeData, RowExpandedEventArgs } from './interface';
 import { TreeGrid } from './treegrid';
 import { showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
@@ -87,15 +87,22 @@ public isRemote(): boolean {
   public convertToFlatData(data: Object): void {
     this.parent.flatData = <Object[]>(Object.keys(data).length === 0 ? this.parent.dataSource : []);
     this.parent.parentData = [];
-    if ((isRemoteData(this.parent) && !isOffline(this.parent)) && data instanceof DataManager) {
+    let adaptorName: string = 'adaptorName';
+    if ((isRemoteData(this.parent) && !isOffline(this.parent)) && data instanceof DataManager && !(data instanceof Array)) {
       let dm: DataManager = <DataManager>this.parent.dataSource;
       if (this.parent.parentIdMapping) {
         this.parent.query = isNullOrUndefined(this.parent.query) ?
           new Query() : this.parent.query;
         if (this.parent.parentIdMapping) {
           this.parent.query.where(this.parent.parentIdMapping, 'equal', null);
+          let key: ParamOption[] = !this.parent.query.params.length ? [] : this.parent.query.params.filter((e: ParamOption) => {
+            return e.key === 'IdMapping';
+          });
+          if (!key.length) {
+            this.parent.query.addParams('IdMapping', this.parent.idMapping);
+          }
         }
-        if (!this.parent.hasChildMapping) {
+        if (!this.parent.hasChildMapping && !(this.parent.dataSource[adaptorName] === 'BlazorAdaptor')) {
           let qry: Query = this.parent.query.clone();
           qry.queries = [];
           qry = qry.select([this.parent.parentIdMapping]);
@@ -188,20 +195,25 @@ public isRemote(): boolean {
    */
   private updateParentRemoteData(args?: BeforeDataBoundArgs) : void {
     let records: ITreeData[] = args.result;
-    if (!this.parent.hasChildMapping && !this.parentItems.length) {
+    let adaptorName: string = 'adaptorName';
+    if (!this.parent.hasChildMapping && !this.parentItems.length && !(this.parent.dataSource[adaptorName] === 'BlazorAdaptor')) {
       this.zerothLevelData = args;
       setValue('cancel', true, args);
     } else {
-      for (let rec: number = 0; rec < records.length; rec++) {
-        if ((records[rec][this.parent.hasChildMapping] || this.parentItems.indexOf(records[rec][this.parent.idMapping]) !== -1)
-                      && (isNullOrUndefined(records[rec].index))) {
-          records[rec].level = 0;
-          records[rec].index = Math.ceil(Math.random() * 1000);
-          records[rec].hasChildRecords = true;
+      if (!(this.parent.dataSource[adaptorName] === 'BlazorAdaptor')) {
+        for (let rec: number = 0; rec < records.length; rec++) {
+          if ((records[rec][this.parent.hasChildMapping] || this.parentItems.indexOf(records[rec][this.parent.idMapping]) !== -1)
+            && (isNullOrUndefined(records[rec].index))) {
+            records[rec].level = 0;
+            records[rec].index = Math.ceil(Math.random() * 1000);
+            records[rec].hasChildRecords = true;
+          }
         }
+      } else {
+        this.convertToFlatData(records);
       }
     }
-    args.result = records;
+    args.result = this.parent.dataSource[adaptorName] === 'BlazorAdaptor' ? this.parent.flatData : records;
     this.parent.notify('updateResults', args);
   }
   /**

@@ -75,13 +75,13 @@ export interface RangeModel {
 
     /**
      * Start of the axis range.
-     * @aspDefaultValueIgnore
+     * @default null
      */
     start?: number;
 
     /**
      * End of the axis range.
-     * @aspDefaultValueIgnore
+     * @default null
      */
     end?: number;
 

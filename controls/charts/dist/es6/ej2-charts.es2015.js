@@ -3070,7 +3070,8 @@ function textElement(option, font, color, parent, isMinus = false, redraw, isAni
  * Method to calculate the width and height of the chart
  */
 function calculateSize(chart) {
-    let containerWidth = chart.element.clientWidth;
+    // fix for Chart rendered with default width in IE issue
+    let containerWidth = chart.element.clientWidth || chart.element.offsetWidth;
     let containerHeight = chart.element.clientHeight;
     if (chart.stockChart) {
         containerWidth = chart.stockChart.element.clientWidth;
@@ -11061,6 +11062,7 @@ class PolarRadarPanel extends LineBase {
         let islabelInside = axis.labelPosition === 'Inside';
         let padding = 5;
         let lastLabelX;
+        let label;
         let textAnchor = '';
         let ticksbwtLabel = axis.valueType === 'Category' && axis.labelPlacement === 'BetweenTicks'
             && chart.visibleSeries[0].type !== 'Radar' ? 0.5 : 0;
@@ -11075,6 +11077,8 @@ class PolarRadarPanel extends LineBase {
                     ((pointX < this.centerX && !islabelInside) || (pointX > this.centerX && islabelInside)) ? 'end' : 'start';
             }
             labelText = axis.visibleLabels[i].text;
+            // fix for label style not working in axisLabelRender event issue
+            label = axis.visibleLabels[i];
             if (i === 0) {
                 firstLabelX = pointX;
             }
@@ -11084,7 +11088,7 @@ class PolarRadarPanel extends LineBase {
                 labelText = (lastLabelX > firstLabelX) ? '' : labelText;
             }
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, textAnchor, labelText, '', 'central');
-            textElement(options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
+            textElement(options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
         }
         this.element.appendChild(labelElement);
     }

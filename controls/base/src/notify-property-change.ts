@@ -117,7 +117,7 @@ function getObjectArray<T>(
 ): Object[] {
 
     let result: Object[] = [];
-    let len: Number = defaultValue.length;
+    let len: Number = defaultValue ? defaultValue.length : 0;
     for (let i: number = 0; i < len; i++) {
         let curType: (...arg: Object[]) => void = type;
         if (isFactory) {

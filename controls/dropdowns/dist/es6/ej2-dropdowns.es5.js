@@ -5997,8 +5997,9 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             if (eventArgs.cancel) {
                 return true;
             }
-            this.value.splice(index, 1);
-            this.setProperties({ value: [].concat([], this.value) }, true);
+            var removeVal = this.value.slice(0);
+            removeVal.splice(index, 1);
+            this.setProperties({ value: [].concat([], removeVal) }, true);
             if (element !== null) {
                 var hideElement = this.findListElement(this.mainList, 'li', 'data-value', value);
                 element.setAttribute('aria-selected', 'false');

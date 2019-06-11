@@ -963,7 +963,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 this.createSpinner(closest(element_1, '.e-multi-select-wrapper').parentElement);
                 showSpinner(closest(element_1, '.e-multi-select-wrapper').parentElement);
                 data.then(function (e) {
-                    if (e.actual.result) {
+                    if (e.actual && e.actual.result) {
                         dummyData_1 = e.actual.result;
                     }
                     else {
@@ -1926,7 +1926,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         var data = this.dataManager.executeQuery(query);
         var deferred = new Deferred();
         data.then(function (e) {
-            if (e.actual.result) {
+            if (e.actual && e.actual.result) {
                 _this.dataColl = e.actual.result;
             }
             else {

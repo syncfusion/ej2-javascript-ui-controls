@@ -444,6 +444,10 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                     this.refreshContentRows({ requestType: 'refresh' });
                 }
             }
+            if (!this.parent.invokedFromMedia && column.hideAtMedia) {
+                this.parent.updateMediaColumns(column);
+            }
+            this.parent.invokedFromMedia = false;
         }
         if (needFullRefresh) {
             this.refreshContentRows({ requestType: 'refresh' });

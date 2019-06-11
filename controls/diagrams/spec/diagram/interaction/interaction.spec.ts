@@ -268,7 +268,7 @@ describe('Diagram Control', () => {
             mouseEvents.clickEvent(diagramCanvas, 420, 300);
             let innerHtmlTextElement = document.getElementById('text_content_text');
             expect(innerHtmlTextElement.innerHTML === '<tspan x="12.765625" y="53.6">Text Element</tspan>' ||
-                innerHtmlTextElement.innerHTML === '<tspan x="14.9921875" y="53.6">Text Element</tspan>').toBe(true);
+            innerHtmlTextElement.innerHTML === '<tspan x="14.9921875" y="53.6">Text Element</tspan>' || innerHtmlTextElement.innerHTML === '<tspan x="14.984375" y="53.6">Text Element</tspan>').toBe(true);
             done();
         });
 

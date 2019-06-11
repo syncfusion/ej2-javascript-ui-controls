@@ -132,6 +132,7 @@ export interface BeforeOpenEventArgs {
     element: Element;
     /**
      * Returns the target element of the dialog.
+     * @aspType string
      */
     target: HTMLElement | String;
 }
@@ -159,6 +160,7 @@ export interface BeforeCloseEventArgs {
     element: Element;
     /**
      * Returns the target element of the dialog.
+     * @aspType string
      */
     target: HTMLElement | String;
     /**

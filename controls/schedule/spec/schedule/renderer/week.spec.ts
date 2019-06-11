@@ -440,6 +440,58 @@ describe('Schedule Week view', () => {
             expect(eventName).toEqual('select');
         });
 
+        it('allow multiple row selection is false', () => {
+            schObj = new Schedule({
+                select: (args: SelectEventArgs) => args.allowMultipleRow = false,
+                currentView: 'Week', selectedDate: new Date(2017, 9, 5)
+            });
+            schObj.appendTo('#Schedule');
+            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
+            util.triggerMouseEvent(workCells[163], 'mousedown');
+            util.triggerMouseEvent(workCells[192], 'mousemove');
+            util.triggerMouseEvent(workCells[192], 'mouseup');
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(5);
+            util.triggerMouseEvent(workCells[163], 'mousedown');
+            util.triggerMouseEvent(workCells[136], 'mousemove');
+            util.triggerMouseEvent(workCells[136], 'mouseup');
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(5);
+            util.triggerMouseEvent(workCells[163], 'mousedown');
+            util.triggerMouseEvent(workCells[190], 'mousemove');
+            util.triggerMouseEvent(workCells[190], 'mouseup');
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(5);
+            util.triggerMouseEvent(workCells[163], 'mousedown');
+            util.triggerMouseEvent(workCells[134], 'mousemove');
+            util.triggerMouseEvent(workCells[134], 'mouseup');
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(5);
+        });
+
+        it('allow multiple row selection is true', () => {
+            schObj = new Schedule({
+                select: (args: SelectEventArgs) => args.allowMultipleRow = true,
+                currentView: 'Week', selectedDate: new Date(2017, 9, 5)
+            });
+            schObj.appendTo('#Schedule');
+            let workCells: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-work-cells'));
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(0);
+            util.triggerMouseEvent(workCells[163], 'mousedown');
+            util.triggerMouseEvent(workCells[192], 'mousemove');
+            util.triggerMouseEvent(workCells[192], 'mouseup');
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(55);
+            util.triggerMouseEvent(workCells[163], 'mousedown');
+            util.triggerMouseEvent(workCells[136], 'mousemove');
+            util.triggerMouseEvent(workCells[136], 'mouseup');
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(45);
+            util.triggerMouseEvent(workCells[163], 'mousedown');
+            util.triggerMouseEvent(workCells[190], 'mousemove');
+            util.triggerMouseEvent(workCells[190], 'mouseup');
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(45);
+            util.triggerMouseEvent(workCells[163], 'mousedown');
+            util.triggerMouseEvent(workCells[134], 'mousemove');
+            util.triggerMouseEvent(workCells[134], 'mouseup');
+            expect(schObj.element.querySelectorAll('.e-selected-cell').length).toEqual(55);
+        });
+
         it('cell click', () => {
             let cellStartTime: number;
             let cellEndTime: number;

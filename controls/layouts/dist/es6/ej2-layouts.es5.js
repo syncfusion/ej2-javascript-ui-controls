@@ -3348,6 +3348,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
             var cellElement = collections[i];
             {
                 this.dragobj = new Draggable(cellElement, {
+                    preventDefault: false,
                     clone: false,
                     dragArea: this.element,
                     handle: this.draggableHandle ? this.draggableHandle : '.e-panel',

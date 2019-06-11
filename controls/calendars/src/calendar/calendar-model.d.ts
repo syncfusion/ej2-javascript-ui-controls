@@ -150,6 +150,7 @@ export interface CalendarModel extends CalendarBaseModel{
     /**
      * Gets or sets the selected date of the Calendar.
      * @default null
+     * @blazorType nullable
      */
     value?: Date;
 

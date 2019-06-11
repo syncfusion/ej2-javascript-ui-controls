@@ -15630,6 +15630,11 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'enableHtmlEncode':
                     this.updateValueData();
+                    this.updatePanelValue();
+                    this.setPlaceHolder();
+                    if (this.showCharCount) {
+                        this.countModule.refresh();
+                    }
                     break;
                 case 'undoRedoSteps':
                 case 'undoRedoTimer':
@@ -15650,7 +15655,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
      */
     RichTextEditor.prototype.updateValueData = function () {
         if (this.enableHtmlEncode) {
-            this.setProperties({ value: this.encode(decode(this.inputElement.innerHTML)) });
+            this.setProperties({ value: this.encode(decode(this.inputElement.innerHTML)) }, true);
         }
         else {
             this.setProperties({

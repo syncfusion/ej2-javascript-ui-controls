@@ -2080,6 +2080,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             let cellElement: HTMLElement = collections[i];
             {
                 this.dragobj = new Draggable(cellElement, {
+                    preventDefault: false,
                     clone: false,
                     dragArea: this.element,
                     handle: this.draggableHandle ? this.draggableHandle : '.e-panel',

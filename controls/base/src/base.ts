@@ -134,9 +134,11 @@ export abstract class Base<ElementType extends HTMLElement> {
      * @param {string} eventName - Specifies the event to trigger for the specified component properties. 
      * Can be a custom event, or any of the standard events.
      * @param {Event} eventProp - Additional parameters to pass on to the event properties
+     * @param {Function} successHandler - this function will invoke after event successfully triggered
+     * @param {Function} errorHandler - this function will invoke after event if it failured to call.
      * @return {void}
      */
-    public trigger(eventName: string, eventProp?: Object): void {
+    public trigger(eventName: string, eventProp?: Object, successHandler?: Function, errorHandler?: Function): void {
         if (this.isDestroyed !== true) {
             let prevDetection: boolean = this.isProtectedOnChange;
             this.isProtectedOnChange = false;
@@ -144,7 +146,20 @@ export abstract class Base<ElementType extends HTMLElement> {
             if (isColEName.test(eventName)) {
                 let handler: Function = getValue(eventName, this);
                 if (handler) {
-                    handler.call(this, eventProp);
+                    let promise: Promise<object> = handler.call(this, eventProp);
+                    if (promise && (promise.toString()).indexOf('Promise') >= 0) {
+                        promise.then((data: object) => {
+                            if (successHandler) {
+                                successHandler.call(this, data);
+                            }
+                        }).catch((data: object) => {
+                            if (errorHandler) {
+                                errorHandler.call(this, data);
+                            }
+                        });
+                    } else if (successHandler) {
+                        successHandler.call(this, eventProp);
+                    }
                 }
             }
             this.isProtectedOnChange = prevDetection;

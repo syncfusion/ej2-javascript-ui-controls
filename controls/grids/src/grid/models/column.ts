@@ -29,6 +29,12 @@ export class Column {
     public uid: string;
 
     /**    
+     * Gets the unique identifier value of the column. It is used to get the column object.   
+     * @default undefined    
+     */
+
+     public index: number;
+    /**    
      * Defines the header text of column which is used to display in column header.    
      * If `headerText` is not defined, then field name value will be assigned to header text.   
      * @default ''  
@@ -587,6 +593,12 @@ export interface ColumnModel {
      * @default ''    
      */
     uid?: string;
+
+    /**    
+     * Gets the unique identifier value of the column. It is used to get the object.   
+     * @default undefined    
+     */
+    index?: number;
 
     /**    
      * Defines the header text of column which is used to display in column header.    

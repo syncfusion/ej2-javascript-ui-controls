@@ -190,6 +190,22 @@ export function extend(copied: Object, first: Object, second?: Object, exclude?:
 }
 
 /** @hidden */
+export function setColumnIndex (columnModel: Column[] , ind: number = 0 ): number {
+    for (let i: number = 0, len: number = columnModel.length; i < len; i++) {
+        if ((columnModel[i] as Column).columns) {
+            (columnModel[i] as Column).index = (columnModel[i] as Column).index === undefined ? ind : (columnModel[i] as Column).index;
+            ind++;
+            ind = setColumnIndex(<Column[]>(columnModel[i] as Column).columns, ind);
+        } else {
+            (columnModel[i] as Column).index = (columnModel[i] as Column).index === undefined ? ind : (columnModel[i] as Column).index;
+            ind++;
+
+        }
+    }
+    return ind;
+ }
+
+/** @hidden */
 export function prepareColumns(columns: Column[] | string[] | ColumnModel[], autoWidth?: boolean): Column[] {
     for (let c: number = 0, len: number = columns.length; c < len; c++) {
 

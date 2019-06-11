@@ -262,7 +262,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     @Complex<AccordionAnimationSettingsModel>({}, AccordionAnimationSettings)
     public animation: AccordionAnimationSettingsModel;
     /**
-     * The event will be fired while clicking on the Accordion headers.
+     * The event will be fired while clicking anywhere within the Accordion.
      * @event
      */
     @Event()

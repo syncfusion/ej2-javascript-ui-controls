@@ -110,9 +110,9 @@ describe('Diagram Control', () => {
             ele.remove();
         });
         it('Checking different labels margin with different values in SVG rendering Mode', (done: Function) => {
-            expect(((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width === 79.359375
+            expect(((Math.ceil((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width) === 80 || Math.floor((diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.width) === 79)
                 && (diagram.nodes[0] as NodeModel).wrapper.children[1].actualSize.height === 57.599999999999994 &&
-                (diagram.nodes[0] as NodeModel).wrapper.children[1].offsetX === 104.6796875 &&
+                Math.floor((diagram.nodes[0] as NodeModel).wrapper.children[1].offsetX) === 104 &&
                 (diagram.nodes[0] as NodeModel).wrapper.children[1].offsetY === 88.8)).toBe(true);
 
             done();

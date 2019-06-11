@@ -998,7 +998,7 @@ function getZoomTranslate(mapObject, layer, animate) {
     var y;
     var min = mapObject.baseMapRectBounds['min'];
     var max = mapObject.baseMapRectBounds['max'];
-    var factor = mapObject.mapScaleValue;
+    var factor = animate ? 1 : mapObject.mapScaleValue;
     var scaleFactor;
     var mapWidth = Math.abs(max['x'] - min['x']);
     var mapHeight = Math.abs(min['y'] - max['y']);
@@ -2883,7 +2883,10 @@ var Marker = /** @__PURE__ @class */ (function () {
                         + markerIndex + '_dataIndex_' + dataIndex;
                     var location_1 = (_this.maps.isTileMap) ? convertTileLatLongToPoint(new MapLocation(lng, lat), factor, _this.maps.tileTranslatePoint, true) : convertGeoToPoint(lat, lng, factor, currentLayer, _this.maps);
                     var animate$$1 = currentLayer.animationDuration !== 0 || isNullOrUndefined(_this.maps.zoomModule);
-                    var translate = (_this.maps.isTileMap) ? new Object() : getTranslate(_this.maps, currentLayer, animate$$1);
+                    var translate = (_this.maps.isTileMap) ? new Object() :
+                        !isNullOrUndefined(_this.maps.zoomModule) && _this.maps.zoomSettings.zoomFactor > 1 ?
+                            getZoomTranslate(_this.maps, currentLayer, animate$$1) :
+                            getTranslate(_this.maps, currentLayer, animate$$1);
                     var scale = type === 'AddMarker' ? _this.maps.scale : translate['scale'];
                     var transPoint = type === 'AddMarker' ? _this.maps.translatePoint : translate['location'];
                     if (eventArgs.template) {
@@ -5512,6 +5515,7 @@ var Bubble = /** @__PURE__ @class */ (function () {
      * To render bubble
      */
     /* tslint:disable:no-string-literal */
+    /* tslint:disable-next-line:max-func-body-length */
     Bubble.prototype.renderBubble = function (bubbleSettings, shapeData, color, range, bubbleIndex, dataIndex, layerIndex, layer, group) {
         var layerData = layer.layerData;
         var colorValuePath = bubbleSettings.colorValuePath;
@@ -5592,8 +5596,14 @@ var Bubble = /** @__PURE__ @class */ (function () {
                 element: bubbleElement,
                 center: { x: eventArgs.cx, y: eventArgs.cy }
             });
+            var translate = void 0;
             var animate$$1 = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
-            var translate = getTranslate(this.maps, layer, animate$$1);
+            if (this.maps.zoomSettings.zoomFactor > 1 && !isNullOrUndefined(this.maps.zoomModule)) {
+                translate = getZoomTranslate(this.maps, layer, animate$$1);
+            }
+            else {
+                translate = getTranslate(this.maps, layer, animate$$1);
+            }
             var scale = translate['scale'];
             var transPoint = translate['location'];
             var position = new MapLocation((this.maps.isTileMap ? (eventArgs.cx) : ((eventArgs.cx + transPoint.x) * scale)), (this.maps.isTileMap ? (eventArgs.cy) : ((eventArgs.cy + transPoint.y) * scale)));

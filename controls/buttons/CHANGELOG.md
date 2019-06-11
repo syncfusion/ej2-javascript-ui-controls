@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.50 (2019-06-04)
+
+### Button
+
+#### New Features
+
+- Provided method to focusIn and click.
+
 ## 17.1.40 (2019-04-09)
 
 ### RadioButton

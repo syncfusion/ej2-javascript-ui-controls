@@ -100,6 +100,7 @@ export class DatePicker extends Calendar implements IInput {
         controlEnd: 'ctrl+end',
         tab: 'tab'
     };
+    protected mobilePopupWrapper: HTMLElement;
     protected calendarKeyConfigs: { [key: string]: string } = {
         escape: 'escape',
         enter: 'enter',
@@ -1016,6 +1017,10 @@ export class DatePicker extends Calendar implements IInput {
                 this.previousDate = outOfRange;
                 this.createCalendar();
             }
+            if (Browser.isDevice) {
+                this.mobilePopupWrapper = this.createElement('div', { className: 'e-datepick-mob-popup-wrap'});
+                document.body.appendChild(this.mobilePopupWrapper);
+            }
             this.preventArgs = {
                 preventDefault: (): void => {
                     prevent = false;
@@ -1023,7 +1028,7 @@ export class DatePicker extends Calendar implements IInput {
                 popup: this.popupObj,
                 event: e || null,
                 cancel: false,
-                appendTo: document.body
+                appendTo: Browser.isDevice ? this.mobilePopupWrapper : document.body
             };
             this.trigger('open', this.preventArgs);
             if (prevent && !this.preventArgs.cancel) {
@@ -1039,6 +1044,7 @@ export class DatePicker extends Calendar implements IInput {
                 } else {
                     this.popupObj.show(new Animation(openAnimation), null);
                 }
+                super.setOverlayIndex(this.mobilePopupWrapper, this.popupObj.element, this.modal, Browser.isDevice);
                 this.setAriaAttributes();
             } else {
                 this.popupObj.destroy();
@@ -1082,6 +1088,10 @@ export class DatePicker extends Calendar implements IInput {
                 this.modal.style.display = 'none';
                 this.modal.outerHTML = '';
                 this.modal = null;
+                if (!isNullOrUndefined(this.mobilePopupWrapper)) {
+                    this.mobilePopupWrapper.remove();
+                    this.mobilePopupWrapper = null;
+                }
             }
             EventHandler.remove(document, 'mousedown touchstart', this.documentHandler);
         }

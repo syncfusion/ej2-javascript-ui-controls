@@ -656,7 +656,7 @@ export class Edit {
                 let updatedData: object = {
                     changedRecords: eventArgs.modifiedTaskData
                 };
-                let crud: Promise<Object> = data.saveChanges(updatedData, null, null, new Query()) as Promise<Object>;
+                let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id, null, new Query()) as Promise<Object>;
                 crud.then((e: ReturnType) => this.dmSuccess(e, args))
                     .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
             } else {
@@ -1017,7 +1017,7 @@ export class Edit {
                     deletedRecords: eventArgs.data, // to check
                     changedRecords: eventArgs.modifiedTaskData
                 };
-                let crud: Promise<Object> = data.saveChanges(updatedData) as Promise<Object>;
+                let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id) as Promise<Object>;
                 crud.then((e: ReturnType) => this.deleteSuccess(args))
                     .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
             } else {
@@ -1535,7 +1535,7 @@ export class Edit {
                     addedRecords: [args.newTaskData], // to check
                     changedRecords: args.modifiedTaskData
                 };
-                let crud: Promise<Object> = data.saveChanges(updatedData, null, null, new Query()) as Promise<Object>;
+                let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id, null, new Query()) as Promise<Object>;
                 crud.then((e: { addedRecords: Object[], changedRecords: Object[] }) => {
                     if (this.parent.taskFields.id && !isNullOrUndefined(e.addedRecords[0][this.parent.taskFields.id]) &&
                         e.addedRecords[0][this.parent.taskFields.id] !== args.data.ganttProperties.taskId) {

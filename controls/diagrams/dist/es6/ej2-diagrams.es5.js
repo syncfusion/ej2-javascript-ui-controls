@@ -19943,9 +19943,6 @@ var DataSource = /** @__PURE__ @class */ (function (_super) {
     ], DataSource.prototype, "parentId", void 0);
     __decorate$16([
         Property()
-    ], DataSource.prototype, "data", void 0);
-    __decorate$16([
-        Property()
     ], DataSource.prototype, "doBinding", void 0);
     __decorate$16([
         Complex({}, CrudAction)
@@ -30011,7 +30008,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                 args: []
             });
         }
-        if (this.dataSourceSettings.dataManager || this.dataSourceSettings.data ||
+        if (this.dataSourceSettings.dataManager ||
             this.dataSourceSettings.crudAction.read || this.dataSourceSettings.connectionDataSource.crudAction.read) {
             modules.push({
                 member: 'DataBinding',
@@ -31468,7 +31465,8 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             update = true;
         }
         else if (this.complexHierarchicalTreeModule) {
-            this.complexHierarchicalTreeModule.doLayout(this.nodes, this.nameTable, this.layout, viewPort);
+            var nodes = this.complexHierarchicalTreeModule.getLayoutNodesCollection(this.nodes);
+            this.complexHierarchicalTreeModule.doLayout(nodes, this.nameTable, this.layout, viewPort);
             update = true;
         }
         if (update) {
@@ -34178,12 +34176,12 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
             update = true;
         }
         if (node.minWidth !== undefined) {
-            actualObject.wrapper.minWidth = node.minWidth;
+            actualObject.wrapper.minWidth = actualObject.wrapper.children[0].minWidth = node.minWidth;
             update = true;
             updateConnector$$1 = true;
         }
         if (node.minHeight !== undefined) {
-            actualObject.wrapper.minHeight = node.minHeight;
+            actualObject.wrapper.minHeight = actualObject.wrapper.children[0].minHeight = node.minHeight;
             update = true;
             updateConnector$$1 = true;
         }
@@ -36672,7 +36670,7 @@ var DataBinding = /** @__PURE__ @class */ (function () {
         var dataProp = 'data';
         var jsonProp = 'json';
         var dataManager = data.dataManager || {};
-        dataSource = data.data || dataManager[dataProp] || dataManager[jsonProp] ||
+        dataSource = dataManager[dataProp] || dataManager[jsonProp] ||
             (dataManager.dataSource ? dataManager.dataSource.json : undefined);
         if (dataSource && dataSource.length) {
             this.applyDataSource(data, dataSource, diagram);
@@ -45321,6 +45319,17 @@ var ComplexHierarchicalTree = /** @__PURE__ @class */ (function () {
     /**   @private  */
     ComplexHierarchicalTree.prototype.doLayout = function (nodes, nameTable, layout, viewPort) {
         new HierarchicalLayoutUtil().doLayout(nodes, nameTable, layout, viewPort);
+    };
+    ComplexHierarchicalTree.prototype.getLayoutNodesCollection = function (nodes) {
+        var nodesCollection = [];
+        var node;
+        for (var i = 0; i < nodes.length; i++) {
+            node = nodes[i];
+            if (node.inEdges.length + node.outEdges.length > 0) {
+                nodesCollection.push(node);
+            }
+        }
+        return nodesCollection;
     };
     return ComplexHierarchicalTree;
 }());

@@ -498,6 +498,10 @@ export class ContentRender implements IRenderer {
                 }
                 this.setDisplayNone(tr, idx, displayVal, contentrows);
             }
+            if (!this.parent.invokedFromMedia && column.hideAtMedia) {
+                this.parent.updateMediaColumns(column);
+            }
+            this.parent.invokedFromMedia = false;
         }
         if (needFullRefresh) {
             this.refreshContentRows({ requestType: 'refresh' });

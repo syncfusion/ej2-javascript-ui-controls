@@ -240,6 +240,7 @@ export class DateRangePicker extends CalendarBase {
     private formatString: string;
     protected tabIndex: string;
     private invalidValueString: string = null;
+    private mobileRangePopupWrap: HTMLElement;
 
     /**
      * Gets or sets the start and end date of the Calendar.
@@ -335,12 +336,14 @@ export class DateRangePicker extends CalendarBase {
     /**
      * Gets or sets the start date of the date range selection.
      * @default null
+     * @blazorType nullable
      */
     @Property(null)
     public startDate: Date;
     /**
      * Gets or sets the end date of the date range selection.
      * @default null
+     * @blazorType nullable
      */
     @Property(null)
     public endDate: Date;
@@ -3897,13 +3900,17 @@ export class DateRangePicker extends CalendarBase {
                     this.targetElement = element;
                 }
                 this.createPopup();
+                if (this.isMobile || Browser.isDevice) {
+                    this.mobileRangePopupWrap = this.createElement('div', { className: 'e-daterangepick-mob-popup-wrap'});
+                    document.body.appendChild(this.mobileRangePopupWrap);
+                }
                 this.openEventArgs = {
                     popup: this.popupObj || null,
                     cancel: false,
                     date: this.inputElement.value,
                     model: this,
                     event: event ? event : null,
-                    appendTo: document.body
+                    appendTo: this.isMobile || Browser.isDevice ? this.mobileRangePopupWrap : document.body
                 };
                 this.trigger('open', this.openEventArgs);
                 if (!this.openEventArgs.cancel) {
@@ -3920,7 +3927,7 @@ export class DateRangePicker extends CalendarBase {
                         this.endButton.element.removeAttribute('disabled');
                         this.selectableDates();
                     }
-
+                    super.setOverlayIndex(this.mobileRangePopupWrap, this.popupObj.element, this.modal, this.isMobile || Browser.isDevice);
                 }
             }
         }
@@ -3993,6 +4000,10 @@ export class DateRangePicker extends CalendarBase {
                         this.modal.style.display = 'none';
                         this.modal.outerHTML = '';
                         this.modal = null;
+                        if (!isNullOrUndefined(this.mobileRangePopupWrap)) {
+                            this.mobileRangePopupWrap.remove();
+                            this.mobileRangePopupWrap = null;
+                        }
                     }
                     this.isKeyPopup = this.dateDisabled = false;
                 } else {

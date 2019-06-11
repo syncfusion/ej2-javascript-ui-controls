@@ -350,7 +350,7 @@ export interface RelationShipModel extends ConnectorShapeModel{
 
     /**
      * Defines the type of the  UMLConnector
-     * @default 'UmlClassifier'
+     * @default 'None'
      * @IgnoreSingular
      */
     type?: ConnectionShapes;

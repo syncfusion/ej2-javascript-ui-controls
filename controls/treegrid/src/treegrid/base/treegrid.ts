@@ -1390,6 +1390,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.grid.cellEdit = this.triggerEvents.bind(this);
     this.grid.actionFailure = this.triggerEvents.bind(this);
     this.grid.dataBound = (args: Object): void => {
+      this.treeColumnRowTemplate(args);
       this.updateColumnModel();
       this.updateAltRow(this.getRows());
       this.notify('headerCheckbox', {});
@@ -1404,7 +1405,8 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       this.initialRender = false;
     };
     this.grid.beforeDataBound = function (args: BeforeDataBoundArgs): void  {
-      if (isRemoteData(treeGrid) && !isOffline(treeGrid)) {
+      let requestType: string = getObject('action', args);
+      if (isRemoteData(treeGrid) && !isOffline(treeGrid) && requestType !== 'edit') {
         treeGrid.notify('updateRemoteLevel', args);
         args = <BeforeDataBoundArgs>(treeGrid.dataResults);
       } else if (treeGrid.flatData.length === 0 && isOffline(treeGrid) && treeGrid.dataSource instanceof DataManager) {
@@ -1414,8 +1416,8 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       }
       if (!isRemoteData(treeGrid)) {
         treeGrid.notify('dataProcessor', args);
-        //args = this.dataModule.dataProcessor(args);
       }
+        //args = this.dataModule.dataProcessor(args);
       extend(args, treeGrid.dataResults);
       // this.notify(events.beforeDataBound, args);
       if (!(<IGrid>this).isPrinting) {
@@ -1499,15 +1501,15 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       if (args.requestType === 'reorder') {
         this.notify('setColumnIndex', {});
       }
-      if (this.isLocalData) {
-        if (args.requestType === 'add' && (this.editSettings.newRowPosition !== 'Top' && this.editSettings.newRowPosition !== 'Bottom')) {
-          this.notify(events.beginAdd, args);
-        }
-        if (args.requestType === 'batchsave') {
-          this.notify(events.batchSave, args);
-        }
-        this.notify('updateGridActions', args);
+
+      if (args.requestType === 'add' && (this.editSettings.newRowPosition !== 'Top' && this.editSettings.newRowPosition !== 'Bottom')) {
+        this.notify(events.beginAdd, args);
       }
+      if (args.requestType === 'batchsave') {
+        this.notify(events.batchSave, args);
+      }
+      this.notify('updateGridActions', args);
+
       this.trigger(events.actionComplete, args);
     };
     this.grid.rowDataBound = function (args: RowDataBoundEventArgs): void {
@@ -1517,11 +1519,6 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
         setValue('isPrinting', (<IGrid>this).isPrinting, args);
       }
       treeGrid.renderModule.RowModifier(args);
-      if (treeGrid.rowTemplate) {
-        let rcell: object = (<HTMLTableRowElement>args.row).cells[treeGrid.treeColumnIndex];
-        let arg: object = { data: args.data, row: args.row, cell: rcell, column: this.getColumns()[treeGrid.treeColumnIndex] };
-        this.queryCellInfo(arg);
-      }
     };
     this.grid.queryCellInfo = function (args: QueryCellInfoEventArgs): void {
       if (isNullOrUndefined((<IGrid>this).isPrinting)) {
@@ -2542,7 +2539,7 @@ private getGridEditSettings(): GridEditModel {
   private updateAltRow(rows: HTMLTableRowElement[]) : void {
     if (this.enableAltRow && !this.rowTemplate) {
       let visibleRowCount: number = 0;
-      for (let i: number = 0; i < rows.length; i++) {
+      for (let i: number = 0; rows && i < rows.length; i++) {
         let gridRow: HTMLTableRowElement = rows[i];
         if (gridRow.style.display !== 'none') {
           if (gridRow.classList.contains('e-altrow')) {
@@ -2556,6 +2553,19 @@ private getGridEditSettings(): GridEditModel {
           }
         }
       }
+    }
+  }
+  private treeColumnRowTemplate(args: object): void {
+    if (this.rowTemplate) {
+    let rows: HTMLCollection = (this.getContentTable() as HTMLTableElement).rows;
+    rows = [].slice.call(rows);
+    for (let i: number = 0; i < rows.length; i++) {
+      let rcell: HTMLElement = (this.grid.getContentTable() as HTMLTableElement).rows[i].cells[this.treeColumnIndex];
+      let row: object = rows[i];
+      let rowData: object = this.grid.getRowsObject()[i].data;
+      let arg: object = { data: rowData, row: row, cell: rcell, column: this.getColumns()[this.treeColumnIndex] };
+      this.renderModule.cellRender(arg);
+    }
     }
   }
   private collapseRemoteChild(rows: HTMLTableRowElement[]): void {

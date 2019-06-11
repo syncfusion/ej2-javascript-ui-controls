@@ -1822,7 +1822,7 @@ describe('Layout collapse  ', () => {
         var mouseEvents = new MouseEvents();
         var diagramCanvas = document.getElementById(diagram3.element.id + 'content');
         mouseEvents.clickEvent(diagramCanvas, 748, 129);
-        expect(Math.round(diagram3.nodes[3].offsetX) === 645 && Math.round(diagram3.nodes[3].offsetY) === 190).toBe(true);
+        expect((Math.ceil(diagram3.nodes[3].offsetX) === 645 || Math.floor )&& Math.round(diagram3.nodes[3].offsetY) === 190).toBe(true);
         done();
     });
 });

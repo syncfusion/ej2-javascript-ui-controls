@@ -87,14 +87,14 @@ export class Range extends ChildProperty<Range> {
 
     /**
      * Start of the axis range.
-     * @aspDefaultValueIgnore
+     * @default null
      */
     @Property(null)
     public start: number;
 
     /**
      * End of the axis range.
-     * @aspDefaultValueIgnore
+     * @default null
      */
     @Property(null)
     public end: number;

@@ -278,12 +278,14 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
      * > For more details refer to 
      * [`Time Duration`](https://ej2.syncfusion.com/demos/#/material/timepicker/list-formatting.html) sample. 
      * @default null
+     * @blazorType nullable
      */
     @Property(null)
     public scrollTo: Date;
     /**
      * Gets or sets the value of the component. The value is parsed based on the culture specific time format.
      * @default null
+     * @blazorType nullable
      */
     @Property(null)
     public value: Date;

@@ -311,7 +311,7 @@ export class ContextMenu implements IAction {
         } else {
             this.targetColumn = this.getColumn(args.event);
             this.targetRowdata = this.parent.getRowInfo(args.event.target as Element);
-            if ((isNullOrUndefined(args.parentItem))) {
+            if ((isNullOrUndefined(args.parentItem)) && this.targetColumn) {
                 this.selectRow(args.event, ((args.event.target as Element).classList.contains('e-selectionbackground')
                     && this.parent.selectionSettings.type === 'Multiple') ? false : true);
             }
@@ -358,7 +358,7 @@ export class ContextMenu implements IAction {
             args.column = this.targetColumn;
             args.rowInfo = this.targetRowdata;
             this.parent.trigger(events.contextMenuOpen, args);
-            if (this.hiddenItems.length === args.items.length && !args.parentItem) {
+            if (args.cancel || (this.hiddenItems.length === args.items.length && !args.parentItem)) {
                 this.updateItemStatus();
                 args.cancel = true;
             }

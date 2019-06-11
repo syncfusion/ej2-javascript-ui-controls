@@ -357,6 +357,27 @@
 
 // sass-lint:disable-all
 .e-range-overflow {
-  overflow: auto;
+  overflow: hidden;
 }
+
+.e-daterangepick-mob-popup-wrap {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  left: 0;
+  max-height: 100%;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1002;
+
+  .e-daterangepicker.e-popup.e-control.e-lib.e-device.e-popup-open {
+    position: relative;
+    top:0 !important;
+    left: 0 !important;
+  }
+}
+
 // sass-lint:enable-all

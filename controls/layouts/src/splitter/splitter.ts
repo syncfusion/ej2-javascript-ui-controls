@@ -222,7 +222,7 @@ export class Splitter extends Component<HTMLElement> {
      * @event
      */
     @Event()
-    public created: EmitType<CreatedEventArgs>;
+    public created: EmitType<Object>;
 
     /**
      * Triggers when the split pane is started to resize.
@@ -1707,13 +1707,6 @@ interface Coordinates {
      * y coordinate of an element.
      */
     y ?: number;
-}
-
-export interface CreatedEventArgs {
-    /**
-     * Contains the root element of splitter.
-     */
-    element?: HTMLElement;
 }
 
 export interface ResizeEventArgs {

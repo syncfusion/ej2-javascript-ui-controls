@@ -163,6 +163,8 @@ export class Render {
             args.cell.querySelector('.e-treecell') != null ?
                args.cell.querySelector('.e-treecell').innerHTML = summaryData : args.cell.innerHTML = summaryData;
         }
-        this.parent.trigger(events.queryCellInfo, args);
+        if (isNullOrUndefined(this.parent.rowTemplate)) {
+            this.parent.trigger(events.queryCellInfo, args);
+            }
     }
 }

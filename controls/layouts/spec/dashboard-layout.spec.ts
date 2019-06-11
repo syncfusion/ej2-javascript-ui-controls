@@ -1931,6 +1931,86 @@ describe('GridLayout', () => {
             gridLayOut.dataBind();
             expect((<HTMLElement>gridLayOut.element.querySelector('#one')).classList.contains('e-draggable')).toBe(false);
         });
+        it('allowdragging test case with prevent default', () => {
+            gridLayOut = new DashboardLayout({
+                cellAspectRatio: 1,
+                columns: 6,
+                allowDragging: true,
+                cellSpacing: [20, 20],
+                panels: [{
+                    id: "one",
+                    cssClass: "e-one",
+
+                    sizeX: 2,
+                    sizeY: 1,
+                    row: 1,
+                    col: 0,
+
+                    content: ("#template1")
+                },
+                {
+                    id: "two",
+                    cssClass: "e-two",
+
+                    sizeX: 2,
+                    sizeY: 1,
+                    row: 0,
+                    col: 0,
+
+                    content: "#template2"
+
+                },
+                {
+                    id: "three",
+                    cssClass: "e-three",
+
+                    sizeX: 1,
+                    sizeY: 1,
+                    row: 0,
+                    col: 2,
+
+                    content: ("#template2")
+
+                },
+                {
+                    id: "four",
+                    cssClass: "e-four",
+
+                    sizeX: 5,
+                    sizeY: 1,
+                    row: 2,
+                    col: 0,
+
+                    content: ("#template1")
+
+                },
+                {
+                    id: "five",
+                    cssClass: "e-five",
+
+                    sizeX: 3,
+                    sizeY: 1,
+                    row: 1,
+                    col: 2,
+                    content: ("#template1")
+                },
+                {
+                    id: "six",
+                    cssClass: "e-six",
+
+                    sizeX: 2,
+                    sizeY: 1,
+                    row: 0,
+                    col: 3,
+
+                    content: ("#template")
+
+                }
+                ]
+            });
+            gridLayOut.appendTo('#gridlayout');
+            expect(gridLayOut.dragobj.preventDefault).toBe(false);
+        });
         it('rtl test case', () => {
             gridLayOut = new DashboardLayout({
                 cellAspectRatio: 1,

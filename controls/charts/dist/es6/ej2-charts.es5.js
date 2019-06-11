@@ -3304,7 +3304,8 @@ function textElement(option, font, color, parent, isMinus, redraw, isAnimate, fo
  * Method to calculate the width and height of the chart
  */
 function calculateSize(chart) {
-    var containerWidth = chart.element.clientWidth;
+    // fix for Chart rendered with default width in IE issue
+    var containerWidth = chart.element.clientWidth || chart.element.offsetWidth;
     var containerHeight = chart.element.clientHeight;
     if (chart.stockChart) {
         containerWidth = chart.stockChart.element.clientWidth;
@@ -11748,6 +11749,7 @@ var PolarRadarPanel = /** @__PURE__ @class */ (function (_super) {
         var islabelInside = axis.labelPosition === 'Inside';
         var padding = 5;
         var lastLabelX;
+        var label;
         var textAnchor = '';
         var ticksbwtLabel = axis.valueType === 'Category' && axis.labelPlacement === 'BetweenTicks'
             && chart.visibleSeries[0].type !== 'Radar' ? 0.5 : 0;
@@ -11762,6 +11764,8 @@ var PolarRadarPanel = /** @__PURE__ @class */ (function (_super) {
                     ((pointX < this.centerX && !islabelInside) || (pointX > this.centerX && islabelInside)) ? 'end' : 'start';
             }
             labelText = axis.visibleLabels[i].text;
+            // fix for label style not working in axisLabelRender event issue
+            label = axis.visibleLabels[i];
             if (i === 0) {
                 firstLabelX = pointX;
             }
@@ -11771,7 +11775,7 @@ var PolarRadarPanel = /** @__PURE__ @class */ (function (_super) {
                 labelText = (lastLabelX > firstLabelX) ? '' : labelText;
             }
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, textAnchor, labelText, '', 'central');
-            textElement(options, axis.labelStyle, axis.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
+            textElement(options, label.labelStyle, label.labelStyle.color || chart.themeStyle.axisLabel, labelElement, false, chart.redraw, true, true);
         }
         this.element.appendChild(labelElement);
     };

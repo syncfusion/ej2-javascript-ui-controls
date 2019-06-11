@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 17.1.48 (2019-05-21)
+
+### LinearGauge
+
+#### Bug Fixes
+
+- #I235628 - The issue with "Resizing web browser broken in Linear Gauge rendering" has been resolved.
+
 ## 17.1.38 (2019-03-29)
 
 ### LinearGauge

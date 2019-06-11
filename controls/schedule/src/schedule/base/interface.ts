@@ -52,6 +52,8 @@ export interface SelectEventArgs extends BaseEventArgs {
     element: HTMLElement | HTMLElement[];
     /** Determines whether to open the quick popup on multiple cell selection. */
     showQuickPopup?: boolean;
+    /** Determines whether to select multiple row. */
+    allowMultipleRow?: boolean;
     /** Return the appropriate cell or event data based on the action. */
     data?: { [key: string]: Object } | { [key: string]: Object }[];
     /** Returns the clicked resource row index. */

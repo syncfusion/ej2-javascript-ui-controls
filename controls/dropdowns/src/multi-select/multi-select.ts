@@ -1763,8 +1763,9 @@ export class MultiSelect extends DropDownBase implements IInput {
             };
             this.trigger('removing', eventArgs);
             if (eventArgs.cancel) { return true; }
-            this.value.splice(index, 1);
-            this.setProperties({ value: <[number | string]>[].concat([], this.value) }, true);
+            let removeVal: number[] | string[] | boolean[] = this.value.slice(0);
+            removeVal.splice(index, 1);
+            this.setProperties({ value: <[number | string]>[].concat([], removeVal) }, true);
             if (element !== null) {
                 let hideElement: HTMLElement = this.findListElement(this.mainList, 'li', 'data-value', value);
                 element.setAttribute('aria-selected', 'false');

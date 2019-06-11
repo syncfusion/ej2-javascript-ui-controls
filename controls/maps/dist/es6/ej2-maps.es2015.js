@@ -945,7 +945,7 @@ function getZoomTranslate(mapObject, layer, animate) {
     let y;
     let min = mapObject.baseMapRectBounds['min'];
     let max = mapObject.baseMapRectBounds['max'];
-    let factor = mapObject.mapScaleValue;
+    let factor = animate ? 1 : mapObject.mapScaleValue;
     let scaleFactor;
     let mapWidth = Math.abs(max['x'] - min['x']);
     let mapHeight = Math.abs(min['y'] - max['y']);
@@ -2697,7 +2697,10 @@ class Marker {
                         + markerIndex + '_dataIndex_' + dataIndex;
                     let location = (this.maps.isTileMap) ? convertTileLatLongToPoint(new MapLocation(lng, lat), factor, this.maps.tileTranslatePoint, true) : convertGeoToPoint(lat, lng, factor, currentLayer, this.maps);
                     let animate$$1 = currentLayer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
-                    let translate = (this.maps.isTileMap) ? new Object() : getTranslate(this.maps, currentLayer, animate$$1);
+                    let translate = (this.maps.isTileMap) ? new Object() :
+                        !isNullOrUndefined(this.maps.zoomModule) && this.maps.zoomSettings.zoomFactor > 1 ?
+                            getZoomTranslate(this.maps, currentLayer, animate$$1) :
+                            getTranslate(this.maps, currentLayer, animate$$1);
                     let scale = type === 'AddMarker' ? this.maps.scale : translate['scale'];
                     let transPoint = type === 'AddMarker' ? this.maps.translatePoint : translate['location'];
                     if (eventArgs.template) {
@@ -5267,6 +5270,7 @@ class Bubble {
      * To render bubble
      */
     /* tslint:disable:no-string-literal */
+    /* tslint:disable-next-line:max-func-body-length */
     renderBubble(bubbleSettings, shapeData, color, range, bubbleIndex, dataIndex, layerIndex, layer, group) {
         let layerData = layer.layerData;
         let colorValuePath = bubbleSettings.colorValuePath;
@@ -5347,8 +5351,14 @@ class Bubble {
                 element: bubbleElement,
                 center: { x: eventArgs.cx, y: eventArgs.cy }
             });
+            let translate;
             let animate$$1 = layer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
-            let translate = getTranslate(this.maps, layer, animate$$1);
+            if (this.maps.zoomSettings.zoomFactor > 1 && !isNullOrUndefined(this.maps.zoomModule)) {
+                translate = getZoomTranslate(this.maps, layer, animate$$1);
+            }
+            else {
+                translate = getTranslate(this.maps, layer, animate$$1);
+            }
             let scale = translate['scale'];
             let transPoint = translate['location'];
             let position = new MapLocation((this.maps.isTileMap ? (eventArgs.cx) : ((eventArgs.cx + transPoint.x) * scale)), (this.maps.isTileMap ? (eventArgs.cy) : ((eventArgs.cy + transPoint.y) * scale)));

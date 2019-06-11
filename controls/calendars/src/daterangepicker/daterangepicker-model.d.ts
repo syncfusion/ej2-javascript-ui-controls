@@ -121,12 +121,14 @@ export interface DateRangePickerModel extends CalendarBaseModel{
     /**
      * Gets or sets the start date of the date range selection.
      * @default null
+     * @blazorType nullable
      */
     startDate?: Date;
 
     /**
      * Gets or sets the end date of the date range selection.
      * @default null
+     * @blazorType nullable
      */
     endDate?: Date;
 

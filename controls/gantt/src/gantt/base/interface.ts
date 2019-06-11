@@ -48,31 +48,57 @@ export interface IParent {
 }
 
 export interface ITaskData {
+    /** Defines the baselineleft of task. */
     baselineLeft?: number;
+    /** Defines the baseline startdate of task. */
     baselineStartDate?: Date;
+    /** Defines the baseline enddate of task. */
     baselineEndDate?: Date;
+    /** Defines the baseline width of task. */
     baselineWidth?: number;
+    /** Defines the end date of task. */
     endDate?: Date;
+    /** Defines the css class of task. */
     cssClass?: string;
+    /** Defines the duration of task. */
     duration?: number;
+    /** Defines the duration unit of task. */
     durationUnit?: string;
+    /** Defines the task is auto schedule-able or not. */
     isAutoSchedule?: boolean;
+    /** Defines the task is milestone or not. */
     isMilestone?: boolean;
+    /** Defines the left of task. */
     left?: number;
+    /** Defines the progress of task. */
     progress?: number;
+    /** Defines the progress width of task. */
     progressWidth?: number;
+    /** Defines the resource info of task. */
     resourceInfo?: Object[];
+    /** Defines the resource names of task. */
     resourceNames?: string;
+    /** Defines the start date of task. */
     startDate?: Date;
+    /** Defines the notes of task. */
     notes?: string;
+    /** Defines the predecessors name of task. */
     predecessorsName?: string | number | object[];
+    /** Defines the predecessor of task. */
     predecessor?: IPredecessor[];
+    /** Defines the id of task. */
     taskId?: string;
+    /** Defines the name of task. */
     taskName?: string;
+    /** Defines the width of task. */
     width?: number;
+    /** Defines the indicators of task. */
     indicators?: IIndicator[];
+    /** Defines the unique id of task. */
     uniqueID?: string;
+    /** Defines the total progress of task. */
     totalProgress?: number;
+    /** Defines the total duration of task. */
     totalDuration?: number;
 }
 
@@ -88,9 +114,13 @@ export interface IGanttColumn {
 }
 
 export interface IIndicator {
+    /** Defines the date of indicator. */
     date?: Date | string;
+    /** Defines the icon class of indicator. */
     iconClass?: string;
+    /** Defines the name of indicator. */
     name?: string;
+    /** Defines the tooltip of indicator. */
     tooltip?: string;
 }
 
@@ -132,9 +162,6 @@ export interface IQueryTaskbarInfoEventArgs {
     taskbarType: string;
 }
 
-/**
- * @private
- */
 export interface IGanttCellFormatter {
     /** Method to format the cell value of date columns. */
     getValue(column: Column, data: Object): Object;
@@ -173,11 +200,17 @@ export interface IDependencyEditData {
 }
 
 export interface IPredecessor {
+    /** Defines the from value of predecessor. */
     from?: string;
+    /** Defines the to value of predecessor. */
     to?: string;
+    /** Defines the type of predecessor. */
     type?: string;
+    /** Defines the offset value of predecessor. */
     offset?: number;
+    /** Defines the offset unit of predecessor. */
     offsetUnit?: string;
+    /** Defines the predecessor is drawn-able or not. */
     isDrawn?: boolean;
 }
 
@@ -263,14 +296,23 @@ export interface ISplitterResizedEventArgs {
 }
 
 export interface PredecessorTooltip {
+    /** Defines the from id of predecessor. */
     fromId?: string;
+    /** Defines the to id of predecessor. */
     toId?: string;
+    /** Defines the from name of predecessor. */
     fromName?: string;
+    /** Defines the to name of predecessor. */
     toName?: string;
+    /** Defines the link type of predecessor. */
     linkType?: string;
+    /** Defines the link text of predecessor. */
     linkText?: string;
+    /** Defines the offset value of predecessor. */
     offset?: number;
+    /** Defines the offset unit of predecessor. */
     offsetUnit?: string;
+    /** Defines the offset string value of predecessor. */
     offsetString?: string;
 }
 

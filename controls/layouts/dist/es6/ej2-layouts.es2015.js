@@ -3281,6 +3281,7 @@ let DashboardLayout = class DashboardLayout extends Component {
             let cellElement = collections[i];
             {
                 this.dragobj = new Draggable(cellElement, {
+                    preventDefault: false,
                     clone: false,
                     dragArea: this.element,
                     handle: this.draggableHandle ? this.draggableHandle : '.e-panel',

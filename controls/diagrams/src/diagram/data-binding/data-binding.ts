@@ -59,7 +59,7 @@ export class DataBinding {
         let dataProp: string = 'data';
         let jsonProp: string = 'json';
         let dataManager: DataManager = data.dataManager || {} as DataManager;
-        dataSource = data.data || dataManager[dataProp] || dataManager[jsonProp] ||
+        dataSource = dataManager[dataProp] || dataManager[jsonProp] ||
             (dataManager.dataSource ? dataManager.dataSource.json : undefined);
         if (dataSource && dataSource.length) {
             this.applyDataSource(data, dataSource, diagram);

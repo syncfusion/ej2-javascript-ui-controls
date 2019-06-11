@@ -438,6 +438,7 @@ export interface IGrid extends Component<HTMLElement> {
     id?: string;
     isSelectedRowIndexUpdating?: boolean;
     pagerModule?: Page;
+    invokedFromMedia?: boolean;
 
     //public methods
     getHeaderContent?(): Element;
@@ -543,6 +544,7 @@ export interface IGrid extends Component<HTMLElement> {
     getQuery?(): Query;
     log?(type: string | string[], args?: Object): void;
     isDetail?(): boolean;
+    updateMediaColumns?(col: Column): void;
 }
 
 /** @hidden */

@@ -1078,7 +1078,7 @@ export function getZoomTranslate(mapObject: Maps, layer: LayerSettings, animate?
     let size: Rect = mapObject.mapAreaRect; let x: number; let y: number;
     let min: Object = mapObject.baseMapRectBounds['min'] as Object;
     let max: Object = mapObject.baseMapRectBounds['max'] as Object;
-    let factor: number = mapObject.mapScaleValue; let scaleFactor: number;
+    let factor: number = animate ? 1 : mapObject.mapScaleValue; let scaleFactor: number;
     let mapWidth: number = Math.abs(max['x'] - min['x']); let mapHeight: number = Math.abs(min['y'] - max['y']);
     let center: CenterPositionModel = mapObject.centerPosition;
     if (!isNullOrUndefined(center.longitude) && !isNullOrUndefined(center.latitude)) {

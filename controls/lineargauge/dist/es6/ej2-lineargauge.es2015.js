@@ -543,7 +543,9 @@ class VisibleRange {
         this.delta = delta;
     }
 }
-/** @private */
+/**
+ * Internal use of gauge location
+ */
 class GaugeLocation {
     constructor(x, y) {
         this.x = x;

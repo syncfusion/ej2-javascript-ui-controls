@@ -212,10 +212,19 @@ export class VisibleRange {
     }
 }
 
-/** @private */
+/**
+ * Internal use of gauge location
+ */
 export class GaugeLocation {
+    /**
+     * To specify x value
+     */
     public x: number;
+    /**
+     * To specify y value
+     */
     public y: number;
+
 
     constructor(x: number, y: number) {
         this.x = x;

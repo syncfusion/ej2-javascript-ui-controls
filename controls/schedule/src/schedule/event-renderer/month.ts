@@ -370,7 +370,7 @@ export class MonthEvent extends EventBase {
         this.renderedEvents.push(extend({}, event, null, true));
         let diffInDays: number = (event.data as { [key: string]: Object }).count as number;
         if (startTime.getTime() <= endTime.getTime()) {
-            let appWidth: number = (diffInDays * this.cellWidth) - 3;
+            let appWidth: number = (diffInDays * this.cellWidth) - 5;
             let cellTd: Element = this.workCells[day];
             let appTop: number = (overlapCount * (appHeight + EVENT_GAP));
             let height: number =

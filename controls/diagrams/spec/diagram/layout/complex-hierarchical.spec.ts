@@ -737,8 +737,10 @@ describe('Diagram Control', () => {
             var node =  diagram.nodes[1]
             diagram.drag(node,-50,-50)
             var pathelement = document.getElementById('diagram_diagramLayer')
-            expect(pathelement.children[2].children[1].children[0].getAttribute('d')==="M93.34,40 L93.34,59.4 Q93.34,64.4,88.34,64.4 L5,64.4 Q0,64.4,0,59.4 L0,5 Q0,0,5,0 L38.34,0 Q43.34,0,43.34,5 L43.34,19.6 "&&
-            pathelement.children[2].children[3].children[0].getAttribute('d') === "M10,0 L10,10 L0,5 Z ").toBe(true)
+            expect((pathelement.children[2].children[1].children[0].getAttribute('d')==="M93.34,40 L93.34,59.4 Q93.34,64.4,88.34,64.4 L5,64.4 Q0,64.4,0,59.4 L0,5 Q0,0,5,0 L38.34,0 Q43.34,0,43.34,5 L43.34,19.6 " ||
+            pathelement.children[2].children[1].children[0].getAttribute('d')=== "M93.35,40 L93.35,59.4 Q93.35,64.4,88.35,64.4 L5,64.4 Q0,64.4,0,59.4 L0,5 Q0,0,5,0 L38.35,0 Q43.35,0,43.35,5 L43.35,19.6 ")&&
+            (pathelement.children[2].children[3].children[0].getAttribute('d') === "M10,0 L10,10 L0,5 Z " || pathelement.children[2].children[3].children[0].getAttribute('d') === "M10,0 L10,10 L0,5 Z ")).toBe(true)
+
             done();
         });
         it('memory leak', () => {
@@ -750,5 +752,128 @@ describe('Diagram Control', () => {
             //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
+    });
+    describe('Complex Tree Layout', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagramComplexHierarchicalTreeUpdate' });
+            document.body.appendChild(ele);
+            diagram = new Diagram({
+                width: 1000, height: 1000,
+                nodes: [
+                    {
+                        id: 'node0',
+                        offsetX: 100,
+                        offsetY: 100,
+                        width: 30,
+                        height: 30,
+                        annotations: [{
+                            content: 'Start',
+                            margin: { bottom: -30 }
+                        }],
+                        style: {
+                            strokeColor: '#62A716',
+                            strokeWidth: 1
+                        }
+                    },
+                    {
+                        id: 'node1',
+                        offsetX: 250,
+                        offsetY: 250,
+                        width: 90,
+                        height: 60,
+                        annotations: [
+                            {
+                                content: 'Activity 1'
+                            }
+                        ],
+                        /*borderColor: '#78BE83',*/
+                        borderWidth: 4,
+                        style: {
+                            fill: '#d8ecdc',
+                            strokeColor: '#78BE83',
+                            strokeWidth: 3,
+                            gradient: {
+                                // Start point of linear gradient
+                                x1: 0,
+                                y1: 0,
+                                // End point of linear gradient
+                                x2: 1,
+                                y2: 1,
+                                // Sets an array of stop objects
+                                stops: [
+                                    {
+                                        color: 'white',
+                                        offset: 30,
+                                        opacity: 0.1
+                                    },
+                                    {
+                                        color: '#d8ecdc',
+                                        offset: 100,
+                                        opacity: 0.1
+                                    }
+                                ],
+                                type: 'Linear'
+                            }
+                        }
+                    },
+                    {
+                        id: 'node2',
+                        offsetX: 250,
+                        offsetY: 800,
+                        width: 90,
+                        height: 60,
+                        /*borderColor: '#78BE83',*/
+                        borderWidth: 4,
+                        annotations: [
+                            {
+                                content: `Sample Text`,
+                                // horizontalAlignment: 'Left',
+                                style: {
+                                    textOverflow: 'Ellipsis',
+                                    textWrapping: 'NoWrap',
+                                    // textAlign: 'Left',
+                                    whiteSpace: 'CollapseAll'
+                                },
+                                height: 50,
+                                width: 80,
+                                margin: { left: 0, top: 0, right: 0, bottom: 0 }
+                            }
+                        ],
+                        style: {
+                            strokeColor: '#778899',
+                            strokeWidth: 3
+                        }
+                    },
+
+                    { id: 'node3', offsetX: 500, offsetY: 100 },
+                    { id: 'node4', offsetX: 500, offsetY: 300 }
+
+                ],
+                connectors: [{
+                    id: 'connector1', sourceID: 'node0', targetID: 'node1'
+                },
+                {
+                    id: 'connector2', sourceID: 'node1', targetID: 'node2'
+                }
+                ],
+                layout: { type: 'ComplexHierarchicalTree', horizontalSpacing: 40, verticalSpacing: 40, orientation: 'TopToBottom' },
+            });
+            diagram.appendTo('#diagramComplexHierarchicalTreeUpdate');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('Checking TopToBottom complex tree layout', (done: Function) => {
+            diagram.layout.orientation = 'TopToBottom';
+            diagram.layout.type = 'HierarchicalTree';
+            diagram.doLayout();
+            expect(diagram.nodes[3].offsetX == 500 && diagram.nodes[3].offsetY == 100 && diagram.nodes[4].offsetX == 500 &&
+                diagram.nodes[4].offsetY == 300).toBe(true);
+            done();
+        });
     });
 });

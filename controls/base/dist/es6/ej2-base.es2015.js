@@ -1200,9 +1200,11 @@ class Base {
      * @param {string} eventName - Specifies the event to trigger for the specified component properties.
      * Can be a custom event, or any of the standard events.
      * @param {Event} eventProp - Additional parameters to pass on to the event properties
+     * @param {Function} successHandler - this function will invoke after event successfully triggered
+     * @param {Function} errorHandler - this function will invoke after event if it failured to call.
      * @return {void}
      */
-    trigger(eventName, eventProp) {
+    trigger(eventName, eventProp, successHandler, errorHandler) {
         if (this.isDestroyed !== true) {
             let prevDetection = this.isProtectedOnChange;
             this.isProtectedOnChange = false;
@@ -1210,7 +1212,21 @@ class Base {
             if (isColEName.test(eventName)) {
                 let handler = getValue(eventName, this);
                 if (handler) {
-                    handler.call(this, eventProp);
+                    let promise = handler.call(this, eventProp);
+                    if (promise && (promise.toString()).indexOf('Promise') >= 0) {
+                        promise.then((data) => {
+                            if (successHandler) {
+                                successHandler.call(this, data);
+                            }
+                        }).catch((data) => {
+                            if (errorHandler) {
+                                errorHandler.call(this, data);
+                            }
+                        });
+                    }
+                    else if (successHandler) {
+                        successHandler.call(this, eventProp);
+                    }
                 }
             }
             this.isProtectedOnChange = prevDetection;
@@ -1552,7 +1568,7 @@ function getObject(instance, curKey, defaultValue, type) {
  */
 function getObjectArray(instance, curKey, defaultValue, type, isSetter, isFactory) {
     let result = [];
-    let len = defaultValue.length;
+    let len = defaultValue ? defaultValue.length : 0;
     for (let i = 0; i < len; i++) {
         let curType = type;
         if (isFactory) {

@@ -287,6 +287,9 @@ export class ExportValueFormatter {
             return args.value ? 'true' : 'false';
             /* tslint:disable-next-line:max-line-length */
         } else if ((args.column.type === 'date' || args.column.type === 'datetime' || args.column.type === 'time') && args.column.format !== undefined) {
+            if (typeof args.value === 'string') {
+                args.value = new Date(args.value);
+            }
             if (typeof args.column.format === 'string') {
                 let format: DateFormatOptions;
                 if (args.column.type === 'date') {

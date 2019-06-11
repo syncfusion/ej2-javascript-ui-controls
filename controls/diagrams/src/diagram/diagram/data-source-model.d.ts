@@ -132,13 +132,6 @@ export interface DataSourceModel {
     parentId?: string;
 
     /**
-     * Binds the custom data with the node model
-     * @aspDefaultValueIgnore
-     * @default undefined
-     */
-    data?: Object[];
-
-    /**
      * Binds the custom data with node model
      * @aspDefaultValueIgnore
      * @default undefined

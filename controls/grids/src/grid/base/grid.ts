@@ -8,7 +8,7 @@ import { ItemModel, ClickEventArgs } from '@syncfusion/ej2-navigations';
 import { createSpinner, hideSpinner, showSpinner, Tooltip } from '@syncfusion/ej2-popups';
 import { GridModel } from './grid-model';
 import { iterateArrayOrObject, prepareColumns, parentsUntil, wrap, templateCompiler, isGroupAdaptive, refreshForeignData } from './util';
-import { getRowHeight } from './util';
+import { getRowHeight, setColumnIndex } from './util';
 import * as events from '../base/constant';
 import { ReturnType } from '../base/type';
 import { IDialogUI, ScrollPositionType } from './interface';
@@ -668,6 +668,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     private mediaCol: Column[];
     private getShowHideService: ShowHide;
     private mediaColumn: Column[];
+    private media: {[key: string]: MediaQueryList} = {};
+    /** @hidden */
+    public invokedFromMedia: boolean;
     private dataBoundFunction: Function;
     private freezeRefresh: Function = Component.prototype.refresh;
     /** @hidden */
@@ -1839,7 +1842,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             }
         });
         this.pageSettings.template = undefined;
-        this.pageTemplateChange = true;
+        this.pageTemplateChange = !isNullOrUndefined(this.pagerTemplate);
         return this.addOnPersist(keyEntity);
     }
 
@@ -2145,7 +2148,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         this.ariaService.setOptions(this.element, { role: 'grid' });
         createSpinner({ target: this.element }, this.createElement);
         this.renderModule = new Render(this, this.serviceLocator);
-        this.getMediaColumns();
         this.searchModule = new Search(this);
         this.scrollModule = new Scroll(this);
         this.notify(events.initialLoad, {});
@@ -2154,6 +2156,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         this.trigger(events.load);
         prepareColumns(this.columns as Column[], this.enableColumnVirtualization);
+        this.getMediaColumns();
+        setColumnIndex(this.columns as Column[]);
         this.checkLockColumns(this.columns as Column[]);
         this.getColumns();
         this.processModel();
@@ -2194,14 +2198,34 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.getShowHideService = this.serviceLocator.getService<ShowHide>('showHideService');
             if (!isNullOrUndefined(gcol)) {
                 for (let index: number = 0; index < gcol.length; index++) {
-                    if (!isNullOrUndefined(gcol[index].hideAtMedia)) {
-                        this.mediaCol.push(gcol[index]);
-                        let media: MediaQueryList = window.matchMedia(gcol[index].hideAtMedia);
-                        this.mediaQueryUpdate(index, media);
-                        media.addListener(this.mediaQueryUpdate.bind(this, index));
+                    if (!isNullOrUndefined(gcol[index].hideAtMedia) && (isNullOrUndefined(gcol[index].visible) || gcol[index].visible)) {
+                        this.pushMediaColumn(gcol[index], index);
                     }
                 }
             }
+        }
+    }
+
+    private pushMediaColumn(col: Column, index: number): void {
+        this.mediaCol.push(col);
+        this.media[col.uid] = window.matchMedia(col.hideAtMedia);
+        this.mediaQueryUpdate(index, this.media[col.uid]);
+        this.media[col.uid].addListener(this.mediaQueryUpdate.bind(this, index));
+    }
+
+    /**
+     * @hidden
+     */
+    public updateMediaColumns(col: Column): void {
+        if (!this.enableColumnVirtualization) {
+            let index: number = this.getColumnIndexByUid(col.uid);
+            for (let i: number = 0; i < this.mediaCol.length; i++) {
+                if (col.uid === this.mediaCol[i].uid) {
+                    this.mediaCol.splice(i , 1);
+                    return;
+                }
+            }
+            this.pushMediaColumn(col, index);
         }
     }
 
@@ -2210,12 +2234,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      */
     public mediaQueryUpdate(columnIndex: number, e?: MediaQueryList): void {
         let col: Column = this.getColumns()[columnIndex];
-        col.visible = e.matches;
-        if (this.isInitialLoad) {
-            if (col.visible) {
-                this.showHider.show(col.headerText, 'headerText');
-            } else {
-                this.showHider.hide(col.headerText, 'headerText');
+        if (this.mediaCol.some((mediaColumn: Column) => mediaColumn.uid === col.uid)) {
+            col.visible = e.matches;
+            if (this.isInitialLoad) {
+                this.invokedFromMedia = true;
+                if (col.visible) {
+                    this.showHider.show(col.headerText, 'headerText');
+                } else {
+                    this.showHider.hide(col.headerText, 'headerText');
+                }
             }
         }
     }
@@ -2483,7 +2510,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 if (Object.getPrototypeOf(newProp).deepWatch) {
                     let pKeyField: string = this.getPrimaryKeyFieldNames()[0];
                     for (let i: number = 0, props: string[] = Object.keys(newProp.dataSource); i < props.length; i++) {
-                        this.setRowData(this.dataSource[props[i]][pKeyField], this.dataSource[props[i]]);
+                        this.setRowData(getValue(pKeyField, this.dataSource[props[i]]), this.dataSource[props[i]]);
                     }
                 } else if (pending.isPending) {
                     let gResult: Object = !isNullOrUndefined(this.dataSource) ? (<DataResult>this.dataSource).result : [];
@@ -4269,6 +4296,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             for (let key of keys) {
                 if ((typeof this[key] === 'object') && !isNullOrUndefined(this[key])) {
                     if (Array.isArray(this[key]) && key === 'columns') {
+                        setColumnIndex(<Column[]>this[key]);
                         this.mergeColumns(<Column[]>dataObj[key], <Column[]>this[key]);
                         this[key] = dataObj[key];
                     } else {
@@ -4284,19 +4312,15 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private mergeColumns(storedColumn: Column[], columns: Column[]): void {
         (<Column[]>storedColumn).forEach((col: Column, index: number, arr: Column[]) => {
-            let ind: number;
-            let localCol: Column = this.getColumnByField(col.field) ||
-                columns.some((element: Column, i: number) => {
-                    ind = i; return element.headerText === col.headerText;
-                }) && columns[ind];
-
-            if (!isNullOrUndefined(localCol)) {
-                if (localCol.columns && localCol.columns.length) {
-                    this.mergeColumns(<Column[]>col.columns, <Column[]>localCol.columns);
-                } else {
-                    arr[index] = <Column>extend({}, localCol, col, true);
-                }
-            }
+            let localCol = columns.filter((tCol: Column) => tCol.index === col.index)[0];
+                if (!isNullOrUndefined(localCol)) {
+                    if (localCol.columns && localCol.columns.length) {
+                        this.mergeColumns(<Column[]>col.columns, <Column[]>localCol.columns);
+                        arr[index] = <Column>extend(localCol, col, true);
+                    } else {
+                        arr[index] = <Column>extend(localCol, col, true);
+                    }
+                }   
         });
     }
 
@@ -4349,6 +4373,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
 
     private updateColumnObject(): void {
         prepareColumns(this.columns, this.enableColumnVirtualization);
+        setColumnIndex(this.columns as Column[]);
         this.initForeignColumn();
         this.notify(events.autoCol, {});
     }

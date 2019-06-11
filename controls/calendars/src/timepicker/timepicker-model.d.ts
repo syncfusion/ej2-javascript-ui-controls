@@ -104,12 +104,14 @@ export interface TimePickerModel extends ComponentModel{
      * > For more details refer to 
      * [`Time Duration`](https://ej2.syncfusion.com/demos/#/material/timepicker/list-formatting.html) sample. 
      * @default null
+     * @blazorType nullable
      */
     scrollTo?: Date;
 
     /**
      * Gets or sets the value of the component. The value is parsed based on the culture specific time format.
      * @default null
+     * @blazorType nullable
      */
     value?: Date;
 

@@ -4,7 +4,7 @@ import { DiagramElement } from './diagram-element';
 import { measureText } from './../../utility/dom-util';
 import { HyperlinkModel } from './../../objects/annotation-model';
 import { AnnotationConstraints } from '../../enum/enum';
-import { SubTextElement, TextBounds } from '../..';
+import { SubTextElement, TextBounds } from '../../rendering/canvas-interface';
 
 /**
  * TextElement is used to display text/annotations

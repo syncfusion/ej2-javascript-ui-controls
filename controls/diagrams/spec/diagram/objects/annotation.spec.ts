@@ -412,8 +412,8 @@ describe('Diagram Control', () => {
         it('Testing label style in SVG mode', (done: Function) => {
             let transform: string = document.getElementById('node1_label1_text').getAttribute("transform");
             let transform2: string = document.getElementById('node2_label1_text').getAttribute("transform");
-            expect(transform === 'rotate(0,100.5,136.5)translate(73.484375,130.5)' || transform == 'rotate(0,100.5,136.5)translate(73.3203125,130.5)' || transform == 'rotate(0,100.5,137.7)translate(73.3203125,130.5)').toBe(true);
-            expect(transform2 === 'rotate(0,100.5,136.5)translate(82.828125,130.5)' || transform2 == 'rotate(0,100.5,136.5)translate(82.6640625,130.5)' || transform2 == 'rotate(0,100.5,137.7)translate(82.6640625,130.5)').toBe(true);
+            expect(transform === 'rotate(0,100.5,136.5)translate(73.484375,130.5)' ||transform==='rotate(0,100.5,137.7)translate(73.3125,130.5)'|| transform == 'rotate(0,100.5,136.5)translate(73.3203125,130.5)' || transform == 'rotate(0,100.5,137.7)translate(73.3203125,130.5)').toBe(true);
+            expect(transform2 === 'rotate(0,100.5,136.5)translate(82.828125,130.5)'||transform2==='rotate(0,100.5,137.7)translate(82.65625,130.5)' || transform2 == 'rotate(0,100.5,136.5)translate(82.6640625,130.5)' || transform2 == 'rotate(0,100.5,137.7)translate(82.6640625,130.5)').toBe(true);
             done();
         });
     });

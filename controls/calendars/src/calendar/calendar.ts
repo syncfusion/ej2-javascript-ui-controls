@@ -324,6 +324,14 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         }
     }
 
+    protected setOverlayIndex(popupWrapper: HTMLElement, popupElement: HTMLElement, modal: HTMLElement, isDevice: Boolean, ): void {
+        if (isDevice && !isNullOrUndefined(popupElement) && !isNullOrUndefined(modal) && !isNullOrUndefined(popupWrapper)) {
+            let index: number = parseInt(popupElement.style.zIndex, 10) ? parseInt(popupElement.style.zIndex, 10) : 1000;
+            modal.style.zIndex = (index - 1).toString();
+            popupWrapper.style.zIndex = index.toString();
+        }
+    }
+
     protected minMaxUpdate(value?: Date): void {
         if (!(+this.min <= +this.max)) {
             this.setProperties({ min: this.min }, true);
@@ -1867,6 +1875,7 @@ export class Calendar extends CalendarBase {
     /**
      * Gets or sets the selected date of the Calendar.
      * @default null
+     * @blazorType nullable
      */
     @Property(null)
     public value: Date;

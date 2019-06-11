@@ -1,5 +1,5 @@
 import { Component, Property, setStyleAttribute, ChildProperty, compile } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, addClass, Collection, isNullOrUndefined } from '@syncfusion/ej2-base';import { Event, EmitType, EventHandler, selectAll, removeClass, select, Browser, detach, formatUnit } from '@syncfusion/ej2-base';
-import {Orientation,CreatedEventArgs,ResizeEventArgs,ResizingEventArgs,BeforeExpandEventArgs,ExpandedEventArgs} from "./splitter";
+import {Orientation,ResizeEventArgs,ResizingEventArgs,BeforeExpandEventArgs,ExpandedEventArgs} from "./splitter";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -111,7 +111,7 @@ export interface SplitterModel extends ComponentModel{
      * Triggers after creating the splitter component with its panes.
      * @event
      */
-    created?: EmitType<CreatedEventArgs>;
+    created?: EmitType<Object>;
 
     /**
      * Triggers when the split pane is started to resize.

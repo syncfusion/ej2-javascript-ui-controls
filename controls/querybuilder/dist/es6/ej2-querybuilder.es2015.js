@@ -933,7 +933,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 this.createSpinner(closest(element, '.e-multi-select-wrapper').parentElement);
                 showSpinner(closest(element, '.e-multi-select-wrapper').parentElement);
                 data.then((e) => {
-                    if (e.actual.result) {
+                    if (e.actual && e.actual.result) {
                         dummyData = e.actual.result;
                     }
                     else {
@@ -1894,7 +1894,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         let data = this.dataManager.executeQuery(query);
         let deferred = new Deferred();
         data.then((e) => {
-            if (e.actual.result) {
+            if (e.actual && e.actual.result) {
                 this.dataColl = e.actual.result;
             }
             else {

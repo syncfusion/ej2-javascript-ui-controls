@@ -40,6 +40,17 @@ export class ComplexHierarchicalTree {
     public doLayout(nodes: INode[], nameTable: {}, layout: Layout, viewPort: PointModel): void {
         new HierarchicalLayoutUtil().doLayout(nodes, nameTable, layout, viewPort);
     }
+
+    public getLayoutNodesCollection(nodes: INode[]): INode[] {
+        let nodesCollection: INode[] = []; let node: INode;
+        for (let i: number = 0; i < nodes.length; i++) {
+            node = nodes[i];
+            if (node.inEdges.length + node.outEdges.length > 0) {
+                nodesCollection.push(node);
+            }
+        }
+        return nodesCollection;
+    }
 }
 
 /**

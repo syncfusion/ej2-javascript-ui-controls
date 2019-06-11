@@ -15,10 +15,10 @@ TreeGrid.Inject(Sort, Page, Filter, Toolbar, ContextMenu);
 let template : string = `<tr>
     <div>
     <td class="photo">
-                \${EmployeeID}<img src="images/2.png" alt="\${EmployeeID}" />
+                \${EmployeeID}<img src="" alt="\${EmployeeID}" />
                 </td>
             <td class="photo">
-                <img src="images/1.png" alt="\${EmployeeID}" />
+                <img src="" alt="\${EmployeeID}" />
             </td></div>
             <td class="details">
                 <table class="CardTable" cellpadding="3" cellspacing="2">
@@ -59,7 +59,7 @@ let template : string = `<tr>
                  \${FullName}
                  </td>
              <td class="photo">
-                 <img src="images/1.png" alt="\${EmployeeID}" />
+                 <img src="" alt="\${EmployeeID}" />
              </td></div>
              <td class="details">
                  <table class="CardTable" cellpadding="3" cellspacing="2">
@@ -136,7 +136,7 @@ describe('Render rowtemplate', () => {
     });
     it('onpropertychange alt id', function (done: Function) {
         dataBound = (args?: Object): void => {
-            expect((gridObj.getRows()[0].getElementsByClassName('photo')[0].querySelector("div>.e-treecell") as HTMLElement).innerText == "RobertKing").toBe(true);
+            expect((gridObj.getRows()[0].getElementsByClassName('photo')[0] as HTMLElement).innerText == "RobertKing").toBe(true);
             done();
         }
         gridObj.dataBound = dataBound;
@@ -342,11 +342,11 @@ describe('Contextmenu in row template', () => {
         let e: Object = {
             event: (gridObj.grid.contextMenuModule as any).eventArgs,
             items: gridObj.grid.contextMenuModule.contextMenu.items,
-            parentItem: document.querySelector('th'), element: document.getElementById(gridObj.element.id + '_gridcontrol_cmenu')
+            parentItem: gridObj.element.querySelector('th'), element: document.getElementById(gridObj.element.id + '_gridcontrol_cmenu')
         };
         (gridObj.grid.contextMenuModule as any).contextMenuBeforeOpen(e);
         (gridObj.grid.contextMenuModule as any).contextMenuOpen();
-        (<HTMLElement>document.getElementsByClassName('e-icon-descending')[0]).click();
+        (<HTMLElement>document.getElementById(gridObj.element.id + '_gridcontrol_cmenu').getElementsByClassName('e-icon-descending')[0]).click();
     });
         afterAll(() => {
         destroy(gridObj);

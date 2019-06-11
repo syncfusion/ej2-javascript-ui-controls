@@ -317,7 +317,6 @@ describe('DropDownButton', () => {
             drpButton = new DropDownButton();
             drpButton.appendTo('#drp-button');
             drpButton.focusIn();
-            drpButton.click();
         });
     });
 

@@ -317,7 +317,7 @@ export class JsonAdaptor extends Adaptor {
     public remove(dm: DataManager, keyField: string, value: Object, tableName?: string): Object {
         let ds: Object[] = dm.dataSource.json;
         let i: number;
-        if (typeof value === 'object') {
+        if (typeof value === 'object' && !(value instanceof Date)) {
             value = (value as { [key: string]: Object })[keyField];
         }
         for (i = 0; i < ds.length; i++) {

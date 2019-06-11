@@ -291,6 +291,18 @@ export class KeyboardInteraction {
         let target: HTMLTableCellElement = (targetCell instanceof Array) ? targetCell.slice(-1)[0] : targetCell;
         if (isMultiple) {
             let initialId: string;
+            let args: SelectEventArgs = {
+                element: targetCell,
+                allowMultipleRow: true,
+                requestType: 'mousemove'
+            };
+            this.parent.trigger(event.select, args);
+            if (!args.allowMultipleRow) {
+                let currentView: View = this.parent.currentView;
+                if (currentView === 'Day' || currentView === 'Week' || currentView === 'WorkWeek') {
+                    target = target.parentElement.children[this.initialTarget.cellIndex] as HTMLTableCellElement;
+                }
+            }
             let selectedCells: HTMLTableCellElement[] = this.getCells(this.isInverseTableSelect(), this.initialTarget, target);
             if (this.parent.activeViewOptions.group.resources.length > 0) {
                 initialId = this.initialTarget.getAttribute('data-group-index');

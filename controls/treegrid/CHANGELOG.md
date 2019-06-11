@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 17.1.51 (2019-06-11)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- #238350 - Editing works fine in remote data.
+
 ## 17.1.49 (2019-05-29)
 
 ### TreeGrid

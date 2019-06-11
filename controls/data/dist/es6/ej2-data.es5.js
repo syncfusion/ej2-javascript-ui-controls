@@ -2767,7 +2767,7 @@ var JsonAdaptor = /** @__PURE__ @class */ (function (_super) {
     JsonAdaptor.prototype.remove = function (dm, keyField, value, tableName) {
         var ds = dm.dataSource.json;
         var i;
-        if (typeof value === 'object') {
+        if (typeof value === 'object' && !(value instanceof Date)) {
             value = value[keyField];
         }
         for (i = 0; i < ds.length; i++) {

@@ -245,6 +245,7 @@ export class Filter implements IAction {
 
     private enableAfterRender(e: NotifyArgs): void {
         if (e.module === this.getModuleName() && e.enable) {
+            this.parent.getHeaderTable().classList.add('e-sortfilter');
             this.render();
         }
     }

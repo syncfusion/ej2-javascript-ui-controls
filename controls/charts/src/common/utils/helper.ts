@@ -1393,7 +1393,8 @@ export function textElement(
  */
 
 export function calculateSize(chart: Chart | AccumulationChart | RangeNavigator | StockChart): void {
-    let containerWidth: number = chart.element.clientWidth;
+    // fix for Chart rendered with default width in IE issue
+    let containerWidth: number = chart.element.clientWidth || chart.element.offsetWidth;
     let containerHeight: number = chart.element.clientHeight;
     if ((chart as Chart).stockChart) {
         containerWidth = (chart as Chart).stockChart.element.clientWidth;

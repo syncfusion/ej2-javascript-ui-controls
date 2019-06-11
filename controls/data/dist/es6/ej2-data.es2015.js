@@ -2721,7 +2721,7 @@ class JsonAdaptor extends Adaptor {
     remove(dm, keyField, value, tableName) {
         let ds = dm.dataSource.json;
         let i;
-        if (typeof value === 'object') {
+        if (typeof value === 'object' && !(value instanceof Date)) {
             value = value[keyField];
         }
         for (i = 0; i < ds.length; i++) {

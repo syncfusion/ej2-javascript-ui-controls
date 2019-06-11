@@ -5,7 +5,7 @@ import {
 } from '../index';
 import { MarkerSettingsModel, IMarkerClickEventArgs, markerClick, IMarkerMoveEventArgs, markerMouseMove } from '../index';
 import { isNullOrUndefined, merge, createElement } from '@syncfusion/ej2-base';
-import { CircleOption, PathOption, Point, getTranslate, convertGeoToPoint } from '../utils/helper';
+import { CircleOption, PathOption, Point, getTranslate, getZoomTranslate, convertGeoToPoint } from '../utils/helper';
 import {
     getTemplateFunction, getElementByID, convertElement, calculateShapes, Size, RectOption, Rect, elementAnimate
 } from '../utils/helper';
@@ -67,7 +67,10 @@ export class Marker {
                         new MapLocation(lng, lat), factor, this.maps.tileTranslatePoint, true
                     ) : convertGeoToPoint(lat, lng, factor, currentLayer, this.maps);
                     let animate: boolean = currentLayer.animationDuration !== 0 || isNullOrUndefined(this.maps.zoomModule);
-                    let translate: Object = (this.maps.isTileMap) ? new Object() : getTranslate(this.maps, currentLayer, animate);
+                    let translate: Object = (this.maps.isTileMap) ? new Object() :
+                        !isNullOrUndefined(this.maps.zoomModule) && this.maps.zoomSettings.zoomFactor > 1 ?
+                            getZoomTranslate(this.maps, currentLayer, animate) :
+                            getTranslate(this.maps, currentLayer, animate);
                     let scale: number = type === 'AddMarker' ? this.maps.scale : translate['scale'];
                     let transPoint: Point = type === 'AddMarker' ? this.maps.translatePoint : translate['location'] as Point;
                     if (eventArgs.template) {

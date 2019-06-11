@@ -110,7 +110,7 @@ var EditType;
 })(EditType || (EditType = {}));
 
 /**
- *
+ *  Date processor is used to handle date of task data.
  */
 var DateProcessor = /** @__PURE__ @class */ (function () {
     function DateProcessor(parent) {
@@ -360,7 +360,7 @@ var DateProcessor = /** @__PURE__ @class */ (function () {
     };
     /**
      * To calculate duration from start date and end date
-     * @param ganttData
+     * @param {IGanttData} ganttData - Defines the gantt data.
      */
     DateProcessor.prototype.calculateDuration = function (ganttData) {
         var ganttProperties = ganttData.ganttProperties;
@@ -13648,7 +13648,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                 var updatedData = {
                     changedRecords: eventArgs.modifiedTaskData
                 };
-                var crud = data.saveChanges(updatedData, null, null, new Query());
+                var crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, new Query());
                 crud.then(function (e) { return _this.dmSuccess(e, args); })
                     .catch(function (e) { return _this.dmFailure(e, args); });
             }
@@ -14008,7 +14008,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                     deletedRecords: eventArgs.data,
                     changedRecords: eventArgs.modifiedTaskData
                 };
-                var crud = data.saveChanges(updatedData);
+                var crud = data.saveChanges(updatedData, this.parent.taskFields.id);
                 crud.then(function (e) { return _this.deleteSuccess(args); })
                     .catch(function (e) { return _this.dmFailure(e, args); });
             }
@@ -14530,7 +14530,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                     addedRecords: [args.newTaskData],
                     changedRecords: args.modifiedTaskData
                 };
-                var crud = data_1.saveChanges(updatedData, null, null, new Query());
+                var crud = data_1.saveChanges(updatedData, this.parent.taskFields.id, null, new Query());
                 crud.then(function (e) {
                     if (_this.parent.taskFields.id && !isNullOrUndefined(e.addedRecords[0][_this.parent.taskFields.id]) &&
                         e.addedRecords[0][_this.parent.taskFields.id] !== args.data.ganttProperties.taskId) {
@@ -14817,7 +14817,7 @@ var Filter$2 = /** @__PURE__ @class */ (function () {
         this.parent.off('columnMenuOpen', this.columnMenuOpen);
     };
     /**
-     * @private
+     * To destroy module
      */
     Filter$$1.prototype.destroy = function () {
         this.removeEventListener();
@@ -15917,7 +15917,7 @@ var DayMarkers = /** @__PURE__ @class */ (function () {
         this.eventMarkerRender.updateContainerHeight();
     };
     /**
-     * @private
+     * To get module name
      */
     DayMarkers.prototype.getModuleName = function () {
         return 'dayMarkers';

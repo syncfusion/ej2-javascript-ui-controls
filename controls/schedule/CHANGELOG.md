@@ -2,15 +2,25 @@
 
 ## [Unreleased]
 
+## 17.1.51 (2019-06-11)
+
+### Schedule
+
+#### Bug Fixes
+
+- #234343 - An issue with adding resources dynamically when it has empty collection in initially has been fixed.
+- #235165 - An issue with `rowAutoHeight` property enabled the horizontal scroll wrongly in month view has been fixed.
+
 ## 17.1.50 (2019-06-04)
 
 ### Schedule
 
 #### Bug Fixes
 
-- An issue with preventing the event to be created, while clicking on the add icon in mobile devices with read only property is enabled is fixed.
 - #234667 - An issue with Scheduler is not properly navigating to selected date in timeline views has been fixed.
-- #234343 - An issue with adding resources dynamically when it has empty collection in initially has been fixed.
+- #234974 - An issue with Deleting ready only events is fixed.
+- #143894 - An issue with selecting work cells for multiple rows is fixed.
+- #234587 - An issue with rendering events with huge number of events in same times in week view is fixed.
 
 ## 17.1.48 (2019-05-21)
 

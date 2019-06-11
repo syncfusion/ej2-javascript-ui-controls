@@ -614,7 +614,7 @@ export class ClassifierMultiplicity extends ChildProperty<ClassifierMultiplicity
 export class RelationShip extends ConnectorShape {
     /**
      * Defines the type of the  UMLConnector
-     * @default 'UmlClassifier'
+     * @default 'None'
      * @IgnoreSingular
      */
     @Property('UmlClassifier')

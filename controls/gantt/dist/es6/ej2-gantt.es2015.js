@@ -109,7 +109,7 @@ var EditType;
 })(EditType || (EditType = {}));
 
 /**
- *
+ *  Date processor is used to handle date of task data.
  */
 class DateProcessor {
     constructor(parent) {
@@ -359,7 +359,7 @@ class DateProcessor {
     }
     /**
      * To calculate duration from start date and end date
-     * @param ganttData
+     * @param {IGanttData} ganttData - Defines the gantt data.
      */
     calculateDuration(ganttData) {
         let ganttProperties = ganttData.ganttProperties;
@@ -13261,7 +13261,7 @@ class Edit$2 {
                 let updatedData = {
                     changedRecords: eventArgs.modifiedTaskData
                 };
-                let crud = data.saveChanges(updatedData, null, null, new Query());
+                let crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, new Query());
                 crud.then((e) => this.dmSuccess(e, args))
                     .catch((e) => this.dmFailure(e, args));
             }
@@ -13620,7 +13620,7 @@ class Edit$2 {
                     deletedRecords: eventArgs.data,
                     changedRecords: eventArgs.modifiedTaskData
                 };
-                let crud = data.saveChanges(updatedData);
+                let crud = data.saveChanges(updatedData, this.parent.taskFields.id);
                 crud.then((e) => this.deleteSuccess(args))
                     .catch((e) => this.dmFailure(e, args));
             }
@@ -14141,7 +14141,7 @@ class Edit$2 {
                     addedRecords: [args.newTaskData],
                     changedRecords: args.modifiedTaskData
                 };
-                let crud = data.saveChanges(updatedData, null, null, new Query());
+                let crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, new Query());
                 crud.then((e) => {
                     if (this.parent.taskFields.id && !isNullOrUndefined(e.addedRecords[0][this.parent.taskFields.id]) &&
                         e.addedRecords[0][this.parent.taskFields.id] !== args.data.ganttProperties.taskId) {
@@ -14423,7 +14423,7 @@ class Filter$2 {
         this.parent.off('columnMenuOpen', this.columnMenuOpen);
     }
     /**
-     * @private
+     * To destroy module
      */
     destroy() {
         this.removeEventListener();
@@ -15514,7 +15514,7 @@ class DayMarkers {
         this.eventMarkerRender.updateContainerHeight();
     }
     /**
-     * @private
+     * To get module name
      */
     getModuleName() {
         return 'dayMarkers';

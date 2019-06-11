@@ -168,6 +168,13 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             this.currentDate = new Date(this.checkValue(value));
         }
     };
+    CalendarBase.prototype.setOverlayIndex = function (popupWrapper, popupElement, modal, isDevice) {
+        if (isDevice && !isNullOrUndefined(popupElement) && !isNullOrUndefined(modal) && !isNullOrUndefined(popupWrapper)) {
+            var index = parseInt(popupElement.style.zIndex, 10) ? parseInt(popupElement.style.zIndex, 10) : 1000;
+            modal.style.zIndex = (index - 1).toString();
+            popupWrapper.style.zIndex = index.toString();
+        }
+    };
     CalendarBase.prototype.minMaxUpdate = function (value) {
         if (!(+this.min <= +this.max)) {
             this.setProperties({ min: this.min }, true);
@@ -3616,6 +3623,10 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 this.previousDate = outOfRange;
                 this.createCalendar();
             }
+            if (Browser.isDevice) {
+                this.mobilePopupWrapper = this.createElement('div', { className: 'e-datepick-mob-popup-wrap' });
+                document.body.appendChild(this.mobilePopupWrapper);
+            }
             this.preventArgs = {
                 preventDefault: function () {
                     prevent_1 = false;
@@ -3623,7 +3634,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 popup: this.popupObj,
                 event: e || null,
                 cancel: false,
-                appendTo: document.body
+                appendTo: Browser.isDevice ? this.mobilePopupWrapper : document.body
             };
             this.trigger('open', this.preventArgs);
             if (prevent_1 && !this.preventArgs.cancel) {
@@ -3640,6 +3651,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 else {
                     this.popupObj.show(new Animation(openAnimation), null);
                 }
+                _super.prototype.setOverlayIndex.call(this, this.mobilePopupWrapper, this.popupObj.element, this.modal, Browser.isDevice);
                 this.setAriaAttributes();
             }
             else {
@@ -3680,6 +3692,10 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 this.modal.style.display = 'none';
                 this.modal.outerHTML = '';
                 this.modal = null;
+                if (!isNullOrUndefined(this.mobilePopupWrapper)) {
+                    this.mobilePopupWrapper.remove();
+                    this.mobilePopupWrapper = null;
+                }
             }
             EventHandler.remove(document, 'mousedown touchstart', this.documentHandler);
         }
@@ -7901,13 +7917,17 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                     this.targetElement = element;
                 }
                 this.createPopup();
+                if (this.isMobile || Browser.isDevice) {
+                    this.mobileRangePopupWrap = this.createElement('div', { className: 'e-daterangepick-mob-popup-wrap' });
+                    document.body.appendChild(this.mobileRangePopupWrap);
+                }
                 this.openEventArgs = {
                     popup: this.popupObj || null,
                     cancel: false,
                     date: this.inputElement.value,
                     model: this,
                     event: event ? event : null,
-                    appendTo: document.body
+                    appendTo: this.isMobile || Browser.isDevice ? this.mobileRangePopupWrap : document.body
                 };
                 this.trigger('open', this.openEventArgs);
                 if (!this.openEventArgs.cancel) {
@@ -7924,6 +7944,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                         this.endButton.element.removeAttribute('disabled');
                         this.selectableDates();
                     }
+                    _super.prototype.setOverlayIndex.call(this, this.mobileRangePopupWrap, this.popupObj.element, this.modal, this.isMobile || Browser.isDevice);
                 }
             }
         }
@@ -7998,6 +8019,10 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                         this.modal.style.display = 'none';
                         this.modal.outerHTML = '';
                         this.modal = null;
+                        if (!isNullOrUndefined(this.mobileRangePopupWrap)) {
+                            this.mobileRangePopupWrap.remove();
+                            this.mobileRangePopupWrap = null;
+                        }
                     }
                     this.isKeyPopup = this.dateDisabled = false;
                 }

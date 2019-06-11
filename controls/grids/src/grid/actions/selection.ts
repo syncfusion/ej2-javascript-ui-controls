@@ -1907,7 +1907,7 @@ export class Selection implements IAction {
             this.updatePersistSelectedData(checkState);
             this.selectRowsByRange(
                 cRenderer.getVirtualRowIndex(0),
-                cRenderer.getVirtualRowIndex(this.getCurrentBatchRecordChanges().length));
+                cRenderer.getVirtualRowIndex(this.getCurrentBatchRecordChanges().length - 1));
         } else {
             this.parent.checkAllRows = 'Uncheck';
             this.updatePersistSelectedData(checkState);
