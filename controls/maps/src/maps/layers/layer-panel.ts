@@ -690,7 +690,7 @@ export class LayerPanel {
             }
             if (layer.layerType === 'OSM' || layer.layerType === 'Bing') {
                 for (let baseTile of proxTiles) {
-                    let subtile: Tile = extend(baseTile, {}, {}, true) as Tile;
+                    let subtile: Tile = extend({}, baseTile, {}, true) as Tile;
                     if (layer.layerType === 'Bing') {
                         subtile.src = bing.getBingMap(subtile, layer.key, layer.bingMapType, userLang, bing.imageUrl, bing.subDomains);
                     } else {
